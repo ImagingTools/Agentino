@@ -1,0 +1,1515 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Acf>
+    <AcfHeader>
+        <VersionInfos>
+            <Version Id="0" Number="4961" Description="ACF"/>
+            <Version Id="1" Number="2153" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="331522" Description="Qt Framework"/>
+        </VersionInfos>
+    </AcfHeader>
+    <Description></Description>
+    <Keywords></Keywords>
+    <ElementsList>
+        <Element Id="BinaryDataProvider" PackageId="ImtCorePck" ComponentId="BinaryDataProvider">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="HomePath" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value=":"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="CommandsDataControllers" PackageId="" ComponentId="CommandsDataCoontrollers">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap/>
+            </Data>
+        </Element>
+        <Element Id="DataControllers" PackageId="" ComponentId="DataControllers">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="AccountInfoPersistence" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="FilePersistence"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="PgSqlDatabaseEngine"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="FeatureCollectionPersistence" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="FilePersistence"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="GraphQLServlet" PackageId="ImtGqlPck" ComponentId="GraphQLServlet">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CommandId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="Lisa/graphql"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="GqlRepresentationDataController" Type="Reference[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>CommandsDataControllers</Value>
+                                <Value>PagesDataControllers</Value>
+                                <Value>DataControllers/FeaturePackageCollectionController</Value>
+                                <Value>DataControllers/ProductCollectionController</Value>
+                                <Value>DataControllers/AccountCollectionController</Value>
+                                <Value>DataControllers/InstallationCollectionController</Value>
+                                <Value>DataControllers/PackageController</Value>
+                                <Value>DataControllers/AccountController</Value>
+                                <Value>DataControllers/ProductController</Value>
+                                <Value>DataControllers/InstallationController</Value>
+                                <Value>SettingsControllers/PreferenceDataController</Value>
+                                <Value>SettingsControllers/GetStyleDataController</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="HttpFileBasedHandler" PackageId="ImtRestPck" ComponentId="HttpFileBasedServlet">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CommandId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="RTS/Views"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="FileTemplatePath" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="IndexFilePath"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="HttpFileProviderBasedServlet" PackageId="ImtRestPck" ComponentId="HttpFileProviderBasedServlet">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="BinaryDataProviders" Type="Reference[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>BinaryDataProvider</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="CommandId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="Lisa/Views*"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="HttpRedirectHandler" PackageId="ImtRestPck" ComponentId="HttpRedirectServlet">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="RedirectToCommandId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="Lisa/Views/html/index.html?item=Pages/StartPage.qml"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="HttpServerFramework" PackageId="ImtHttpServerVoce" ComponentId="HttpServerFramework">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="HttpCommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>ProLife/Views*</Value>
+                                <Value>ProLife/Models*</Value>
+                                <Value>ProLife/Views</Value>
+                                <Value></Value>
+                                <Value>ProLife/graphql</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="HttpRequestHandlers" Type="Reference[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>HttpFileProviderBasedServlet</Value>
+                                <Value>JsonModelBasedHandler</Value>
+                                <Value>HttpFileBasedHandler</Value>
+                                <Value>HttpRedirectHandler</Value>
+                                <Value>GraphQLServlet</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServerAddress" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="http://localhost"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServerPort" Type="Integer" ExportId="ServerPort">
+                        <Data IsEnabled="true" Value="7776"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="StartServerOnCreate" Type="Boolean" ExportId="">
+                        <Data IsEnabled="true" Value="true"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="StartWebSocketServerOnCreate" Type="Boolean" ExportId="">
+                        <Data IsEnabled="true" Value="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="WebSocketRequestHandlers" Type="Reference[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>JsonModelBasedHandler</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="WebSocketServerPort" Type="Integer" ExportId="WebSocketServerPort">
+                        <Data IsEnabled="true" Value="8888"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="IndexFilePath" PackageId="FilePck" ComponentId="FileNameParam">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="DefaultPath" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="./QML_Data/index.html"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="PathType" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="1"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="JsonModelBasedHandler" PackageId="ImtRestPck" ComponentId="JsonModelBasedServlet">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CommandId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="Lisa/Models*"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="PagesDataControllers" PackageId="" ComponentId="PagesDataControllers">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap/>
+            </Data>
+        </Element>
+        <Element Id="PgSqlDatabaseEngine" PackageId="ImtDatabasePck" ComponentId="SqlDatabaseEngine">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="DatabaseAccessSettings" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="PreferencesQml/DatabaseAccessSettings"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DbName" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="lisa"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DbType" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="QPSQL"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="HostName" Type="Id" ExportId="PgHostName">
+                        <Data IsEnabled="true" Value="127.0.0.1"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Pasword" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="12345"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Port" Type="Integer" ExportId="PgPort">
+                        <Data IsEnabled="true" Value="5432"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Suffix" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="0"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TablesCreationScriptPath" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value=":/Database/CreateTables"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="PreferencesQml" PackageId="ProLifeVoce" ComponentId="PreferencesQml">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap/>
+            </Data>
+        </Element>
+        <Element Id="SettingsControllers" PackageId="" ComponentId="SettingsControllers">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="DBSettings" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="PreferencesQml/DatabaseAccessSettings"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Design" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="PreferencesQml/Design"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Language" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="PreferencesQml/Language"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+    </ElementsList>
+    <EmbeddedRegistriesList>
+        <EmbeddedRegistry Id="CommandsDataCoontrollers">
+            <Data Description="" Keywords="">
+                <ElementsList>
+                    <Element Id="AccountEditCommandDataProvider" PackageId="ImtQmlPck" ComponentId="CommandDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandDefaultStatusIcon" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Add</Value>
+                                            <Value>Open</Value>
+                                            <Value>Save</Value>
+                                            <Value></Value>
+                                            <Value>Close</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandId" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>New</Value>
+                                            <Value>Open</Value>
+                                            <Value>Save</Value>
+                                            <Value></Value>
+                                            <Value>Close</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandName" Type="Text[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>New</Value>
+                                            <Value>Open</Value>
+                                            <Value>Save</Value>
+                                            <Value></Value>
+                                            <Value>Close</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandsModelId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="AccountEdit"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="AccountsCommandDataProvider" PackageId="ImtQmlPck" ComponentId="CommandDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandDefaultStatusIcon" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Add</Value>
+                                            <Value>Delete</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandId" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>New</Value>
+                                            <Value>Remove</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandName" Type="Text[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>New</Value>
+                                            <Value>Remove</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandsModelId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Accounts"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="CommandsDataController" PackageId="ImtGuiGqlPck" ComponentId="CommandsDataController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandsDataProviderCompPtr" Type="Reference[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>PackagesCommandDataProvider</Value>
+                                            <Value>PackageEditCommandDataProvider</Value>
+                                            <Value>ProductsCommandDataProvider</Value>
+                                            <Value>ProductEditCommandDataProvider</Value>
+                                            <Value>AccountsCommandDataProvider</Value>
+                                            <Value>AccountEditCommandDataProvider</Value>
+                                            <Value>InstallationsCommandDataProvider</Value>
+                                            <Value>InstallationEditCommandDataProvider</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ModelIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>CommandsData</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="InstallationEditCommandDataProvider" PackageId="ImtQmlPck" ComponentId="CommandDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandDefaultStatusIcon" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Add</Value>
+                                            <Value>Open</Value>
+                                            <Value>Save</Value>
+                                            <Value></Value>
+                                            <Value>Close</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandId" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>New</Value>
+                                            <Value>Open</Value>
+                                            <Value>Save</Value>
+                                            <Value></Value>
+                                            <Value>Close</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandName" Type="Text[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>New</Value>
+                                            <Value>Open</Value>
+                                            <Value>Save</Value>
+                                            <Value></Value>
+                                            <Value>Close</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandsModelId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="InstallationEdit"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="InstallationsCommandDataProvider" PackageId="ImtQmlPck" ComponentId="CommandDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandDefaultStatusIcon" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Add</Value>
+                                            <Value>Delete</Value>
+                                            <Value>Duplicate</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                            <Value></Value>
+                                            <Value></Value>
+                                            <Value>License</Value>
+                                            <Value></Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandId" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>New</Value>
+                                            <Value>Remove</Value>
+                                            <Value>Duplicate</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                            <Value></Value>
+                                            <Value></Value>
+                                            <Value>CreateLicense</Value>
+                                            <Value></Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandName" Type="Text[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>New</Value>
+                                            <Value>Remove</Value>
+                                            <Value>Duplicate</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                            <Value></Value>
+                                            <Value></Value>
+                                            <Value>Create License File</Value>
+                                            <Value></Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandsModelId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Installations"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="PackageEditCommandDataProvider" PackageId="ImtQmlPck" ComponentId="CommandDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandDefaultStatusIcon" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Add</Value>
+                                            <Value>Delete</Value>
+                                            <Value>Import</Value>
+                                            <Value>Export</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                            <Value></Value>
+                                            <Value>Save</Value>
+                                            <Value></Value>
+                                            <Value>Close</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandId" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>New</Value>
+                                            <Value>Remove</Value>
+                                            <Value>Import</Value>
+                                            <Value>Export</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                            <Value></Value>
+                                            <Value>Save</Value>
+                                            <Value></Value>
+                                            <Value>Close</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandName" Type="Text[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>New</Value>
+                                            <Value>Remove</Value>
+                                            <Value>Import</Value>
+                                            <Value>Export</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                            <Value></Value>
+                                            <Value>Save</Value>
+                                            <Value></Value>
+                                            <Value>Close</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandsModelId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="PackageEdit"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="PackagesCommandDataProvider" PackageId="ImtQmlPck" ComponentId="CommandDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandDefaultStatusIcon" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Add</Value>
+                                            <Value>Delete</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandId" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>New</Value>
+                                            <Value>Remove</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandName" Type="Text[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>New</Value>
+                                            <Value>Remove</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandsModelId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Packages"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="ProductEditCommandDataProvider" PackageId="ImtQmlPck" ComponentId="CommandDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandDefaultStatusIcon" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Add</Value>
+                                            <Value>Delete</Value>
+                                            <Value>Duplicate</Value>
+                                            <Value>Import</Value>
+                                            <Value>Export</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                            <Value></Value>
+                                            <Value>Save</Value>
+                                            <Value></Value>
+                                            <Value>Close</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandId" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>New</Value>
+                                            <Value>Remove</Value>
+                                            <Value>Duplicate</Value>
+                                            <Value>Import</Value>
+                                            <Value>Export</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                            <Value></Value>
+                                            <Value>Save</Value>
+                                            <Value></Value>
+                                            <Value>Close</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandName" Type="Text[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>New</Value>
+                                            <Value>Remove</Value>
+                                            <Value>Duplicate</Value>
+                                            <Value>Import</Value>
+                                            <Value>Export</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                            <Value></Value>
+                                            <Value>Save</Value>
+                                            <Value></Value>
+                                            <Value>Close</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandsModelId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="ProductEdit"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="ProductsCommandDataProvider" PackageId="ImtQmlPck" ComponentId="CommandDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandDefaultStatusIcon" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Add</Value>
+                                            <Value>Delete</Value>
+                                            <Value>Duplicate</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandId" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>New</Value>
+                                            <Value>Remove</Value>
+                                            <Value>Duplicate</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandName" Type="Text[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>New</Value>
+                                            <Value>Remove</Value>
+                                            <Value>Duplicate</Value>
+                                            <Value></Value>
+                                            <Value>Edit</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandsModelId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Products"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                </ElementsList>
+                <EmbeddedRegistriesList/>
+                <ExportedInterfaces>
+                    <Interface InterfaceId="imtbase::IGqlRepresentationDataController" ComponentId="CommandsDataController"/>
+                    <Interface InterfaceId="imtgql::IGqlRepresentationDataController" ComponentId="CommandsDataController"/>
+                    <Interface InterfaceId="istd::IPolymorphic" ComponentId="CommandsDataController"/>
+                </ExportedInterfaces>
+                <ExportedComponents/>
+            </Data>
+        </EmbeddedRegistry>
+        <EmbeddedRegistry Id="DataControllers">
+            <Data Description="" Keywords="">
+                <ElementsList>
+                    <Element Id="AccountCollectionController" PackageId="ImtLicenseGqlPck" ComponentId="AccountCollectionController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="Database" Type="Reference" ExportId="DatabaseEngine">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ModelIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>AccountInfo</Value>
+                                            <Value>AccountList</Value>
+                                            <Value>AccountRemove</Value>
+                                            <Value>AccountMetaInfo</Value>
+                                            <Value>AccountRename</Value>
+                                            <Value>AccountSetDescription</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="AccountRepository"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ViewDelegate" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="AccountViewDelegate"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="AccountController" PackageId="ImtLicenseGqlPck" ComponentId="AccountController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="AccountFactory" Type="Factory" ExportId="">
+                                    <Data IsEnabled="true" Value="AccountInfo"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ModelIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>AccountItem</Value>
+                                            <Value>AccountAdd</Value>
+                                            <Value>AccountUpdate</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="AccountRepository"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ViewDelegate" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="AccountViewDelegate"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="AccountInfo" PackageId="ImtAuthPck" ComponentId="AccountInfo">
+                        <Data IsEnabled="true" Flags="2">
+                            <AttributeInfoMap/>
+                        </Data>
+                    </Element>
+                    <Element Id="AccountRepository" PackageId="LisaVoce" ComponentId="AccountSqlRepository">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="DatabaseEngine">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="EnableVerbose" Type="Boolean" ExportId="EnableVerbose">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="AccountViewDelegate" PackageId="ImtAuthGuiPck" ComponentId="AccountInfoViewDelegate">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="DocumentManager" Type="Reference" ExportId="DocumentManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="FilePersistence" Type="Reference" ExportId="AccountInfoPersistence">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="InformationView" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="MetaInfoView"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectTypeId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="AccountInfo"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="StatusIcons" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="Icons"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="FeatureCollectionViewDelegate" PackageId="ImtLicenseGuiPck" ComponentId="FeatureCollectionViewDelegate">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="EditDialog" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="ModelDialogGui"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectTypeId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="FeatureInfo"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="FeaturePackageCollectionController" PackageId="ImtLicenseGqlPck" ComponentId="FeaturePackageCollectionController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="Database" Type="Reference" ExportId="DatabaseEngine">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ModelIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>FeaturePackageInfo</Value>
+                                            <Value>FeaturePackageList</Value>
+                                            <Value>FeaturePackageRemove</Value>
+                                            <Value>FeaturePackageSetDescription</Value>
+                                            <Value>FeaturePackageRename</Value>
+                                            <Value>FeaturePackageMetaInfo</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="FeaturePackageRepository"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ViewDelegate" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="FeaturePackageViewDelegate"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="FeaturePackageRepository" PackageId="LisaVoce" ComponentId="FeaturePackageSqlRepository">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="DatabaseEngine">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="EnableVerbose" Type="Boolean" ExportId="EnableVerbose">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="FeaturePackageViewDelegate" PackageId="ImtLicenseGuiPck" ComponentId="FeaturePackageViewDelegate">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="DocumentManager" Type="Reference" ExportId="DocumentManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="FilePersistence" Type="Reference" ExportId="FeatureCollectionPersistence">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectTypeId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="FeaturePackage"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="StatusIcons" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="Icons"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="Icons" PackageId="QtGuiPck" ComponentId="IconProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="IconFiles" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Add</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="IconsPath" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value=":/Icons"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="InstallationCollectionController" PackageId="ImtLicenseGqlPck" ComponentId="InstallationCollectionController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="Database" Type="Reference" ExportId="DatabaseEngine">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ModelIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>InstallationInfo</Value>
+                                            <Value>InstallationList</Value>
+                                            <Value>InstallationRemove</Value>
+                                            <Value>InstallationMetaInfo</Value>
+                                            <Value>InstallationRename</Value>
+                                            <Value>InstallationSetDescription</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="InstallationRepository"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ViewDelegate" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="InstallationViewDelegate"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="InstallationController" PackageId="ImtLicenseGqlPck" ComponentId="InstallationController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="InstallationFactory" Type="Factory" ExportId="">
+                                    <Data IsEnabled="true" Value="ProductInstance"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="MetaInfoCreator" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="ProductInstanceMetaInfoCreator"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ModelIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>InstallationAdd</Value>
+                                            <Value>InstallationUpdate</Value>
+                                            <Value>InstallationItem</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="InstallationRepository"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ViewDelegate" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="InstallationViewDelegate"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="InstallationRepository" PackageId="LisaVoce" ComponentId="ProductInstanceSqlRepository">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CustomerCollection" Type="Reference" ExportId="CustomerCollection">
+                                    <Data IsEnabled="true" Value="AccountRepository"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="DatabaseEngine">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="EnableVerbose" Type="Boolean" ExportId="EnableVerbose">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ProductCollection" Type="Reference" ExportId="ProductCollection">
+                                    <Data IsEnabled="true" Value="ProductRepository"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="InstallationViewDelegate" PackageId="ImtLicenseGuiPck" ComponentId="ProductInstanceInfoViewDelegate">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="DocumentManager" Type="Reference" ExportId="DocumentManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="FilePersistence" Type="Reference" ExportId="ProductInstanceInfoPersistence">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="InformationView" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="MetaInfoView"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectTypeId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="ProductInstanceInfo"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="StatusIcons" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="Icons"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="LicenseManagerViewDelegate" PackageId="ImtLicenseGuiPck" ComponentId="LicenseManagerViewDelegate">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap/>
+                        </Data>
+                    </Element>
+                    <Element Id="MetaInfoView" PackageId="ImtGuiPck" ComponentId="ObjectCollectionMetaInfoView">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap/>
+                        </Data>
+                    </Element>
+                    <Element Id="PackageController" PackageId="ImtLicenseGqlPck" ComponentId="PackageController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ModelIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>PackageInfo</Value>
+                                            <Value>PackageUpdate</Value>
+                                            <Value>FeatureList</Value>
+                                            <Value>PackageAdd</Value>
+                                            <Value>FeaturesTree</Value>
+                                            <Value>FeaturesDependencies</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="FeaturePackageRepository"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ViewDelegate" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="FeatureCollectionViewDelegate"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="ProductCollectionController" PackageId="ImtLicenseGqlPck" ComponentId="ProductCollectionController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="Database" Type="Reference" ExportId="DatabaseEngine">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ModelIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>ProductCollectionInfo</Value>
+                                            <Value>ProductList</Value>
+                                            <Value>ProductRemove</Value>
+                                            <Value>ProductMetaInfo</Value>
+                                            <Value>ProductRename</Value>
+                                            <Value>ProductSetDescription</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="ProductRepository"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ViewDelegate" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="ProductViewDelegate"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="ProductController" PackageId="ImtLicenseGqlPck" ComponentId="ProductController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ModelIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>LicenseList</Value>
+                                            <Value>ProductAdd</Value>
+                                            <Value>ProductInfo</Value>
+                                            <Value>ProductUpdate</Value>
+                                            <Value>LicensesTree</Value>
+                                            <Value>LicensesDependencies</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="ProductRepository"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ProductFactory" Type="Factory" ExportId="">
+                                    <Data IsEnabled="true" Value="ProductLicensingInfo"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ViewDelegate" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="LicenseManagerViewDelegate"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="ProductInstance" PackageId="ImtLicensePck" ComponentId="ProductInstanceInfo">
+                        <Data IsEnabled="true" Flags="2">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CustomerCollection" Type="Reference" ExportId="CustomerCollection">
+                                    <Data IsEnabled="true" Value="AccountRepository"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ProductCollection" Type="Reference" ExportId="ProductCollection">
+                                    <Data IsEnabled="true" Value="ProductRepository"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="ProductInstanceMetaInfoCreator" PackageId="ImtLicensePck" ComponentId="ProductInstanceMetaInfoCreator">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="EnableVerbose" Type="Boolean" ExportId="EnableVerbose">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectTypeId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="ProductInstanceInfo"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="ProductLicensingInfo" PackageId="ImtLicensePck" ComponentId="ProductLicensingInfo">
+                        <Data IsEnabled="true" Flags="2">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="FeaturePackages" Type="Reference" ExportId="FeaturePackages">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="ProductRepository" PackageId="LisaVoce" ComponentId="ProductSqlRepository">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="DatabaseEngine">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="EnableVerbose" Type="Boolean" ExportId="EnableVerbose">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="FeaturePackages" Type="Reference" ExportId="FeaturePackages">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="ProductViewDelegate" PackageId="ImtLicenseGuiPck" ComponentId="ProductLicensingInfoViewDelegate">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="DocumentManager" Type="Reference" ExportId="DocumentManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="FilePersistence" Type="Reference" ExportId="ProductLicensingInfoPersistence">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="InformationView" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="MetaInfoView"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectTypeId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="ProductLicensingInfo"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="StatusIcons" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="Icons"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                </ElementsList>
+                <EmbeddedRegistriesList/>
+                <ExportedInterfaces/>
+                <ExportedComponents>
+                    <Component ExportedId="AccountCollectionController" ComponentId="AccountCollectionController"/>
+                    <Component ExportedId="AccountController" ComponentId="AccountController"/>
+                    <Component ExportedId="FeaturePackageCollectionController" ComponentId="FeaturePackageCollectionController"/>
+                    <Component ExportedId="InstallationCollectionController" ComponentId="InstallationCollectionController"/>
+                    <Component ExportedId="InstallationController" ComponentId="InstallationController"/>
+                    <Component ExportedId="PackageController" ComponentId="PackageController"/>
+                    <Component ExportedId="ProductCollectionController" ComponentId="ProductCollectionController"/>
+                    <Component ExportedId="ProductController" ComponentId="ProductController"/>
+                </ExportedComponents>
+            </Data>
+        </EmbeddedRegistry>
+        <EmbeddedRegistry Id="Enums">
+            <Data Description="" Keywords="">
+                <ElementsList>
+                    <Element Id="MenuDataEnumProvider" PackageId="ImtQmlPck" ComponentId="MenuDataEnumProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="DataId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="qml/MenuEnum.qml"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                </ElementsList>
+                <EmbeddedRegistriesList/>
+                <ExportedInterfaces/>
+                <ExportedComponents>
+                    <Component ExportedId="MenuDataEnumProvider" ComponentId="MenuDataEnumProvider"/>
+                </ExportedComponents>
+            </Data>
+        </EmbeddedRegistry>
+        <EmbeddedRegistry Id="PagesDataControllers">
+            <Data Description="" Keywords="">
+                <ElementsList>
+                    <Element Id="Accounts" PackageId="ImtQmlPck" ComponentId="PageDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="PageDefaultStatusIcon" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="Account"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Accounts"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageName" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="Accounts"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageOffSelectedStatusIcon" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="../../Icons/Account_Off_Selected.svg"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageOnSelectedStatusIcon" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="../../Icons/Account_On_Selected.svg"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageSourceItem" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="../imtauthgui/AccountsMultiDocView.qml"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="Instances" PackageId="ImtQmlPck" ComponentId="PageDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="PageDefaultStatusIcon" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="Deployment"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Installations"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageName" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="Installations"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageOffSelectedStatusIcon" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="../../Icons/Deployment_Off_Selected.svg"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageOnSelectedStatusIcon" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="../../Icons/Deployment_On_Selected.svg"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageSourceItem" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="../imtlicgui/InstallationsMultiDocView.qml"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="JoinDataProvider" PackageId="ImtQmlPck" ComponentId="JoinDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="m_representationDataProviderCompPtr" Type="Reference[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Packages</Value>
+                                            <Value>Products</Value>
+                                            <Value>Accounts</Value>
+                                            <Value>Instances</Value>
+                                            <Value>Test</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="Packages" PackageId="ImtQmlPck" ComponentId="PageDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="PageDefaultStatusIcon" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="FeaturePackage"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Packages"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageName" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="Packages"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageOffSelectedStatusIcon" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="../../Icons/Workflow_Off_Selected.svg"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageOnSelectedStatusIcon" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="../../Icons/Workflow_On_Selected.svg"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageSourceItem" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="../imtlicgui/PackagesMultiDocView.qml"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="PagesDataController" PackageId="ImtGuiGqlPck" ComponentId="PagesDataController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ModelIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>PagesData</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PagesDataProviderCompPtr" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="JoinDataProvider"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="Products" PackageId="ImtQmlPck" ComponentId="PageDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="PageDefaultStatusIcon" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="Product"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Products"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageName" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="Products"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageOffSelectedStatusIcon" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="../../Icons/Product_Off_Selected.svg"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageOnSelectedStatusIcon" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="../../Icons/Product_On_Selected.svg"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageSourceItem" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="../imtlicgui/ProductsMultiDocView.qml"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="Test" PackageId="ImtQmlPck" ComponentId="PageDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="PageDefaultStatusIcon" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="Test"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Test"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageName" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="Test"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageOffSelectedStatusIcon" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="../../Icons/Calibration_Off_Selected.svg"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageOnSelectedStatusIcon" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="../../Icons/Calibration_On_Selected.svg"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PageSourceItem" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="../imtlicgui/TestMultiDocView.qml"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                </ElementsList>
+                <EmbeddedRegistriesList/>
+                <ExportedInterfaces>
+                    <Interface InterfaceId="imtbase::IGqlRepresentationDataController" ComponentId="PagesDataController"/>
+                    <Interface InterfaceId="imtgql::IGqlRepresentationDataController" ComponentId="PagesDataController"/>
+                    <Interface InterfaceId="istd::IPolymorphic" ComponentId="PagesDataController"/>
+                </ExportedInterfaces>
+                <ExportedComponents/>
+            </Data>
+        </EmbeddedRegistry>
+        <EmbeddedRegistry Id="SettingsControllers">
+            <Data Description="" Keywords="">
+                <ElementsList>
+                    <Element Id="DatabaseAccessSettings" PackageId="ImtQmlPck" ComponentId="DatabaseSettingsDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ParamId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="ProLifeSettings"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ParamName" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="ProLife Settings"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Parameter" Type="Reference" ExportId="DBSettings">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="DatabasePage" PackageId="ImtQmlPck" ComponentId="ParamsDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ParamId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="DBSettings"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ParamName" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="DB Settings"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ParamSubElements" Type="Reference[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>DatabaseAccessSettings</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="m_mutationDataDelegateCompPtr" Type="Reference[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>DatabaseAccessSettings</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="Design" PackageId="ImtQmlPck" ComponentId="ParamsDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ComponentType" Type="Integer" ExportId="">
+                                    <Data IsEnabled="true" Value="3"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ParamId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Mode"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ParamName" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="Mode"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Parameter" Type="Reference" ExportId="Design">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="DesignParam" PackageId="BasePck" ComponentId="SelectionParam">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="DefaultIndex" Type="Integer" ExportId="">
+                                    <Data IsEnabled="true" Value="0"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="GeneralPage" PackageId="ImtQmlPck" ComponentId="ParamsDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ParamId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="General"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ParamName" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="General"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ParamSubElements" Type="Reference[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Design</Value>
+                                            <Value>Language</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="m_mutationDataDelegateCompPtr" Type="Reference[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Design</Value>
+                                            <Value>Language</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="GetStyleDataController" PackageId="ImtGuiGqlPck" ComponentId="GetStyleDataController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ModelIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>GetStyle</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Parameter" Type="Reference" ExportId="Design">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="Language" PackageId="ImtQmlPck" ComponentId="ParamsDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ComponentType" Type="Integer" ExportId="">
+                                    <Data IsEnabled="true" Value="3"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ParamId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Language"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ParamName" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="Language"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Parameter" Type="Reference" ExportId="Language">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="LanguageParam" PackageId="BasePck" ComponentId="SelectionParam">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="Constraints" Type="Reference" ExportId="Constraints">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="DefaultIndex" Type="Integer" ExportId="">
+                                    <Data IsEnabled="true" Value="0"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="PreferenceDataController" PackageId="ImtGuiGqlPck" ComponentId="PagesDataController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ModelIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>GetSettings</Value>
+                                            <Value>SaveSettings</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PagesDataProviderCompPtr" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="PreferencesDataProvider"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="m_mutationDataDelegateCompPtr" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="PreferencesDataProvider"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="PreferencesDataProvider" PackageId="ImtQmlPck" ComponentId="JoinDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="commandId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Preferences"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="m_mutationDataDelegateCompPtr" Type="Reference[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>GeneralPage</Value>
+                                            <Value>DatabasePage</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="m_representationDataProviderCompPtr" Type="Reference[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>GeneralPage</Value>
+                                            <Value>DatabasePage</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                </ElementsList>
+                <EmbeddedRegistriesList/>
+                <ExportedInterfaces/>
+                <ExportedComponents>
+                    <Component ExportedId="GetStyleDataController" ComponentId="GetStyleDataController"/>
+                    <Component ExportedId="PreferenceDataController" ComponentId="PreferenceDataController"/>
+                </ExportedComponents>
+            </Data>
+        </EmbeddedRegistry>
+    </EmbeddedRegistriesList>
+    <ExportedInterfaces>
+        <Interface InterfaceId="istd::IPolymorphic" ComponentId="HttpServerFramework"/>
+    </ExportedInterfaces>
+    <ExportedComponents>
+        <Component ExportedId="DatabaseAccessSettings" ComponentId="PreferencesQml/DatabaseAccessSettings"/>
+        <Component ExportedId="Design" ComponentId="PreferencesQml/Design"/>
+        <Component ExportedId="Language" ComponentId="PreferencesQml/Language"/>
+    </ExportedComponents>
+</Acf>

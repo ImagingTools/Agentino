@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/Images">
+        <file alias="AgentinoSplashScreen">Resources/Images/AgentinoSplashScreen.svg</file>
+    </qresource>
+    <qresource prefix="/Icons">
+        <file alias="AgentinoIcon">Resources/Icons/AgentinoIcon.svg</file>
+    </qresource>
+    <qresource prefix="/qml">
+        <file alias="AgentinoMain.qml">Qml/AgentinoMain.qml</file>
+	<file alias="AgentinoWeb.qml">Qml/AgentinoWeb.qml</file>
+	<file alias="ServiceCollectionView.qml">Qml/ServiceCollectionView.qml</file>
+	<file alias="AgentCollectionView.qml">Qml/AgentCollectionView.qml</file>
+	<file alias="ServiceEditor.qml">Qml/ServiceEditor.qml</file>
+	<file alias="AgentCollectionViewCommandsDelegate.qml">Qml/AgentCollectionViewCommandsDelegate.qml</file>
+	<file alias="ServiceCollectionViewCommandsDelegate.qml">Qml/ServiceCollectionViewCommandsDelegate.qml</file>
+	<file alias="TopologyPage.qml">Qml/TopologyPage.qml</file>
+    </qresource>
+</RCC>

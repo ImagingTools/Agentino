@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Acf>
+    <AcfHeader>
+        <VersionInfos>
+            <Version Id="0" Number="5181" Description="ACF"/>
+            <Version Id="1" Number="2199" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="331522" Description="Qt Framework"/>
+        </VersionInfos>
+    </AcfHeader>
+    <PositionMap>
+        <Element ComponentName="ApplicationController" X="575" Y="325" Note=""/>
+        <Element ComponentName="AuthorizationOptionsController" X="750" Y="625" Note=""/>
+        <Element ComponentName="PumaGQLClientEngine" X="400" Y="525" Note=""/>
+        <Element ComponentName="SettingsController" X="250" Y="325" Note=""/>
+        <Element ComponentName="SlaveGraphQLDemultiplexer" X="875" Y="325" Note=""/>
+    </PositionMap>
+    <EmbeddedRegistries/>
+</Acf>

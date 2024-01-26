@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Acf>
+    <AcfHeader>
+        <VersionInfos>
+            <Version Id="0" Number="5181" Description="ACF"/>
+            <Version Id="1" Number="2199" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="331522" Description="Qt Framework"/>
+        </VersionInfos>
+    </AcfHeader>
+    <PositionMap>
+        <Element ComponentName="AgentCollectionController" X="375" Y="225" Note=""/>
+        <Element ComponentName="AgentHeadersDataProvider" X="125" Y="450" Note=""/>
+        <Element ComponentName="AgentInfo" X="238.919857349" Y="115.703327144" Note=""/>
+        <Element ComponentName="AgentViewDataProvider" X="375" Y="450" Note=""/>
+        <Element ComponentName="CheckPermissionOr" X="200" Y="600" Note=""/>
+        <Element ComponentName="Demultiplexer" X="625" Y="100" Note=""/>
+        <Element ComponentName="ServiceCollectionCommands" X="950" Y="275" Note=""/>
+        <Element ComponentName="ServiceCommands" X="650" Y="275" Note=""/>
+    </PositionMap>
+    <EmbeddedRegistries>
+        <EmbededRegistry Id="ServiceCollectionCommands">
+            <PositionMap>
+                <Element ComponentName="CheckPermissionOr" X="575" Y="225" Note=""/>
+                <Element ComponentName="CollectionCommandPermissions" X="850" Y="225" Note=""/>
+                <Element ComponentName="Commands" X="275" Y="350" Note=""/>
+                <Element ComponentName="CommandsRepresentation" X="550" Y="75" Note=""/>
+                <Element ComponentName="Edit" X="200" Y="550" Note=""/>
+                <Element ComponentName="Empty" X="425" Y="500" Note=""/>
+                <Element ComponentName="Remove" X="550" Y="400" Note=""/>
+                <Element ComponentName="ServiceCollectionCommandsController" X="275" Y="225" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="ServiceCommands">
+            <PositionMap>
+                <Element ComponentName="CheckPermissionOr" X="700" Y="225" Note=""/>
+                <Element ComponentName="Close" X="500" Y="425" Note=""/>
+                <Element ComponentName="ClosePermissions" X="1025" Y="475" Note=""/>
+                <Element ComponentName="CommandPermissions" X="1025" Y="150" Note=""/>
+                <Element ComponentName="Commands" X="300" Y="225" Note=""/>
+                <Element ComponentName="CommandsController" X="300" Y="125" Note=""/>
+                <Element ComponentName="CommandsRepresentation" X="700" Y="50" Note=""/>
+                <Element ComponentName="Empty" X="300" Y="500" Note=""/>
+                <Element ComponentName="Redo" X="200" Y="400" Note=""/>
+                <Element ComponentName="RedoPermissions" X="1025" Y="400" Note=""/>
+                <Element ComponentName="Save" X="400" Y="350" Note=""/>
+                <Element ComponentName="SavePermissions" X="1025" Y="300" Note=""/>
+                <Element ComponentName="Undo" X="75" Y="475" Note=""/>
+                <Element ComponentName="UndoPermissions" X="1025" Y="550" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+    </EmbeddedRegistries>
+</Acf>

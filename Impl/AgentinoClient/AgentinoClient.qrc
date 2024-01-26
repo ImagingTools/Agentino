@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/Images">
+        <file alias="AgentinoSplashScreen">Resources/Images/AgentinoSplashScreen.svg</file>
+    </qresource>
+    <qresource prefix="/Icons">
+        <file alias="AgentinoIcon">Resources/Icons/AgentinoIcon.svg</file>
+    </qresource>
+</RCC>

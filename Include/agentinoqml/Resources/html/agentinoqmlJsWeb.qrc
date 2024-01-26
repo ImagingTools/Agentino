@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/html">
+        <file alias="index.html">index.html</file>
+        <file alias="indexAgent.html">indexAgent.html</file>
+	<file alias="Ubuntu-Light.ttf">Ubuntu-Light.ttf</file>
+	<file alias="Ubuntu-Medium.ttf">Ubuntu-Medium.ttf</file>
+        <file alias="Icon.js">Icon.js</file>
+        <file alias="GraphQLRequest.js">GraphQLRequest.js</file>
+        <file alias="main.js">main.js</file>
+        <file alias="jqml.agentino.js">jqml.agentino.js</file>
+    </qresource>
+</RCC>

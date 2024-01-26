@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Acf>
+    <AcfHeader>
+        <VersionInfos>
+            <Version Id="0" Number="4961" Description="ACF"/>
+            <Version Id="1" Number="2153" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="331522" Description="Qt Framework"/>
+        </VersionInfos>
+    </AcfHeader>
+    <PositionMap>
+        <Element ComponentName="BinaryDataProvider" X="825" Y="50" Note=""/>
+        <Element ComponentName="CommandsDataControllers" X="725" Y="550" Note=""/>
+        <Element ComponentName="DataControllers" X="425" Y="550" Note=""/>
+        <Element ComponentName="GraphQLServlet" X="550" Y="400" Note=""/>
+        <Element ComponentName="HttpFileBasedHandler" X="700" Y="150" Note=""/>
+        <Element ComponentName="HttpFileProviderBasedServlet" X="450" Y="50" Note=""/>
+        <Element ComponentName="HttpRedirectHandler" X="150" Y="50" Note=""/>
+        <Element ComponentName="HttpServerFramework" X="250" Y="150" Note=""/>
+        <Element ComponentName="IndexFilePath" X="1050" Y="150" Note=""/>
+        <Element ComponentName="JsonModelBasedHandler" X="250" Y="275" Note=""/>
+        <Element ComponentName="PagesDataControllers" X="150" Y="550" Note=""/>
+        <Element ComponentName="PgSqlDatabaseEngine" X="525" Y="675" Note=""/>
+        <Element ComponentName="PreferencesQml" X="1050" Y="675" Note=""/>
+        <Element ComponentName="SettingsControllers" X="1050" Y="550" Note=""/>
+    </PositionMap>
+    <EmbeddedRegistries>
+        <EmbededRegistry Id="Enums">
+            <PositionMap>
+                <Element ComponentName="MenuDataEnumProvider" X="225" Y="75" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="PagesDataControllers">
+            <PositionMap>
+                <Element ComponentName="Accounts" X="875" Y="675" Note=""/>
+                <Element ComponentName="Instances" X="675" Y="575" Note=""/>
+                <Element ComponentName="JoinDataProvider" X="525" Y="125" Note=""/>
+                <Element ComponentName="Packages" X="250" Y="375" Note=""/>
+                <Element ComponentName="PagesDataController" X="175" Y="100" Note=""/>
+                <Element ComponentName="Products" X="425" Y="475" Note=""/>
+                <Element ComponentName="Test" X="1075" Y="400" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="CommandsDataCoontrollers">
+            <PositionMap>
+                <Element ComponentName="AccountEditCommandDataProvider" X="675" Y="600" Note=""/>
+                <Element ComponentName="AccountsCommandDataProvider" X="525" Y="550" Note=""/>
+                <Element ComponentName="CommandsDataController" X="525" Y="50" Note=""/>
+                <Element ComponentName="InstallationEditCommandDataProvider" X="975" Y="750" Note=""/>
+                <Element ComponentName="InstallationsCommandDataProvider" X="925" Y="700" Note=""/>
+                <Element ComponentName="PackageEditCommandDataProvider" X="225" Y="275" Note=""/>
+                <Element ComponentName="PackagesCommandDataProvider" X="175" Y="225" Note=""/>
+                <Element ComponentName="ProductEditCommandDataProvider" X="450" Y="425" Note=""/>
+                <Element ComponentName="ProductsCommandDataProvider" X="325" Y="375" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="DataControllers">
+            <PositionMap>
+                <Element ComponentName="AccountCollectionController" X="150" Y="525" Note=""/>
+                <Element ComponentName="AccountController" X="125" Y="575" Note=""/>
+                <Element ComponentName="AccountInfo" X="475" Y="600" Note=""/>
+                <Element ComponentName="AccountRepository" X="725" Y="475" Note=""/>
+                <Element ComponentName="AccountViewDelegate" X="800" Y="550" Note=""/>
+                <Element ComponentName="FeatureCollectionViewDelegate" X="700" Y="200" Note=""/>
+                <Element ComponentName="FeaturePackageCollectionController" X="200" Y="75" Note=""/>
+                <Element ComponentName="FeaturePackageRepository" X="725" Y="50" Note=""/>
+                <Element ComponentName="FeaturePackageViewDelegate" X="775" Y="125" Note=""/>
+                <Element ComponentName="Icons" X="1136" Y="135" Note=""/>
+                <Element ComponentName="InstallationCollectionController" X="175" Y="700" Note=""/>
+                <Element ComponentName="InstallationController" X="125" Y="775" Note=""/>
+                <Element ComponentName="InstallationRepository" X="650" Y="675" Note=""/>
+                <Element ComponentName="InstallationViewDelegate" X="975" Y="800" Note=""/>
+                <Element ComponentName="LicenseManagerViewDelegate" X="700" Y="375" Note=""/>
+                <Element ComponentName="MetaInfoView" X="1050" Y="475" Note=""/>
+                <Element ComponentName="PackageController" X="175" Y="150" Note=""/>
+                <Element ComponentName="ProductCollectionController" X="150" Y="275" Note=""/>
+                <Element ComponentName="ProductController" X="125" Y="350" Note=""/>
+                <Element ComponentName="ProductInstance" X="650" Y="800" Note=""/>
+                <Element ComponentName="ProductInstanceMetaInfoCreator" X="1000" Y="675" Note=""/>
+                <Element ComponentName="ProductLicensingInfo" X="400" Y="425" Note=""/>
+                <Element ComponentName="ProductRepository" X="525" Y="275" Note=""/>
+                <Element ComponentName="ProductViewDelegate" X="875" Y="300" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="SettingsControllers">
+            <PositionMap>
+                <Element ComponentName="DatabaseAccessSettings" X="975" Y="375" Note=""/>
+                <Element ComponentName="DatabasePage" X="950" Y="250" Note=""/>
+                <Element ComponentName="Design" X="100" Y="400" Note=""/>
+                <Element ComponentName="DesignParam" X="650" Y="725" Note=""/>
+                <Element ComponentName="GeneralPage" X="325" Y="250" Note=""/>
+                <Element ComponentName="GetStyleDataController" X="200" Y="525" Note=""/>
+                <Element ComponentName="Language" X="550" Y="400" Note=""/>
+                <Element ComponentName="LanguageParam" X="975" Y="725" Note=""/>
+                <Element ComponentName="PreferenceDataController" X="575" Y="50" Note=""/>
+                <Element ComponentName="PreferencesDataProvider" X="575" Y="150" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+    </EmbeddedRegistries>
+</Acf>
