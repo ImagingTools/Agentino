@@ -38,22 +38,6 @@ public:
 	I_END_COMPONENT;
 
 protected:
-	class Response: public ilog::CMessageContainer, virtual public imtgql::IGqlResponse
-	{
-	public:
-		Response();
-
-		// reimplemented (imtgql::ResponseHandler)
-		virtual void OnReply(const imtgql::IGqlRequest& request, const QByteArray& replyData) override;
-
-		// reimplemented (imtgql::IGqlResponse)
-		virtual QVariant GetResult() const override;
-		virtual bool IsSuccessful() const override { return false; }
-
-	private:
-		QByteArray m_replyResult;
-	};
-protected:
 	// reimplemented (icomp::CComponentBase)
 	virtual void OnComponentCreated() override;
 

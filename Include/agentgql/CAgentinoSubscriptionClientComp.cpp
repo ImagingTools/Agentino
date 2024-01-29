@@ -5,6 +5,7 @@
 #include <imtbase/CTreeItemModel.h>
 #include <imtbase/ICollectionInfo.h>
 #include <imtgql/CGqlRequest.h>
+#include <imtgql/CGqlResponse.h>
 
 // Agentino includes
 #include <agentinodata/IServiceController.h>
@@ -57,7 +58,7 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 	imtauth::ILoginStatusProvider::LoginStatusFlags loginStatus = (imtauth::ILoginStatusProvider::LoginStatusFlags)m_loginStatusCompPtr->GetLoginStatus();
 
 	if (loginStatus == imtauth::ILoginStatusProvider::LSF_LOGGED_IN){
-		imtgql::CGqlRequest gqlInitRequest(imtgql::IGqlRequest::RT_MUTATION, "AgentUpdate");
+		imtgql::CGqlRequest* gqlInitRequest = new imtgql::CGqlRequest(imtgql::IGqlRequest::RT_MUTATION, "AgentUpdate");
 		imtgql::CGqlObject inputDataParams("input");
 		inputDataParams.InsertField("Id", QVariant("1111"));
 
@@ -77,39 +78,17 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 //		itemData.InsertField("WebSocketUrl", QVariant("htp://localhost:7223"));
 
 		inputDataParams.InsertField("Item", QVariant(itemDocument.toJson(QJsonDocument::Compact)));
-		gqlInitRequest.AddParam(inputDataParams);
+		gqlInitRequest->AddParam(inputDataParams);
 
 		imtgql::CGqlObject returnNotify("updatedNotification");
 //		returnNotify.InsertField("status");
-		gqlInitRequest.AddField(returnNotify);
+		gqlInitRequest->AddField(returnNotify);
 
-		Response response;
-		bool retVal = m_gqlClientCompPtr->SendRequest(gqlInitRequest, response);
+		imtclientgql::IGqlClient::GqlRequestPtr requestPtr(gqlInitRequest);
+		imtclientgql::IGqlClient::GqlResponsePtr responsePtr = m_gqlClientCompPtr->SendRequest(requestPtr);
 	}
 
 }
-
-
-// reimplemented (imtgql::IGqlClient::ResponseHandler)
-
-CAgentinoSubscriptionClientComp::Response::Response()
-{
-
-}
-
-
-QVariant CAgentinoSubscriptionClientComp::Response::GetResult() const
-{
-	return m_replyResult;
-}
-
-
-void CAgentinoSubscriptionClientComp::Response::OnReply(const imtgql::IGqlRequest& request, const QByteArray& replyData)
-{
-	QJsonDocument document = QJsonDocument::fromJson(replyData);
-	m_replyResult = replyData;
-}
-
 
 
 } // namespace agentgql
