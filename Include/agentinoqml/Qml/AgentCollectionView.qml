@@ -1,7 +1,8 @@
 import QtQuick 2.12
 import Acf 1.0
-import imtqml 1.0
+import imtcontrols 1.0
 import imtgui 1.0
+import imtcolgui 1.0
 
  CollectionView {
      id: root;
@@ -11,14 +12,14 @@ import imtgui 1.0
      documentName: qsTr("Agents");
 
      Component.onCompleted: {
-         root.commandsDelegatePath = "../../AgentCollectionViewCommandsDelegate.qml";
+         root.commandsDelegatePath = "../AgentCollectionViewCommandsDelegate.qml";
 
          root.commandId = "Agents";
      }
 
      onDocumentManagerPtrChanged: {
          if (documentManagerPtr){
-             documentManagerPtr.registerDocument("Services", serviceCollectionViewComp);
+             documentManagerPtr.registerDocument("Servicies", serviceCollectionViewComp);
          }
      }
 
@@ -46,6 +47,7 @@ import imtgui 1.0
          }
 
          documentManagerPtr.insertNewDocument(documentTypeId, {"clientId": id});
+         // documentManagerPtr.openDocument(id, documentTypeId, {"clientId": id});
      }
 
      Component {

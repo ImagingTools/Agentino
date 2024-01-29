@@ -22,17 +22,17 @@
         <Element ComponentName="TopologyPage" X="100" Y="250" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="PageData">
-            <PositionMap>
-                <Element ComponentName="AgentsPage" X="275" Y="125" Note=""/>
-                <Element ComponentName="ServicesRemoteRepresentationController" X="350" Y="250" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
         <EmbededRegistry Id="PagesPermissions">
             <PositionMap>
                 <Element ComponentName="DevicesPermissions" X="550" Y="400" Note=""/>
                 <Element ComponentName="PagePermissions" X="575" Y="150" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="PageData">
+            <PositionMap>
+                <Element ComponentName="AgentsPage" X="275" Y="125" Note=""/>
+                <Element ComponentName="ServicesRemoteRepresentationController" X="350" Y="250" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

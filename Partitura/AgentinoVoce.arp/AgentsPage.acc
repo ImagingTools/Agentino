@@ -4,7 +4,7 @@
         <VersionInfos>
             <Version Id="0" Number="5181" Description="ACF"/>
             <Version Id="1" Number="2199" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="331522" Description="Qt Framework"/>
+            <Version Id="1023" Number="394753" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -27,6 +27,7 @@
                                 <Value>AgentItem</Value>
                                 <Value>AgentAdd</Value>
                                 <Value>AgentUpdate</Value>
+                                <Value>ServiciesItem</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -104,7 +105,7 @@
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Services"/>
+                        <Data IsEnabled="true" Value="Servicies"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>

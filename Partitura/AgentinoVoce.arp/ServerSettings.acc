@@ -154,13 +154,16 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="DefaultPath" Type="String" ExportId="WebSocketAgentinoDefaultPath">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="true" Value="Agentino/wssub"/>
                     </AttributeInfo>
                     <AttributeInfo Id="DefaultPort" Type="Integer" ExportId="WebSocketAgentinoDefaultPort">
                         <Data IsEnabled="true" Value="7112"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="DefaultScheme" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="ws"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="DefaultUsername" Type="String" ExportId="WebSocketAgentinoDefaultUsername">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="true" Value=""/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>

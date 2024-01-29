@@ -65,12 +65,6 @@
         <Element Id="HttpServerFramework" PackageId="ImtHttpServerVoce" ComponentId="HttpServerFramework">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
-                    <AttributeInfo Id="DefaultServerPort" Type="Integer" ExportId="">
-                        <Data IsEnabled="true" Value="7111"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DefaultWebSocketServerPort" Type="Integer" ExportId="">
-                        <Data IsEnabled="true" Value="7112"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="GqlRequestHandler" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketServiceManagerHandlers"/>
                     </AttributeInfo>

@@ -11,7 +11,7 @@ ProcessStateEnum GetProcceStateRepresentation(QProcess::ProcessState processStat
 	QString internalTranslate;
 
 	switch (processState) {
-	case QProcess::NotRunning:
+	case QProcess::Starting:
 		processStateEnum.id = "Starting";
 		processStateEnum.name = "Starting";
 		internalTranslate = QObject::tr("Starting");

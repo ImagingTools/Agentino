@@ -6,6 +6,7 @@ import imtcontrols 1.0
 ApplicationMain{
     id: window;
     useWebSocketSubscription: true
+    applicationId: "Agentino"
 
     ModalDialogManager {
         id: modalDialogManager;

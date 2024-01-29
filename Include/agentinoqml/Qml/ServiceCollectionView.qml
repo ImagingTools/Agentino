@@ -1,7 +1,8 @@
 import QtQuick 2.12
 import Acf 1.0
-import imtqml 1.0
-import imtgui 1.0
+import imtcontrols 1.0
+import imtcolgui 1.0
+import imtguigql 1.0
 
 CollectionView {
      id: root;
@@ -17,7 +18,7 @@ CollectionView {
      }
 
      Component.onCompleted: {
-         root.commandsDelegatePath = "../../ServiceCollectionViewCommandsDelegate.qml";
+         root.commandsDelegatePath = "../ServiceCollectionViewCommandsDelegate.qml";
          Events.subscribeEvent("ServiceCommandActivated", root.serviceCommandActivated);
      }
 
