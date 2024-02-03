@@ -35,66 +35,54 @@ DocumentData {
     Component.onCompleted: {
         //TEST
         //links for test
-        let index_link = linkModel.InsertNewItem();
-        linkModel.SetData("ObjectId", "02", index_link);
-        index_link = linkModel.InsertNewItem();
-        linkModel.SetData("ObjectId", "03", index_link);
-        index_link = linkModel.InsertNewItem();
-        linkModel.SetData("ObjectId", "04", index_link);
-        index_link = linkModel.InsertNewItem();
-        linkModel.SetData("ObjectId", "05", index_link);
+        let indexLisalink = linkLisaModel.InsertNewItem();
+        linkLisaModel.SetData("ObjectId", "Puma", indexLisalink);
 
-        let index_link2 = linkModel2.InsertNewItem();
-        linkModel2.SetData("ObjectId", "02", index_link2);
-        index_link2 = linkModel2.InsertNewItem();
-        linkModel2.SetData("ObjectId", "03", index_link2);
+        let indexRTVisionlink = linkRTVisionModel.InsertNewItem();
+        linkRTVisionModel.SetData("ObjectId", "Puma", indexRTVisionlink);
+        indexRTVisionlink = linkRTVisionModel.InsertNewItem();
+        linkRTVisionModel.SetData("ObjectId", "Lisa", indexRTVisionlink);
 
-        let index_link3 = linkModel3.InsertNewItem();
-        linkModel3.SetData("ObjectId", "02", index_link3);
-        index_link3 = linkModel3.InsertNewItem();
-        linkModel3.SetData("ObjectId", "03", index_link3);
-        //
+        let indexRTVision3dlink = linkRTVision3dModel.InsertNewItem();
+        linkRTVision3dModel.SetData("ObjectId", "Puma", indexRTVision3dlink);
+        indexRTVision3dlink = linkRTVisionModel.InsertNewItem();
+        linkRTVision3dModel.SetData("ObjectId", "Lisa", indexRTVision3dlink);
 
         let index = objectModel.InsertNewItem();
-        objectModel.SetData("Id", "01", index);
+        objectModel.SetData("Id", "Puma", index);
         objectModel.SetData("X", 0.3, index);
         objectModel.SetData("Y", 0.3, index);
-        objectModel.SetData("MainText", "Main text Main text Main text", index);
-        objectModel.SetData("SecondText", "Second text", index);
-        objectModel.SetExternTreeModel("Links", linkModel, index);
+        objectModel.SetData("MainText", "Puma service", index);
+        objectModel.SetData("SecondText", "Primary authorization server", index);
 
         index = objectModel.InsertNewItem();
-        objectModel.SetData("Id", "02", index);
+        objectModel.SetData("Id", "RTVision.3d", index);
         objectModel.SetData("X", 0.6, index);
         objectModel.SetData("Y", 0.6, index);
-        objectModel.SetData("MainText", "Main text 2", index);
-        objectModel.SetData("SecondText", "Second text 2", index);
+        objectModel.SetData("MainText", "RTVision.3d server", index);
+        objectModel.SetData("SecondText", "", index);
         objectModel.SetData("HasError", true, index);
+        objectModel.SetExternTreeModel("Links", linkRTVision3dModel, index);
+
 
         index = objectModel.InsertNewItem();
-        objectModel.SetData("Id", "03", index);
+        objectModel.SetData("Id", "Lisa", index);
         objectModel.SetData("X", 0.1, index);
         objectModel.SetData("Y", 0.1, index);
-        objectModel.SetData("MainText", "Main text 3", index);
-        objectModel.SetData("SecondText", "Second text 3", index);
+        objectModel.SetData("MainText", "Lisa service", index);
+        objectModel.SetData("SecondText", "License/features management system", index);
         objectModel.SetData("IsComposite", true, index);
+        objectModel.SetExternTreeModel("Links", linkLisaModel, index);
 
         index = objectModel.InsertNewItem();
-        objectModel.SetData("Id", "04", index);
+        objectModel.SetData("Id", "RTVision", index);
         objectModel.SetData("X", 0.6, index);
         objectModel.SetData("Y", 0.1, index);
-        objectModel.SetData("MainText", "Main text 4", index);
-        objectModel.SetData("SecondText", "Second text 4", index);
-        objectModel.SetExternTreeModel("Links", linkModel3, index);
+        objectModel.SetData("MainText", "RTVision server", index);
+        objectModel.SetData("SecondText", "", index);
+        objectModel.SetExternTreeModel("Links", linkRTVisionModel, index);
 
-        index = objectModel.InsertNewItem();
-        objectModel.SetData("Id", "05", index);
-        objectModel.SetData("X", 0.1, index);
-        objectModel.SetData("Y", 0.6, index);
-        objectModel.SetData("MainText", "Main text 5", index);
-        objectModel.SetData("SecondText", "Second text 5", index);
-        objectModel.SetExternTreeModel("Links", linkModel2, index);
-
+        console.log("Start draw")
         canvas.requestPaint();
         //TEST
     }
@@ -125,9 +113,9 @@ DocumentData {
         }
     }
 
-    TreeItemModel {id: linkModel;/*for test*/}
-    TreeItemModel {id: linkModel2;/*for test*/}
-    TreeItemModel {id: linkModel3;/*for test*/}
+    TreeItemModel {id: linkLisaModel;/*for test*/}
+    TreeItemModel {id: linkRTVisionModel;/*for test*/}
+    TreeItemModel {id: linkRTVision3dModel;/*for test*/}
 
     TreeItemModel {
         id: bufferModel;
@@ -468,6 +456,8 @@ DocumentData {
                     }
                 }
 
+                console.log("Count object", canvasPage.objectModel.GetItemsCount())
+
                 //drawObject
                 for(let i = 0; i < canvasPage.objectModel.GetItemsCount(); i++){
                     if(i !== canvas.selectedIndex){
@@ -629,7 +619,7 @@ DocumentData {
                 let image2_y = text_y - canvas.imageSize + canvas.imageMargin;
                 ctx.beginPath()
                 ctx.drawImage(imageUrl_1, image1_x, image1_y, canvas.imageSize, canvas.imageSize);
-                ctx.drawImage(imageUrl_2, image2_x, image2_y, canvas.imageSize, canvas.imageSize);
+                // ctx.drawImage(imageUrl_2, image2_x, image2_y, canvas.imageSize, canvas.imageSize);
 
             }
 
