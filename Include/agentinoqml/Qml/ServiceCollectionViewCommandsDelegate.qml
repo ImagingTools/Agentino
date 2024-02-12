@@ -3,21 +3,29 @@ import Acf 1.0
 import imtgui 1.0
 import imtcolgui 1.0
 import imtcontrols 1.0
+import imtdocgui 1.0
+import imtguigql 1.0
 
-CollectionViewCommandsDelegateBase {
+DocumentCollectionViewDelegate {
     id: container;
+
+    viewTypeId: "ServiceEditor"
+    documentTypeId: "Service"
 
     removeDialogTitle: qsTr("Deleting an agent");
     removeMessage: qsTr("Delete the selected agent ?");
 
-    onSelectionChanged: {
-        let indexes = container.tableData.getSelectedIndexes();
-        let isEnabled = indexes.length > 0;
-
-        if(container.commandsProvider){
-            console.log("ServiceCollectionViewContainer onSelectionChanged", isEnabled);
-            container.commandsProvider.setCommandIsEnabled("Start", isEnabled);
-            container.commandsProvider.setCommandIsEnabled("Stop", isEnabled);
+    function updateItemSelection(selectedItems){
+        console.log("updateItemSelection", selectedItems);
+        if (container.collectionView && container.collectionView.commandsController){
+            let isEnabled = selectedItems.length > 0;
+            let commandsController = container.collectionView.commandsController;
+            if(commandsController){
+                commandsController.setCommandIsEnabled("Remove", isEnabled);
+                commandsController.setCommandIsEnabled("Edit", isEnabled);
+                commandsController.setCommandIsEnabled("Start", isEnabled);
+                commandsController.setCommandIsEnabled("Stop", isEnabled);
+            }
         }
     }
 
@@ -27,5 +35,69 @@ CollectionViewCommandsDelegateBase {
             Events.sendEvent("ServiceCommandActivated", commandId);
         }
     }
+
+    function setServiceCommand(commandId, serviceId){
+        console.log( "ServiceCollectionView setServiceCommand", commandId, serviceId);
+        var query = Gql.GqlRequest("mutation", "Service" + commandId);
+
+        let inputParams = Gql.GqlObject("input");
+        inputParams.InsertField("serviceId", serviceId);
+        let additionInputParams = container.collectionView.getAdditionalInputParams()
+        if (Object.keys(additionInputParams).length > 0){
+            let additionParams = Gql.GqlObject("addition");
+            for (let key in additionInputParams){
+                additionParams.InsertField(key, additionInputParams[key]);
+            }
+            inputParams.InsertFieldObject(additionParams);
+        }
+        query.AddParam(inputParams);
+
+        var queryField = Gql.GqlObject("serviceStatus");
+        queryField.InsertField("serviceId");
+        queryField.InsertField("status");
+        query.AddField(queryField);
+
+        var gqlData = query.GetQuery();
+        console.log("ServiceCollectionView setServiceCommand query ", gqlData);
+        serviceGqlModel.SetGqlQuery(gqlData);
+    }
+
+    property GqlModel servicesController: GqlModel {
+        id: serviceGqlModel
+        onStateChanged: {
+            console.log("State:", this.state);
+            if (this.state === "Ready"){
+                var dataModelLocal;
+
+                if (gqlModelBaseContainer.objectViewModel.ContainsKey("errors")){
+                    dataModelLocal = gqlModelBaseContainer.objectViewModel.GetData("errors");
+
+                    if (dataModelLocal.ContainsKey(gqlModelBaseContainer.gqlModelObjectView)){
+                        dataModelLocal = dataModelLocal.GetData(gqlModelBaseContainer.gqlModelObjectView);
+                    }
+
+                    let message = ""
+                    if (dataModelLocal.ContainsKey("message")){
+                        message = dataModelLocal.GetData("message");
+                    }
+
+                    let type;
+                    if (dataModelLocal.ContainsKey("type")){
+                        type = dataModelLocal.GetData("type");
+                    }
+
+                    Events.sendEvent("SendError", {"Message": message, "ErrorType": type})
+
+                    return;
+                }
+
+                dataModelLocal = gqlModelBaseContainer.objectViewModel.GetData("data");
+
+                if(!dataModelLocal)
+                    return;
+            }
+        }
+    }
+
 }
 

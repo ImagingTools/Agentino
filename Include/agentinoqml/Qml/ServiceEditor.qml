@@ -2,9 +2,8 @@ import QtQuick 2.0
 import Acf 1.0
 import imtgui 1.0
 import imtcontrols 1.0
-import imtdocgui 1.0
 
-DocumentData {
+ViewBase {
     id: serviceEditorContainer;
 
     property int mainMargin: 0;
@@ -21,43 +20,43 @@ DocumentData {
     function updateGui(){
         console.log("ServiceEditor updateGui");
 
-        if (serviceEditorContainer.documentModel.ContainsKey("Name")){
-            nameInput.text = serviceEditorContainer.documentModel.GetData("Name");
+        if (serviceEditorContainer.model.ContainsKey("Name")){
+            nameInput.text = serviceEditorContainer.model.GetData("Name");
         }
         else{
             nameInput.text = "";
         }
 
-        if (serviceEditorContainer.documentModel.ContainsKey("Description")){
-            descriptionInput.text = serviceEditorContainer.documentModel.GetData("Description");
+        if (serviceEditorContainer.model.ContainsKey("Description")){
+            descriptionInput.text = serviceEditorContainer.model.GetData("Description");
         }
         else{
             descriptionInput.text = "";
         }
 
-        if (serviceEditorContainer.documentModel.ContainsKey("Path")){
-            pathInput.text = serviceEditorContainer.documentModel.GetData("Path");
+        if (serviceEditorContainer.model.ContainsKey("Path")){
+            pathInput.text = serviceEditorContainer.model.GetData("Path");
         }
         else{
             pathInput.text = "";
         }
 
-        if (serviceEditorContainer.documentModel.ContainsKey("SettingsPath")){
-            settingsPathInput.text = serviceEditorContainer.documentModel.GetData("SettingsPath");
+        if (serviceEditorContainer.model.ContainsKey("SettingsPath")){
+            settingsPathInput.text = serviceEditorContainer.model.GetData("SettingsPath");
         }
         else{
             settingsPathInput.text = "";
         }
 
-        if (serviceEditorContainer.documentModel.ContainsKey("Arguments")){
-            argumentsInput.text = serviceEditorContainer.documentModel.GetData("Arguments");
+        if (serviceEditorContainer.model.ContainsKey("Arguments")){
+            argumentsInput.text = serviceEditorContainer.model.GetData("Arguments");
         }
         else{
             argumentsInput.text = "";
         }
 
-        if (serviceEditorContainer.documentModel.ContainsKey("IsAutoStart")){
-            switchAutoStart.checked = serviceEditorContainer.documentModel.GetData("IsAutoStart");
+        if (serviceEditorContainer.model.ContainsKey("IsAutoStart")){
+            switchAutoStart.checked = serviceEditorContainer.model.GetData("IsAutoStart");
         }
         else{
             switchAutoStart.checked = false;
@@ -67,12 +66,12 @@ DocumentData {
     function updateModel(){
         console.log("ServiceEditor updateModel");
 
-        serviceEditorContainer.documentModel.SetData("Name", nameInput.text);
-        serviceEditorContainer.documentModel.SetData("Description", descriptionInput.text);
-        serviceEditorContainer.documentModel.SetData("Path", pathInput.text);
-        serviceEditorContainer.documentModel.SetData("SettingsPath", settingsPathInput.text);
-        serviceEditorContainer.documentModel.SetData("Arguments", argumentsInput.text);
-        serviceEditorContainer.documentModel.SetData("IsAutoStart", switchAutoStart.checked);
+        serviceEditorContainer.model.SetData("Name", nameInput.text);
+        serviceEditorContainer.model.SetData("Description", descriptionInput.text);
+        serviceEditorContainer.model.SetData("Path", pathInput.text);
+        serviceEditorContainer.model.SetData("SettingsPath", settingsPathInput.text);
+        serviceEditorContainer.model.SetData("Arguments", argumentsInput.text);
+        serviceEditorContainer.model.SetData("IsAutoStart", switchAutoStart.checked);
     }
 
     Component{

@@ -3,30 +3,36 @@ import Acf 1.0
 import imtcontrols 1.0
 import imtgui 1.0
 import imtcolgui 1.0
+import imtguigql 1.0
+import imtdocgui 1.0
 
- CollectionView {
+RemoteCollectionView {
      id: root;
 
      visibleMetaInfo: false;
 
-     documentName: qsTr("Agents");
+     collectionId: "Agents";
+
+     commandsDelegate: AgentCollectionViewCommandsDelegate {
+        collectionView: root
+     }
+
 
      Component.onCompleted: {
-         root.commandsDelegatePath = "../AgentCollectionViewCommandsDelegate.qml";
-
-         root.commandId = "Agents";
-     }
-
-     onDocumentManagerPtrChanged: {
+        let documentManagerPtr = MainDocumentManager.getDocumentManager(root.collectionId)
+         console.log("documentManagerPtr", documentManagerPtr)
          if (documentManagerPtr){
-             documentManagerPtr.registerDocument("Servicies", serviceCollectionViewComp);
+             root.commandsDelegate.documentManager = documentManagerPtr
+             documentManagerPtr.registerDocumentView("Services", "Services", serviceCollectionViewComp);
+             documentManagerPtr.registerDocumentDataController("Services", agentDataControllerComp);
          }
      }
+
 
      function fillContextMenuModel(){
          contextMenuModel.clear();
 
-         contextMenuModel.append({"Id": "Servicies", "Name": qsTr("Servicies"), "IconSource": "../../../../" + Style.getIconPath("Icons/Workflow", "On", "Normal")});
+         contextMenuModel.append({"Id": "Services", "Name": qsTr("Services"), "IconSource": "../../../../" + Style.getIconPath("Icons/Workflow", "On", "Normal")});
          contextMenuModel.append({"Id": "Edit", "Name": qsTr("Edit"), "IconSource": "../../../../" + Style.getIconPath("Icons/Edit", "On", "Normal")});
          contextMenuModel.append({"Id": "Remove", "Name": qsTr("Remove"), "IconSource": "../../../../" + Style.getIconPath("Icons/Remove", "On", "Normal")});
      }
@@ -50,10 +56,30 @@ import imtcolgui 1.0
          // documentManagerPtr.openDocument(id, documentTypeId, {"clientId": id});
      }
 
+     function onEdit() {
+         if (commandsDelegate){
+             commandsDelegate.commandHandle("Services");
+         }
+     }
+
      Component {
          id: serviceCollectionViewComp;
 
          ServiceCollectionView {
+             Component.onCompleted: {
+                 clientId = root.table.getSelectedIds()[0];
+                 clientName = root.table.getSelectedNames()[0];
+             }
+         }
+     }
+
+     Component {
+         id: agentDataControllerComp
+
+         DocumentDataController {
+             function getDocumentName() {
+                return root.table.getSelectedNames()[0];
+            }
          }
      }
  }

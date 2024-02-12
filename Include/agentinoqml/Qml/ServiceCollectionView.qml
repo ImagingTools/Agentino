@@ -3,44 +3,85 @@ import Acf 1.0
 import imtcontrols 1.0
 import imtcolgui 1.0
 import imtguigql 1.0
+import imtdocgui 1.0
 
-CollectionView {
+RemoteCollectionView {
      id: root;
 
      property string clientId;
+     property string clientName;
 
-     documentName: qsTr("Services");
+     collectionId: "Services";
 
-     function getAdditionalInputParams(){
-         let additionInputParams = {}
-         additionInputParams["clientId"] = clientId;
-         return additionInputParams
-     }
-
-     Component.onCompleted: {
-         root.commandsDelegatePath = "../ServiceCollectionViewCommandsDelegate.qml";
+     onClientIdChanged: {
+         commandsRepresentationProvider.commandId = root.collectionId;
+         collectionRepresentation.collectionId = root.collectionId;
+         let documentManagerPtr = MainDocumentManager.getDocumentManager("Agents")
+          if (documentManagerPtr){
+              console.log("documentManagerPtr!!!!!!!!!!!!!!!!!!!!!!!!!")
+              serviceCommandsDelegate.documentManager = documentManagerPtr
+              root.commandsDelegate.documentManager = documentManagerPtr
+              documentManagerPtr.registerDocumentView("Service" + root.clientId, "ServiceEditor", serviceEditorComp);
+              documentManagerPtr.registerDocumentDataController("Service" + root.clientId, serviceDataControllerComp);
+              let newController = serviceDataControllerComp.createObject(root)
+              console.log("newController", newController)
+          }
          Events.subscribeEvent("ServiceCommandActivated", root.serviceCommandActivated);
      }
 
-     onDocumentManagerPtrChanged: {
-         if (documentManagerPtr){
-             documentManagerPtr.registerDocument("Service", serviceEditorComp);
+     commandsDelegate: ServiceCollectionViewCommandsDelegate {
+         id: serviceCommandsDelegate
+         collectionView: root
+         documentTypeId: "Service" + root.clientId
+     }
+
+     function getAdditionalInputParams(){
+         let additionInputParams = {}
+         additionInputParams["clientId"] = root.clientId;
+         return additionInputParams
+     }
+
+     commandsController: CommandsRepresentationProvider {
+         id: commandsRepresentationProvider
+//         commandId: root.collectionId;
+         uuid: root.viewId;
+
+         function getAdditionalInputParams(){
+             return root.getAdditionalInputParams()
          }
      }
 
-     onClientIdChanged: {
-         console.log("onClientIdChanged", clientId);
+     Component.onCompleted: {
 
-         root.commandId = "Services";
+     }
+
+     Component.onDestruction: {
+         let documentManagerPtr = MainDocumentManager.getDocumentManager("Agents")
+         if (documentManagerPtr){
+             documentManagerPtr.unRegisterDocumentView("Service" + root.clientId, "ServiceEditor");
+             documentManagerPtr.unRegisterDocumentDataController("Service" + root.clientId);
+         }
+         Events.unSubscribeEvent("ServiceCommandActivated", root.serviceCommandActivated);
+     }
+
+     dataController: CollectionRepresentation {
+         id: collectionRepresentation
+//         collectionId: root.collectionId;
+
+         additionalFieldIds: root.additionalFieldIds;
+         function getAdditionalInputParams(){
+             return root.getAdditionalInputParams()
+         }
      }
 
      function serviceCommandActivated(parameters){
-         let indexes = root.baseCollectionView.table.getSelectedIndexes();
+         let indexes = root.table.getSelectedIndexes();
          if (indexes.length > 0){
              let index = indexes[0];
              let serviceId = root.table.elements.GetData("Id", index)
              console.log("serviceCommandActivated", parameters, index, serviceId);
-             servicesController.setServiceCommand(parameters, serviceId)
+             serviceCommandsDelegate.setServiceCommand(parameters, serviceId)
+//             servicesController.setServiceCommand(parameters, serviceId)
          }
      }
 
@@ -75,73 +116,37 @@ CollectionView {
          id: serviceEditorComp;
 
          ServiceEditor {
+             id: serviceEditor
+             commandsController: CommandsRepresentationProvider {
+                 commandId: "Service";
+                 uuid: serviceEditor.viewId;
+                 function getAdditionalInputParams(){
+                     console.log("root getAdditionalInputParams");
+                     return root.getAdditionalInputParams();
+                 }
+             }
+         }
+     }
+
+     Component {
+         id: serviceDataControllerComp
+
+         GqlDocumentDataController {
+//             documentId: "Service"
+//             documentName: "Service name"
+             gqlGetCommandId: "ServiceItem"
+             gqlUpdateCommandId: "ServiceUpdate"
+             gqlAddCommandId: "ServiceAdd"
              function getAdditionalInputParams(){
                  console.log("root getAdditionalInputParams");
                  return root.getAdditionalInputParams();
              }
+             function getDocumentName() {
+                return root.clientName + " - " + documentName
+            }
          }
      }
 
-     property GqlModel servicesController: GqlModel {
-         function setServiceCommand(commandId, serviceId){
-             console.log( "ServiceCollectionView setServiceCommand", commandId, serviceId);
-             var query = Gql.GqlRequest("mutation", "Service" + commandId);
-
-             let inputParams = Gql.GqlObject("input");
-             inputParams.InsertField("serviceId", serviceId);
-             if (Object.keys(root.commandsProvider.additionInputParams).length > 0){
-                 let additionParams = Gql.GqlObject("addition");
-                 for (let key in root.commandsProvider.additionInputParams){
-                     additionParams.InsertField(key, root.commandsProvider.additionInputParams[key]);
-                 }
-                 inputParams.InsertFieldObject(additionParams);
-             }
-             query.AddParam(inputParams);
-
-             var queryField = Gql.GqlObject("serviceStatus");
-             queryField.InsertField("serviceId");
-             queryField.InsertField("status");
-             query.AddField(queryField);
-
-             var gqlData = query.GetQuery();
-             console.log("ServiceCollectionView setServiceCommand query ", gqlData);
-             this.SetGqlQuery(gqlData);
-         }
-
-         onStateChanged: {
-             console.log("State:", this.state);
-             if (this.state === "Ready"){
-                 var dataModelLocal;
-
-                 if (gqlModelBaseContainer.objectViewModel.ContainsKey("errors")){
-                     dataModelLocal = gqlModelBaseContainer.objectViewModel.GetData("errors");
-
-                     if (dataModelLocal.ContainsKey(gqlModelBaseContainer.gqlModelObjectView)){
-                         dataModelLocal = dataModelLocal.GetData(gqlModelBaseContainer.gqlModelObjectView);
-                     }
-
-                     let message = ""
-                     if (dataModelLocal.ContainsKey("message")){
-                         message = dataModelLocal.GetData("message");
-                     }
-
-                     let type;
-                     if (dataModelLocal.ContainsKey("type")){
-                         type = dataModelLocal.GetData("type");
-                     }
-
-                     Events.sendEvent("SendError", {"Message": message, "ErrorType": type})
-
-                     return;
-                 }
-
-                 dataModelLocal = gqlModelBaseContainer.objectViewModel.GetData("data");
-
-                 if(!dataModelLocal)
-                     return;
-             }
-         }
-     }
 
      SubscriptionClient {
          id: subscriptionClient;
