@@ -50,18 +50,24 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 	QByteArray servicePath = serviceInfoPtr->GetServicePath();
 	QByteArrayList serviceArguments = serviceInfoPtr->GetServiceArguments();
 
-	QProcess* process = new QProcess(this);
-	m_processMap.insert(serviceId, process);
-	connect(process, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(stateChanged(QProcess::ProcessState)));
+	QProcess* process = nullptr;
 
-	process->setProgram(servicePath);
+	if (m_processMap.contains(serviceId)){
+		process = m_processMap.value(serviceId);
+	}
+	else{
+		process = new QProcess(this);
+		m_processMap.insert(serviceId, process);
+		connect(process, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(stateChanged(QProcess::ProcessState)));
 
-	QStringList arguments;
-	for (QByteArray argument: serviceArguments){
-		arguments << QString(argument);
+		process->setProgram(servicePath);
+		QStringList arguments;
+		for (QByteArray argument: serviceArguments){
+			arguments << QString(argument);
+		}
+		process->setArguments(arguments);
 	}
 
-	process->setArguments(arguments);
 	process->start();
 
 	return retVal;

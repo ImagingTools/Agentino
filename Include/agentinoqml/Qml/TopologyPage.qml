@@ -5,10 +5,11 @@ import Acf 1.0
 import imtcontrols 1.0
 //import imtguigql 1.0
 import imtgui 1.0
+import imtguigql 1.0
 
 
 ViewBase {
-    id: canvasPage;
+    id: topologyPage;
 
     anchors.fill: parent;
     clip: true;
@@ -23,6 +24,12 @@ ViewBase {
     property real originX: 0;
     property real originY: 0;
     //for scrollBars
+
+    commandsController: CommandsRepresentationProvider {
+        id: commandsRepresentationProvider
+        commandId: "topologyPage"
+        uuid: topologyPage.viewId;
+    }
 
     onContentXChanged: {
         if(mainContainer.x !== - contentX){
@@ -96,8 +103,8 @@ ViewBase {
 
     function findModelIndex(id){
         let ind = -1;
-        for(let i = 0; i < canvasPage.objectModel.GetItemsCount(); i++){
-            if(canvasPage.objectModel.GetData("Id", i) == id){
+        for(let i = 0; i < topologyPage.objectModel.GetItemsCount(); i++){
+            if(topologyPage.objectModel.GetData("Id", i) == id){
                 ind = i;
                 break;
             }
@@ -165,14 +172,14 @@ ViewBase {
         }
 
         onXChanged: {
-            if(canvasPage.contentX !== -x){
-                canvasPage.contentX = -x
+            if(topologyPage.contentX !== -x){
+                topologyPage.contentX = -x
             }
         }
 
         onYChanged: {
-            if(canvasPage.contentY !== -y){
-                canvasPage.contentY = -y
+            if(topologyPage.contentY !== -y){
+                topologyPage.contentY = -y
             }
         }
 
@@ -185,13 +192,13 @@ ViewBase {
             onClicked: {
                 if(!wasMoving){
                     if(canvas.selectedIndex >= 0){
-                        for(let i = 0; i < canvasPage.objectModel.GetItemsCount(); i++){
-                            canvasPage.objectModel.SetData("Selected", (i == canvas.selectedIndex), i);
+                        for(let i = 0; i < topologyPage.objectModel.GetItemsCount(); i++){
+                            topologyPage.objectModel.SetData("Selected", (i == canvas.selectedIndex), i);
                         }
                     }
                     else {
-                        for(let i = 0; i < canvasPage.objectModel.GetItemsCount(); i++){
-                            canvasPage.objectModel.SetData("Selected", false, i);
+                        for(let i = 0; i < topologyPage.objectModel.GetItemsCount(); i++){
+                            topologyPage.objectModel.SetData("Selected", false, i);
                         }
                     }
                     canvas.requestPaint();
@@ -200,10 +207,10 @@ ViewBase {
 
             onPressed: {
                 canvas.selectedIndex = -1;
-                for(let i = 0; i < canvasPage.objectModel.GetItemsCount(); i++){
-                    let x_  = canvasPage.objectModel.GetData("X", i)
-                    let y_  = canvasPage.objectModel.GetData("Y", i)
-                    let width_ = canvasPage.objectModel.IsValidData("Width", i) ? canvasPage.objectModel.GetData("Width", i) * canvas.scaleCoeff : canvas.mainRec_width;
+                for(let i = 0; i < topologyPage.objectModel.GetItemsCount(); i++){
+                    let x_  = topologyPage.objectModel.GetData("X", i)
+                    let y_  = topologyPage.objectModel.GetData("Y", i)
+                    let width_ = topologyPage.objectModel.IsValidData("Width", i) ? topologyPage.objectModel.GetData("Width", i) * canvas.scaleCoeff : canvas.mainRec_width;
 
                     let ok = checkInsideMovingItem(canvas.width * x_, canvas.height * y_, width_, canvas.mainRec_height);
 
@@ -228,7 +235,7 @@ ViewBase {
 
             onDoubleClicked: {
                 if(canvas.selectedIndex >= 0){
-                    canvasPage.goInside();
+                    topologyPage.goInside();
                 }
             }
 
@@ -245,18 +252,18 @@ ViewBase {
 
             function movingFunction(delta){
                 if(canvas.selectedIndex >= 0){
-                    let x_  = canvasPage.objectModel.GetData("X", canvas.selectedIndex);
-                    let y_  = canvasPage.objectModel.GetData("Y", canvas.selectedIndex);
-                    let width_ = canvasPage.objectModel.IsValidData("Width", canvas.selectedIndex) ? canvasPage.objectModel.GetData("Width", canvas.selectedIndex) * canvas.scaleCoeff : canvas.mainRec_width;
+                    let x_  = topologyPage.objectModel.GetData("X", canvas.selectedIndex);
+                    let y_  = topologyPage.objectModel.GetData("Y", canvas.selectedIndex);
+                    let width_ = topologyPage.objectModel.IsValidData("Width", canvas.selectedIndex) ? topologyPage.objectModel.GetData("Width", canvas.selectedIndex) * canvas.scaleCoeff : canvas.mainRec_width;
 
                     let withinBorders_ = withinBorders(delta, canvas.width * x_, canvas.height * y_, width_, canvas.mainRec_height);
 
                     if(withinBorders_){
-                        let newX = (canvas.width * canvasPage.objectModel.GetData("X", canvas.selectedIndex) + delta.x)/canvas.width;
-                        let newY = (canvas.height * canvasPage.objectModel.GetData("Y", canvas.selectedIndex) + delta.y)/canvas.height;
+                        let newX = (canvas.width * topologyPage.objectModel.GetData("X", canvas.selectedIndex) + delta.x)/canvas.width;
+                        let newY = (canvas.height * topologyPage.objectModel.GetData("Y", canvas.selectedIndex) + delta.y)/canvas.height;
 
-                        canvasPage.objectModel.SetData("X",newX, canvas.selectedIndex);
-                        canvasPage.objectModel.SetData("Y",newY, canvas.selectedIndex);
+                        topologyPage.objectModel.SetData("X",newX, canvas.selectedIndex);
+                        topologyPage.objectModel.SetData("Y",newY, canvas.selectedIndex);
 
                         canvas.requestPaint();
                     }
@@ -271,13 +278,13 @@ ViewBase {
 
                     if(canvas.scaleCoeff < 1){
                         ok = x_new > 0 && y_new > 0
-                                && x_new < canvasPage.width - mainContainer.width
-                                && y_new < canvasPage.height - mainContainer.height
+                                && x_new < topologyPage.width - mainContainer.width
+                                && y_new < topologyPage.height - mainContainer.height
                     }
 
                     else if(canvas.scaleCoeff > 1){
-                        ok = x_new > canvasPage.width - mainContainer.width
-                                && y_new > canvasPage.height - mainContainer.height
+                        ok = x_new > topologyPage.width - mainContainer.width
+                                && y_new > topologyPage.height - mainContainer.height
                                 && x_new < 0
                                 && y_new < 0
                     }
@@ -332,10 +339,10 @@ ViewBase {
                 onFinished: {
                     //console.log(position.x, position.y)
                     canvas.hoverIndex = -1;
-                    for(let i = 0; i < canvasPage.objectModel.GetItemsCount(); i++){
-                        let x_  = canvasPage.objectModel.GetData("X", i)
-                        let y_  = canvasPage.objectModel.GetData("Y", i)
-                        let width_ = canvasPage.objectModel.IsValidData("Width", i) ? canvasPage.objectModel.GetData("Width", i) * canvas.scaleCoeff : canvas.mainRec_width;
+                    for(let i = 0; i < topologyPage.objectModel.GetItemsCount(); i++){
+                        let x_  = topologyPage.objectModel.GetData("X", i)
+                        let y_  = topologyPage.objectModel.GetData("Y", i)
+                        let width_ = topologyPage.objectModel.IsValidData("Width", i) ? topologyPage.objectModel.GetData("Width", i) * canvas.scaleCoeff : canvas.mainRec_width;
 
                         let ok = controlArea.checkHoverItem(canvas.width * x_, canvas.height * y_, width_, canvas.mainRec_height, position);
                         if(ok){
@@ -442,27 +449,27 @@ ViewBase {
                 drawBackground(ctx);
 
                 //width calculation
-                for(let i = 0; i < canvasPage.objectModel.GetItemsCount(); i++){
+                for(let i = 0; i < topologyPage.objectModel.GetItemsCount(); i++){
                     setObjectWidth(ctx, i);
                 }
 
                 //drawLink
-                for(let i = 0; i < canvasPage.objectModel.GetItemsCount(); i++){
-                    if(canvasPage.objectModel.GetData("Links", i) !==undefined){
-                        let links = canvasPage.objectModel.GetData("Links",i);
+                for(let i = 0; i < topologyPage.objectModel.GetItemsCount(); i++){
+                    if(topologyPage.objectModel.GetData("Links", i) !==undefined){
+                        let links = topologyPage.objectModel.GetData("Links",i);
                         for(let k = 0; k < links.GetItemsCount(); k++){
                             let objectId = links.GetData("ObjectId", k);
-                            let ind = canvasPage.findModelIndex(objectId);
+                            let ind = topologyPage.findModelIndex(objectId);
                             canvas.drawLink(ctx, ind, i);
                         }
 
                     }
                 }
 
-                console.log("Count object", canvasPage.objectModel.GetItemsCount())
+                console.log("Count object", topologyPage.objectModel.GetItemsCount())
 
                 //drawObject
-                for(let i = 0; i < canvasPage.objectModel.GetItemsCount(); i++){
+                for(let i = 0; i < topologyPage.objectModel.GetItemsCount(); i++){
                     if(i !== canvas.selectedIndex){
                         drawObject(ctx, i);
                     }
@@ -517,9 +524,9 @@ ViewBase {
 
             function setObjectWidth(ctx, index){
                 //width calculation
-                let mainText  = canvasPage.objectModel.GetData("MainText", index)
-                let secondText  = canvasPage.objectModel.GetData("SecondText", index)
-                let width_ = canvasPage.objectModel.IsValidData("Width", index) ? canvasPage.objectModel.GetData("Width", index) * canvas.scaleCoeff : canvas.mainRec_width;
+                let mainText  = topologyPage.objectModel.GetData("MainText", index)
+                let secondText  = topologyPage.objectModel.GetData("SecondText", index)
+                let width_ = topologyPage.objectModel.IsValidData("Width", index) ? topologyPage.objectModel.GetData("Width", index) * canvas.scaleCoeff : canvas.mainRec_width;
 
                 ctx.lineWidth = 1;
                 let fontStr_main = String(canvas.fontSize) + "px sans-serif"
@@ -535,21 +542,21 @@ ViewBase {
 
                 let add = 2 * canvas.imageSize + 2 * canvas.imageMargin + 2 * canvas.borderShift + 30 * scaleCoeff;
                 let mainRecWidth = Math.max(textWidth_main + add, textWidth_second + add, width_)
-                canvasPage.objectModel.SetData("Width", mainRecWidth / scaleCoeff, index);
+                topologyPage.objectModel.SetData("Width", mainRecWidth / scaleCoeff, index);
 
                 return mainRecWidth;
             }
 
             function drawObject(ctx, index){
 
-                let x_  = canvas.width * canvasPage.objectModel.GetData("X", index)
-                let y_  = canvas.height * canvasPage.objectModel.GetData("Y", index)
-                let width_ = canvasPage.objectModel.IsValidData("Width", index) ? canvasPage.objectModel.GetData("Width", index) * canvas.scaleCoeff : canvas.mainRec_width;
-                let mainText  = canvasPage.objectModel.GetData("MainText", index)
-                let secondText  = canvasPage.objectModel.GetData("SecondText", index)
-                let selected = canvasPage.objectModel.IsValidData("Selected", index) ? canvasPage.objectModel.GetData("Selected", index) : false;
-                let hasError = canvasPage.objectModel.IsValidData("HasError", index) ? canvasPage.objectModel.GetData("HasError", index) : false;
-                let isComposite = canvasPage.objectModel.IsValidData("IsComposite", index) ? canvasPage.objectModel.GetData("IsComposite", index) : false;
+                let x_  = canvas.width * topologyPage.objectModel.GetData("X", index)
+                let y_  = canvas.height * topologyPage.objectModel.GetData("Y", index)
+                let width_ = topologyPage.objectModel.IsValidData("Width", index) ? topologyPage.objectModel.GetData("Width", index) * canvas.scaleCoeff : canvas.mainRec_width;
+                let mainText  = topologyPage.objectModel.GetData("MainText", index)
+                let secondText  = topologyPage.objectModel.GetData("SecondText", index)
+                let selected = topologyPage.objectModel.IsValidData("Selected", index) ? topologyPage.objectModel.GetData("Selected", index) : false;
+                let hasError = topologyPage.objectModel.IsValidData("HasError", index) ? topologyPage.objectModel.GetData("HasError", index) : false;
+                let isComposite = topologyPage.objectModel.IsValidData("IsComposite", index) ? topologyPage.objectModel.GetData("IsComposite", index) : false;
 
                 ctx.lineCap = "round"
                 ctx.lineJoin = "round"
@@ -628,12 +635,12 @@ ViewBase {
 
             function drawLink(ctx, fromIndex, toIndex){
 
-                let x1 = canvasPage.objectModel.GetData("X", fromIndex);
-                let y1 = canvasPage.objectModel.GetData("Y", fromIndex);
-                let x2 = canvasPage.objectModel.GetData("X", toIndex);
-                let y2 = canvasPage.objectModel.GetData("Y", toIndex);
-                let width1 = canvasPage.objectModel.IsValidData("Width", fromIndex) ? canvasPage.objectModel.GetData("Width", fromIndex) * canvas.scaleCoeff : canvas.mainRec_width;
-                let width2 = canvasPage.objectModel.IsValidData("Width", toIndex) ? canvasPage.objectModel.GetData("Width", toIndex) * canvas.scaleCoeff : canvas.mainRec_width;
+                let x1 = topologyPage.objectModel.GetData("X", fromIndex);
+                let y1 = topologyPage.objectModel.GetData("Y", fromIndex);
+                let x2 = topologyPage.objectModel.GetData("X", toIndex);
+                let y2 = topologyPage.objectModel.GetData("Y", toIndex);
+                let width1 = topologyPage.objectModel.IsValidData("Width", fromIndex) ? topologyPage.objectModel.GetData("Width", fromIndex) * canvas.scaleCoeff : canvas.mainRec_width;
+                let width2 = topologyPage.objectModel.IsValidData("Width", toIndex) ? topologyPage.objectModel.GetData("Width", toIndex) * canvas.scaleCoeff : canvas.mainRec_width;
 
                 let x1_link = canvas.width * x1 + width1/2;
                 let y1_link = canvas.height * y1 + canvas.mainRec_height/2;
@@ -931,7 +938,7 @@ ViewBase {
             console.log("Ctrl+C");
             if(canvas.selectedIndex >= 0){
                 bufferModel.Clear();
-                bufferModel.CopyItemDataFromModel(0, canvasPage.objectModel, canvas.selectedIndex);
+                bufferModel.CopyItemDataFromModel(0, topologyPage.objectModel, canvas.selectedIndex);
                 //console.log("bufferModel:: ", bufferModel.toJSON());
             }
         }
@@ -962,8 +969,8 @@ ViewBase {
                 bufferModel.SetData("X", x_, 0);
                 bufferModel.SetData("Y", y_, 0);
                 bufferModel.SetData("Selected", false, 0);
-                let index = canvasPage.objectModel.InsertNewItem();
-                canvasPage.objectModel.CopyItemDataFromModel(index, bufferModel,0);
+                let index = topologyPage.objectModel.InsertNewItem();
+                topologyPage.objectModel.CopyItemDataFromModel(index, bufferModel,0);
 
                 prevSelectedIndex = canvas.selectedIndex;
 
@@ -1000,18 +1007,18 @@ ViewBase {
         onActivated: {
             console.log("Delete");
             if(canvas.selectedIndex >= 0){
-                canvasPage.deleteObjectFunc(canvas.selectedIndex);
+                topologyPage.deleteObjectFunc(canvas.selectedIndex);
             }
         }
     }
 
     function deleteObjectFunc(index){
         console.log("DELETE OBJECT: ", index);
-        let id = canvasPage.objectModel.GetData("Id", index);
+        let id = topologyPage.objectModel.GetData("Id", index);
 
         //remove links
-        for(let i = 0; i < canvasPage.objectModel.GetItemsCount(); i++){
-            let links = canvasPage.objectModel.GetData("Links", i);
+        for(let i = 0; i < topologyPage.objectModel.GetItemsCount(); i++){
+            let links = topologyPage.objectModel.GetData("Links", i);
             if(links !== undefined){
                 for(let k = 0; k < links.GetItemsCount(); k++){
                     let objectId = links.GetData("ObjectId", k);
@@ -1024,7 +1031,7 @@ ViewBase {
         }
 
         //remove object
-        canvasPage.objectModel.RemoveItem(index);
+        topologyPage.objectModel.RemoveItem(index);
 
         canvas.selectedIndex = -1;
 
