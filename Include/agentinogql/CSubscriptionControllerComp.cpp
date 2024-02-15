@@ -40,7 +40,7 @@ void CSubscriptionControllerComp::OnResponseReceived(const QByteArray & subscrip
 	istd::IChangeable::ChangeSet changeSet(istd::IChangeable::CF_ANY);
 	agentinodata::IServiceController::NotifierStatusInfo notifierInfo;
 	QJsonDocument document = QJsonDocument::fromJson(subscriptionData);
-	QJsonObject subscriptionObject = document.object();
+	QJsonObject subscriptionObject = document.object().value("OnServiceStateChanged").toObject();
 	QList<QByteArray> subscriptionIds = m_registeredAgents.values();
 	if (subscriptionIds.contains(subscriptionId)){
 		notifierInfo.serviceId = subscriptionObject.value("serviceId").toString().toUtf8();

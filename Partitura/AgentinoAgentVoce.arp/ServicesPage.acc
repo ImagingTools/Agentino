@@ -371,7 +371,7 @@
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="IconPath" Type="Text" ExportId="">
-                                    <Data IsEnabled="true" Value="Icons/StateOk2"/>
+                                    <Data IsEnabled="true" Value="Icons/Play"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Id" Type="Id" ExportId="">
                                     <Data IsEnabled="true" Value="Start"/>
@@ -411,7 +411,7 @@
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="IconPath" Type="Text" ExportId="">
-                                    <Data IsEnabled="true" Value="Icons/StateInvalid2"/>
+                                    <Data IsEnabled="true" Value="Icons/Stop"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Id" Type="Id" ExportId="">
                                     <Data IsEnabled="true" Value="Stop"/>

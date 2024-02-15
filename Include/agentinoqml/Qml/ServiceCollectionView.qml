@@ -12,8 +12,14 @@ RemoteCollectionView {
      property string clientName;
 
      collectionId: "Services";
+     additionalFieldIds: ["Status"]
 
      onClientIdChanged: {
+         if (clientId == ""){
+             return
+         }
+         console.log("onClientIdChanged", clientId)
+//         root.collectionId = "Services"
          commandsRepresentationProvider.commandId = root.collectionId;
          collectionRepresentation.collectionId = root.collectionId;
          let documentManagerPtr = MainDocumentManager.getDocumentManager("Agents")
@@ -142,8 +148,82 @@ RemoteCollectionView {
                  return root.getAdditionalInputParams();
              }
              function getDocumentName() {
-                return root.clientName + " - " + documentName
+                return documentName + "@" + root.clientName
             }
+         }
+     }
+
+     onHeadersChanged: {
+         if (root.table.headers.GetItemsCount() > 0){
+              let orderIndex = root.table.getHeaderIndex("StatusName");
+             root.table.setColumnContentComponent(orderIndex, stateColumnContentComp);
+         }
+     }
+
+     Component {
+         id: stateColumnContentComp;
+         Item {
+             id: content
+             property var tableCellDelegate
+             Image {
+                 id: image;
+
+                 anchors.verticalCenter: parent.verticalCenter;
+                 anchors.left: parent.left;
+                 anchors.leftMargin: 5;
+
+                 width: 9;
+                 height: width;
+
+//                 source: "../../../../" + Style.getIconPath("Icons/StateOk2", Icon.State.On, Icon.Mode.Normal);
+
+//                 visible: false;
+
+                 sourceSize.width: width;
+                 sourceSize.height: height;
+             }
+
+             Text {
+                 id: lable;
+
+                 anchors.left: image.right;
+                 anchors.leftMargin: Style.size_smallMargin
+                 anchors.right: parent.right;
+                 anchors.verticalCenter: parent.verticalCenter;
+
+                 font.pixelSize: Style.fontSize_common;
+                 font.family: Style.fontFamily;
+                 color: Style.textColor;
+
+                 elide: Text.ElideRight;
+             }
+
+//             onTableCellDelegateChanged: {
+//                 let value = content.tableCellDelegate.getValue();
+//                 let rowIndex = tableCellDelegate.rowIndex;
+//                 lable.text = value;
+//             }
+
+             Component.onCompleted: {
+                 let loader = parent;
+                 let tableCellDelegate = loader.parent;
+
+                 let rowIndex = tableCellDelegate.rowIndex;
+
+                 if (rowIndex >= 0){
+                     let status = root.table.elements.GetData("Status", rowIndex);
+                     if (status === "Running"){
+                         image.source = "../../../../" + Style.getIconPath("Icons/Running", Icon.State.On, Icon.Mode.Normal);
+                     }
+                     else{
+                         image.source = "../../../../" + Style.getIconPath("Icons/Stopped", Icon.State.On, Icon.Mode.Normal);
+                     }
+                 }
+                 let value = tableCellDelegate.getValue();
+                 if (value !== undefined){
+                     lable.text = value;
+                 }
+             }
          }
      }
 

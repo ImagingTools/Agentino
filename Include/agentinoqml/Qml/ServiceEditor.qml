@@ -56,10 +56,10 @@ ViewBase {
         }
 
         if (serviceEditorContainer.model.ContainsKey("IsAutoStart")){
-            switchAutoStart.checked = serviceEditorContainer.model.GetData("IsAutoStart");
+            switchAutoStart.setChecked(serviceEditorContainer.model.GetData("IsAutoStart"));
         }
         else{
-            switchAutoStart.checked = false;
+            switchAutoStart.setChecked(false)
         }
     }
 
@@ -342,14 +342,14 @@ ViewBase {
                     font.family: Style.fontFamily;
                     font.pixelSize: Style.fontSize_common;
 
-                    text: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("true") : qsTr("false")) + ")";
+                    text: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("on") : qsTr("off")) + ")";
 
                 }
 
                 SwitchCustom {
                     id: switchAutoStart
-                    height: Style.itemSizeMedium;
-                    width: height * 2
+//                    height: Style.itemSizeSmall;
+//                    width: height * 2
                     backgroundColor: "#D4D4D4"
                     onCheckedChanged: {
                         serviceEditorContainer.doUpdateModel();

@@ -2,16 +2,25 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5048" Description="ACF"/>
-            <Version Id="1" Number="2178" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="331522" Description="Qt Framework"/>
+            <Version Id="0" Number="5177" Description="ACF"/>
+            <Version Id="1" Number="2198" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="394753" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
-        <Element ComponentName="ApiClient" X="550" Y="375" Note=""/>
-        <Element ComponentName="Demultiplexer" X="550" Y="125" Note=""/>
-        <Element ComponentName="GraphQLClientEngine" X="550" Y="500" Note=""/>
-        <Element ComponentName="GraphQLRepresentationController" X="550" Y="250" Note=""/>
+        <Element ComponentName="CheckPermissionOr" X="700" Y="225" Note=""/>
+        <Element ComponentName="ClosePermissions" X="1025" Y="475" Note=""/>
+        <Element ComponentName="CommandPermissions" X="1025" Y="150" Note=""/>
+        <Element ComponentName="Commands" X="300" Y="225" Note=""/>
+        <Element ComponentName="CommandsController" X="300" Y="125" Note=""/>
+        <Element ComponentName="CommandsRepresentation" X="700" Y="50" Note=""/>
+        <Element ComponentName="Empty" X="300" Y="500" Note=""/>
+        <Element ComponentName="Redo" X="200" Y="400" Note=""/>
+        <Element ComponentName="RedoPermissions" X="1025" Y="400" Note=""/>
+        <Element ComponentName="Save" X="400" Y="350" Note=""/>
+        <Element ComponentName="SavePermissions" X="1025" Y="300" Note=""/>
+        <Element ComponentName="Undo" X="75" Y="475" Note=""/>
+        <Element ComponentName="UndoPermissions" X="1025" Y="550" Note=""/>
     </PositionMap>
     <EmbeddedRegistries/>
 </Acf>

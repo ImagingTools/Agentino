@@ -69,12 +69,8 @@ DocumentCollectionViewDelegate {
             if (this.state === "Ready"){
                 var dataModelLocal;
 
-                if (gqlModelBaseContainer.objectViewModel.ContainsKey("errors")){
-                    dataModelLocal = gqlModelBaseContainer.objectViewModel.GetData("errors");
-
-                    if (dataModelLocal.ContainsKey(gqlModelBaseContainer.gqlModelObjectView)){
-                        dataModelLocal = dataModelLocal.GetData(gqlModelBaseContainer.gqlModelObjectView);
-                    }
+                if (this.ContainsKey("errors")){
+                    dataModelLocal = this.GetData("errors");
 
                     let message = ""
                     if (dataModelLocal.ContainsKey("message")){
@@ -91,7 +87,7 @@ DocumentCollectionViewDelegate {
                     return;
                 }
 
-                dataModelLocal = gqlModelBaseContainer.objectViewModel.GetData("data");
+                dataModelLocal = this.GetData("data");
 
                 if(!dataModelLocal)
                     return;

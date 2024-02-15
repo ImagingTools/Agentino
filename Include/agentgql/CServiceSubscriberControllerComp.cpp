@@ -54,6 +54,7 @@ bool CServiceSubscriberControllerComp::SetSubscriptions()
 
 void CServiceSubscriberControllerComp::OnComponentCreated()
 {
+	qDebug() << "CServiceSubscriberControllerComp OnComponentCreated";
 	BaseClass::OnComponentCreated();
 
 	if (m_modelCompPtr.IsValid()) {
@@ -84,7 +85,7 @@ void CServiceSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeS
 	QString status;
 	status = QVariant::fromValue(notifierStatusInfo.serviceStatus).toString();
 	QString data = QString("{ \"serviceId\": \"%1\", \"serviceStatus\": \"%2\" }").arg(QString(notifierStatusInfo.serviceId)).arg(status);
-	SetAllSubscriptions(data.toUtf8());
+	SetAllSubscriptions("OnServiceStateChanged", data.toUtf8());
 }
 
 
