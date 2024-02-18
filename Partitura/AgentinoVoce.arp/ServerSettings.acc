@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5181" Description="ACF"/>
-            <Version Id="1" Number="2199" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5191" Description="ACF"/>
+            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394753" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -150,19 +150,19 @@
         <Element Id="WebSocketAgentinoServerUrl" PackageId="ImtCorePck" ComponentId="UrlParam">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
-                    <AttributeInfo Id="DefaultPassword" Type="String" ExportId="WebSocketAgentinoDefaultPassword">
-                        <Data IsEnabled="false"/>
+                    <AttributeInfo Id="DefaultHost" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="127.0.0.1"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="DefaultPath" Type="String" ExportId="WebSocketAgentinoDefaultPath">
+                    <AttributeInfo Id="DefaultPath" Type="String" ExportId="">
                         <Data IsEnabled="true" Value="Agentino/wssub"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="DefaultPort" Type="Integer" ExportId="WebSocketAgentinoDefaultPort">
+                    <AttributeInfo Id="DefaultPort" Type="Integer" ExportId="">
                         <Data IsEnabled="true" Value="7112"/>
                     </AttributeInfo>
                     <AttributeInfo Id="DefaultScheme" Type="String" ExportId="">
                         <Data IsEnabled="true" Value="ws"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="DefaultUsername" Type="String" ExportId="WebSocketAgentinoDefaultUsername">
+                    <AttributeInfo Id="DefaultUsername" Type="String" ExportId="">
                         <Data IsEnabled="true" Value=""/>
                     </AttributeInfo>
                 </AttributeInfoMap>

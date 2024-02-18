@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5177" Description="ACF"/>
-            <Version Id="1" Number="2198" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5181" Description="ACF"/>
+            <Version Id="1" Number="2199" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394753" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -19,19 +19,6 @@
         <Element ComponentName="ServiceCommands" X="650" Y="275" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="ServiceCollectionCommands">
-            <PositionMap>
-                <Element ComponentName="CheckPermissionOr" X="575" Y="225" Note=""/>
-                <Element ComponentName="CollectionCommandPermissions" X="850" Y="225" Note=""/>
-                <Element ComponentName="Commands" X="275" Y="350" Note=""/>
-                <Element ComponentName="CommandsRepresentation" X="550" Y="75" Note=""/>
-                <Element ComponentName="Empty" X="425" Y="500" Note=""/>
-                <Element ComponentName="Open" X="200" Y="550" Note=""/>
-                <Element ComponentName="Remove" X="550" Y="400" Note=""/>
-                <Element ComponentName="ServiceCollectionCommandsController" X="275" Y="225" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
         <EmbededRegistry Id="ServiceCommands">
             <PositionMap>
                 <Element ComponentName="CheckPermissionOr" X="700" Y="225" Note=""/>
@@ -48,6 +35,19 @@
                 <Element ComponentName="SavePermissions" X="1025" Y="300" Note=""/>
                 <Element ComponentName="Undo" X="75" Y="475" Note=""/>
                 <Element ComponentName="UndoPermissions" X="1025" Y="550" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="ServiceCollectionCommands">
+            <PositionMap>
+                <Element ComponentName="CheckPermissionOr" X="575" Y="225" Note=""/>
+                <Element ComponentName="CollectionCommandPermissions" X="850" Y="225" Note=""/>
+                <Element ComponentName="Commands" X="275" Y="350" Note=""/>
+                <Element ComponentName="CommandsRepresentation" X="550" Y="75" Note=""/>
+                <Element ComponentName="Empty" X="425" Y="500" Note=""/>
+                <Element ComponentName="Open" X="200" Y="550" Note=""/>
+                <Element ComponentName="Remove" X="550" Y="400" Note=""/>
+                <Element ComponentName="ServiceCollectionCommandsController" X="275" Y="225" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
