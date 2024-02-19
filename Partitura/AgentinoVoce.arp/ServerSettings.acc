@@ -16,15 +16,14 @@
                     <AttributeInfo Id="Parameters" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>Id</Value>
-                                <Value>Name</Value>
+                                <Value>ClientId</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="ParametersId" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value></Value>
+                                <Value>ClientId</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -75,6 +74,15 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="ClientId" PackageId="BasePck" ComponentId="TextParam">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="DefaultText" Type="Text" ExportId="AgentId">
+                        <Data IsEnabled="true" Value=""/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="FileAutoPersistence" PackageId="ImtCoreVoce" ComponentId="FileAutoPersistence">
             <Data IsEnabled="true" Flags="1">
                 <AttributeInfoMap>
@@ -96,17 +104,11 @@
                     <AttributeInfo Id="RuntimeStatus" Type="Reference" ExportId="RuntimeStatus">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="StoreOnChange" Type="Boolean" ExportId="">
+                        <Data IsEnabled="true" Value="true"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
                         <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="Id" PackageId="BasePck" ComponentId="TextParam">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="DefaultText" Type="Text" ExportId="AgentId">
-                        <Data IsEnabled="true" Value=""/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -177,6 +179,7 @@
         <Interface InterfaceId="istd::IChangeable" ComponentId="Preferences"/>
     </ExportedInterfaces>
     <ExportedComponents>
+        <Component ExportedId="ClientId" ComponentId="ClientId"/>
         <Component ExportedId="PumaUrl" ComponentId="AgentServer/PumaUrl"/>
         <Component ExportedId="ServerPort" ComponentId="AgentServer/ServerPort"/>
         <Component ExportedId="WebSocketAgentinoServerUrl" ComponentId="WebSocketAgentinoServerUrl"/>

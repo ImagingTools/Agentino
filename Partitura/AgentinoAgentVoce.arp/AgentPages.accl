@@ -2,20 +2,21 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5181" Description="ACF"/>
-            <Version Id="1" Number="2199" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="331522" Description="Qt Framework"/>
+            <Version Id="0" Number="5191" Description="ACF"/>
+            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="394753" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
-        <Element ComponentName="CheckPermissionOr" X="525" Y="475" Note=""/>
-        <Element ComponentName="PageData" X="1025" Y="350" Note=""/>
-        <Element ComponentName="PageDataControllers" X="1026" Y="229" Note=""/>
-        <Element ComponentName="Pages" X="325" Y="325" Note=""/>
+        <Element ComponentName="CheckPermissionOr" X="425" Y="450" Note=""/>
+        <Element ComponentName="GqlRepresentationAgentData" X="825" Y="325" Note=""/>
+        <Element ComponentName="PageData" X="1050" Y="325" Note=""/>
+        <Element ComponentName="PageDataControllers" X="925" Y="200" Note=""/>
+        <Element ComponentName="Pages" X="200" Y="325" Note=""/>
         <Element ComponentName="PagesDemultiplexer" X="600" Y="75" Note=""/>
-        <Element ComponentName="PagesPermissions" X="725" Y="475" Note=""/>
-        <Element ComponentName="PagesRepresentation" X="700" Y="350" Note=""/>
-        <Element ComponentName="PagesVisualStatusController" X="425" Y="225" Note=""/>
+        <Element ComponentName="PagesPermissions" X="650" Y="450" Note=""/>
+        <Element ComponentName="PagesRepresentation" X="525" Y="325" Note=""/>
+        <Element ComponentName="PagesVisualStatusController" X="325" Y="200" Note=""/>
         <Element ComponentName="ServicesPage" X="175" Y="450" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
@@ -26,17 +27,17 @@
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
+        <EmbededRegistry Id="PageData">
+            <PositionMap>
+                <Element ComponentName="ServicesPage" X="500" Y="300" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
         <EmbededRegistry Id="Repositories">
             <PositionMap>
                 <Element ComponentName="FileAutoPersistence" X="800" Y="200" Note=""/>
                 <Element ComponentName="RepresentationService" X="550" Y="300" Note=""/>
                 <Element ComponentName="ServiceCollection" X="525" Y="200" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
-        <EmbededRegistry Id="PageData">
-            <PositionMap>
-                <Element ComponentName="ServicesPage" X="500" Y="300" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

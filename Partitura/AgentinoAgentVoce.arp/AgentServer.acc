@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5181" Description="ACF"/>
-            <Version Id="1" Number="2199" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5191" Description="ACF"/>
+            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394753" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -213,6 +213,9 @@
                 <AttributeInfoMap>
                     <AttributeInfo Id="ClientId" Type="Id" ExportId="">
                         <Data IsEnabled="true" Value="1111"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/ClientId"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ClientRequestHandler" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="HttpServerFramework/WebSocketServlet"/>

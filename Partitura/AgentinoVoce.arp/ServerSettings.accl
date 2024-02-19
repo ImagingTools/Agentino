@@ -11,8 +11,8 @@
         <Element ComponentName="Agent" X="900" Y="200" Note=""/>
         <Element ComponentName="AgentServer" X="750" Y="500" Note=""/>
         <Element ComponentName="AgentinoServer" X="300" Y="200" Note=""/>
+        <Element ComponentName="ClientId" X="800" Y="350" Note=""/>
         <Element ComponentName="FileAutoPersistence" X="575" Y="50" Note=""/>
-        <Element ComponentName="Id" X="800" Y="350" Note=""/>
         <Element ComponentName="Name" X="1000" Y="350" Note=""/>
         <Element ComponentName="Preferences" X="575" Y="200" Note=""/>
         <Element ComponentName="WebSocketAgentinoServerUrl" X="300" Y="350" Note=""/>

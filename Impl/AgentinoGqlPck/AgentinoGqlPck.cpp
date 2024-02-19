@@ -44,6 +44,11 @@ I_EXPORT_COMPONENT(
 			"Subscription controller for a client",
 			"GraphQl Subscription Service Controller");
 
+I_EXPORT_COMPONENT(
+			GqlRepresentationAgentData,
+			"GrapgQL representation agent data information",
+			"GrapgQL Representation Agent Data");
+
 
 } // namespace AgentinoGqlPck
 

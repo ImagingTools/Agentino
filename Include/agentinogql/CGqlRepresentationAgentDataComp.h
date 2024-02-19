@@ -1,0 +1,35 @@
+#pragma once
+
+
+// ACF includes
+#include <iprm/ITextParam.h>
+
+// ImtCore includes
+#include <imtgql/CGqlRequestHandlerCompBase.h>
+
+
+namespace agentinogql
+{
+
+
+class CGqlRepresentationAgentDataComp:
+			public imtgql::CGqlRequestHandlerCompBase
+{
+public:
+	typedef imtgql::CGqlRequestHandlerCompBase BaseClass;
+
+	I_BEGIN_COMPONENT(CGqlRepresentationAgentDataComp);
+		I_ASSIGN(m_clientIdCompPtr, "ClientIdParam", "Parameter providing the client-ID that needs to be identified on the server", false, "ClientIdParam");
+	I_END_COMPONENT;
+
+	// reimplemented (imtgql::CGqlRequestHandlerCompBase)
+	virtual imtbase::CTreeItemModel* CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
+
+protected:
+	I_REF(iprm::ITextParam, m_clientIdCompPtr);
+};
+
+
+} // namespace agentinogql
+
+
