@@ -60,10 +60,15 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 	if (loginStatus == imtauth::ILoginStatusProvider::LSF_LOGGED_IN){
 		imtgql::CGqlRequest* gqlInitRequest = new imtgql::CGqlRequest(imtgql::IGqlRequest::RT_MUTATION, "AgentUpdate");
 		imtgql::CGqlObject inputDataParams("input");
-		inputDataParams.InsertField("Id", QVariant("1111"));
+		QString clientId;
+		if (m_clientIdCompPtr.IsValid()){
+			clientId = m_clientIdCompPtr->GetText();
+		}
+		inputDataParams.InsertField("Id", QVariant(clientId));
 
 		QJsonObject item;
-		item.insert("Name", "Test");
+		item.insert("Name", "COMPUTER-NAME");
+		item.insert("ComputerName", "COMPUTER-TEST");
 		item.insert("Description", "Test description");
 		item.insert("HttpUrl", "http://localhost:7222");
 		item.insert("WebSocketUrl", "http://localhost:7223");

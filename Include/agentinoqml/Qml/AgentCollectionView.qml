@@ -23,18 +23,9 @@ RemoteCollectionView {
          console.log("documentManagerPtr", documentManagerPtr)
          if (documentManagerPtr){
              root.commandsDelegate.documentManager = documentManagerPtr
-             documentManagerPtr.registerDocumentView("Services", "Services", serviceCollectionViewComp);
-             documentManagerPtr.registerDocumentDataController("Services", agentDataControllerComp);
+             documentManagerPtr.registerDocumentView("Agent", "Agent", singleDocumentWorkspaceView);
+             documentManagerPtr.registerDocumentDataController("Agent", agentDataControllerComp);
          }
-     }
-
-
-     function fillContextMenuModel(){
-         contextMenuModel.clear();
-
-         contextMenuModel.append({"Id": "Services", "Name": qsTr("Services"), "IconSource": "../../../../" + Style.getIconPath("Icons/Workflow", "On", "Normal")});
-         contextMenuModel.append({"Id": "Edit", "Name": qsTr("Edit"), "IconSource": "../../../../" + Style.getIconPath("Icons/Edit", "On", "Normal")});
-         contextMenuModel.append({"Id": "Remove", "Name": qsTr("Remove"), "IconSource": "../../../../" + Style.getIconPath("Icons/Remove", "On", "Normal")});
      }
 
      function selectItem(id, name){
@@ -53,12 +44,26 @@ RemoteCollectionView {
          }
 
          documentManagerPtr.insertNewDocument(documentTypeId, {"clientId": id});
-         // documentManagerPtr.openDocument(id, documentTypeId, {"clientId": id});
      }
 
      function onEdit() {
          if (commandsDelegate){
-             commandsDelegate.commandHandle("Services");
+             commandsDelegate.commandHandle("Agent");
+         }
+     }
+
+     Component {
+         id: singleDocumentWorkspaceView
+
+         SingleDocumentWorkspaceView {
+             id: singleDocumentManager
+            Component.onCompleted: {
+                var clientId = root.table.getSelectedIds()[0];
+                var clientName = root.table.getSelectedNames()[0];
+                MainDocumentManager.registerDocumentManager("Agent", singleDocumentManager);
+
+                addInitialItem(serviceCollectionViewComp, clientName);
+            }
          }
      }
 

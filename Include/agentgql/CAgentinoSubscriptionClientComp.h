@@ -6,6 +6,7 @@
 #include <ilog/TLoggerCompWrap.h>
 #include <ilog/CMessageContainer.h>
 #include <imod/TSingleModelObserverBase.h>
+#include <iprm/ITextParam.h>
 
 // ImtCore includes
 #include <imtclientgql/IGqlSubscriptionManager.h>
@@ -35,6 +36,7 @@ public:
 		I_ASSIGN(m_gqlClientCompPtr, "GqlClient", "GraphQl client to send a request", true, "GqlClient");
 		I_ASSIGN(m_loginStatusCompPtr, "WebLoginStatus", "Web login status", true, "WebLoginStatus");
 		I_ASSIGN_TO(m_webLoginStatusModelCompPtr, m_loginStatusCompPtr, true);
+		I_ASSIGN(m_clientIdCompPtr, "ClientIdParam", "Parameter providing the client-ID that needs to be identified on the server", false, "ClientIdParam");
 	I_END_COMPONENT;
 
 protected:
@@ -52,6 +54,7 @@ private:
 	I_REF(imtclientgql::IGqlClient, m_gqlClientCompPtr);
 	I_REF(imtauth::ILoginStatusProvider, m_loginStatusCompPtr);
 	I_REF(imod::IModel, m_webLoginStatusModelCompPtr);
+	I_REF(iprm::ITextParam, m_clientIdCompPtr);
 
 	QByteArray m_serviceStatusSubsriptionId;
 };

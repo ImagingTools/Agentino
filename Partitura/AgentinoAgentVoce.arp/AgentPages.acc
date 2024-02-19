@@ -15,11 +15,6 @@
                 <AttributeInfoMap/>
             </Data>
         </Element>
-        <Element Id="GqlRepresentationAgentData" PackageId="AgentinoGqlPck" ComponentId="GqlRepresentationAgentData">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap/>
-            </Data>
-        </Element>
         <Element Id="PageData" PackageId="" ComponentId="PageData">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
@@ -45,7 +40,6 @@
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>PageData/ServicesPage</Value>
-                                <Value>GqlRepresentationAgentData</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

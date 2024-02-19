@@ -141,6 +141,9 @@
         <Element Id="ServiceManagerSubscriptionClient" PackageId="AgentinoGqlPck" ComponentId="AgentinoSubscriptionClient">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/ClientId"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="GqlClient" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketClient"/>
                     </AttributeInfo>
