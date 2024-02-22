@@ -9,8 +9,8 @@ namespace agentinodata
 
 
 /**
-	Interface for describing an user.
-	\ingroup User
+	Interface for describing an service.
+	\ingroup Service
 */
 class IService:
 		virtual public IServiceInfo

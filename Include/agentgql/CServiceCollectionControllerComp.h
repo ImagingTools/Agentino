@@ -2,10 +2,15 @@
 
 // ImtCore includes
 #include <imtgql/CObjectCollectionControllerCompBase.h>
+#include <imtbase/PluginInterface.h>
+#include <imtservice/IConnectionCollectionPlugin.h>
 
 // ServiceManager includes
 #include <agentinodata/IServiceInfo.h>
 #include <agentinodata/IServiceController.h>
+
+IMT_DECLARE_PLUGIN_INTERFACE(ServiceSettings, imtservice::IConnectionCollectionPlugin);
+
 
 #undef GetObject
 
@@ -36,9 +41,30 @@ protected:
 	virtual imtbase::CTreeItemModel* GetObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 	virtual istd::IChangeable* CreateObject(const QList<imtgql::CGqlObject>& inputParams, QByteArray &objectId, QString &name, QString &description, QString& errorMessage) const override;
 
+	// reimplemented (icomp::CComponentBase)
+	virtual void OnComponentDestroyed() override;
+
+	bool LoadPluginDirectory(const QString& pluginDirectoryPath, const QString& serviceName) const;
+
 protected:
 	I_FACT(agentinodata::IServiceInfo, m_serviceInfoFactCompPtr);
 	I_REF(agentinodata::IServiceController, m_serviceControllerCompPtr);
+
+
+	struct PluginInfo
+	{
+		PluginInfo()
+			:pluginPtr(nullptr)
+		{
+		}
+
+		imtservice::IConnectionCollectionPlugin* pluginPtr;
+		QString pluginPath;
+		IMT_DESTROY_PLUGIN_FUNCTION(ServiceSettings) destroyFunc;
+	};
+
+	typedef QMap<QString, PluginInfo> PluginMap;
+	mutable PluginMap m_pluginMap;
 };
 
 
