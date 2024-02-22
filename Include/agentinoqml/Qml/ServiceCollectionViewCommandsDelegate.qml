@@ -16,15 +16,20 @@ DocumentCollectionViewDelegate {
     removeMessage: qsTr("Delete the selected agent ?");
 
     function updateItemSelection(selectedItems){
-        console.log("updateItemSelection", selectedItems);
         if (container.collectionView && container.collectionView.commandsController){
             let isEnabled = selectedItems.length > 0;
             let commandsController = container.collectionView.commandsController;
             if(commandsController){
                 commandsController.setCommandIsEnabled("Remove", isEnabled);
                 commandsController.setCommandIsEnabled("Edit", isEnabled);
-                commandsController.setCommandIsEnabled("Start", isEnabled);
-                commandsController.setCommandIsEnabled("Stop", isEnabled);
+                if (isEnabled){
+                    let elements = container.collectionView.table.elements;
+
+                    let status = elements.GetData("StatusName", selectedItems[0]);
+
+                    commandsController.setCommandIsEnabled("Start", String(status) !== "Running");
+                    commandsController.setCommandIsEnabled("Stop", String(status) === "Running");
+                }
             }
         }
     }

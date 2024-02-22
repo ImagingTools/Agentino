@@ -2,22 +2,45 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5177" Description="ACF"/>
-            <Version Id="1" Number="2198" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394753" Description="Qt Framework"/>
+            <Version Id="0" Number="5191" Description="ACF"/>
+            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
         <Element ComponentName="CheckPermissionOr" X="200" Y="600" Note=""/>
+        <Element ComponentName="ConnectionCollection" X="700" Y="474" Note=""/>
         <Element ComponentName="Demultiplexer" X="625" Y="100" Note=""/>
+        <Element ComponentName="FileAutoPersistence" X="1050" Y="475" Note=""/>
         <Element ComponentName="RepresentationService" X="225" Y="100" Note=""/>
         <Element ComponentName="ServiceCollectionCommands" X="950" Y="275" Note=""/>
         <Element ComponentName="ServiceCollectionController" X="375" Y="225" Note=""/>
         <Element ComponentName="ServiceCommands" X="650" Y="275" Note=""/>
         <Element ComponentName="ServiceHeadersDataProvider" X="125" Y="450" Note=""/>
         <Element ComponentName="ServiceViewDataProvider" X="375" Y="450" Note=""/>
+        <Element ComponentName="UrlConnectionParamInfo" X="706" Y="605" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
+        <EmbededRegistry Id="ServiceCollectionCommands">
+            <PositionMap>
+                <Element ComponentName="CheckPermissionOr" X="575" Y="225" Note=""/>
+                <Element ComponentName="CollectionCommandPermissions" X="1050" Y="225" Note=""/>
+                <Element ComponentName="Commands" X="275" Y="350" Note=""/>
+                <Element ComponentName="CommandsJoiner" X="825" Y="150" Note=""/>
+                <Element ComponentName="CommandsRepresentation" X="550" Y="75" Note=""/>
+                <Element ComponentName="Edit" X="125" Y="550" Note=""/>
+                <Element ComponentName="EditSettings" X="275" Y="650" Note=""/>
+                <Element ComponentName="Empty" X="300" Y="525" Note=""/>
+                <Element ComponentName="New" X="100" Y="450" Note=""/>
+                <Element ComponentName="Remove" X="375" Y="450" Note=""/>
+                <Element ComponentName="ServiceCollectionCommandsController" X="275" Y="225" Note=""/>
+                <Element ComponentName="Start" X="550" Y="525" Note=""/>
+                <Element ComponentName="StartPermissions" X="675" Y="300" Note=""/>
+                <Element ComponentName="Stop" X="750" Y="525" Note=""/>
+                <Element ComponentName="StopPermissions" X="925" Y="300" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
         <EmbededRegistry Id="ServiceCommands">
             <PositionMap>
                 <Element ComponentName="CheckPermissionOr" X="775" Y="225" Note=""/>
@@ -36,25 +59,6 @@
                 <Element ComponentName="Stop" X="700" Y="425" Note=""/>
                 <Element ComponentName="Undo" X="75" Y="475" Note=""/>
                 <Element ComponentName="UndoPermissions" X="1025" Y="550" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
-        <EmbededRegistry Id="ServiceCollectionCommands">
-            <PositionMap>
-                <Element ComponentName="CheckPermissionOr" X="575" Y="225" Note=""/>
-                <Element ComponentName="CollectionCommandPermissions" X="1050" Y="225" Note=""/>
-                <Element ComponentName="Commands" X="275" Y="350" Note=""/>
-                <Element ComponentName="CommandsJoiner" X="825" Y="150" Note=""/>
-                <Element ComponentName="CommandsRepresentation" X="550" Y="75" Note=""/>
-                <Element ComponentName="Edit" X="125" Y="550" Note=""/>
-                <Element ComponentName="Empty" X="300" Y="525" Note=""/>
-                <Element ComponentName="New" X="100" Y="450" Note=""/>
-                <Element ComponentName="Remove" X="375" Y="450" Note=""/>
-                <Element ComponentName="ServiceCollectionCommandsController" X="275" Y="225" Note=""/>
-                <Element ComponentName="Start" X="550" Y="450" Note=""/>
-                <Element ComponentName="StartPermissions" X="675" Y="300" Note=""/>
-                <Element ComponentName="Stop" X="675" Y="525" Note=""/>
-                <Element ComponentName="StopPermissions" X="925" Y="300" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

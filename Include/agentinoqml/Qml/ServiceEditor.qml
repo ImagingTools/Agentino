@@ -18,8 +18,6 @@ ViewBase {
     }
 
     function updateGui(){
-        console.log("ServiceEditor updateGui");
-
         if (serviceEditorContainer.model.ContainsKey("Name")){
             nameInput.text = serviceEditorContainer.model.GetData("Name");
         }
@@ -61,11 +59,17 @@ ViewBase {
         else{
             switchAutoStart.setChecked(false)
         }
+
+        if (serviceEditorContainer.model.ContainsKey("InputConnections")){
+            inputConnTable.elements = serviceEditorContainer.model.GetData("InputConnections")
+        }
+
+        if (serviceEditorContainer.model.ContainsKey("OutputConnections")){
+            ouputConnTable.elements = serviceEditorContainer.model.GetData("OutputConnections")
+        }
     }
 
     function updateModel(){
-        console.log("ServiceEditor updateModel");
-
         serviceEditorContainer.model.SetData("Name", nameInput.text);
         serviceEditorContainer.model.SetData("Description", descriptionInput.text);
         serviceEditorContainer.model.SetData("Path", pathInput.text);
@@ -74,289 +78,494 @@ ViewBase {
         serviceEditorContainer.model.SetData("IsAutoStart", switchAutoStart.checked);
     }
 
-    Component{
-        id: emptyDecorator;
-        Item{
-            property Item rootItem: null;
-        }
-    }
 
     Rectangle {
         id: background;
 
-        anchors.fill: parent;
+        anchors.fill: flickable;
 
         color: Style.backgroundColor;
-        Loader{
-            id: backgroundDecoratorLoader;
+    }
 
-            sourceComponent: Style.backGroundDecorator !==undefined ? Style.backGroundDecorator: emptyDecorator;
-            onLoaded: {
-                if(backgroundDecoratorLoader.item){
-                    backgroundDecoratorLoader.item.rootItem = background;
+    MouseArea {
+        anchors.fill: background;
+
+        onClicked: {
+            serviceEditorContainer.forceActiveFocus();
+        }
+    }
+
+    CustomScrollbar {
+        id: scrollbar;
+
+        anchors.left: flickable.right;
+        anchors.leftMargin: 5;
+        anchors.top: parent.top;
+        anchors.bottom: parent.bottom;
+
+        secondSize: 10;
+        targetItem: flickable;
+
+        visible: parent.visible;
+    }
+
+    Flickable {
+        id: flickable;
+        anchors.top: parent.top;
+        anchors.bottom: parent.bottom;
+        anchors.left: parent.left;
+        anchors.leftMargin: 20;
+
+        width: 700;
+
+        contentWidth: bodyColumn.width;
+        contentHeight: bodyColumn.height;
+
+        boundsBehavior: Flickable.StopAtBounds;
+
+        clip: true;
+
+        Column {
+            id: bodyColumn;
+
+            width: flickable.width;
+
+            spacing: 10;
+
+            Text {
+                id: titleName;
+
+                anchors.left: parent.left;
+
+                color: Style.textColor;
+                font.family: Style.fontFamily;
+                font.pixelSize: Style.fontSize_common;
+
+                text: qsTr("Name");
+            }
+
+            CustomTextField {
+                id: nameInput;
+
+                width: parent.width;
+                height: Style.itemSizeMedium;
+
+                placeHolderText: qsTr("Enter the name");
+
+                onEditingFinished: {
+                    serviceEditorContainer.doUpdateModel();
+                }
+
+                KeyNavigation.tab: settingsPathInput;
+            }
+
+            Text {
+                id: descriptionName;
+
+                anchors.left: parent.left;
+
+                color: Style.textColor;
+                font.family: Style.fontFamily;
+                font.pixelSize: Style.fontSize_common;
+
+                text: qsTr("Description");
+            }
+
+            CustomTextField {
+                id: descriptionInput;
+
+                width: parent.width;
+                height: Style.itemSizeMedium;
+
+                placeHolderText: qsTr("Enter the name");
+
+                onEditingFinished: {
+                    serviceEditorContainer.doUpdateModel();
+                }
+
+                KeyNavigation.tab: settingsPathInput;
+            }
+
+            Text {
+                id: titlePath;
+
+                anchors.left: parent.left;
+
+                color: Style.textColor;
+                font.family: Style.fontFamily;
+                font.pixelSize: Style.fontSize_common;
+
+                text: qsTr("Path");
+            }
+
+            CustomTextField {
+                id: pathInput;
+
+                width: parent.width;
+                height: Style.itemSizeMedium;
+
+                placeHolderText: qsTr("Enter the path");
+
+                onEditingFinished: {
+                    serviceEditorContainer.doUpdateModel();
+                }
+
+                KeyNavigation.tab: settingsPathInput;
+            }
+
+            Text {
+                id: titleSettingsPath;
+
+                anchors.left: parent.left;
+
+                color: Style.textColor;
+                font.family: Style.fontFamily;
+                font.pixelSize: Style.fontSize_common;
+
+                text: qsTr("Settings path");
+            }
+
+            CustomTextField {
+                id: settingsPathInput;
+
+                width: parent.width;
+                height: Style.itemSizeMedium;
+
+                placeHolderText: qsTr("Enter the settings path");
+
+                onEditingFinished: {
+                    serviceEditorContainer.doUpdateModel();
+                }
+
+                KeyNavigation.tab: settingsPathInput;
+            }
+
+            Text {
+                id: titleArguments;
+
+                anchors.left: parent.left;
+
+                color: Style.textColor;
+                font.family: Style.fontFamily;
+                font.pixelSize: Style.fontSize_common;
+
+                text: qsTr("Arguments");
+            }
+
+            CustomTextField {
+                id: argumentsInput;
+
+                width: parent.width;
+                height: Style.itemSizeMedium;
+
+                placeHolderText: qsTr("Enter the arguments");
+
+                onEditingFinished: {
+                    serviceEditorContainer.doUpdateModel();
+                }
+
+                KeyNavigation.tab: settingsPathInput;
+            }
+
+            Text {
+                id: titleAutoStart;
+
+                anchors.left: parent.left;
+
+                color: Style.textColor;
+                font.family: Style.fontFamily;
+                font.pixelSize: Style.fontSize_common;
+
+                text: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("on") : qsTr("off")) + ")";
+            }
+
+            SwitchCustom {
+                id: switchAutoStart
+
+                backgroundColor: "#D4D4D4"
+                onCheckedChanged: {
+                    serviceEditorContainer.doUpdateModel();
                 }
             }
-        }
 
-        //
-        Item{
-            id: columnContainer;
+            Text {
+                id: inputConnectionsTitle;
 
-            width: serviceEditorContainer.panelWidth;
-            height: bodyColumn.height + 2*bodyColumn.anchors.topMargin;
-            Loader{
-                id: mainPanelFrameLoader;
-
-                anchors.fill: parent;
-
-                sourceComponent: Style.frame !==undefined ? Style.frame: emptyDecorator;
-
-                onLoaded: {
-                    if(mainPanelFrameLoader.item){
-                        // serviceEditorContainer.mainMargin = mainPanelFrameLoader.item.mainMargin;
-                    }
-                }
-            }//Loader
-
-            Column {
-                id: bodyColumn;
-
-                anchors.top: parent.top;
                 anchors.left: parent.left;
-                anchors.topMargin: serviceEditorContainer.mainMargin;
-                anchors.leftMargin: serviceEditorContainer.mainMargin;
 
-                width: serviceEditorContainer.panelWidth - 2*anchors.leftMargin;
+                color: Style.textColor;
+                font.family: Style.fontFamily;
+                font.pixelSize: Style.fontSize_common;
 
-                spacing: 10;
+                text: qsTr("Incoming connections");
+            }
 
-                Item{
-                    width: parent.width;
-                    height: 1;
+            AuxTable {
+                id: inputConnTable;
+
+                width: parent.width;
+                height: 150;
+
+                onHeadersChanged: {
+                    inputConnTable.setColumnContentComponent(1, textInputComp)
+                    inputConnTable.setColumnContentComponent(2, textInputComp)
+                    inputConnTable.setColumnContentComponent(3, textInputComp)
+                    inputConnTable.setColumnContentComponent(4, externCompEditComp)
                 }
 
-
-                Text {
-                    id: titleName;
-
-                    anchors.left: parent.left;
-//                    anchors.leftMargin: 5;
-
-                    color: Style.textColor;
-                    font.family: Style.fontFamily;
-                    font.pixelSize: Style.fontSize_common;
-
-                    text: qsTr("Name");
-
+                onSelectionChanged: {
+                    ouputConnTable.resetSelection();
                 }
 
-                CustomTextField {
-                    id: nameInput;
+                TreeItemModel {
+                    id: headersModel;
 
-                    width: parent.width;
-                    height: Style.itemSizeMedium;
+                    Component.onCompleted: {
+                        let index = headersModel.InsertNewItem();
 
-                    placeHolderText: qsTr("Enter the name");
+                        headersModel.SetData("Id", "ConnectionName", index)
+                        headersModel.SetData("Name", "Connection Name", index)
 
-                    onEditingFinished: {
-                        serviceEditorContainer.doUpdateModel();
+                        index = headersModel.InsertNewItem();
+
+                        headersModel.SetData("Id", "Description", index)
+                        headersModel.SetData("Name", "Description", index)
+
+                        index = headersModel.InsertNewItem();
+
+                        headersModel.SetData("Id", "Host", index)
+                        headersModel.SetData("Name", "Host", index)
+
+                        index = headersModel.InsertNewItem();
+
+                        headersModel.SetData("Id", "Port", index)
+                        headersModel.SetData("Name", "Port", index)
+
+                        index = headersModel.InsertNewItem();
+
+                        headersModel.SetData("Id", "ExternPorts", index)
+                        headersModel.SetData("Name", "Extern Ports", index)
+
+                        inputConnTable.headers = headersModel;
                     }
+                }
 
-                    KeyNavigation.tab: settingsPathInput;
+//                TreeItemModel {
+//                    id: elementsModel;
 
-                    Loader{
-                        id: inputDecoratorLoader1;
+//                    Component.onCompleted: {
+//                        let index = elementsModel.InsertNewItem();
+//                        elementsModel.SetData("ConnectionType", "WebSocketPort", index)
+//                        elementsModel.SetData("Description", "Port for web socket", index)
+//                        elementsModel.SetData("Host", "localhost", index)
+//                        elementsModel.SetData("Port", "8888", index)
+//                        elementsModel.SetData("ExternPorts", "11111", index)
 
-                        sourceComponent: Style.textFieldDecorator !==undefined ? Style.textFieldDecorator: emptyDecorator;
-                        onLoaded: {
-                            if(inputDecoratorLoader1.item){
-                                inputDecoratorLoader1.item.rootItem = nameInput;
+//                        let externPortsModel = elementsModel.AddTreeModel("ExternPorts", index)
+//                        let externPortsIndex = externPortsModel.InsertNewItem();
+
+//                        externPortsModel.SetData("Value", "8080", externPortsIndex);
+//                        let model = externPortsModel.AddTreeModel("Elements", externPortsIndex)
+//                        let elementIndex = model.InsertNewItem();
+//                        model.SetData("Host", "localhost", elementIndex);
+//                        model.SetData("Port", "8080", elementIndex);
+//                        model.SetData("Description", "Test description", elementIndex);
+
+//                        index = elementsModel.InsertNewItem();
+//                        elementsModel.SetData("ConnectionType", "TcpPort", index)
+//                        elementsModel.SetData("Description", "Port for TCP", index)
+//                        elementsModel.SetData("Host", "localhost", index)
+//                        elementsModel.SetData("Port", "7776", index)
+//                        elementsModel.SetData("ExternPorts", "11112;23232", index)
+
+//                        inputConnTable.elements = elementsModel;
+//                    }
+//                }
+
+                TextInputCellContentComp {
+                    id: textInputComp;
+                }
+
+                Component {
+                    id: externCompEditComp;
+                    Item {
+                        id: content;
+                        width: parent.width;
+
+                        property Item tableCellDelegate: null;
+
+                        Component.onCompleted: {
+                            console.log("externCompEditComp onCompleted");
+                        }
+
+                        onTableCellDelegateChanged: {
+                            if (tableCellDelegate.mainMouseArea){
+                                tableCellDelegate.mainMouseArea.hoverEnabled = false;
+
+                                let valueModel = tableCellDelegate.getValue();
+
+                                if (valueModel.ContainsKey("Value")){
+                                    textLabel.text = valueModel.GetData("Value")
+                                }
+                            }
+                        }
+
+                        Text {
+                            id: textLabel;
+
+                            anchors.verticalCenter: parent.verticalCenter;
+                            anchors.left: parent.left;
+                            anchors.right: button.left;
+
+                            elide: Text.ElideRight;
+                            wrapMode: Text.NoWrap;
+
+                            clip: true;
+
+                            color: Style.textColor;
+                            font.family: Style.fontFamily;
+                            font.pixelSize: Style.fontSize_common;
+                        }
+
+                        ToolButton {
+                            id: button;
+
+                            anchors.verticalCenter: parent.verticalCenter;
+                            anchors.right: parent.right;
+
+                            width: 18;
+                            height: width;
+
+                            iconSource: "../../../../" + Style.getIconPath("Icons/Edit", Icon.State.Off, Icon.Mode.Normal);
+
+                            onClicked: {
+                                if (inputConnTable.elements.ContainsKey("ExternPorts", content.tableCellDelegate.rowIndex)){
+                                    let externPortsModel = inputConnTable.elements.GetData("ExternPorts", content.tableCellDelegate.rowIndex);
+                                    if (externPortsModel.ContainsKey("Elements")){
+                                        let elementsModel = externPortsModel.GetData("Elements")
+                                        modalDialogManager.openDialog(externPortsDialogComp, {"portsModel": elementsModel.CopyMe()});
+                                    }
+                                }
+                            }
+                        }
+
+                        Component {
+                            id: externPortsDialogComp;
+
+                            ExternPortsDialog {
+                                onFinished: {
+                                    if (buttonId == Enums.save){
+                                        if (content.tableCellDelegate.rowIndex >= 0){
+                                            let ports = []
+                                            for (let i = 0; i < portsModel.GetItemsCount(); i++){
+                                                let port = portsModel.GetData("Port", i);
+                                                ports.push(port)
+                                            }
+
+                                            let externPortsModel = elementsModel.GetData("ExternPorts", content.tableCellDelegate.rowIndex);
+
+                                            externPortsModel.Copy(portsModel);
+                                            externPortsModel.Refresh()
+
+                                            textLabel.text = ports.join(';');
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
+            }
 
+            Text {
+                anchors.left: parent.left;
 
-                Text {
-                    id: descriptionName;
+                color: Style.textColor;
+                font.family: Style.fontFamily;
+                font.pixelSize: Style.fontSize_common;
 
-                    anchors.left: parent.left;
+                text: qsTr("Output connections");
+            }
 
-                    color: Style.textColor;
-                    font.family: Style.fontFamily;
-                    font.pixelSize: Style.fontSize_common;
+            AuxTable {
+                id: ouputConnTable;
 
-                    text: qsTr("Description");
+                width: parent.width;
+                height: 150;
 
+                onHeadersChanged: {
+                    ouputConnTable.setColumnContentComponent(2, textInputComp2)
+                    ouputConnTable.setColumnContentComponent(3, comboBoxComp2)
                 }
 
-                CustomTextField {
-                    id: descriptionInput;
-
-                    width: parent.width;
-                    height: Style.itemSizeMedium;
-
-                    placeHolderText: qsTr("Enter the name");
-
-                    onEditingFinished: {
-                        serviceEditorContainer.doUpdateModel();
-                    }
-
-                    KeyNavigation.tab: settingsPathInput;
-
-                    Loader{
-                        id: inputDecoratorLoader2;
-
-                        sourceComponent: Style.textFieldDecorator !==undefined ? Style.textFieldDecorator: emptyDecorator;
-                        onLoaded: {
-                            if(inputDecoratorLoader2.item){
-                                inputDecoratorLoader2.item.rootItem = descriptionInput;
-                            }
-                        }
-                    }
+                onSelectionChanged: {
+//                    inputConnTable.resetSelection();
                 }
 
-                Text {
-                    id: titlePath;
-
-                    anchors.left: parent.left;
-
-                    color: Style.textColor;
-                    font.family: Style.fontFamily;
-                    font.pixelSize: Style.fontSize_common;
-
-                    text: qsTr("Path");
-
+                TextInputCellContentComp {
+                    id: textInputComp2;
                 }
 
-                CustomTextField {
-                    id: pathInput;
+                ComboBoxCellContentComp {
+                    id: comboBoxComp2;
+                }
 
-                    width: parent.width;
-                    height: Style.itemSizeMedium;
+                TreeItemModel {
+                    id: headersModel2;
 
-                    placeHolderText: qsTr("Enter the path");
+                    Component.onCompleted: {
+                        let index = headersModel2.InsertNewItem();
 
-                    onEditingFinished: {
-                        serviceEditorContainer.doUpdateModel();
-                    }
+                        headersModel2.SetData("Id", "ConnectionName", index)
+                        headersModel2.SetData("Name", "Connection Name", index)
 
-                    KeyNavigation.tab: settingsPathInput;
+                        index = headersModel2.InsertNewItem();
 
-                    Loader{
-                        id: inputDecoratorLoader3;
+                        headersModel2.SetData("Id", "ServiceName", index)
+                        headersModel2.SetData("Name", "Service Name", index)
 
-                        sourceComponent: Style.textFieldDecorator !==undefined ? Style.textFieldDecorator: emptyDecorator;
-                        onLoaded: {
-                            if(inputDecoratorLoader3.item){
-                                inputDecoratorLoader3.item.rootItem = pathInput;
-                            }
-                        }
+                        index = headersModel2.InsertNewItem();
+
+                        headersModel2.SetData("Id", "Description", index)
+                        headersModel2.SetData("Name", "Description", index)
+
+                        index = headersModel2.InsertNewItem();
+
+                        headersModel2.SetData("Id", "ExternPorts", index)
+                        headersModel2.SetData("Name", "Instance", index)
+
+                        ouputConnTable.headers = headersModel2;
                     }
                 }
 
-                Text {
-                    id: titleSettingsPath;
+//                TreeItemModel {
+//                    id: elementsModel2;
 
-                    anchors.left: parent.left;
+//                    Component.onCompleted: {
+//                        let index = elementsModel2.InsertNewItem();
+//                        elementsModel2.SetData("ConnectionName", "PumaWS", index)
+//                        elementsModel2.SetData("ServiceType", "Puma", index)
+//                        elementsModel2.SetData("Description", "Puma URL for web socket", index)
 
-                    color: Style.textColor;
-                    font.family: Style.fontFamily;
-                    font.pixelSize: Style.fontSize_common;
+//                        elementsModel2.SetData("Url", "localhost:8778", index)
 
-                    text: qsTr("Settings path");
+//                        let proiderModel = elementsModel2.AddTreeModel("Instance", index)
 
-                }
+//                        proiderModel.SetData("Value", "Provider1");
 
-                CustomTextField {
-                    id: settingsPathInput;
+//                        let elementsModel = proiderModel.AddTreeModel("Elements");
+//                        let providerIndx = elementsModel.InsertNewItem();
 
-                    width: parent.width;
-                    height: Style.itemSizeMedium;
+//                        elementsModel.SetData("Id", "Provider1", providerIndx);
+//                        elementsModel.SetData("Name", "Provider1", providerIndx);
 
-                    placeHolderText: qsTr("Enter the settings path");
+//                        providerIndx = elementsModel.InsertNewItem();
 
-                    onEditingFinished: {
-                        serviceEditorContainer.doUpdateModel();
-                    }
-
-                    KeyNavigation.tab: settingsPathInput;
-
-                    Loader{
-                        id: inputDecoratorLoader4;
-
-                        sourceComponent: Style.textFieldDecorator !==undefined ? Style.textFieldDecorator: emptyDecorator;
-                        onLoaded: {
-                            if(inputDecoratorLoader4.item){
-                                inputDecoratorLoader4.item.rootItem = settingsPathInput;
-                            }
-                        }
-                    }
-                }
-
-                Text {
-                    id: titleArguments;
-
-                    anchors.left: parent.left;
-
-                    color: Style.textColor;
-                    font.family: Style.fontFamily;
-                    font.pixelSize: Style.fontSize_common;
-
-                    text: qsTr("Arguments");
-
-                }
-
-                CustomTextField {
-                    id: argumentsInput;
-
-                    width: parent.width;
-                    height: Style.itemSizeMedium;
-
-                    placeHolderText: qsTr("Enter the arguments");
-
-                    onEditingFinished: {
-                        serviceEditorContainer.doUpdateModel();
-                    }
-
-                    KeyNavigation.tab: settingsPathInput;
-
-                    Loader{
-                        id: inputDecoratorLoader5;
-
-                        sourceComponent: Style.textFieldDecorator !==undefined ? Style.textFieldDecorator: emptyDecorator;
-                        onLoaded: {
-                            if(inputDecoratorLoader5.item){
-                                inputDecoratorLoader5.item.rootItem = argumentsInput;
-                            }
-                        }
-                    }
-                }
-
-                Text {
-                    id: titleAutoStart;
-
-                    anchors.left: parent.left;
-
-                    color: Style.textColor;
-                    font.family: Style.fontFamily;
-                    font.pixelSize: Style.fontSize_common;
-
-                    text: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("on") : qsTr("off")) + ")";
-
-                }
-
-                SwitchCustom {
-                    id: switchAutoStart
-//                    height: Style.itemSizeSmall;
-//                    width: height * 2
-                    backgroundColor: "#D4D4D4"
-                    onCheckedChanged: {
-                        serviceEditorContainer.doUpdateModel();
-                    }
-                }
-            }//Column bodyColumn
-        }//columnContainer
-        //
+//                        elementsModel.SetData("Id", "Provider2", providerIndx);
+//                        elementsModel.SetData("Name", "Provider2", providerIndx);
+//                    }
+//                }
+            }
+        }//Column bodyColumn
     }
 }//Container

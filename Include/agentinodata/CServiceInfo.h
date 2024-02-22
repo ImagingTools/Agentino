@@ -2,9 +2,12 @@
 
 
 // ImtCore includes
+#include <imtbase/TIdentifiableWrap.h>
+#include <imtbase/CObjectCollection.h>
+
+// Agentino includes
 #include <agentinodata/IServiceInfo.h>
 #include <agentinodata/CServiceMetaInfo.h>
-#include <imtbase/TIdentifiableWrap.h>
 
 
 namespace agentinodata
@@ -16,8 +19,6 @@ class CServiceInfo: virtual public IServiceInfo
 
 public:
 	CServiceInfo(ServiceType serviceType = ST_ACF);
-	virtual void SetServiceName(const QByteArray& serviceName);
-	virtual void SetServiceDescription(const QByteArray& serviceName);
 	virtual void SetServicePath(const QByteArray& servicePath);
 	virtual void SetServiceSettingsPath(const QByteArray& serviceSettingsPath);
 	virtual void SetServiceArguments(const QByteArrayList &serviceArguments);
@@ -25,14 +26,12 @@ public:
 
 	// reimplemented (agentinodata::IServiceInfo)
 	virtual ServiceType GetServiceType() const override;
-//	virtual void SetServiceType(const ServiceType serviceType) override;
-	virtual QString GetServiceName() const override;
-	virtual QString GetServiceDescription() const override;
 	virtual QByteArray GetServicePath() const override;
 	virtual QByteArray GetServiceSettingsPath() const override;
 	virtual QByteArrayList GetServiceArguments() const override;
 	virtual const IServiceMetaInfo* GetServiceMetaInfo() const override;
 	virtual bool IsAutoStart() const override;
+	virtual imtbase::IObjectCollection* GetConnectionCollection() override;
 
 	// reimplemented (iser::ISerializable)
 	virtual bool Serialize(iser::IArchive &archive) override;
@@ -45,13 +44,12 @@ public:
 
 protected:
 	ServiceType m_serviceType;
-	QString m_name;
-//	QByteArray m_id;
-	QString m_description;
 	QByteArray m_path;
 	QByteArray m_settingsPath;
 	QByteArrayList m_arguments;
 	CServiceMetaInfo m_serviceMetaInfo;
+
+	imtbase::CObjectCollection m_connectionCollection;
 	bool m_isAutoStart;
 };
 

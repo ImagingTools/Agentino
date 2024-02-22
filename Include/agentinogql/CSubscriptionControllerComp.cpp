@@ -4,11 +4,11 @@
 // ImtCore includes
 #include <imtbase/CTreeItemModel.h>
 #include <imtbase/ICollectionInfo.h>
-#include <agentinodata/IServiceController.h>
 #include <imtgql/CGqlRequest.h>
 
-// ServiceManager includes
+// Agentino includes
 #include <agentinodata/CAgentInfo.h>
+#include <agentinodata/IServiceController.h>
 
 
 namespace agentinogql
@@ -70,6 +70,7 @@ void CSubscriptionControllerComp::OnSubscriptionStatusChanged(const QByteArray &
 
 
 // reimplemented (imod::CSingleModelObserverBase)
+
 void CSubscriptionControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& changeSet)
 {
 	if (m_subscriptionManagerCompPtr.IsValid() && m_agentCollectionCompPtr.IsValid()){
@@ -114,9 +115,7 @@ void CSubscriptionControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& c
 			}
 		}
 	}
-
 }
-
 
 
 } // namespace agentinogql

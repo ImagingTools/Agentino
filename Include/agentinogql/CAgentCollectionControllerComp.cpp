@@ -7,11 +7,10 @@
 
 // ImtCore includes
 #include <imtbase/CCollectionFilter.h>
-//#include <imtauth/ICompanyBaseInfo.h>
 #include <imtbase/IObjectCollectionIterator.h>
 #include <imtdb/CSqlDatabaseObjectCollectionComp.h>
 
-// ServiceManager includes
+// Agentino includes
 #include <agentinodata/CAgentInfo.h>
 
 
@@ -20,11 +19,11 @@ namespace agentinogql
 
 
 bool CAgentCollectionControllerComp::SetupGqlItem(
-		const imtgql::CGqlRequest& gqlRequest,
-		imtbase::CTreeItemModel& model,
-		int itemIndex,
-		const QByteArray& collectionId,
-		QString& errorMessage) const
+			const imtgql::CGqlRequest& gqlRequest,
+			imtbase::CTreeItemModel& model,
+			int itemIndex,
+			const QByteArray& collectionId,
+			QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		errorMessage = QString("Unable to get list objects. Internal error.");
@@ -52,20 +51,62 @@ bool CAgentCollectionControllerComp::SetupGqlItem(
 					elementInformation = agentPtr->GetObjectUuid();
 				}
 				else if(informationId == "Name"){
-					elementInformation = agentPtr->GetAgentName();
+					QString name = m_objectCollectionCompPtr->GetElementInfo(collectionId, imtbase::ICollectionInfo::EIT_NAME).toString();
+					elementInformation = name;
 				}
 				else if(informationId == "Description"){
-					elementInformation = agentPtr->GetAgentDescription();
+					QString description = m_objectCollectionCompPtr->GetElementInfo(collectionId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
+
+					elementInformation = description;
 				}
-				else if(informationId == "HttpUrl"){
-					elementInformation = agentPtr->GetHttpUrl();
+				else if(informationId == "ComputerName"){
+					elementInformation = agentPtr->GetComputerName();
 				}
-				else if(informationId == "WebSocketUrl"){
-					elementInformation = agentPtr->GetWebSocketUrl();
+				else if(informationId == "Services"){
+					imtgql::CGqlRequest request(imtgql::IGqlRequest::RT_QUERY, "ServicesList");
+
+					imtgql::CGqlObject inputObject("input");
+
+					imtgql::CGqlObject additionObject("addition");
+					additionObject.InsertField("clientId", QVariant(agentPtr->GetObjectUuid()));
+
+					inputObject.InsertField("addition", additionObject);
+
+					request.AddParam(inputObject);
+
+					imtgql::CGqlObject itemsObject("items");
+					itemsObject.InsertField("Id");
+					itemsObject.InsertField("Name");
+					itemsObject.InsertField("Description");
+					request.AddField(itemsObject);
+
+					if (m_requestHandlerPtr.IsValid()){
+						imtbase::CTreeItemModel* responseModelPtr = m_requestHandlerPtr->CreateResponse(request, errorMessage);
+						if (responseModelPtr != nullptr){
+							imtbase::CTreeItemModel* dataModelPtr = responseModelPtr->GetTreeItemModel("data");
+							if (dataModelPtr != nullptr){
+								imtbase::CTreeItemModel* itemsModelPtr = dataModelPtr->GetTreeItemModel("items");
+								if (itemsModelPtr != nullptr){
+									QStringList result;
+									for (int i = 0; i < itemsModelPtr->GetItemsCount(); i++){
+										QString name = itemsModelPtr->GetData("Name", i).toString();
+
+										result << name;
+									}
+
+									elementInformation = result.join(';');
+								}
+							}
+						}
+					}
 				}
 				else if(informationId == "LastConnection"){
 					QDateTime lastConnection = agentPtr->GetLastConnection();
-					elementInformation = lastConnection.toString("dd.MM.yyyy");
+					if (!lastConnection.isNull()){
+						lastConnection.setTimeSpec(Qt::UTC);
+
+						elementInformation = lastConnection.toLocalTime().toString("dd.MM.yyyy hh:mm:ss");
+					}
 				}
 
 				if (elementInformation.isNull()){
@@ -85,7 +126,7 @@ bool CAgentCollectionControllerComp::SetupGqlItem(
 }
 
 
-imtbase::CTreeItemModel *CAgentCollectionControllerComp::ListObjects(const imtgql::CGqlRequest &gqlRequest, QString &errorMessage) const
+imtbase::CTreeItemModel *CAgentCollectionControllerComp::ListObjects(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		errorMessage = QString("Unable to get list objects. Internal error.");
@@ -169,23 +210,19 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
 	imtbase::CTreeItemModel* dataModel = new imtbase::CTreeItemModel();
 
-	QByteArray accountId = GetObjectIdFromInputParams(gqlRequest.GetParams());
+	QByteArray objectId = GetObjectIdFromInputParams(gqlRequest.GetParams());
 
 	imtbase::IObjectCollection::DataPtr dataPtr;
-	if (m_objectCollectionCompPtr->GetObjectData(accountId, dataPtr)){
+	if (m_objectCollectionCompPtr->GetObjectData(objectId, dataPtr)){
 		const agentinodata::CAgentInfo* agentPtr = dynamic_cast<const agentinodata::CAgentInfo*>(dataPtr.GetPtr());
 		if (agentPtr != nullptr){
-			QString name = agentPtr->GetAgentName();
-			QString description = agentPtr->GetAgentDescription();
-			QString httpUrl = agentPtr->GetHttpUrl();
-			QString webSocketUrl = agentPtr->GetWebSocketUrl();
+			QString name = m_objectCollectionCompPtr->GetElementInfo(objectId, imtbase::ICollectionInfo::EIT_NAME).toString();
+			QString description = m_objectCollectionCompPtr->GetElementInfo(objectId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
 			QDateTime lastConnection = agentPtr->GetLastConnection();
 
-			dataModel->SetData("Id", accountId);
+			dataModel->SetData("Id", objectId);
 			dataModel->SetData("Name", name);
 			dataModel->SetData("Description", description);
-			dataModel->SetData("HttpUrl", httpUrl);
-			dataModel->SetData("WebSocketUrl", webSocketUrl);
 			dataModel->SetData("LastConnection", lastConnection.toString("dd.MM.yyyy"));
 		}
 	}
@@ -197,11 +234,11 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 
 
 istd::IChangeable* CAgentCollectionControllerComp::CreateObject(
-		const QList<imtgql::CGqlObject>& inputParams,
-		QByteArray &objectId,
-		QString &name,
-		QString &description,
-		QString& errorMessage) const
+			const QList<imtgql::CGqlObject>& inputParams,
+			QByteArray& objectId,
+			QString& name,
+			QString& description,
+			QString& errorMessage) const
 {
 	if (!m_agentFactCompPtr.IsValid() || !m_objectCollectionCompPtr.IsValid()){
 		Q_ASSERT(false);
@@ -231,35 +268,20 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObject(
 
 		agentPtr->SetObjectUuid(objectId);
 
-		if (itemModel.ContainsKey("Name")){
-			name = itemModel.GetData("Name").toString();
-		}
+//		if (itemModel.ContainsKey("Name")){
+//			name = itemModel.GetData("Name").toString();
+//		}
 
-		if (name.isEmpty()){
-			errorMessage = QT_TR_NOOP("Service name can't be empty");
-			return nullptr;
-		}
+//		if (name.isEmpty()){
+//			errorMessage = QT_TR_NOOP("Service name can't be empty");
+//			return nullptr;
+//		}
 
-		agentPtr->SetAgentName(name.toUtf8());
+//		agentPtr->SetAgentName(name.toUtf8());
 
-		if (itemModel.ContainsKey("Description")){
-			description = itemModel.GetData("Description").toString();
-			agentPtr->SetAgentDescription(description.toUtf8());
-		}
-
-		if (itemModel.ContainsKey("HttpUrl")){
-			QByteArray httpUrl = itemModel.GetData("HttpUrl").toByteArray();
-			agentPtr->SetHttpUrl(httpUrl);
-		}
-
-		if (itemModel.ContainsKey("WebSocketUrl")){
-			QByteArray webSocketUrl = itemModel.GetData("WebSocketUrl").toByteArray();
-			agentPtr->SetWebSocketUrl(webSocketUrl);
-		}
-
-//		if (itemModel.ContainsKey("LastConnection")){
-//			QByteArray lastConnection = itemModel.GetData("LastConnection").toByteArray();
-//			agentPtr->SetLastConnection(QDateTime::fromString(lastConnection, "dd.MM.yyyy"));
+//		if (itemModel.ContainsKey("Description")){
+//			description = itemModel.GetData("Description").toString();
+//			agentPtr->SetAgentDescription(description.toUtf8());
 //		}
 
 		return agentPtr;
@@ -280,20 +302,33 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtg
 
 	const QList<imtgql::CGqlObject> inputParams = gqlRequest.GetParams();
 
-//	QByteArray oldObjectId;
-//	const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParam("input");
-//	if (inputParamPtr != nullptr){
-//		oldObjectId = inputParamPtr->GetFieldArgumentValue("Id").toByteArray();
-//	}
-
 	QByteArray objectId = GetObjectIdFromInputParams(inputParams);
+
+	imtbase::CTreeItemModel* retVal = nullptr;
 	const istd::IChangeable* agentObject = m_objectCollectionCompPtr->GetObjectPtr(objectId);
 	if (agentObject == nullptr){
-		return BaseClass::InsertObject(gqlRequest, errorMessage);
+		retVal = BaseClass::InsertObject(gqlRequest, errorMessage);
 	}
 	else {
-		return BaseClass::UpdateObject(gqlRequest, errorMessage);
+		retVal =  BaseClass::UpdateObject(gqlRequest, errorMessage);
 	}
+
+	if (m_objectCollectionCompPtr.IsValid()){
+		imtbase::IObjectCollection::DataPtr agentDataPtr;
+		if (m_objectCollectionCompPtr->GetObjectData(objectId, agentDataPtr)){
+			agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(agentDataPtr.GetPtr());
+			if (agentInfoPtr != nullptr){
+				QDateTime dateTime = QDateTime::currentDateTimeUtc();
+				agentInfoPtr->SetLastConnection(dateTime);
+
+				if (!m_objectCollectionCompPtr->SetObjectData(objectId, *agentInfoPtr)){
+					qDebug() << QString("Unable to set data to the collection object with ID: %1.").arg(qPrintable(objectId));
+				}
+			}
+		}
+	}
+
+	return retVal;
 }
 
 

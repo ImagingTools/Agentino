@@ -1,6 +1,9 @@
 #include <agentgql/CAgentinoSubscriptionClientComp.h>
 
 
+// Qt includes
+#include <QtNetwork/QHostInfo>
+
 // ImtCore includes
 #include <imtbase/CTreeItemModel.h>
 #include <imtbase/ICollectionInfo.h>
@@ -66,9 +69,18 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 		}
 		inputDataParams.InsertField("Id", QVariant(clientId));
 
+		QString localHostName = QHostInfo::localHostName();
+		QString domainMain = QHostInfo::localDomainName();
+
+		QString name = localHostName;
+		if (!domainMain.isEmpty()){
+			name += "@" + domainMain;
+		}
+
 		QJsonObject item;
-		item.insert("Name", "COMPUTER-NAME");
-		item.insert("ComputerName", "COMPUTER-TEST");
+
+		item.insert("Name", name);
+		item.insert("ComputerName", name);
 		item.insert("Description", "Test description");
 		item.insert("HttpUrl", "http://localhost:7222");
 		item.insert("WebSocketUrl", "http://localhost:7223");

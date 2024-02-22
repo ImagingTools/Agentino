@@ -13,6 +13,8 @@
 
 // ImtCore includes
 #include <imtbase/IObjectCollection.h>
+
+// Agentino includes
 #include <agentino/Version.h>
 
 
@@ -23,40 +25,15 @@ namespace agentinodata
 // public methods
 
 CServiceInfo::CServiceInfo(ServiceType serviceType):
-			m_serviceType(serviceType),
-			m_isAutoStart(true)
+	m_serviceType(serviceType),
+	m_isAutoStart(true)
 {
-
 }
 
 
 CServiceInfo::ServiceType CServiceInfo::GetServiceType() const
 {
 	return m_serviceType;
-}
-
-
-QString CServiceInfo::GetServiceName() const
-{
-	return m_name;
-}
-
-
-void CServiceInfo::SetServiceName(const QByteArray& serviceName)
-{
-	m_name = serviceName;
-}
-
-
-QString CServiceInfo::GetServiceDescription() const
-{
-	return m_description;
-}
-
-
-void CServiceInfo::SetServiceDescription(const QByteArray& serviceDescription)
-{
-	m_description = serviceDescription;
 }
 
 
@@ -114,15 +91,14 @@ bool CServiceInfo::IsAutoStart() const
 }
 
 
+imtbase::IObjectCollection* CServiceInfo::GetConnectionCollection()
+{
+	return &m_connectionCollection;
+}
+
+
 bool CServiceInfo::Serialize(iser::IArchive &archive)
 {
-	// Get ImtCore version
-	const iser::IVersionInfo& versionInfo = archive.GetVersionInfo();
-	quint32 serviceVersion;
-	if (!versionInfo.GetVersionNumber(agentino::VI_SERVICE_MANAGER, serviceVersion)){
-		serviceVersion = 0;
-	}
-
 	bool retVal = true;
 
 	int serviceType = m_serviceType;
@@ -135,16 +111,6 @@ bool CServiceInfo::Serialize(iser::IArchive &archive)
 	if (!archive.IsStoring()){
 		m_serviceType = (ServiceType)serviceType;
 	}
-
-	iser::CArchiveTag nameTag("Name", "Name", iser::CArchiveTag::TT_LEAF);
-	retVal = retVal && archive.BeginTag(nameTag);
-	retVal = retVal && archive.Process(m_name);
-	retVal = retVal && archive.EndTag(nameTag);
-
-	iser::CArchiveTag descriptionTag("Description", "Description", iser::CArchiveTag::TT_LEAF);
-	retVal = retVal && archive.BeginTag(descriptionTag);
-	retVal = retVal && archive.Process(m_description);
-	retVal = retVal && archive.EndTag(descriptionTag);
 
 	iser::CArchiveTag pathTag("Path", "Path", iser::CArchiveTag::TT_LEAF);
 	retVal = retVal && archive.BeginTag(pathTag);
@@ -172,6 +138,11 @@ bool CServiceInfo::Serialize(iser::IArchive &archive)
 	retVal = retVal && archive.Process(m_isAutoStart);
 	retVal = retVal && archive.EndTag(autoStartTag);
 
+	iser::CArchiveTag connectionsTag("Connections", "Connections", iser::CArchiveTag::TT_GROUP);
+	retVal = retVal && archive.BeginTag(connectionsTag);
+	retVal = retVal && m_connectionCollection.Serialize(archive);
+	retVal = retVal && archive.EndTag(connectionsTag);
+
 	return retVal;
 }
 
@@ -189,8 +160,6 @@ bool CServiceInfo::CopyFrom(const IChangeable &object, CompatibilityMode /*mode*
 		istd::CChangeNotifier changeNotifier(this);
 
 		m_serviceType = sourcePtr->m_serviceType;
-		m_name = sourcePtr->m_name;
-		m_description = sourcePtr->m_description;
 		m_path = sourcePtr->m_path;
 		m_settingsPath = sourcePtr->m_settingsPath;
 		m_arguments = sourcePtr->m_arguments;
@@ -218,9 +187,6 @@ bool CServiceInfo::ResetData(CompatibilityMode /*mode*/)
 {
 	istd::CChangeNotifier changeNotifier(this);
 
-	m_name.clear();
-	m_description.clear();
-	m_name.clear();
 	m_path.clear();
 	m_settingsPath = nullptr;
 	m_arguments.clear();

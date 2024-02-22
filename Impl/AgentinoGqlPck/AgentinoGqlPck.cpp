@@ -49,6 +49,11 @@ I_EXPORT_COMPONENT(
 			"GrapgQL representation agent data information",
 			"GrapgQL Representation Agent Data");
 
+I_EXPORT_COMPONENT(
+			ServiceControllerProxy,
+			"Service controller proxy",
+			"Service Controller Proxy");
+
 
 } // namespace AgentinoGqlPck
 

@@ -7,40 +7,25 @@ import imtcolgui 1.0
 DocumentCollectionViewDelegate {
     id: container;
 
-    viewTypeId: "Services"
-    documentTypeId: "Services"
+    viewTypeId: "AgentView"
+    documentTypeId: "Agent"
 
     removeDialogTitle: qsTr("Deleting an agent");
     removeMessage: qsTr("Delete the selected agent ?");
 
     onCommandActivated: {
         if (commandId === "Services"){
-            console.log("AgentCommands onCommandActivated", commandId);
             let itemId = container.collectionView.table.getSelectedIds()[0];
             let itemName = container.collectionView.table.getSelectedNames()[0];
 
-            let serviciesStr = qsTr("Services of ");
-            console.log("Open servicies", itemId)
-
-            let documentManagerPtr = MainDocumentManager.getDocumentManager(container.collectionView.collectionId)
-             console.log("documentManagerPtr", documentManagerPtr)
+            let documentManagerPtr = MainDocumentManager.getDocumentManager("Agents")
              if (documentManagerPtr){
-                 documentManagerPtr.openDocument(itemId, "Services", "Services");
+                 documentManagerPtr.openDocument(itemId, documentTypeId, viewTypeId);
             }
-            // container.documentManager.addDocument({"Id":         itemId,
-            //                           "Name":       serviciesStr + itemName,
-            //                           "Source":     "../../ServiceCollectionView.qml",
-            //                           "CommandsId": "Services"});
-
-
-                                                      //                                      "Source":     container.collectionViewBase.baseCollectionView.commands.objectViewEditorPath,
-//                                      "CommandsId": container.collectionViewBase.baseCollectionView.commands.objectViewEditorCommandsId});
-
         }
     }
 
     function updateItemSelection(selectedItems){
-        console.log("updateItemSelection", selectedItems);
         if (container.collectionView && container.collectionView.commandsController){
             let isEnabled = selectedItems.length > 0;
             let commandsController = container.collectionView.commandsController;
@@ -52,5 +37,29 @@ DocumentCollectionViewDelegate {
         }
     }
 
+    function onEdit(){
+        console.log("onEdit")
+        let elementsModel = container.collectionView.table.elements;
+        if (!elementsModel){
+            return;
+        }
+
+        let indexes = container.collectionView.table.getSelectedIndexes();
+        if (indexes.length > 0){
+            let index = indexes[0];
+            if (elementsModel.ContainsKey("Id", index)){
+                let itemId = elementsModel.GetData("Id", index);
+
+                let documentManager = MainDocumentManager.getDocumentManager("AgentsSingleDocument");
+                if (documentManager){
+                    documentManager.openDocument(itemId, "Agent", "AgentEditor");
+                }
+            }
+        }
+    }
+
+    function onNew(){
+
+    }
 }
 

@@ -1,10 +1,14 @@
 #pragma once
 
-// Acf includes
+
+// ACF includes
 #include <iser/IObject.h>
 
-// ServiceManager includes
+// Agentino includes
 #include <agentinodata/IServiceMetaInfo.h>
+
+// ImtCore includes
+#include <imtbase/IObjectCollection.h>
 
 
 namespace agentinodata
@@ -42,16 +46,6 @@ public:
 	virtual ServiceType GetServiceType() const = 0;
 
 	/**
-		Get name of the service.
-	*/
-	virtual QString GetServiceName() const = 0;
-
-	/**
-		Get description of the service.
-	*/
-	virtual QString GetServiceDescription() const = 0;
-
-	/**
 		Get path of the service.
 	*/
 	virtual QByteArray GetServicePath() const = 0;
@@ -76,6 +70,10 @@ public:
 	*/
 	virtual bool IsAutoStart() const = 0;
 
+	/**
+		Get connection collection.
+	*/
+	virtual imtbase::IObjectCollection* GetConnectionCollection() = 0;
 };
 
 
