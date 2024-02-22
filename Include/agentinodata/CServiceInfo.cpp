@@ -10,12 +10,10 @@
 #include <iser/IArchive.h>
 #include <iser/CArchiveTag.h>
 #include <iser/CPrimitiveTypesSerializer.h>
+#include <istd/TSingleFactory.h>
 
 // ImtCore includes
-#include <imtbase/IObjectCollection.h>
-
-// Agentino includes
-#include <agentino/Version.h>
+#include <imtservice/CUrlConnectionParam.h>
 
 
 namespace agentinodata
@@ -28,6 +26,8 @@ CServiceInfo::CServiceInfo(ServiceType serviceType):
 	m_serviceType(serviceType),
 	m_isAutoStart(true)
 {
+	typedef istd::TSingleFactory<istd::IChangeable, imtservice::CUrlConnectionParam> FactoryConnectionImpl;
+	m_connectionCollection.RegisterFactory<FactoryConnectionImpl>("ConnectionInfo");
 }
 
 

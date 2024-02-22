@@ -268,21 +268,18 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObject(
 
 		agentPtr->SetObjectUuid(objectId);
 
-//		if (itemModel.ContainsKey("Name")){
-//			name = itemModel.GetData("Name").toString();
-//		}
+		if (itemModel.ContainsKey("Name")){
+			name = itemModel.GetData("Name").toString();
+		}
 
-//		if (name.isEmpty()){
-//			errorMessage = QT_TR_NOOP("Service name can't be empty");
-//			return nullptr;
-//		}
+		if (name.isEmpty()){
+			errorMessage = QT_TR_NOOP("Service name can't be empty");
+			return nullptr;
+		}
 
-//		agentPtr->SetAgentName(name.toUtf8());
-
-//		if (itemModel.ContainsKey("Description")){
-//			description = itemModel.GetData("Description").toString();
-//			agentPtr->SetAgentDescription(description.toUtf8());
-//		}
+		if (itemModel.ContainsKey("Description")){
+			description = itemModel.GetData("Description").toString();
+		}
 
 		return agentPtr;
 	}

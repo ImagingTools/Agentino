@@ -1,4 +1,4 @@
-#include <agentgql/CServiceControllerProxyComp.h>
+#include <agentgql/CGetServiceControllerProxyComp.h>
 
 
 // Agentino includes
@@ -13,60 +13,21 @@ namespace agentgql
 {
 
 
-imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
-			const imtgql::CGqlRequest& gqlRequest,
-			QString& errorMessage) const
+imtbase::CTreeItemModel* CGetServiceControllerProxyComp::CreateInternalResponse(
+		const imtgql::CGqlRequest& gqlRequest,
+		QString& errorMessage) const
 {
 	if (m_agentCollectionCompPtr.IsValid()){
 		const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParam("input");
 
-		QByteArray itemData;
 		QByteArray agentId;
 		QByteArray objectId;
 		if (inputParamPtr != nullptr){
 			objectId = inputParamPtr->GetFieldArgumentValue("Id").toByteArray();
-			itemData = inputParamPtr->GetFieldArgumentValue("Item").toByteArray();
 
 			const imtgql::CGqlObject* addition = inputParamPtr->GetFieldArgumentObjectPtr("addition");
 			if (addition != nullptr) {
 				agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
-			}
-		}
-
-		imtbase::CTreeItemModel itemModel;
-		if (!itemModel.CreateFromJson(itemData)){
-			return nullptr;
-		}
-
-		QString serviceName;
-		if (itemModel.ContainsKey("Name")){
-			serviceName = itemModel.GetData("Name").toString();
-		}
-
-		QString serviceDescription;
-		if (itemModel.ContainsKey("Description")){
-			serviceDescription = itemModel.GetData("Description").toString();
-		}
-
-		istd::TDelPtr<agentinodata::IServiceInfo> serviceInfoPtr = GetServiceInfoFromRepresentationModel(itemModel);
-		if (serviceInfoPtr.IsValid()){
-			imtbase::IObjectCollection::DataPtr dataPtr;
-			if (m_agentCollectionCompPtr->GetObjectData(agentId, dataPtr)){
-				agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(dataPtr.GetPtr());
-				if (agentInfoPtr != nullptr){
-					imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-					if (serviceCollectionPtr != nullptr){
-						imtbase::IObjectCollection::DataPtr serviceDataPtr;
-						if (serviceCollectionPtr->GetObjectData(objectId, serviceDataPtr)){
-							serviceCollectionPtr->SetObjectData(objectId, *serviceInfoPtr.PopPtr());
-						}
-						else{
-							serviceCollectionPtr->InsertNewObject("ServiceInfo", serviceName, serviceDescription, serviceInfoPtr.PopPtr(), objectId);
-						}
-					}
-				}
-
-				m_agentCollectionCompPtr->SetObjectData(agentId, *agentInfoPtr);
 			}
 		}
 	}
@@ -75,7 +36,7 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 }
 
 
-agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepresentationModel(const imtbase::CTreeItemModel& representationModel) const
+agentinodata::IServiceInfo* CGetServiceControllerProxyComp::GetServiceInfoFromRepresentationModel(const imtbase::CTreeItemModel& representationModel) const
 {
 	istd::TDelPtr<agentinodata::CServiceInfo> serviceInfoPtr;
 	serviceInfoPtr.SetPtr(new agentinodata::CServiceInfo);
@@ -128,10 +89,10 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 
 				istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
 				urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam(
-												serviceName.toUtf8(),
-												imtservice::IServiceConnectionParam::CT_INPUT,
-												connectionUrl)
-											);
+												 serviceName.toUtf8(),
+												 imtservice::IServiceConnectionParam::CT_INPUT,
+												 connectionUrl)
+											 );
 
 				if (inputConnectionsModelPtr->ContainsKey("ExternPorts")){
 					imtbase::CTreeItemModel* externPortsModelPtr = inputConnectionsModelPtr->GetTreeItemModel("ExternPorts");
@@ -180,10 +141,10 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 
 				istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
 				urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam(
-												serviceName.toUtf8(),
-												imtservice::IServiceConnectionParam::CT_INPUT,
-												url)
-											);
+												 serviceName.toUtf8(),
+												 imtservice::IServiceConnectionParam::CT_INPUT,
+												 url)
+											 );
 			}
 		}
 	}
@@ -192,7 +153,7 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 }
 
 
-imtbase::CTreeItemModel* CServiceControllerProxyComp::GetRepresentationModelFromServiceInfo(const agentinodata::IServiceInfo& serviceInfo) const
+imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelFromServiceInfo(const agentinodata::IServiceInfo& serviceInfo) const
 {
 	return nullptr;
 }

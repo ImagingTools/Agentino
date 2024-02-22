@@ -7,6 +7,10 @@
 #include <iser/IArchive.h>
 #include <iser/CArchiveTag.h>
 #include <iser/CPrimitiveTypesSerializer.h>
+#include <istd/TSingleFactory.h>
+
+// Agentino includes
+#include <agentinodata/CServiceInfo.h>
 
 
 namespace agentinodata
@@ -14,6 +18,13 @@ namespace agentinodata
 
 
 // public methods
+
+CAgentInfo::CAgentInfo()
+{
+	typedef istd::TSingleFactory<istd::IChangeable, agentinodata::CServiceInfo> FactoryServiceImpl;
+	m_serviceCollection.RegisterFactory<FactoryServiceImpl>("ServiceInfo");
+}
+
 
 void CAgentInfo::SetLastConnection(const QDateTime& lastConnection)
 {

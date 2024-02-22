@@ -13,12 +13,12 @@ namespace agentgql
 {
 
 
-class CServiceControllerProxyComp: public imtclientgql::CGqlRemoteRepresentationControllerCompBase
+class CGetServiceControllerProxyComp: public imtclientgql::CGqlRemoteRepresentationControllerCompBase
 {
 public:
 	typedef imtclientgql::CGqlRemoteRepresentationControllerCompBase BaseClass;
 
-	I_BEGIN_COMPONENT(CServiceControllerProxyComp);
+	I_BEGIN_COMPONENT(CGetServiceControllerProxyComp);
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", true, "AgentCollection");
 	I_END_COMPONENT;
 

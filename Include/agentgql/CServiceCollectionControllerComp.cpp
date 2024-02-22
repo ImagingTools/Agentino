@@ -234,7 +234,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 			imtbase::CTreeItemModel* outputConnectionsModelPtr = dataModel->AddTreeModel("OutputConnections");
 
 			QFileInfo fileInfo(servicePath);
-			QString pluginPath = fileInfo.path() + "../Plugins";
+			QString pluginPath = fileInfo.path() + "/Plugins";
 			if (!m_pluginMap.contains(serviceName)){
 				LoadPluginDirectory(pluginPath, serviceName);
 			}
@@ -244,7 +244,6 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 					const imtbase::ICollectionInfo* collectionInfo = connectionCollection->GetUrlList();
 					const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
 					if (objectCollection != nullptr){
-						dataModel = new imtbase::CTreeItemModel();
 						QByteArrayList ids = collectionInfo->GetElementIds();
 						for (QByteArray id: ids){
 							const imtservice::IServiceConnectionParam* connectionMetaInfo = connectionCollection->GetConnectionMetaInfo(id);
@@ -259,6 +258,8 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 								inputConnectionsModelPtr->SetData("ConnectionName", connectionName, index);
 								inputConnectionsModelPtr->SetData("Description", connectionDescription, index);
 								inputConnectionsModelPtr->SetData("ServiceName", connectionMetaInfo->GetServiceName(), index);
+								inputConnectionsModelPtr->AddTreeModel("ExternPorts", index);
+
 								imtbase::IObjectCollection::DataPtr dataPtr;
 								objectCollection->GetObjectData(id, dataPtr);
 								imtservice::CUrlConnectionParam* connectionParam = dynamic_cast<imtservice::CUrlConnectionParam*>(dataPtr.GetPtr());
@@ -357,12 +358,9 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObject(
 			return nullptr;
 		}
 
-		// serviceInfoPtr->SetServiceName(name.toUtf8());
-
-		// if (itemModel.ContainsKey("Description")){
-		// 	description = itemModel.GetData("Description").toString();
-		// 	serviceInfoPtr->SetServiceDescription(description.toUtf8());
-		// }
+		if (itemModel.ContainsKey("Description")){
+			description = itemModel.GetData("Description").toString();
+		}
 
 		if (itemModel.ContainsKey("Path")){
 			QByteArray path = itemModel.GetData("Path").toByteArray();
@@ -413,7 +411,7 @@ bool CServiceCollectionControllerComp::LoadPluginDirectory(const QString& plugin
 	if (!pluginDirectoryPath.isEmpty() && QFileInfo(pluginDirectoryPath).exists()){
 		QDir pluginsDirectory(pluginDirectoryPath);
 
-		QFileInfoList pluginsList = pluginsDirectory.entryInfoList(QStringList() << "*.test");
+		QFileInfoList pluginsList = pluginsDirectory.entryInfoList(QStringList() << "*.plugin");
 
 		for (const QFileInfo& pluginPath : pluginsList){
 #ifdef Q_OS_WIN
@@ -429,7 +427,7 @@ bool CServiceCollectionControllerComp::LoadPluginDirectory(const QString& plugin
 					if (pluginInstancePtr.IsValid()){
 						PluginInfo pluginInfo;
 						pluginInfo.pluginPath = pluginPath.canonicalFilePath();
-						pluginInfo.pluginPtr = pluginInstancePtr.GetPtr();
+						pluginInfo.pluginPtr = pluginInstancePtr.PopPtr();
 						pluginInfo.destroyFunc = (IMT_DESTROY_PLUGIN_FUNCTION(ServiceSettings))library.resolve(IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings));
 						m_pluginMap.insert(serviceName, pluginInfo);
 					}

@@ -16,6 +16,8 @@ namespace agentinodata
 class CAgentInfo: virtual public IAgentInfo
 {
 public:
+	CAgentInfo();
+
 	virtual void SetLastConnection(const QDateTime& lastConnection);
 	virtual void SetComputerName(const QString& computerName);
 

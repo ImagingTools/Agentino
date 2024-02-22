@@ -22,18 +22,21 @@
         <Element ComponentName="TopologyPage" X="100" Y="250" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="PageData">
-            <PositionMap>
-                <Element ComponentName="AgentsPage" X="475" Y="250" Note=""/>
-                <Element ComponentName="ServicesRemoteRepresentationController" X="500" Y="400" Note=""/>
-                <Element ComponentName="TopologyPage" X="475" Y="125" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
         <EmbededRegistry Id="PagesPermissions">
             <PositionMap>
                 <Element ComponentName="DevicesPermissions" X="550" Y="400" Note=""/>
                 <Element ComponentName="PagePermissions" X="575" Y="150" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="PageData">
+            <PositionMap>
+                <Element ComponentName="AgentsPage" X="150" Y="375" Note=""/>
+                <Element ComponentName="ChangeServiceControllerProxy" X="950" Y="400" Note=""/>
+                <Element ComponentName="GetServiceControllerProxy" X="550" Y="525" Note=""/>
+                <Element ComponentName="GraphQLDemultiplexer" X="575" Y="100" Note=""/>
+                <Element ComponentName="ServicesRemoteRepresentationController" X="500" Y="400" Note=""/>
+                <Element ComponentName="TopologyPage" X="1025" Y="100" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

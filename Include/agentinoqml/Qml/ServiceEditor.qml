@@ -78,7 +78,6 @@ ViewBase {
         serviceEditorContainer.model.SetData("IsAutoStart", switchAutoStart.checked);
     }
 
-
     Rectangle {
         id: background;
 
@@ -498,10 +497,6 @@ ViewBase {
                     ouputConnTable.setColumnContentComponent(3, comboBoxComp2)
                 }
 
-                onSelectionChanged: {
-//                    inputConnTable.resetSelection();
-                }
-
                 TextInputCellContentComp {
                     id: textInputComp2;
                 }
@@ -531,8 +526,8 @@ ViewBase {
 
                         index = headersModel2.InsertNewItem();
 
-                        headersModel2.SetData("Id", "ExternPorts", index)
-                        headersModel2.SetData("Name", "Instance", index)
+                        headersModel2.SetData("Id", "Url", index)
+                        headersModel2.SetData("Name", "Url", index)
 
                         ouputConnTable.headers = headersModel2;
                     }
