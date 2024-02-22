@@ -26,8 +26,8 @@ protected:
 	// reimplemented (imtgql::CGqlRequestHandlerCompBase)
 	virtual imtbase::CTreeItemModel* CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 	virtual agentinodata::IServiceInfo* GetServiceInfoFromRepresentationModel(const imtbase::CTreeItemModel& representationModel) const;
-	virtual imtbase::CTreeItemModel* GetRepresentationModelFromServiceInfo(const agentinodata::IServiceInfo& serviceInfo) const;
-
+	virtual imtbase::CTreeItemModel* GetRepresentationModelFromServiceInfo(const imtbase::IObjectCollection& serviceCollection, const QByteArray& serviceId) const;
+	virtual imtbase::CTreeItemModel* GetConnectionsModel(const QByteArray& connectionId) const;
 protected:
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
 };

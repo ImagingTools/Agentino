@@ -277,21 +277,23 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 								outputConnectionsModelPtr->SetData("ConnectionName", connectionName, index);
 								outputConnectionsModelPtr->SetData("Description", connectionDescription, index);
 								outputConnectionsModelPtr->SetData("ServiceName", connectionMetaInfo->GetServiceName(), index);
+
 								imtbase::IObjectCollection::DataPtr dataPtr;
 								objectCollection->GetObjectData(id, dataPtr);
 								imtservice::CUrlConnectionParam* connectionParam = dynamic_cast<imtservice::CUrlConnectionParam*>(dataPtr.GetPtr());
 								if (connectionParam != nullptr){
 									QUrl url = connectionParam->GetUrl();
-									outputConnectionsModelPtr->SetData("Url", url.toString(), index);
+
+									QString name = connectionMetaInfo->GetServiceName() + "@" + url.host() + QString::number(url.port());
+
+									outputConnectionsModelPtr->SetData("Url", name, index);
+
+									imtbase::CTreeItemModel* elementsModel = outputConnectionsModelPtr->AddTreeModel("Elements", index);
+									elementsModel->SetData("Id", name);
+									elementsModel->SetData("Name", name);
 								}
-
-
-								// Extern ports for output connection
-								imtbase::CTreeItemModel* externPortsModelPtr2 = outputConnectionsModelPtr->AddTreeModel("ExternPorts", index);
 							}
-
 						}
-
 					}
 				}
 			}

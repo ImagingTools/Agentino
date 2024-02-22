@@ -221,7 +221,7 @@ ViewBase {
                 font.family: Style.fontFamily;
                 font.pixelSize: Style.fontSize_common;
 
-                text: qsTr("Settings path");
+                text: qsTr("Settings Path");
             }
 
             CustomTextField {
@@ -296,7 +296,7 @@ ViewBase {
                 font.family: Style.fontFamily;
                 font.pixelSize: Style.fontSize_common;
 
-                text: qsTr("Incoming connections");
+                text: qsTr("Incoming Connections");
             }
 
             AuxTable {
@@ -307,7 +307,6 @@ ViewBase {
 
                 onHeadersChanged: {
                     inputConnTable.setColumnContentComponent(1, textInputComp)
-                    inputConnTable.setColumnContentComponent(2, textInputComp)
                     inputConnTable.setColumnContentComponent(3, textInputComp)
                     inputConnTable.setColumnContentComponent(4, externCompEditComp)
                 }
@@ -349,38 +348,6 @@ ViewBase {
                     }
                 }
 
-//                TreeItemModel {
-//                    id: elementsModel;
-
-//                    Component.onCompleted: {
-//                        let index = elementsModel.InsertNewItem();
-//                        elementsModel.SetData("ConnectionType", "WebSocketPort", index)
-//                        elementsModel.SetData("Description", "Port for web socket", index)
-//                        elementsModel.SetData("Host", "localhost", index)
-//                        elementsModel.SetData("Port", "8888", index)
-//                        elementsModel.SetData("ExternPorts", "11111", index)
-
-//                        let externPortsModel = elementsModel.AddTreeModel("ExternPorts", index)
-//                        let externPortsIndex = externPortsModel.InsertNewItem();
-
-//                        externPortsModel.SetData("Value", "8080", externPortsIndex);
-//                        let model = externPortsModel.AddTreeModel("Elements", externPortsIndex)
-//                        let elementIndex = model.InsertNewItem();
-//                        model.SetData("Host", "localhost", elementIndex);
-//                        model.SetData("Port", "8080", elementIndex);
-//                        model.SetData("Description", "Test description", elementIndex);
-
-//                        index = elementsModel.InsertNewItem();
-//                        elementsModel.SetData("ConnectionType", "TcpPort", index)
-//                        elementsModel.SetData("Description", "Port for TCP", index)
-//                        elementsModel.SetData("Host", "localhost", index)
-//                        elementsModel.SetData("Port", "7776", index)
-//                        elementsModel.SetData("ExternPorts", "11112;23232", index)
-
-//                        inputConnTable.elements = elementsModel;
-//                    }
-//                }
-
                 TextInputCellContentComp {
                     id: textInputComp;
                 }
@@ -393,18 +360,21 @@ ViewBase {
 
                         property Item tableCellDelegate: null;
 
-                        Component.onCompleted: {
-                            console.log("externCompEditComp onCompleted");
-                        }
-
                         onTableCellDelegateChanged: {
                             if (tableCellDelegate.mainMouseArea){
                                 tableCellDelegate.mainMouseArea.hoverEnabled = false;
 
                                 let valueModel = tableCellDelegate.getValue();
+                                if (valueModel){
+                                    let values = []
+                                    for (let i = 0; i < valueModel.GetItemsCount(); i++){
+                                        let port = valueModel.GetData("Port", i);
+                                        let host = valueModel.GetData("Host", i)
 
-                                if (valueModel.ContainsKey("Value")){
-                                    textLabel.text = valueModel.GetData("Value")
+                                        values.push(host + ":" + port)
+                                    }
+
+                                    textLabel.text = values.join(';')
                                 }
                             }
                         }
@@ -440,9 +410,8 @@ ViewBase {
                             onClicked: {
                                 if (inputConnTable.elements.ContainsKey("ExternPorts", content.tableCellDelegate.rowIndex)){
                                     let externPortsModel = inputConnTable.elements.GetData("ExternPorts", content.tableCellDelegate.rowIndex);
-                                    if (externPortsModel.ContainsKey("Elements")){
-                                        let elementsModel = externPortsModel.GetData("Elements")
-                                        modalDialogManager.openDialog(externPortsDialogComp, {"portsModel": elementsModel.CopyMe()});
+                                    if (externPortsModel){
+                                        modalDialogManager.openDialog(externPortsDialogComp, {"portsModel": externPortsModel.CopyMe()});
                                     }
                                 }
                             }
@@ -458,10 +427,11 @@ ViewBase {
                                             let ports = []
                                             for (let i = 0; i < portsModel.GetItemsCount(); i++){
                                                 let port = portsModel.GetData("Port", i);
-                                                ports.push(port)
+                                                let host = portsModel.GetData("Host", i);
+                                                ports.push(host + ":" + port)
                                             }
 
-                                            let externPortsModel = elementsModel.GetData("ExternPorts", content.tableCellDelegate.rowIndex);
+                                            let externPortsModel = inputConnTable.elements.GetData("ExternPorts", content.tableCellDelegate.rowIndex);
 
                                             externPortsModel.Copy(portsModel);
                                             externPortsModel.Refresh()
@@ -483,7 +453,7 @@ ViewBase {
                 font.family: Style.fontFamily;
                 font.pixelSize: Style.fontSize_common;
 
-                text: qsTr("Output connections");
+                text: qsTr("Dependant Services");
             }
 
             AuxTable {
@@ -501,9 +471,103 @@ ViewBase {
                     id: textInputComp2;
                 }
 
-                ComboBoxCellContentComp {
+                Component {
                     id: comboBoxComp2;
+
+                    Item {
+                        id: bodyItem;
+
+                        property Item tableCellDelegate: null;
+
+                        z: parent.z + 1;
+
+                        width: parent.width;
+                        height: 25;
+
+                        property bool ok: tableCellDelegate != null && ouputConnTable.elements;
+
+                        onOkChanged: {
+                            console.log("onTableCellDelegateChanged onOkChanged")
+
+                            if (tableCellDelegate){
+                                let value = tableCellDelegate.getValue();
+                                console.log("rowIndex", tableCellDelegate.rowIndex)
+
+                                let elementsModel = ouputConnTable.elements.GetData("Elements", tableCellDelegate.rowIndex);
+                                console.log("elementsModel", elementsModel)
+
+                                textLabel.text = value;
+
+                                cb.model = elementsModel;
+                                if (cb.model){
+                                    for (let i = 0; i < cb.model.GetItemsCount(); i++){
+                                        let id = cb.model.GetData("Id", i);
+                                        if (id == value){
+                                            cb.currentIndex = i;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        onTableCellDelegateChanged: {
+                            console.log("onTableCellDelegateChanged")
+                        }
+
+                        Text {
+                            id: textLabel;
+
+                            anchors.verticalCenter: parent.verticalCenter;
+
+                            width: parent.width;
+
+                            color: Style.textColor;
+                            font.family: Style.fontFamily;
+                            font.pixelSize: Style.fontSize_common;
+                        }
+
+                        ComboBox {
+                            id: cb;
+
+                            width: parent.width;
+                            height: 25;
+
+                            visible: false;
+
+                            onCurrentIndexChanged: {
+                                cb.visible = false;
+
+                                if (bodyItem.tableCellDelegate){
+                                    if (cb.model){
+                                        let name = cb.model.GetData("Name", cb.currentIndex)
+
+                                        textLabel.text = name;
+
+//                                        let valueModel = bodyItem.tableCellDelegate.getValue();
+//                                        valueModel.SetData("CurrentIndex", cb.currentIndex);
+
+                                        bodyItem.tableCellDelegate.setValue(name);
+                                    }
+                                }
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent;
+
+                            onDoubleClicked: {
+                                cb.visible = true;
+
+                                cb.forceActiveFocus();
+                            }
+                        }
+                    }
                 }
+
+//                ComboBoxCellContentComp {
+//                    id: comboBoxComp2;
+//                }
 
                 TreeItemModel {
                     id: headersModel2;
@@ -532,34 +596,6 @@ ViewBase {
                         ouputConnTable.headers = headersModel2;
                     }
                 }
-
-//                TreeItemModel {
-//                    id: elementsModel2;
-
-//                    Component.onCompleted: {
-//                        let index = elementsModel2.InsertNewItem();
-//                        elementsModel2.SetData("ConnectionName", "PumaWS", index)
-//                        elementsModel2.SetData("ServiceType", "Puma", index)
-//                        elementsModel2.SetData("Description", "Puma URL for web socket", index)
-
-//                        elementsModel2.SetData("Url", "localhost:8778", index)
-
-//                        let proiderModel = elementsModel2.AddTreeModel("Instance", index)
-
-//                        proiderModel.SetData("Value", "Provider1");
-
-//                        let elementsModel = proiderModel.AddTreeModel("Elements");
-//                        let providerIndx = elementsModel.InsertNewItem();
-
-//                        elementsModel.SetData("Id", "Provider1", providerIndx);
-//                        elementsModel.SetData("Name", "Provider1", providerIndx);
-
-//                        providerIndx = elementsModel.InsertNewItem();
-
-//                        elementsModel.SetData("Id", "Provider2", providerIndx);
-//                        elementsModel.SetData("Name", "Provider2", providerIndx);
-//                    }
-//                }
             }
         }//Column bodyColumn
     }

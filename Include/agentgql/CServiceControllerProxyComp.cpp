@@ -57,6 +57,8 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 					imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 					if (serviceCollectionPtr != nullptr){
 						imtbase::IObjectCollection::DataPtr serviceDataPtr;
+						imtbase::ICollectionInfo::Ids elementIds = serviceCollectionPtr->GetElementIds();
+
 						if (serviceCollectionPtr->GetObjectData(objectId, serviceDataPtr)){
 							serviceCollectionPtr->SetObjectData(objectId, *serviceInfoPtr.PopPtr());
 						}
@@ -116,11 +118,11 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 		imtbase::CTreeItemModel* inputConnectionsModelPtr = representationModel.GetTreeItemModel("InputConnections");
 		if (inputConnectionsModelPtr != nullptr){
 			for (int i = 0; i < inputConnectionsModelPtr->GetItemsCount(); i++){
-				QByteArray id = inputConnectionsModelPtr->GetData("Id").toByteArray();
-				QString connectionName = inputConnectionsModelPtr->GetData("ConnectionName").toString();
-				QString description = inputConnectionsModelPtr->GetData("Description").toString();
-				QString host = inputConnectionsModelPtr->GetData("Host").toString();
-				int port = inputConnectionsModelPtr->GetData("Port").toInt();
+				QByteArray id = inputConnectionsModelPtr->GetData("Id", i).toByteArray();
+				QString connectionName = inputConnectionsModelPtr->GetData("ConnectionName", i).toString();
+				QString description = inputConnectionsModelPtr->GetData("Description", i).toString();
+				QString host = inputConnectionsModelPtr->GetData("Host", i).toString();
+				int port = inputConnectionsModelPtr->GetData("Port", i).toInt();
 
 				QUrl connectionUrl;
 				connectionUrl.setHost(host);
@@ -133,26 +135,24 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 												connectionUrl)
 											);
 
-				if (inputConnectionsModelPtr->ContainsKey("ExternPorts")){
-					imtbase::CTreeItemModel* externPortsModelPtr = inputConnectionsModelPtr->GetTreeItemModel("ExternPorts");
+				if (inputConnectionsModelPtr->ContainsKey("ExternPorts", i)){
+					imtbase::CTreeItemModel* externPortsModelPtr = inputConnectionsModelPtr->GetTreeItemModel("ExternPorts", i);
 					if (externPortsModelPtr != nullptr){
-						imtbase::CTreeItemModel* elementsModelPtr = externPortsModelPtr->GetTreeItemModel("Elements");
+						imtbase::CTreeItemModel* elementsModelPtr = externPortsModelPtr;
 						if (elementsModelPtr != nullptr){
-							for (int i = 0; i < elementsModelPtr->GetItemsCount(); i++){
-								QByteArray objectId = elementsModelPtr->GetData("Id", i).toByteArray();
-								QString description = elementsModelPtr->GetData("Description", i).toString();
-								QString externHost = elementsModelPtr->GetData("Host", i).toString();
-								int externPort = elementsModelPtr->GetData("Port", i).toInt();
+							for (int j = 0; j < elementsModelPtr->GetItemsCount(); j++){
+								QByteArray objectId = elementsModelPtr->GetData("Id", j).toByteArray();
+								QString externDescription = elementsModelPtr->GetData("Description", j).toString();
+								QString externHost = elementsModelPtr->GetData("Host", j).toString();
+								int externPort = elementsModelPtr->GetData("Port", j).toInt();
 
 								imtservice::IServiceConnectionParam::IncomingConnectionParam externConnection;
-
-								externConnection.description = description;
 
 								QUrl url;
 								url.setPort(externPort);
 								url.setHost(externHost);
 
-								externConnection.description = description;
+								externConnection.description = externDescription;
 								externConnection.url = url;
 
 								urlConnectionParamPtr->AddExternConnection(externConnection);
@@ -174,16 +174,36 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 				QString connectionName = outputConnectionsModelPtr->GetData("ConnectionName", i).toString();
 				QString serviceName = outputConnectionsModelPtr->GetData("ServiceName", i).toString();
 				QString description = outputConnectionsModelPtr->GetData("Description", i).toString();
+
 				QString urlStr = outputConnectionsModelPtr->GetData("Url", i).toString();
 
-				QUrl url = QUrl(urlStr);
+				QStringList data = urlStr.split('@')[1].split(':');
+				QUrl url;
+				if (data.size() == 2){
+					url.setHost(data[0]);
+					url.setPort(data[1].toInt());
+				}
+
+//				imtbase::CTreeItemModel* externPortsModelPtr = outputConnectionsModelPtr->GetTreeItemModel("ExternPorts", i);
+//				if (externPortsModelPtr != nullptr){
+//					int currentIndex = externPortsModelPtr->GetData("CurrentIndex").toInt();
+//					imtbase::CTreeItemModel* elementsModelPtr = externPortsModelPtr->GetTreeItemModel("Elements");
+
+//					if (elementsModelPtr != nullptr && currentIndex >= 0){
+//						QString urlStr = elementsModelPtr->GetData("Name", currentIndex).toString();
+
+//						url = QUrl(urlStr);
+//					}
+//				}
 
 				istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
 				urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam(
 												serviceName.toUtf8(),
-												imtservice::IServiceConnectionParam::CT_INPUT,
+												imtservice::IServiceConnectionParam::CT_OUTPUT,
 												url)
 											);
+
+				connectionCollectionPtr->InsertNewObject("ConnectionInfo", connectionName, description, urlConnectionParamPtr.PopPtr(), id);
 			}
 		}
 	}

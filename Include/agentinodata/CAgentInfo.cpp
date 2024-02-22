@@ -105,6 +105,8 @@ bool CAgentInfo::CopyFrom(const IChangeable &object, CompatibilityMode /*mode*/)
 
 		m_lastConnection = sourcePtr->m_lastConnection;
 		m_computerName = sourcePtr->m_computerName;
+
+		m_serviceCollection.ResetData();
 		m_serviceCollection.CopyFrom(sourcePtr->m_serviceCollection);
 
 		return true;
