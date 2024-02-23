@@ -165,10 +165,8 @@ bool CServiceInfo::CopyFrom(const IChangeable &object, CompatibilityMode /*mode*
 		m_arguments = sourcePtr->m_arguments;
 		m_isAutoStart = sourcePtr->m_isAutoStart;
 
-		imtbase::ICollectionInfo::Ids ids = sourcePtr->m_connectionCollection.GetElementIds();
 		m_connectionCollection.ResetData();
 		m_connectionCollection.CopyFrom(sourcePtr->m_connectionCollection);
-		imtbase::ICollectionInfo::Ids ids2 = m_connectionCollection.GetElementIds();
 
 		return true;
 	}
