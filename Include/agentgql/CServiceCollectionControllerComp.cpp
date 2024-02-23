@@ -316,6 +316,18 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 }
 
 
+imtbase::CTreeItemModel* CServiceCollectionControllerComp::InsertObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+{
+	imtbase::CTreeItemModel* resultPtr = BaseClass::InsertObject(gqlRequest, errorMessage);
+
+	if (errorMessage.isEmpty()){
+		return GetObject(gqlRequest, errorMessage);
+	}
+
+	return resultPtr;
+}
+
+
 istd::IChangeable* CServiceCollectionControllerComp::CreateObject(
 		const QList<imtgql::CGqlObject>& inputParams,
 		QByteArray &objectId,

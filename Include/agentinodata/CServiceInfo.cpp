@@ -78,11 +78,11 @@ void CServiceInfo::SetIsAutoStart(bool isAutoStart)
 	m_isAutoStart = isAutoStart;
 }
 
-
 const IServiceMetaInfo* CServiceInfo::GetServiceMetaInfo() const
 {
 	return &m_serviceMetaInfo;
 }
+
 
 
 bool CServiceInfo::IsAutoStart() const

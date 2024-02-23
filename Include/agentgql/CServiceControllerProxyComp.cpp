@@ -14,66 +14,81 @@ namespace agentgql
 
 
 imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
-			const imtgql::CGqlRequest& gqlRequest,
-			QString& errorMessage) const
+		const imtgql::CGqlRequest& gqlRequest,
+		QString& errorMessage) const
 {
-	if (m_agentCollectionCompPtr.IsValid()){
-		const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParam("input");
+	imtbase::CTreeItemModel* resultModelPtr = BaseClass::CreateInternalResponse(gqlRequest, errorMessage);
 
-		QByteArray itemData;
-		QByteArray agentId;
-		QByteArray objectId;
-		if (inputParamPtr != nullptr){
-			objectId = inputParamPtr->GetFieldArgumentValue("Id").toByteArray();
-			itemData = inputParamPtr->GetFieldArgumentValue("Item").toByteArray();
+	qDebug() << "resultModelPtr" << resultModelPtr->toJSON();
 
-			const imtgql::CGqlObject* addition = inputParamPtr->GetFieldArgumentObjectPtr("addition");
-			if (addition != nullptr) {
-				agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
+	if (!resultModelPtr->ContainsKey("errors")){
+		if (m_agentCollectionCompPtr.IsValid()){
+			const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParam("input");
+
+			QByteArray itemData;
+			QByteArray agentId;
+			QByteArray objectId;
+			if (inputParamPtr != nullptr){
+				objectId = inputParamPtr->GetFieldArgumentValue("Id").toByteArray();
+				itemData = inputParamPtr->GetFieldArgumentValue("Item").toByteArray();
+
+				const imtgql::CGqlObject* addition = inputParamPtr->GetFieldArgumentObjectPtr("addition");
+				if (addition != nullptr) {
+					agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
+				}
 			}
-		}
 
-		imtbase::CTreeItemModel itemModel;
-		if (!itemModel.CreateFromJson(itemData)){
-			return nullptr;
-		}
+			imtbase::CTreeItemModel itemModel;
+			if (gqlRequest.GetCommandId() == "ServiceAdd"){
 
-		QString serviceName;
-		if (itemModel.ContainsKey("Name")){
-			serviceName = itemModel.GetData("Name").toString();
-		}
+				imtbase::CTreeItemModel* dataModelPtr = resultModelPtr->GetTreeItemModel("data");
+				if (dataModelPtr != nullptr){
+					itemModel.CopyFrom(*dataModelPtr);
+				}
+			}
+			else{
+				if (!itemModel.CreateFromJson(itemData)){
+					return nullptr;
+				}
+			}
 
-		QString serviceDescription;
-		if (itemModel.ContainsKey("Description")){
-			serviceDescription = itemModel.GetData("Description").toString();
-		}
+			QString serviceName;
+			if (itemModel.ContainsKey("Name")){
+				serviceName = itemModel.GetData("Name").toString();
+			}
 
-		istd::TDelPtr<agentinodata::IServiceInfo> serviceInfoPtr = GetServiceInfoFromRepresentationModel(itemModel);
-		if (serviceInfoPtr.IsValid()){
-			imtbase::IObjectCollection::DataPtr dataPtr;
-			if (m_agentCollectionCompPtr->GetObjectData(agentId, dataPtr)){
-				agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(dataPtr.GetPtr());
-				if (agentInfoPtr != nullptr){
-					imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-					if (serviceCollectionPtr != nullptr){
-						imtbase::IObjectCollection::DataPtr serviceDataPtr;
-						imtbase::ICollectionInfo::Ids elementIds = serviceCollectionPtr->GetElementIds();
+			QString serviceDescription;
+			if (itemModel.ContainsKey("Description")){
+				serviceDescription = itemModel.GetData("Description").toString();
+			}
 
-						if (serviceCollectionPtr->GetObjectData(objectId, serviceDataPtr)){
-							serviceCollectionPtr->SetObjectData(objectId, *serviceInfoPtr.PopPtr());
-						}
-						else{
-							serviceCollectionPtr->InsertNewObject("ServiceInfo", serviceName, serviceDescription, serviceInfoPtr.PopPtr(), objectId);
+			istd::TDelPtr<agentinodata::IServiceInfo> serviceInfoPtr = GetServiceInfoFromRepresentationModel(itemModel);
+			if (serviceInfoPtr.IsValid()){
+				imtbase::IObjectCollection::DataPtr dataPtr;
+				if (m_agentCollectionCompPtr->GetObjectData(agentId, dataPtr)){
+					agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(dataPtr.GetPtr());
+					if (agentInfoPtr != nullptr){
+						imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+						if (serviceCollectionPtr != nullptr){
+							imtbase::IObjectCollection::DataPtr serviceDataPtr;
+							imtbase::ICollectionInfo::Ids elementIds = serviceCollectionPtr->GetElementIds();
+
+							if (serviceCollectionPtr->GetObjectData(objectId, serviceDataPtr)){
+								serviceCollectionPtr->SetObjectData(objectId, *serviceInfoPtr.PopPtr());
+							}
+							else{
+								serviceCollectionPtr->InsertNewObject("ServiceInfo", serviceName, serviceDescription, serviceInfoPtr.PopPtr(), objectId);
+							}
 						}
 					}
-				}
 
-				m_agentCollectionCompPtr->SetObjectData(agentId, *agentInfoPtr);
+					m_agentCollectionCompPtr->SetObjectData(agentId, *agentInfoPtr);
+				}
 			}
 		}
 	}
 
-	return BaseClass::CreateInternalResponse(gqlRequest, errorMessage);
+	return resultModelPtr;
 }
 
 
@@ -130,10 +145,10 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 
 				istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
 				urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam(
-												serviceName.toUtf8(),
-												imtservice::IServiceConnectionParam::CT_INPUT,
-												connectionUrl)
-											);
+												 serviceName.toUtf8(),
+												 imtservice::IServiceConnectionParam::CT_INPUT,
+												 connectionUrl)
+											 );
 
 				if (inputConnectionsModelPtr->ContainsKey("ExternPorts", i)){
 					imtbase::CTreeItemModel* externPortsModelPtr = inputConnectionsModelPtr->GetTreeItemModel("ExternPorts", i);
@@ -186,10 +201,10 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 
 				istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
 				urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam(
-												serviceName.toUtf8(),
-												imtservice::IServiceConnectionParam::CT_OUTPUT,
-												url)
-											);
+												 serviceName.toUtf8(),
+												 imtservice::IServiceConnectionParam::CT_OUTPUT,
+												 url)
+											 );
 
 				connectionCollectionPtr->InsertNewObject("ConnectionInfo", connectionName, description, urlConnectionParamPtr.PopPtr(), id);
 			}
