@@ -195,6 +195,7 @@ bool CServiceInfo::ResetData(CompatibilityMode /*mode*/)
 	m_arguments.clear();
 	m_isAutoStart = true;
 	m_connectionCollection.ResetData();
+	m_serviceType = ST_NONE;
 
 	return true;
 }

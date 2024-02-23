@@ -184,18 +184,6 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 					url.setPort(data[1].toInt());
 				}
 
-//				imtbase::CTreeItemModel* externPortsModelPtr = outputConnectionsModelPtr->GetTreeItemModel("ExternPorts", i);
-//				if (externPortsModelPtr != nullptr){
-//					int currentIndex = externPortsModelPtr->GetData("CurrentIndex").toInt();
-//					imtbase::CTreeItemModel* elementsModelPtr = externPortsModelPtr->GetTreeItemModel("Elements");
-
-//					if (elementsModelPtr != nullptr && currentIndex >= 0){
-//						QString urlStr = elementsModelPtr->GetData("Name", currentIndex).toString();
-
-//						url = QUrl(urlStr);
-//					}
-//				}
-
 				istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
 				urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam(
 												serviceName.toUtf8(),
