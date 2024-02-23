@@ -5,8 +5,8 @@
 #define MyAppVersion "1.0"
 #define MyAppPublisher "ImagingTools GmbH"
 #define MyAppURL "http://www.imagingtools.de"
-#define MyAppExeName "AculaServer.exe"
-#define BasePath GetEnv('ACULA_BUILD_DIR')
+#define MyAppExeName "AgentinoAgent.exe"
+#define BasePath GetEnv('AGENTINO_AGENT_DIR')
 
 [Setup]
 AppName={#MyAppName}
@@ -19,13 +19,13 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf64}\ImagingTools\{#MyAppName}
 DisableProgramGroupPage=yes
 PrivilegesRequired=admin
-OutputBaseFilename=AculaServerInstall
+OutputBaseFilename=AgentinoAgentInstall
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
 
 [Components]
-Name: "server"; Description: "Acula server"; Types: full compact custom; Flags: fixed
+Name: "server"; Description: "Agentino Agent"; Types: full compact custom; Flags: fixed
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

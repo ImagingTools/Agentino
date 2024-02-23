@@ -1,5 +1,5 @@
 @echo on
-set SERVICE_MANAGER_BUILD_DIR=..\..\..\Bin\Release_Qt5_VC16_x64
-iscc ServiceManagerServer.iss
+set AGENTINO_SERVER_DIR=..\..\..\Bin\Release_Qt6_VC16_x64
+iscc AgentinoServer.iss
 pause
 
