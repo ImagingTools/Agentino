@@ -37,6 +37,9 @@
                     <AttributeInfo Id="ServerSettings" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="AgentinoLocalization"/>
                     </AttributeInfo>
@@ -200,6 +203,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="ServerSettings" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="AgentinoLocalization"/>

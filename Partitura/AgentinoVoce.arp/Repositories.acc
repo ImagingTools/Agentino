@@ -65,6 +65,61 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="Position2d" PackageId="BasePck" ComponentId="Position2d">
+            <Data IsEnabled="true" Flags="2">
+                <AttributeInfoMap/>
+            </Data>
+        </Element>
+        <Element Id="TopologyCollection" PackageId="ImtCorePck" ComponentId="ObjectCollection">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ObjectFactories" Type="Factory[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>Position2d</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TypeIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>Topology</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="TopologyFileAutoPersistence" PackageId="ImtCoreVoce" ComponentId="FileAutoPersistence">
+            <Data IsEnabled="true" Flags="1">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DefaultPath" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="TopologyCollection.xml"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="LocationType" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="105"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Object" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="TopologyCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RuntimeStatus" Type="Reference" ExportId="RuntimeStatus">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="StoreOnChange" Type="Boolean" ExportId="">
+                        <Data IsEnabled="true" Value="true"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
     </ElementsList>
     <EmbeddedRegistriesList/>
     <ExportedInterfaces>
@@ -74,5 +129,6 @@
     <ExportedComponents>
         <Component ExportedId="AgentCollection" ComponentId="AgentCollection"/>
         <Component ExportedId="AutoPersistence" ComponentId="FileAutoPersistence/AutoPersistence"/>
+        <Component ExportedId="TopologyCollection" ComponentId="TopologyCollection"/>
     </ExportedComponents>
 </Acf>

@@ -309,7 +309,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 	imtbase::CTreeItemModel* retVal = nullptr;
 	const istd::IChangeable* agentObject = m_objectCollectionCompPtr->GetObjectPtr(objectId);
 	if (agentObject == nullptr){
-		retVal = BaseClass::InsertObject(gqlRequest, errorMessage);
+		// retVal = BaseClass::InsertObject(gqlRequest, errorMessage);
 	}
 
 	return retVal;

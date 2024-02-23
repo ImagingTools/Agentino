@@ -8,9 +8,12 @@
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
-        <Element ComponentName="AgentCollection" X="525" Y="200" Note=""/>
-        <Element ComponentName="AgentInfo" X="550" Y="300" Note=""/>
-        <Element ComponentName="FileAutoPersistence" X="800" Y="200" Note=""/>
+        <Element ComponentName="AgentCollection" X="525" Y="100" Note=""/>
+        <Element ComponentName="AgentInfo" X="525" Y="200" Note=""/>
+        <Element ComponentName="FileAutoPersistence" X="800" Y="100" Note=""/>
+        <Element ComponentName="Position2d" X="550" Y="525" Note=""/>
+        <Element ComponentName="TopologyCollection" X="550" Y="425" Note=""/>
+        <Element ComponentName="TopologyFileAutoPersistence" X="825" Y="425" Note=""/>
     </PositionMap>
     <EmbeddedRegistries/>
 </Acf>

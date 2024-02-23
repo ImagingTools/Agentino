@@ -59,6 +59,11 @@ I_EXPORT_COMPONENT(
 			"Get service controller proxy",
 			"Get Service Controller Proxy");
 
+I_EXPORT_COMPONENT(
+			TopologyController,
+			"Topology controller",
+			"Topology controller");
+
 
 } // namespace AgentinoGqlPck
 

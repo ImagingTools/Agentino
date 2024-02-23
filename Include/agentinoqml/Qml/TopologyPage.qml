@@ -32,6 +32,24 @@ ViewBase {
         uuid: topologyPage.viewId;
     }
 
+    Component.onCompleted: {
+        // itemsTopologyModel.updateModel()
+    }
+
+    onVisibleChanged: {
+        if (topologyPage.visible){
+            itemsTopologyModel.updateModel()
+        }
+    }
+
+    commandsDelegate: Item {
+        function commandHandle(commandId) {
+            if (commandId === "Save"){
+                topologySaveModel.save()
+            }
+    }
+    }
+
     onContentXChanged: {
         if(mainContainer.x !== - contentX){
             mainContainer.x = - contentX;
@@ -47,63 +65,68 @@ ViewBase {
         id: scheme
 
         Component.onCompleted: {
-            //TEST
-            //links for test
-            let indexLisalink = linkLisaModel.InsertNewItem();
-            linkLisaModel.SetData("ObjectId", "Puma", indexLisalink);
-
-            let indexRTVisionlink = linkRTVisionModel.InsertNewItem();
-            linkRTVisionModel.SetData("ObjectId", "Puma", indexRTVisionlink);
-            indexRTVisionlink = linkRTVisionModel.InsertNewItem();
-            linkRTVisionModel.SetData("ObjectId", "Lisa", indexRTVisionlink);
-
-            let indexRTVision3dlink = linkRTVision3dModel.InsertNewItem();
-            linkRTVision3dModel.SetData("ObjectId", "Puma", indexRTVision3dlink);
-            indexRTVision3dlink = linkRTVisionModel.InsertNewItem();
-            linkRTVision3dModel.SetData("ObjectId", "Lisa", indexRTVision3dlink);
-
-            let index = objectModel.InsertNewItem();
-            objectModel.SetData("Id", "Puma", index);
-            objectModel.SetData("X", 300, index);
-            objectModel.SetData("Y", 300, index);
-            objectModel.SetData("MainText", "Puma service", index);
-            objectModel.SetData("SecondText", "Primary authorization server", index);
-
-            index = objectModel.InsertNewItem();
-            objectModel.SetData("Id", "RTVision.3d", index);
-            objectModel.SetData("X", 600, index);
-            objectModel.SetData("Y", 600, index);
-            objectModel.SetData("MainText", "RTVision.3d server", index);
-            objectModel.SetData("SecondText", "", index);
-            objectModel.SetData("HasError", true, index);
-            objectModel.SetExternTreeModel("Links", linkRTVision3dModel, index);
-
-
-            index = objectModel.InsertNewItem();
-            objectModel.SetData("Id", "Lisa", index);
-            objectModel.SetData("X", 100, index);
-            objectModel.SetData("Y", 100, index);
-            objectModel.SetData("MainText", "Lisa service", index);
-            objectModel.SetData("SecondText", "License/features management system", index);
-            objectModel.SetData("IsComposite", true, index);
-            objectModel.SetExternTreeModel("Links", linkLisaModel, index);
-
-            index = objectModel.InsertNewItem();
-            objectModel.SetData("Id", "RTVision", index);
-            objectModel.SetData("X", 600, index);
-            objectModel.SetData("Y", 100, index);
-            objectModel.SetData("MainText", "RTVision server", index);
-            objectModel.SetData("SecondText", "", index);
-            objectModel.SetExternTreeModel("Links", linkRTVisionModel, index);
-
-            console.log("Start draw")
-//            canvas.requestPaint();
-            scheme.requestPaint();
-            //TEST
         }
-        TreeItemModel {id: linkLisaModel;/*for test*/}
-        TreeItemModel {id: linkRTVisionModel;/*for test*/}
-        TreeItemModel {id: linkRTVision3dModel;/*for test*/}
+    }
+
+    property GqlModel topologySaveModel: GqlModel {
+        function save(){
+            var query = Gql.GqlRequest("mutation", "SaveTopology");
+
+            var inputParams = Gql.GqlObject("input");
+            inputParams.InsertField ("Item", scheme.objectModel.toJSON());
+
+            query.AddParam(inputParams);
+
+            var queryFields = Gql.GqlObject("updatedNotification");
+            queryFields.InsertField("Id");
+            query.AddField(queryFields);
+
+            var gqlData = query.GetQuery();
+            this.SetGqlQuery(gqlData);
+        }
+    }
+
+
+    property GqlModel itemsTopologyModel: GqlModel {
+        id: topolodyModel
+
+        function updateModel() {
+            console.log( "topologyPage updateModel", "GetTopology");
+            var query = Gql.GqlRequest("query", "GetTopology");
+            var queryFields = Gql.GqlObject("items");
+
+            query.AddField(queryFields);
+
+            var gqlData = query.GetQuery();
+
+            console.log("topologyPage query ", gqlData);
+            this.SetGqlQuery(gqlData);
+        }
+
+        onStateChanged: {
+            console.log("State:", this.state);
+            if (this.state === "Ready"){
+                var dataModelLocal;
+                if (topolodyModel.ContainsKey("errors")){
+                    return;
+                }
+
+                console.log("GetTopology ready:" )
+
+                if (topolodyModel.ContainsKey("data")){
+                    dataModelLocal = topolodyModel.GetData("data");
+                    if (dataModelLocal.ContainsKey("GetTopology")){
+                        dataModelLocal = dataModelLocal.GetData("GetTopology");
+                        if (dataModelLocal.ContainsKey("items")){
+                            scheme.objectModel = dataModelLocal.GetData("items");
+                            scheme.requestPaint()
+                        }
+                    }
+                }
+            }
+            else if (this.state === "Error"){
+            }
+        }
     }
 
 }

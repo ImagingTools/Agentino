@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5191" Description="ACF"/>
-            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5200" Description="ACF"/>
+            <Version Id="1" Number="2203" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394753" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -60,6 +60,9 @@
         <Element Id="PageData" PackageId="" ComponentId="PageData">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentCollection">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="AgentRepository" Type="Reference" ExportId="AgentRepository">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -67,6 +70,9 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="TopologyCollection">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
@@ -353,7 +359,13 @@
                     <Element Id="TopologyPage" PackageId="AgentinoVoce" ComponentId="TopologyPage">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
+                                <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentCollection">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="TopologyCollection">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
