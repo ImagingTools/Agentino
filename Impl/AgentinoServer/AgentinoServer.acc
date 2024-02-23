@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5191" Description="ACF"/>
-            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5200" Description="ACF"/>
+            <Version Id="1" Number="2203" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394753" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -26,6 +26,8 @@
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>Server</Value>
+                                <Value>Server/AgentCollection</Value>
+                                <Value>Server/AutoPersistence</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

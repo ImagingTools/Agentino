@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5191" Description="ACF"/>
-            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5200" Description="ACF"/>
+            <Version Id="1" Number="2203" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="394753" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -36,7 +36,7 @@
             </Data>
         </Element>
         <Element Id="FileAutoPersistence" PackageId="ImtCoreVoce" ComponentId="FileAutoPersistence">
-            <Data IsEnabled="true" Flags="1">
+            <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                         <Data IsEnabled="false"/>
@@ -67,8 +67,12 @@
         </Element>
     </ElementsList>
     <EmbeddedRegistriesList/>
-    <ExportedInterfaces/>
+    <ExportedInterfaces>
+        <Interface InterfaceId="istd::IChangeable" ComponentId="AgentCollection"/>
+        <Interface InterfaceId="istd::IPolymorphic" ComponentId="AgentCollection"/>
+    </ExportedInterfaces>
     <ExportedComponents>
         <Component ExportedId="AgentCollection" ComponentId="AgentCollection"/>
+        <Component ExportedId="AutoPersistence" ComponentId="FileAutoPersistence/AutoPersistence"/>
     </ExportedComponents>
 </Acf>

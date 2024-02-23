@@ -281,6 +281,11 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObject(
 			description = itemModel.GetData("Description").toString();
 		}
 
+		if (itemModel.ContainsKey("ComputerName")){
+			QString computerName = itemModel.GetData("ComputerName").toString();
+			agentPtr->SetComputerName(computerName);
+		}
+
 		return agentPtr;
 	}
 
@@ -288,6 +293,28 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObject(
 
 	return nullptr;
 }
+
+
+imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+{
+	if (!m_objectCollectionCompPtr.IsValid()){
+		Q_ASSERT(false);
+		return nullptr;
+	}
+
+	const QList<imtgql::CGqlObject> inputParams = gqlRequest.GetParams();
+
+	QByteArray objectId = GetObjectIdFromInputParams(inputParams);
+
+	imtbase::CTreeItemModel* retVal = nullptr;
+	const istd::IChangeable* agentObject = m_objectCollectionCompPtr->GetObjectPtr(objectId);
+	if (agentObject == nullptr){
+		retVal = BaseClass::InsertObject(gqlRequest, errorMessage);
+	}
+
+	return retVal;
+}
+
 
 
 imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
@@ -304,23 +331,76 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtg
 	imtbase::CTreeItemModel* retVal = nullptr;
 	const istd::IChangeable* agentObject = m_objectCollectionCompPtr->GetObjectPtr(objectId);
 	if (agentObject == nullptr){
-		retVal = BaseClass::InsertObject(gqlRequest, errorMessage);
+		return nullptr;
+		// retVal = BaseClass::InsertObject(gqlRequest, errorMessage);
 	}
-	else {
-		retVal =  BaseClass::UpdateObject(gqlRequest, errorMessage);
-	}
+	// else {
+		// retVal =  BaseClass::UpdateObject(gqlRequest, errorMessage);
+	// 	imtbase::IObjectCollection::DataPtr agentDataPtr;
+	// 	if (m_objectCollectionCompPtr->GetObjectData(objectId, agentDataPtr)){
+	// 		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(agentDataPtr.GetPtr());
+	// 		if (agentInfoPtr != nullptr){
+	// 			QDateTime dateTime = QDateTime::currentDateTimeUtc();
+	// 			agentInfoPtr->SetLastConnection(dateTime);
 
-	if (m_objectCollectionCompPtr.IsValid()){
-		imtbase::IObjectCollection::DataPtr agentDataPtr;
-		if (m_objectCollectionCompPtr->GetObjectData(objectId, agentDataPtr)){
-			agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(agentDataPtr.GetPtr());
-			if (agentInfoPtr != nullptr){
-				QDateTime dateTime = QDateTime::currentDateTimeUtc();
-				agentInfoPtr->SetLastConnection(dateTime);
+	// 			if (!m_objectCollectionCompPtr->SetObjectData(objectId, *agentInfoPtr)){
+	// 				qDebug() << QString("Unable to set data to the collection object with ID: %1.").arg(qPrintable(objectId));
+	// 			}
+	// 		}
+	// 	}
+	// }
 
-				if (!m_objectCollectionCompPtr->SetObjectData(objectId, *agentInfoPtr)){
-					qDebug() << QString("Unable to set data to the collection object with ID: %1.").arg(qPrintable(objectId));
+
+
+	imtbase::IObjectCollection::DataPtr agentDataPtr;
+	if (m_objectCollectionCompPtr->GetObjectData(objectId, agentDataPtr)){
+		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(agentDataPtr.GetPtr());
+		if (agentInfoPtr != nullptr){
+			QDateTime dateTime = QDateTime::currentDateTimeUtc();
+			agentInfoPtr->SetLastConnection(dateTime);
+
+			QByteArray itemData = inputParams.at(0).GetFieldArgumentValue("Item").toByteArray();
+			QString name;
+
+			if (!itemData.isEmpty()){
+				// agentinodata::IAgentInfo* agentInstancePtr = m_agentFactCompPtr.CreateInstance();
+				// if (agentInstancePtr == nullptr){
+				// 	return nullptr;
+				// }
+
+				// agentinodata::CIdentifiableAgentInfo* agentPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(agentInstancePtr);
+				// if (agentPtr == nullptr){
+				// 	errorMessage = QT_TR_NOOP("Unable to get an service info!");
+				// 	return nullptr;
+				// }
+
+				imtbase::CTreeItemModel itemModel;
+				itemModel.CreateFromJson(itemData);
+
+				// agentPtr->SetObjectUuid(objectId);
+
+				if (itemModel.ContainsKey("Name")){
+					name = itemModel.GetData("Name").toString();
+					m_objectCollectionCompPtr->SetElementName(objectId, name);
 				}
+
+				if (itemModel.ContainsKey("Description")){
+					QString description = itemModel.GetData("Description").toString();
+					m_objectCollectionCompPtr->SetElementDescription(objectId, description);
+				}
+			}
+
+			if (!m_objectCollectionCompPtr->SetObjectData(objectId, *agentInfoPtr)){
+				qDebug() << QString("Unable to set data to the collection object with ID: %1.").arg(qPrintable(objectId));
+			}
+			else{
+				retVal = new imtbase::CTreeItemModel();
+				imtbase::CTreeItemModel* dataModel = new imtbase::CTreeItemModel();
+				imtbase::CTreeItemModel* notificationModel = new imtbase::CTreeItemModel();
+				notificationModel->SetData("Id", objectId);
+				notificationModel->SetData("Name", name);
+				dataModel->SetExternTreeModel("updatedNotification", notificationModel);
+				retVal->SetExternTreeModel("data", dataModel);
 			}
 		}
 	}

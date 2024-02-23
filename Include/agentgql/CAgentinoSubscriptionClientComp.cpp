@@ -97,7 +97,7 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 		inputDataParams.InsertField("Item", QVariant(itemDocument.toJson(QJsonDocument::Compact)));
 		gqlInitRequest->AddParam(inputDataParams);
 
-		imtgql::CGqlObject returnNotify("updatedNotification");
+		imtgql::CGqlObject returnNotify("addedNotification");
 //		returnNotify.InsertField("status");
 		gqlInitRequest->AddField(returnNotify);
 
