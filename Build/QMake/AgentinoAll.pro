@@ -32,3 +32,8 @@ SUBDIRS += AgentinoAgent
 AgentinoAgent.file = ../../Impl/AgentinoAgent/QMake/AgentinoAgent.pro
 AgentinoAgent.depends = agentinogql agentinoqml
 
+SUBDIRS += AgentinoClient
+AgentinoClient.file = ../../Impl/AgentinoClient/QMake/AgentinoClient.pro
+AgentinoClient.depends = agentinogql agentinoqml
+
+
