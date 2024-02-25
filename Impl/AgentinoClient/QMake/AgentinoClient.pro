@@ -21,7 +21,7 @@ win32-msvc*{
 	QMAKE_CXXFLAGS += /wd4264
 
 	# copying all Qt DLLs to destination directory
-	greaterThan(QT_MAJOR_VERSION, 4): QMAKE_POST_LINK = set path=$(QTDIR)\bin;%path% && $(QTDIR)\bin\windeployqt --qmldir=$(IMTCOREDIR)/Qml  $$DESTDIR
+	greaterThan(QT_MAJOR_VERSION, 4): QMAKE_POST_LINK = set path=$(QTDIR)\bin;%path% && $(QTDIR)\bin\windeployqt --qmldir=$(AGENTINODIR)/Impl/AgentinoClient --qmldir=$(IMTCOREDIR)/Include/imtqml/Resources/qml --qmldir=$(IMTCOREDIR)/Include/imtgui/Qml/imtgui --qmldir=$(IMTCOREDIR)/Include/imtlicgui/Qml/imtlicgui --qmldir=$(AGENTINODIR)/Include/agentinoqml/Qml  $$DESTDIR
 }
 
 # Set configuration of custom builds:
