@@ -1,4 +1,4 @@
-TARGET =agentgql
+TARGET = agentgql
 
 include($(ACFDIR)/Config/QMake/StaticConfig.pri)
 include($(ACFDIR)/Config/QMake/AcfQt.pri)

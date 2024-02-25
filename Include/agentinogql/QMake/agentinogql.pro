@@ -1,4 +1,4 @@
-TARGET = servicemanagergql
+TARGET = agentinogql
 
 include($(ACFDIR)/Config/QMake/StaticConfig.pri)
 include($(ACFDIR)/Config/QMake/AcfQt.pri)

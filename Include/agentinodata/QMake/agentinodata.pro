@@ -1,5 +1,5 @@
-TARGET = servicemanagerdata
+TARGET = agentinodata
 
 include($(ACFCONFIGDIR)/QMake/StaticConfig.pri)
-include($$PWD/../../../Config/QMake/ImtCore.pri)
+include($(IMTCOREDIR)/Config/QMake/ImtCore.pri)
 
