@@ -71,8 +71,6 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 						imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 						if (serviceCollectionPtr != nullptr){
 							imtbase::IObjectCollection::DataPtr serviceDataPtr;
-							imtbase::ICollectionInfo::Ids elementIds = serviceCollectionPtr->GetElementIds();
-
 							if (serviceCollectionPtr->GetObjectData(objectId, serviceDataPtr)){
 								serviceCollectionPtr->SetObjectData(objectId, *serviceInfoPtr.PopPtr());
 							}

@@ -20,7 +20,6 @@ public:
 
 	I_BEGIN_COMPONENT(CServiceControllerProxyComp);
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", true, "AgentCollection");
-		I_ASSIGN(m_requestHandlerPtr, "RequestHandler", "Request handler", true, "RequestHandler");
 	I_END_COMPONENT;
 
 protected:
@@ -31,7 +30,6 @@ protected:
 
 protected:
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
-	I_REF(imtgql::IGqlRequestHandler, m_requestHandlerPtr);
 };
 
 

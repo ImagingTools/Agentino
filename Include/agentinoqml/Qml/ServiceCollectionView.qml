@@ -174,9 +174,6 @@ RemoteCollectionView {
                 let tableCellDelegate = loader.parent;
 
                 let rowIndex = tableCellDelegate.rowIndex;
-                console.log("rowIndex" ,rowIndex);
-
-
                 if (rowIndex >= 0){
                     let status = root.table.elements.GetData("Status", rowIndex);
                     console.log("status" ,status);
@@ -209,6 +206,8 @@ RemoteCollectionView {
             var queryFields = Gql.GqlObject("notification");
             queryFields.InsertField("Id");
             query.AddField(queryFields);
+
+            console.log("registerSubscription", subscriptionRequestId, subscriptionId);
             subscriptionManager.registerSubscription(query, subscriptionClient);
         }
 
