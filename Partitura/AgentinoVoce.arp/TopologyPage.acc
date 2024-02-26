@@ -106,8 +106,6 @@
                                 <AttributeInfo Id="GuiElementModels" Type="Reference[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>Undo</Value>
-                                            <Value>Redo</Value>
                                             <Value>Empty</Value>
                                             <Value>Save</Value>
                                             <Value>Empty</Value>
@@ -230,7 +228,7 @@
                                     <Data IsEnabled="true" Value="Save"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="IsEnabled" Type="Boolean" ExportId="">
-                                    <Data IsEnabled="true" Value="true"/>
+                                    <Data IsEnabled="true" Value="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="IsVisible" Type="Boolean" ExportId="">
                                     <Data IsEnabled="true" Value="true"/>

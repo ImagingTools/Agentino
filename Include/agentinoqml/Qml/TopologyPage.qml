@@ -66,9 +66,19 @@ ViewBase {
 
         Component.onCompleted: {
         }
+
+        onModelDataChanged: {
+            commandsRepresentationProvider.setCommandIsEnabled("Save", true)
+        }
+
+        // onObjectModelChanged: {
+        //     commandsRepresentationProvider.setCommandIsEnabled("Save", false)
+        // }
     }
 
     property GqlModel topologySaveModel: GqlModel {
+        id: saveModel
+
         function save(){
             var query = Gql.GqlRequest("mutation", "SaveTopology");
 
@@ -83,6 +93,22 @@ ViewBase {
 
             var gqlData = query.GetQuery();
             this.SetGqlQuery(gqlData);
+        }
+
+        onStateChanged: {
+            console.log("State:", this.state);
+            if (this.state === "Ready"){
+                if (saveModel.ContainsKey("data")){
+                    let dataModelLocal = saveModel.GetData("data");
+                    if (dataModelLocal.ContainsKey("SaveTopology")){
+                        dataModelLocal = dataModelLocal.GetData("SaveTopology");
+                        if (dataModelLocal.ContainsKey("notification")){
+                            commandsRepresentationProvider.setCommandIsEnabled("Save", false)
+                        }
+                    }
+                }
+
+            }
         }
     }
 
@@ -120,6 +146,7 @@ ViewBase {
                         if (dataModelLocal.ContainsKey("items")){
                             scheme.objectModel = dataModelLocal.GetData("items");
                             scheme.requestPaint()
+                            commandsRepresentationProvider.setCommandIsEnabled("Save", false)
                         }
                     }
                 }
