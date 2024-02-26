@@ -96,7 +96,7 @@
                                 <Value>Computer Name</Value>
                                 <Value>Description</Value>
                                 <Value>Services</Value>
-                                <Value>Last connection</Value>
+                                <Value>Last Connection</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

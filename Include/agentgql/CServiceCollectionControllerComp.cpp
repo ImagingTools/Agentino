@@ -320,8 +320,11 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::InsertObject(const im
 {
 	imtbase::CTreeItemModel* resultPtr = BaseClass::InsertObject(gqlRequest, errorMessage);
 
-	if (errorMessage.isEmpty()){
-		return GetObject(gqlRequest, errorMessage);
+	if (resultPtr->ContainsKey("data")){
+		imtbase::CTreeItemModel* objectRepresentationDataModelPtr = GetObject(gqlRequest, errorMessage);
+		if (objectRepresentationDataModelPtr != nullptr){
+			resultPtr->SetExternTreeModel("item", objectRepresentationDataModelPtr->GetTreeItemModel("data"));
+		}
 	}
 
 	return resultPtr;
@@ -329,11 +332,11 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::InsertObject(const im
 
 
 istd::IChangeable* CServiceCollectionControllerComp::CreateObject(
-		const QList<imtgql::CGqlObject>& inputParams,
-		QByteArray &objectId,
-		QString &name,
-		QString &description,
-		QString& errorMessage) const
+			const QList<imtgql::CGqlObject>& inputParams,
+			QByteArray &objectId,
+			QString &name,
+			QString &description,
+			QString& errorMessage) const
 {
 	if (!m_serviceInfoFactCompPtr.IsValid() || !m_objectCollectionCompPtr.IsValid()){
 		Q_ASSERT(false);

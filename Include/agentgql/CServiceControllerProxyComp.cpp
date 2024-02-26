@@ -19,8 +19,6 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 {
 	imtbase::CTreeItemModel* resultModelPtr = BaseClass::CreateInternalResponse(gqlRequest, errorMessage);
 
-	qDebug() << "resultModelPtr" << resultModelPtr->toJSON();
-
 	if (!resultModelPtr->ContainsKey("errors")){
 		if (m_agentCollectionCompPtr.IsValid()){
 			const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParam("input");
@@ -41,7 +39,7 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 			imtbase::CTreeItemModel itemModel;
 			if (gqlRequest.GetCommandId() == "ServiceAdd"){
 
-				imtbase::CTreeItemModel* dataModelPtr = resultModelPtr->GetTreeItemModel("data");
+				imtbase::CTreeItemModel* dataModelPtr = resultModelPtr->GetTreeItemModel("item");
 				if (dataModelPtr != nullptr){
 					itemModel.CopyFrom(*dataModelPtr);
 				}
