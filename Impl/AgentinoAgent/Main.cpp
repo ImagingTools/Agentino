@@ -29,8 +29,6 @@ int main(int argc, char *argv[])
 	Q_INIT_RESOURCE(imtauthguiTheme);
 	Q_INIT_RESOURCE(imtguiTheme);
 
-	Q_INIT_RESOURCE(imtlicguiqml);
-
 	CAgentinoAgent instance;
 
 	ibase::IApplication* applicationPtr = instance.GetInterface<ibase::IApplication>();

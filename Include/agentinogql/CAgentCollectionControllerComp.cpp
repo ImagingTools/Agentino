@@ -1,15 +1,6 @@
 #include <agentinogql/CAgentCollectionControllerComp.h>
 
 
-// ACF includes
-#include <idoc/IDocumentMetaInfo.h>
-#include <iprm/CTextParam.h>
-
-// ImtCore includes
-#include <imtbase/CCollectionFilter.h>
-#include <imtbase/IObjectCollectionIterator.h>
-#include <imtdb/CSqlDatabaseObjectCollectionComp.h>
-
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
 
@@ -126,10 +117,11 @@ bool CAgentCollectionControllerComp::SetupGqlItem(
 }
 
 
-imtbase::CTreeItemModel *CAgentCollectionControllerComp::ListObjects(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+imtbase::CTreeItemModel* CAgentCollectionControllerComp::ListObjects(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
-		errorMessage = QString("Unable to get list objects. Internal error.");
+		errorMessage = QString("Unable to get list objects. Internal error");
+
 		SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
 
 		return nullptr;
@@ -204,6 +196,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		errorMessage = QObject::tr("Internal error").toUtf8();
+
 		return nullptr;
 	}
 
@@ -299,6 +292,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		Q_ASSERT(false);
+
 		return nullptr;
 	}
 
@@ -307,9 +301,9 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 	QByteArray objectId = GetObjectIdFromInputParams(inputParams);
 
 	imtbase::CTreeItemModel* retVal = nullptr;
-	const istd::IChangeable* agentObject = m_objectCollectionCompPtr->GetObjectPtr(objectId);
-	if (agentObject == nullptr){
-		// retVal = BaseClass::InsertObject(gqlRequest, errorMessage);
+	const istd::IChangeable* agentPtr = m_objectCollectionCompPtr->GetObjectPtr(objectId);
+	if (agentPtr == nullptr){
+		retVal = BaseClass::InsertObject(gqlRequest, errorMessage);
 	}
 
 	return retVal;
@@ -349,8 +343,6 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtg
 	// 		}
 	// 	}
 	// }
-
-
 
 	imtbase::IObjectCollection::DataPtr agentDataPtr;
 	if (m_objectCollectionCompPtr->GetObjectData(objectId, agentDataPtr)){
