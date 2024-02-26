@@ -1,9 +1,6 @@
 import QtQuick 2.12
 import Acf 1.0
-//import imtdocgui 1.0
-//import imtcolgui 1.0
 import imtcontrols 1.0
-//import imtguigql 1.0
 import imtgui 1.0
 import imtguigql 1.0
 import imtcolgui 1.0
@@ -30,10 +27,6 @@ ViewBase {
         id: commandsRepresentationProvider
         commandId: "Topology"
         uuid: topologyPage.viewId;
-    }
-
-    Component.onCompleted: {
-        // itemsTopologyModel.updateModel()
     }
 
     onVisibleChanged: {
@@ -70,10 +63,6 @@ ViewBase {
         onModelDataChanged: {
             commandsRepresentationProvider.setCommandIsEnabled("Save", true)
         }
-
-        // onObjectModelChanged: {
-        //     commandsRepresentationProvider.setCommandIsEnabled("Save", false)
-        // }
     }
 
     property GqlModel topologySaveModel: GqlModel {

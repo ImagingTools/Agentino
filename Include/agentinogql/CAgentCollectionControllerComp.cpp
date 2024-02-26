@@ -1,6 +1,15 @@
 #include <agentinogql/CAgentCollectionControllerComp.h>
 
 
+// ACF includes
+#include <idoc/IDocumentMetaInfo.h>
+#include <iprm/CTextParam.h>
+
+// ImtCore includes
+#include <imtbase/CCollectionFilter.h>
+#include <imtbase/IObjectCollectionIterator.h>
+#include <imtdb/CSqlDatabaseObjectCollectionComp.h>
+
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
 
@@ -117,11 +126,10 @@ bool CAgentCollectionControllerComp::SetupGqlItem(
 }
 
 
-imtbase::CTreeItemModel* CAgentCollectionControllerComp::ListObjects(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+imtbase::CTreeItemModel *CAgentCollectionControllerComp::ListObjects(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
-		errorMessage = QString("Unable to get list objects. Internal error");
-
+		errorMessage = QString("Unable to get list objects. Internal error.");
 		SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
 
 		return nullptr;
@@ -196,7 +204,6 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		errorMessage = QObject::tr("Internal error").toUtf8();
-
 		return nullptr;
 	}
 
@@ -292,7 +299,6 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		Q_ASSERT(false);
-
 		return nullptr;
 	}
 
@@ -301,8 +307,8 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 	QByteArray objectId = GetObjectIdFromInputParams(inputParams);
 
 	imtbase::CTreeItemModel* retVal = nullptr;
-	const istd::IChangeable* agentPtr = m_objectCollectionCompPtr->GetObjectPtr(objectId);
-	if (agentPtr == nullptr){
+	const istd::IChangeable* agentObject = m_objectCollectionCompPtr->GetObjectPtr(objectId);
+	if (agentObject == nullptr){
 		retVal = BaseClass::InsertObject(gqlRequest, errorMessage);
 	}
 
@@ -320,29 +326,8 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtg
 
 	const QList<imtgql::CGqlObject> inputParams = gqlRequest.GetParams();
 
-	QByteArray objectId = GetObjectIdFromInputParams(inputParams);
-
 	imtbase::CTreeItemModel* retVal = nullptr;
-	const istd::IChangeable* agentObject = m_objectCollectionCompPtr->GetObjectPtr(objectId);
-	if (agentObject == nullptr){
-		return nullptr;
-		// retVal = BaseClass::InsertObject(gqlRequest, errorMessage);
-	}
-	// else {
-		// retVal =  BaseClass::UpdateObject(gqlRequest, errorMessage);
-	// 	imtbase::IObjectCollection::DataPtr agentDataPtr;
-	// 	if (m_objectCollectionCompPtr->GetObjectData(objectId, agentDataPtr)){
-	// 		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(agentDataPtr.GetPtr());
-	// 		if (agentInfoPtr != nullptr){
-	// 			QDateTime dateTime = QDateTime::currentDateTimeUtc();
-	// 			agentInfoPtr->SetLastConnection(dateTime);
-
-	// 			if (!m_objectCollectionCompPtr->SetObjectData(objectId, *agentInfoPtr)){
-	// 				qDebug() << QString("Unable to set data to the collection object with ID: %1.").arg(qPrintable(objectId));
-	// 			}
-	// 		}
-	// 	}
-	// }
+	QByteArray objectId = GetObjectIdFromInputParams(inputParams);
 
 	imtbase::IObjectCollection::DataPtr agentDataPtr;
 	if (m_objectCollectionCompPtr->GetObjectData(objectId, agentDataPtr)){
@@ -355,21 +340,9 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtg
 			QString name;
 
 			if (!itemData.isEmpty()){
-				// agentinodata::IAgentInfo* agentInstancePtr = m_agentFactCompPtr.CreateInstance();
-				// if (agentInstancePtr == nullptr){
-				// 	return nullptr;
-				// }
-
-				// agentinodata::CIdentifiableAgentInfo* agentPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(agentInstancePtr);
-				// if (agentPtr == nullptr){
-				// 	errorMessage = QT_TR_NOOP("Unable to get an service info!");
-				// 	return nullptr;
-				// }
 
 				imtbase::CTreeItemModel itemModel;
 				itemModel.CreateFromJson(itemData);
-
-				// agentPtr->SetObjectUuid(objectId);
 
 				if (itemModel.ContainsKey("Name")){
 					name = itemModel.GetData("Name").toString();
