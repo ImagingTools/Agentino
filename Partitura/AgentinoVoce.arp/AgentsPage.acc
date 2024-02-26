@@ -567,7 +567,7 @@
                                     <Data IsEnabled="true" Value="true"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Name" Type="Text" ExportId="">
-                                    <Data IsEnabled="true" Value="Open"/>
+                                    <Data IsEnabled="true" Value="Services"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>

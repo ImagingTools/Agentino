@@ -187,11 +187,11 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 			for (int i = 0; i < outputConnectionsModelPtr->GetItemsCount(); i++){
 				QByteArray id = outputConnectionsModelPtr->GetData("Id", i).toByteArray();
 				QString connectionName = outputConnectionsModelPtr->GetData("ConnectionName", i).toString();
-				QString serviceName = outputConnectionsModelPtr->GetData("ServiceName", i).toString();
 				QString description = outputConnectionsModelPtr->GetData("Description", i).toString();
 
 				QString urlStr = outputConnectionsModelPtr->GetData("Url", i).toString();
 
+				QString serviceName = urlStr.split('@')[0];
 				QStringList data = urlStr.split('@')[1].split(':');
 				QUrl url;
 				if (data.size() == 2){

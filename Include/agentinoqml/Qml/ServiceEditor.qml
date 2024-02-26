@@ -362,7 +362,7 @@ ViewBase {
 
                         onTableCellDelegateChanged: {
                             if (tableCellDelegate.mainMouseArea){
-                                tableCellDelegate.mainMouseArea.hoverEnabled = false;
+//                                tableCellDelegate.mainMouseArea.hoverEnabled = false;
 
                                 let valueModel = tableCellDelegate.getValue();
                                 if (valueModel){
@@ -494,25 +494,27 @@ ViewBase {
                                 console.log("rowIndex", tableCellDelegate.rowIndex)
 
                                 let elementsModel = ouputConnTable.elements.GetData("Elements", tableCellDelegate.rowIndex);
-                                console.log("elementsModel", elementsModel)
+                                console.log("elementsModel", elementsModel.toJSON())
 
                                 textLabel.text = value;
+
+                                console.log("value", value)
 
                                 cb.model = elementsModel;
                                 if (cb.model){
                                     for (let i = 0; i < cb.model.GetItemsCount(); i++){
                                         let id = cb.model.GetData("Id", i);
-                                        if (id == value){
+                                        console.log("id", id)
+
+                                        if (String(id) == String(value)){
+                                            console.log("==", value)
+
                                             cb.currentIndex = i;
                                             break;
                                         }
                                     }
                                 }
                             }
-                        }
-
-                        onTableCellDelegateChanged: {
-                            console.log("onTableCellDelegateChanged")
                         }
 
                         Text {
@@ -551,15 +553,27 @@ ViewBase {
                                     }
                                 }
                             }
+
+                            onFocusChanged: {
+                                if (!focus){
+                                    cb.visible = false;
+                                }
+                            }
                         }
 
                         MouseArea {
+                            id: ma;
+
                             anchors.fill: parent;
 
                             onDoubleClicked: {
-                                cb.visible = true;
+                                if (cb.model && cb.model.GetItemsCount() > 0){
+                                    cb.visible = true;
 
-                                cb.forceActiveFocus();
+                                    cb.z = ma.z + 1;
+
+                                    cb.forceActiveFocus();
+                                }
                             }
                         }
                     }

@@ -47,7 +47,6 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::CreateInternalResponse(
 								if (inputConnectionsModelPtr->GetItemsCount() == 0){
 									imtbase::CTreeItemModel* baseModelPtr = BaseClass::CreateInternalResponse(gqlRequest, errorMessage);
 									if (baseModelPtr != nullptr){
-										qDebug() << "baseModelPtr" << baseModelPtr->toJSON();
 										if (baseModelPtr->ContainsKey("data")){
 											imtbase::CTreeItemModel* dataBaseModelPtr = baseModelPtr->GetTreeItemModel("data");
 											if (dataBaseModelPtr){
