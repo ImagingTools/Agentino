@@ -16,10 +16,10 @@
                     <AttributeInfo Id="GqlRequestHandlers" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>PumaGQLClientEngine</Value>
                                 <Value>SlaveGraphQLDemultiplexer</Value>
                                 <Value>SettingsController</Value>
                                 <Value>AuthorizationOptionsController</Value>
+                                <Value>PermissionController</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -38,8 +38,8 @@
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="PumaGqlRequest" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="PumaGQLClientEngine"/>
+                    <AttributeInfo Id="PumaGqlRequest" Type="Reference" ExportId="PumaGqlRequest">
+                        <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                         <Data IsEnabled="false"/>
@@ -47,65 +47,26 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="PumaGQLClientEngine" PackageId="ImtGraphQlVoce" ComponentId="PumaGQLClientEngine">
+        <Element Id="PermissionController" PackageId="ImtLicenseGqlPck" ComponentId="ProductPermissionController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>GetUserInfo</Value>
-                                <Value>GetRoleInfo</Value>
-                                <Value>GetSessionInfo</Value>
-                                <Value>GetUserGroupInfo</Value>
-                                <Value>GetDatabaseStatus</Value>
-                                <Value>UserToken</Value>
-                                <Value>SessionItem</Value>
-                                <Value>UsersObjectView</Value>
-                                <Value>UsersInfo</Value>
-                                <Value>UsersList</Value>
-                                <Value>UserItem</Value>
-                                <Value>UserAdd</Value>
-                                <Value>UserUpdate</Value>
-                                <Value>UsersRemove</Value>
-                                <Value>UsersCommands</Value>
-                                <Value>UserCommands</Value>
-                                <Value>RolesList</Value>
-                                <Value>RoleItem</Value>
-                                <Value>RoleAdd</Value>
-                                <Value>RoleUpdate</Value>
-                                <Value>RolesRemove</Value>
-                                <Value>RolesObjectView</Value>
-                                <Value>RolesInfo</Value>
-                                <Value>RolesCommands</Value>
-                                <Value>RoleCommands</Value>
-                                <Value>GroupsList</Value>
-                                <Value>GroupsInfo</Value>
-                                <Value>GroupsObjectView</Value>
-                                <Value>GroupItem</Value>
-                                <Value>GroupAdd</Value>
-                                <Value>GroupUpdate</Value>
-                                <Value>GroupsRemove</Value>
-                                <Value>GroupsCommands</Value>
-                                <Value>GroupCommands</Value>
-                                <Value>RolesMetaInfo</Value>
-                                <Value>UsersMetaInfo</Value>
-                                <Value>GroupsMetaInfo</Value>
+                                <Value>ProductPermissions</Value>
                             </Values>
                         </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="EnableVerbose" Type="Boolean" ExportId="EnableVerbose">
+                        <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="ProductId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Agentino"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ServerPrefix" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="/Puma"/>
+                    <AttributeInfo Id="ProductProvider" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="SingleProductPermission"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="UrlParam" Type="Reference" ExportId="PumaUrlConnection">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
@@ -135,6 +96,35 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="SingleProductPermission" PackageId="ImtCoreVoce" ComponentId="SingleProductPermission">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="PathToPermissionsFile" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value=":/Features/AgentinoFeatures"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ProductId" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>Agentino</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ProductName" Type="String[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>Agentino</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="SlaveGraphQLDemultiplexer" PackageId="ImtGqlPck" ComponentId="GraphQLDemultiplexer">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
@@ -153,7 +143,5 @@
         <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="ApplicationController"/>
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="ApplicationController"/>
     </ExportedInterfaces>
-    <ExportedComponents>
-        <Component ExportedId="PumaGQLClientEngine" ComponentId="PumaGQLClientEngine"/>
-    </ExportedComponents>
+    <ExportedComponents/>
 </Acf>

@@ -69,7 +69,14 @@
         </Element>
         <Element Id="AgentCommands" PackageId="" ComponentId="AgentCommands">
             <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap/>
+                <AttributeInfoMap>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
             </Data>
         </Element>
         <Element Id="AgentHeadersDataProvider" PackageId="ImtQmlPck" ComponentId="HeadersDataProvider">
@@ -459,7 +466,7 @@
                                     <Data IsEnabled="true">
                                         <Values>
                                             <Value>ViewAgents</Value>
-                                            <Value>EditAgent</Value>
+                                            <Value>ChangeAgent</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -469,14 +476,28 @@
                                 <AttributeInfo Id="NewCommandPermissions" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>EditAgent</Value>
+                                            <Value>AddAgent</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
                                 <AttributeInfo Id="RemoveCommandPermissions" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>EditAgent</Value>
+                                            <Value>RemoveAgent</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="RenameCommandPermissions" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>ChangeAgent</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="SetDescriptionCommandPermissions" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>ChangeAgent</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -669,7 +690,7 @@
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>ViewLicenses</Value>
+                                            <Value>ViewAgents</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -804,9 +825,7 @@
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>EditLicense</Value>
-                                            <Value>ChangeLicense</Value>
-                                            <Value>ChangeLisenseNumber</Value>
+                                            <Value>ChangeAgent</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -849,9 +868,7 @@
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>EditLicense</Value>
-                                            <Value>ChangeLicense</Value>
-                                            <Value>ChangeLisenseNumber</Value>
+                                            <Value>ChangeAgent</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -894,9 +911,7 @@
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>EditLicense</Value>
-                                            <Value>ChangeLicense</Value>
-                                            <Value>ChangeLisenseNumber</Value>
+                                            <Value>ChangeAgent</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>

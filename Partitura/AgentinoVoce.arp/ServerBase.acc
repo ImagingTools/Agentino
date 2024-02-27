@@ -31,11 +31,18 @@
                     <AttributeInfo Id="LogPath" Type="Reference" ExportId="LogPath">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="PumaUrlConnection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings/PumaUrl"/>
+                    <AttributeInfo Id="PumaGqlRequest" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="PumaGQLClientEngine"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServerSettings" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="SlaveGqlRequestHandlers" Type="Reference[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>PumaGQLClientEngine</Value>
+                            </Values>
+                        </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
@@ -77,6 +84,9 @@
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>ServiceSubscriberController</Value>
+                                <Value>RemoteRepositories/UsersSubscriberController</Value>
+                                <Value>RemoteRepositories/UserGroupsSubscriberController</Value>
+                                <Value>RemoteRepositories/RolesSubscriberController</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -91,6 +101,96 @@
                     </AttributeInfo>
                     <AttributeInfo Id="WebSocketServerPort" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/WebSocketServerPort"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="PumaGQLClientEngine" PackageId="ImtGraphQlVoce" ComponentId="PumaGQLClientEngine">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>GetUserInfo</Value>
+                                <Value>GetRoleInfo</Value>
+                                <Value>GetSessionInfo</Value>
+                                <Value>GetUserGroupInfo</Value>
+                                <Value>GetDatabaseStatus</Value>
+                                <Value>UserToken</Value>
+                                <Value>SessionItem</Value>
+                                <Value>UsersObjectView</Value>
+                                <Value>UsersSetDescription</Value>
+                                <Value>UsersInfo</Value>
+                                <Value>UsersList</Value>
+                                <Value>UserItem</Value>
+                                <Value>UserAdd</Value>
+                                <Value>UserUpdate</Value>
+                                <Value>UsersRemove</Value>
+                                <Value>UsersCommands</Value>
+                                <Value>UserCommands</Value>
+                                <Value>RolesList</Value>
+                                <Value>RoleItem</Value>
+                                <Value>RoleAdd</Value>
+                                <Value>RoleUpdate</Value>
+                                <Value>RolesRemove</Value>
+                                <Value>RolesObjectView</Value>
+                                <Value>RolesSetDescription</Value>
+                                <Value>RolesInfo</Value>
+                                <Value>RolesCommands</Value>
+                                <Value>RoleCommands</Value>
+                                <Value>GroupsList</Value>
+                                <Value>GroupsInfo</Value>
+                                <Value>GroupsObjectView</Value>
+                                <Value>GroupItem</Value>
+                                <Value>GroupAdd</Value>
+                                <Value>GroupUpdate</Value>
+                                <Value>GroupsRemove</Value>
+                                <Value>GroupsCommands</Value>
+                                <Value>GroupCommands</Value>
+                                <Value>GroupsSetDescription</Value>
+                                <Value>RolesMetaInfo</Value>
+                                <Value>UsersMetaInfo</Value>
+                                <Value>GroupsMetaInfo</Value>
+                                <Value>PumaTestConnection</Value>
+                                <Value>PumaGetDatabaseStatus</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ProductId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="Agentino"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServerPrefix" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="/Puma"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UrlParam" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/PumaUrl"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="RemoteRepositories" PackageId="ImtGraphQlVoce" ComponentId="RemoteRepositories">
+            <Data IsEnabled="true" Flags="1">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RemoteServerUrlParam" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/PumaUrl"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RequestManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="HttpServerFramework/WebSocketServer"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="WebSocketServerAddress" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/PumaWebSocketUrlParam"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -198,11 +298,18 @@
                     <AttributeInfo Id="LogPath" Type="Reference" ExportId="LogPath">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="PumaUrlConnection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings/PumaUrl"/>
+                    <AttributeInfo Id="PumaGqlRequest" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="PumaGQLClientEngine"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServerSettings" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="SlaveGqlRequestHandlers" Type="Reference[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>PumaGQLClientEngine</Value>
+                            </Values>
+                        </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>

@@ -18,25 +18,6 @@
         <Element ComponentName="Demultiplexer" X="625" Y="100" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="AgentCommands">
-            <PositionMap>
-                <Element ComponentName="CheckPermissionOr" X="1075" Y="225" Note=""/>
-                <Element ComponentName="Close" X="100" Y="550" Note=""/>
-                <Element ComponentName="ClosePermissions" X="700" Y="650" Note=""/>
-                <Element ComponentName="CommandPermissions" X="700" Y="325" Note=""/>
-                <Element ComponentName="Commands" X="300" Y="225" Note=""/>
-                <Element ComponentName="CommandsController" X="600" Y="50" Note=""/>
-                <Element ComponentName="CommandsRepresentation" X="700" Y="225" Note=""/>
-                <Element ComponentName="Empty" X="350" Y="325" Note=""/>
-                <Element ComponentName="Redo" X="100" Y="400" Note=""/>
-                <Element ComponentName="RedoPermissions" X="700" Y="500" Note=""/>
-                <Element ComponentName="Save" X="100" Y="475" Note=""/>
-                <Element ComponentName="SavePermissions" X="700" Y="575" Note=""/>
-                <Element ComponentName="Undo" X="100" Y="325" Note=""/>
-                <Element ComponentName="UndoPermissions" X="700" Y="425" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
         <EmbededRegistry Id="ServiceCommands">
             <PositionMap>
                 <Element ComponentName="CheckPermissionOr" X="700" Y="225" Note=""/>
@@ -67,6 +48,25 @@
                 <Element ComponentName="Open" X="150" Y="650" Note=""/>
                 <Element ComponentName="Remove" X="150" Y="550" Note=""/>
                 <Element ComponentName="ServiceCollectionCommandsController" X="275" Y="225" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="AgentCommands">
+            <PositionMap>
+                <Element ComponentName="CheckPermissionOr" X="1075" Y="225" Note=""/>
+                <Element ComponentName="Close" X="100" Y="550" Note=""/>
+                <Element ComponentName="ClosePermissions" X="700" Y="650" Note=""/>
+                <Element ComponentName="CommandPermissions" X="700" Y="325" Note=""/>
+                <Element ComponentName="Commands" X="300" Y="225" Note=""/>
+                <Element ComponentName="CommandsController" X="600" Y="50" Note=""/>
+                <Element ComponentName="CommandsRepresentation" X="700" Y="225" Note=""/>
+                <Element ComponentName="Empty" X="350" Y="325" Note=""/>
+                <Element ComponentName="Redo" X="100" Y="400" Note=""/>
+                <Element ComponentName="RedoPermissions" X="700" Y="500" Note=""/>
+                <Element ComponentName="Save" X="100" Y="475" Note=""/>
+                <Element ComponentName="SavePermissions" X="700" Y="575" Note=""/>
+                <Element ComponentName="Undo" X="100" Y="325" Note=""/>
+                <Element ComponentName="UndoPermissions" X="700" Y="425" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
