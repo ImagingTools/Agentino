@@ -4,7 +4,7 @@
 // ACF includes
 #include <istd/TDelPtr.h>
 
-// ServiceManager includes
+// Agentino includes
 #include <agentinodata/CServiceInfo.h>
 
 
@@ -15,6 +15,7 @@ namespace agentinodata
 // public methods
 
 // reimplemented (agentinodata::IServiceController)
+
 QProcess::ProcessState  CServiceControllerComp::GetServiceStatus(const QByteArray& serviceId) const
 {
 	if (m_processMap.contains(serviceId)){
@@ -98,6 +99,7 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 
 
 // reimplemented (icomp::CComponentBase)
+
 void CServiceControllerComp::OnComponentCreated()
 {
 	if (!m_serviceCollectionCompPtr.IsValid()){
@@ -108,7 +110,7 @@ void CServiceControllerComp::OnComponentCreated()
 
 	imtbase::IObjectCollection::Ids ids = m_serviceCollectionCompPtr->GetElementIds();
 
-	for(QByteArray serviceId: ids){
+	for(const QByteArray& serviceId: ids){
 		agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = nullptr;
 		imtbase::IObjectCollection::DataPtr serviceDataPtr;
 		if (m_serviceCollectionCompPtr->GetObjectData(serviceId, serviceDataPtr)){

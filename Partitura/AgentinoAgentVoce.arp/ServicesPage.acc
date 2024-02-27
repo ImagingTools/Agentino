@@ -120,9 +120,6 @@
                             </Values>
                         </Data>
                     </AttributeInfo>
-                    <AttributeInfo Id="ConnectionCollection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ConnectionCollection"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="HeadersProvider" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServiceHeadersDataProvider"/>
                     </AttributeInfo>

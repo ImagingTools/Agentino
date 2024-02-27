@@ -1,6 +1,7 @@
 #include <agentgql/CServiceControllerComp.h>
 
-// ServiceManager includes
+
+// Agentino includes
 #include <agentinodata/agentinodata.h>
 
 

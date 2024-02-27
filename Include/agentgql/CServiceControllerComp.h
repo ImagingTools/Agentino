@@ -4,7 +4,7 @@
 // ImtCore includes
 #include <imtgql/CGqlRequestHandlerCompBase.h>
 
-// ServiceManager includes
+// Agentino includes
 #include <agentinodata/IServiceController.h>
 
 

@@ -14,6 +14,7 @@
         <Element ComponentName="SettingsController" X="250" Y="325" Note=""/>
         <Element ComponentName="SingleProductPermission" X="250" Y="625" Note=""/>
         <Element ComponentName="SlaveGraphQLDemultiplexer" X="875" Y="325" Note=""/>
+        <Element ComponentName="TestConnectionController" X="550" Y="75" Note=""/>
     </PositionMap>
     <EmbeddedRegistries/>
 </Acf>

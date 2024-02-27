@@ -7,7 +7,7 @@
 // ImtCore includes
 #include <imtbase/CObjectCollection.h>
 
-// ServiceManager includes
+// Agentino includes
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/IServiceController.h>
 
@@ -17,9 +17,9 @@ namespace agentinodata
 
 
 class CServiceControllerComp:
-		public QObject,
-		public ilog::CLoggerComponentBase,
-		virtual public IServiceController
+			public QObject,
+			public ilog::CLoggerComponentBase,
+			virtual public IServiceController
 {
 	Q_OBJECT
 public:

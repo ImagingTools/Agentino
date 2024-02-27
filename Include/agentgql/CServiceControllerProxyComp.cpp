@@ -1,12 +1,12 @@
 #include <agentgql/CServiceControllerProxyComp.h>
 
 
+// ImtCore includes
+#include <imtservice/CUrlConnectionParam.h>
+
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/CServiceInfo.h>
-
-// ImtCore includes
-#include <imtservice/CUrlConnectionParam.h>
 
 
 namespace agentgql

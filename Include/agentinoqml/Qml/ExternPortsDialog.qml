@@ -128,6 +128,8 @@ Dialog {
                                 let index = indexes[0];
 
                                 portsDialog.portsModel.RemoveItem(index)
+
+                                tableTreeView.resetSelection();
                             }
                         }
                     }

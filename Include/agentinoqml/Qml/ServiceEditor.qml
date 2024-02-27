@@ -7,7 +7,7 @@ ViewBase {
     id: serviceEditorContainer;
 
     property int mainMargin: 0;
-    property int panelWidth: 700;
+    property int panelWidth: 800;
     property int radius: 3;
 
     function blockEditing(){
@@ -303,7 +303,12 @@ ViewBase {
                 id: inputConnTable;
 
                 width: parent.width;
-                height: 150;
+                height: contentHeight + headerHeight + 15;
+
+                canMoveColumns: true;
+
+                radius: 0;
+                selectable: false
 
                 onHeadersChanged: {
                     inputConnTable.setColumnContentComponent(1, textInputComp)
@@ -460,7 +465,11 @@ ViewBase {
                 id: ouputConnTable;
 
                 width: parent.width;
-                height: 150;
+                height: contentHeight + headerHeight + 15;
+
+                canMoveColumns: true;
+                radius: 0;
+                selectable: false;
 
                 onHeadersChanged: {
                     ouputConnTable.setColumnContentComponent(2, textInputComp2)

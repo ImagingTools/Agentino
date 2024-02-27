@@ -4,7 +4,7 @@
         <VersionInfos>
             <Version Id="0" Number="5191" Description="ACF"/>
             <Version Id="1" Number="2202" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394753" Description="Qt Framework"/>
+            <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
@@ -27,16 +27,16 @@
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
+        <EmbededRegistry Id="PageData">
+            <PositionMap>
+                <Element ComponentName="ServicesPage" X="500" Y="300" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
         <EmbededRegistry Id="PagesPermissions">
             <PositionMap>
                 <Element ComponentName="DevicesPermissions" X="550" Y="400" Note=""/>
                 <Element ComponentName="PagePermissions" X="575" Y="150" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
-        <EmbededRegistry Id="PageData">
-            <PositionMap>
-                <Element ComponentName="ServicesPage" X="500" Y="300" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

@@ -1,6 +1,13 @@
 #include <agentgql/CServiceCollectionControllerComp.h>
 
 
+// Windows includes
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
+#undef GetObject
+#undef StartService
+
 // ACF includes
 #include <idoc/IDocumentMetaInfo.h>
 #include <iprm/CTextParam.h>
@@ -12,26 +19,21 @@
 #include <imtdb/CSqlDatabaseObjectCollectionComp.h>
 #include <imtservice/CUrlConnectionParam.h>
 
-// ServiceManager includes
+// Agentino includes
 #include <agentinodata/agentinodata.h>
 #include <agentinodata/CServiceInfo.h>
 
-// Windows includes
-#ifdef Q_OS_WIN
-#include <windows.h>
-#endif
-#undef GetObject
 
 namespace agentgql
 {
 
 
 bool CServiceCollectionControllerComp::SetupGqlItem(
-		const imtgql::CGqlRequest& gqlRequest,
-		imtbase::CTreeItemModel& model,
-		int itemIndex,
-		const QByteArray& collectionId,
-		QString& errorMessage) const
+			const imtgql::CGqlRequest& gqlRequest,
+			imtbase::CTreeItemModel& model,
+			int itemIndex,
+			const QByteArray& collectionId,
+			QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid() || !m_serviceControllerCompPtr.IsValid()){
 		errorMessage = QString("Unable to get list objects. Internal error.");
@@ -92,13 +94,11 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 					}
 				}
 				else if(informationId == "Status"){
-					QProcess::ProcessState processStatus = m_serviceControllerCompPtr->GetServiceStatus(serviceId);
 					QProcess::ProcessState state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
 					agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
 					elementInformation = processStateEnum.id;
 				}
 				else if(informationId == "StatusName"){
-					QProcess::ProcessState processStatus = m_serviceControllerCompPtr->GetServiceStatus(serviceId);
 					QProcess::ProcessState state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
 					agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
 					elementInformation = processStateEnum.name;
@@ -202,7 +202,7 @@ imtbase::CTreeItemModel *CServiceCollectionControllerComp::ListObjects(const imt
 imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
-		errorMessage = QObject::tr("Internal error").toUtf8();
+		errorMessage = QString("Internal error").toUtf8();
 		return nullptr;
 	}
 
@@ -238,6 +238,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 			if (!m_pluginMap.contains(serviceName)){
 				LoadPluginDirectory(pluginPath, serviceName);
 			}
+
 			if (m_pluginMap.contains(serviceName)){
 				istd::TDelPtr<imtservice::IConnectionCollection> connectionCollection = m_pluginMap[serviceName].pluginPtr->GetConnectionCollectionFactory()->CreateInstance();
 				if (connectionCollection != nullptr){
@@ -331,11 +332,109 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::InsertObject(const im
 }
 
 
+imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+{
+	imtbase::CTreeItemModel* resultPtr = BaseClass::UpdateObject(gqlRequest, errorMessage);
+
+	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParam("input");
+	if (gqlInputParamPtr == nullptr){
+		return nullptr;
+	}
+
+	QByteArray objectId = gqlInputParamPtr->GetFieldArgumentValue("Id").toByteArray();
+	QByteArray itemData = gqlInputParamPtr->GetFieldArgumentValue("Item").toByteArray();
+	if (itemData.isEmpty()){
+		return nullptr;
+	}
+
+	imtbase::CTreeItemModel itemModel;
+	if (!itemModel.CreateFromJson(itemData)){
+		return nullptr;
+	}
+
+	QString servicePath;
+	if (itemModel.ContainsKey("Path")){
+		servicePath = itemModel.GetData("Path").toString();
+	}
+
+	if (itemModel.ContainsKey("InputConnections")){
+		imtbase::CTreeItemModel* inputConnectionsModelPtr = itemModel.GetTreeItemModel("InputConnections");
+		if (inputConnectionsModelPtr != nullptr){
+			for (int i = 0; i < inputConnectionsModelPtr->GetItemsCount(); i++){
+				QByteArray inputConnectionId = inputConnectionsModelPtr->GetData("Id", i).toByteArray();
+				QByteArray serviceName = inputConnectionsModelPtr->GetData("ServiceName", i).toByteArray();
+				int servicePort = inputConnectionsModelPtr->GetData("Port", i).toInt();
+
+				QFileInfo fileInfo(servicePath);
+				QString pluginPath = fileInfo.path() + "/Plugins";
+
+				if (!m_pluginMap.contains(serviceName)){
+					LoadPluginDirectory(pluginPath, serviceName);
+				}
+
+				QStringList keys = m_pluginMap.keys();
+
+				if (m_pluginMap.contains(serviceName)){
+					istd::TDelPtr<imtservice::IConnectionCollection> connectionCollectionPtr = m_pluginMap[serviceName].pluginPtr->GetConnectionCollectionFactory()->CreateInstance();
+					if (connectionCollectionPtr != nullptr){
+						const imtbase::ICollectionInfo* collectionInfoPtr = connectionCollectionPtr->GetUrlList();
+						if (collectionInfoPtr == nullptr){
+							continue;
+						}
+
+						QUrl url;
+						url.setHost("localhost");
+						url.setPort(servicePort);
+
+						connectionCollectionPtr->SetUrl(inputConnectionId, url);
+					}
+				}
+			}
+		}
+	}
+
+	if (itemModel.ContainsKey("OutputConnections")){
+		imtbase::CTreeItemModel* outputConnectionsModelPtr = itemModel.GetTreeItemModel("OutputConnections");
+		if (outputConnectionsModelPtr != nullptr){
+			for (int i = 0; i < outputConnectionsModelPtr->GetItemsCount(); i++){
+				QByteArray outputConnectionId = outputConnectionsModelPtr->GetData("Id", i).toByteArray();
+				QByteArray serviceName = outputConnectionsModelPtr->GetData("ServiceName", i).toByteArray();
+				QString urlStr = outputConnectionsModelPtr->GetData("Url", i).toString();
+
+				QUrl url(urlStr);
+
+				if (m_pluginMap.contains(serviceName)){
+					istd::TDelPtr<imtservice::IConnectionCollection> connectionCollection = m_pluginMap[serviceName].pluginPtr->GetConnectionCollectionFactory()->CreateInstance();
+					if (connectionCollection != nullptr){
+						const imtbase::ICollectionInfo* collectionInfoPtr = connectionCollection->GetUrlList();
+						if (collectionInfoPtr == nullptr){
+							continue;
+						}
+
+						connectionCollection->SetUrl(outputConnectionId, url);
+					}
+				}
+			}
+		}
+	}
+
+	if (m_serviceControllerCompPtr.IsValid()){
+		QProcess::ProcessState serviceStatus = m_serviceControllerCompPtr->GetServiceStatus(objectId);
+		if (serviceStatus == QProcess::ProcessState::Running){
+			m_serviceControllerCompPtr->StopService(objectId);
+			m_serviceControllerCompPtr->StartService(objectId);
+		}
+	}
+
+	return resultPtr;
+}
+
+
 istd::IChangeable* CServiceCollectionControllerComp::CreateObject(
 			const QList<imtgql::CGqlObject>& inputParams,
-			QByteArray &objectId,
-			QString &name,
-			QString &description,
+			QByteArray& objectId,
+			QString& name,
+			QString& description,
 			QString& errorMessage) const
 {
 	if (!m_serviceInfoFactCompPtr.IsValid() || !m_objectCollectionCompPtr.IsValid()){
@@ -357,7 +456,7 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObject(
 
 		agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(serviceInstancePtr);
 		if (serviceInfoPtr == nullptr){
-			errorMessage = QT_TR_NOOP("Unable to get an service info!");
+			errorMessage = QString("Unable to get an service info!");
 			return nullptr;
 		}
 
@@ -402,7 +501,7 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObject(
 		return serviceInfoPtr;
 	}
 
-	errorMessage = QObject::tr("Can not create service: %1").arg(QString(objectId));
+	errorMessage = QString("Can not create service: %1").arg(QString(objectId));
 
 	return nullptr;
 }
@@ -418,7 +517,6 @@ void CServiceCollectionControllerComp::OnComponentDestroyed()
 
 	BaseClass::OnComponentDestroyed();
 }
-
 
 
 bool CServiceCollectionControllerComp::LoadPluginDirectory(const QString& pluginDirectoryPath, const QString& serviceName) const
@@ -460,9 +558,6 @@ bool CServiceCollectionControllerComp::LoadPluginDirectory(const QString& plugin
 
 	return false;
 }
-
-
-
 
 
 } // namespace agentgql

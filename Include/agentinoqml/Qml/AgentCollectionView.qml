@@ -13,6 +13,8 @@ RemoteCollectionView {
 
     collectionId: "Agents";
 
+    filterMenuVisible: false;
+
     commandsDelegate: AgentCollectionViewCommandsDelegate {
         collectionView: root
     }

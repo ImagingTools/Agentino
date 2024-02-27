@@ -11,8 +11,16 @@ RemoteCollectionView {
     property string clientId;
     property string clientName;
 
+    filterMenuVisible: false;
+
     collectionId: "Services";
     additionalFieldIds: ["Status"]
+
+    onVisibleChanged: {
+        if (visible && table.elements.GetItemsCount() !== 0){
+            root.doUpdateGui();
+        }
+    }
 
     onClientIdChanged: {
         if (clientId == ""){
