@@ -83,7 +83,7 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 				else if(informationId == "Type"){
 					agentinodata::IServiceInfo::ServiceType serviceType  = serviceInfoPtr->GetServiceType();
 					switch (serviceType){
-					case agentinodata::IServiceInfo::ST_ACF:
+					case agentinodata::IServiceInfo::ST_PLUGIN:
 						elementInformation = "ACF";
 						break;
 					default:
@@ -300,7 +300,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 
 			agentinodata::IServiceInfo::ServiceType serviceType  = serviceInfoPtr->GetServiceType();
 			switch (serviceType){
-			case agentinodata::IServiceInfo::ST_ACF:
+			case agentinodata::IServiceInfo::ST_PLUGIN:
 				dataModel->SetData("Type", "ACF");
 				break;
 			default:

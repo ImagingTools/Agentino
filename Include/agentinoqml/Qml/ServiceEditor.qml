@@ -494,7 +494,7 @@ ViewBase {
                                 console.log("rowIndex", tableCellDelegate.rowIndex)
 
                                 let elementsModel = ouputConnTable.elements.GetData("Elements", tableCellDelegate.rowIndex);
-                                console.log("elementsModel", elementsModel.toJSON())
+//                                console.log("elementsModel", elementsModel.toJSON())
 
                                 textLabel.text = value;
 

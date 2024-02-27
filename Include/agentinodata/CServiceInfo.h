@@ -18,7 +18,7 @@ class CServiceInfo: virtual public IServiceInfo
 {
 
 public:
-	CServiceInfo(ServiceType serviceType = ST_ACF);
+	CServiceInfo(ServiceType serviceType = ST_PLUGIN);
 	virtual void SetServicePath(const QByteArray& servicePath);
 	virtual void SetServiceSettingsPath(const QByteArray& serviceSettingsPath);
 	virtual void SetServiceArguments(const QByteArrayList &serviceArguments);

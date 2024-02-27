@@ -38,7 +38,7 @@ ViewBase {
     commandsDelegate: Item {
         function commandHandle(commandId) {
             if (commandId === "Save"){
-                topologySaveModel.save()
+                saveModel.save()
             }
     }
     }

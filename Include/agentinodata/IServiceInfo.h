@@ -35,9 +35,9 @@ public:
 		ST_NONE,
 
 		/**
-			A Acf based type service.
+			A plugin based type service.
 		*/
-		ST_ACF
+		ST_PLUGIN
 	};
 
 	/**
