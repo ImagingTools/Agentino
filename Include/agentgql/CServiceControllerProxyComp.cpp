@@ -14,8 +14,8 @@ namespace agentgql
 
 
 imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
-		const imtgql::CGqlRequest& gqlRequest,
-		QString& errorMessage) const
+			const imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
 {
 	imtbase::CTreeItemModel* resultModelPtr = BaseClass::CreateInternalResponse(gqlRequest, errorMessage);
 

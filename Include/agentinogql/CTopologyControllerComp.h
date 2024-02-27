@@ -27,6 +27,7 @@ public:
 	QByteArray GetServiceId(const QUrl& url, const QString& connectionServiceName) const;
 	QPoint GetServiceCoordinate(const QByteArray& serviceId) const;
 	bool SetServiceCoordinate(const QByteArray& serviceId, const QPoint& point) const;
+
 protected:
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
 	I_REF(imtbase::IObjectCollection, m_topologyCollectionCompPtr);

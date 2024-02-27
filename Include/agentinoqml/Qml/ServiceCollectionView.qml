@@ -207,14 +207,25 @@ RemoteCollectionView {
             queryFields.InsertField("Id");
             query.AddField(queryFields);
 
-            console.log("registerSubscription", subscriptionRequestId, subscriptionId);
             subscriptionManager.registerSubscription(query, subscriptionClient);
         }
 
         onStateChanged: {
             if (state === "Ready"){
+                console.log("OnServiceStateChanged Ready", subscriptionClient.toJSON());
                 if (subscriptionClient.ContainsKey("data")){
-                    root.updateGui();
+
+                    let dataModel = subscriptionClient.GetData("data")
+                    if (dataModel.ContainsKey("OnServiceStateChanged")){
+                        dataModel = dataModel.GetData("OnServiceStateChanged")
+
+                        let serviceId = dataModel.GetData("serviceId")
+                        let serviceStatus = dataModel.GetData("serviceStatus")
+
+                        let elementsModel = root.table.elements;
+                    }
+
+                    root.doUpdateGui();
                 }
             }
         }

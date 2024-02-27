@@ -155,7 +155,7 @@ ViewBase {
                     serviceEditorContainer.doUpdateModel();
                 }
 
-                KeyNavigation.tab: settingsPathInput;
+                KeyNavigation.tab: descriptionInput;
             }
 
             Text {
@@ -182,7 +182,7 @@ ViewBase {
                     serviceEditorContainer.doUpdateModel();
                 }
 
-                KeyNavigation.tab: settingsPathInput;
+                KeyNavigation.tab: pathInput;
             }
 
             Text {
@@ -236,7 +236,7 @@ ViewBase {
                     serviceEditorContainer.doUpdateModel();
                 }
 
-                KeyNavigation.tab: settingsPathInput;
+                KeyNavigation.tab: argumentsInput;
             }
 
             Text {
@@ -263,7 +263,7 @@ ViewBase {
                     serviceEditorContainer.doUpdateModel();
                 }
 
-                KeyNavigation.tab: settingsPathInput;
+                KeyNavigation.tab: nameInput;
             }
 
             Text {
@@ -545,10 +545,6 @@ ViewBase {
                                         let name = cb.model.GetData("Name", cb.currentIndex)
 
                                         textLabel.text = name;
-
-//                                        let valueModel = bodyItem.tableCellDelegate.getValue();
-//                                        valueModel.SetData("CurrentIndex", cb.currentIndex);
-
                                         bodyItem.tableCellDelegate.setValue(name);
                                     }
                                 }

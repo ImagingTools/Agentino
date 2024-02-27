@@ -293,8 +293,6 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelF
 
 								imtbase::CTreeItemModel* connectionsModelPtr = GetConnectionsModel(connectionName.toUtf8());
 
-								qDebug() << "connectionsModelPtr" << connectionsModelPtr->toJSON();
-
 								outputConnectionsModelPtr->SetExternTreeModel("Elements", connectionsModelPtr, index);
 							}
 						}
@@ -330,37 +328,32 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetConnectionsModel(con
 							if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
 								agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
 								if (serviceInfoPtr != nullptr){
-									qDebug() << "serviceElementId" << serviceElementId;
-
 									// Get Connections
 									imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetConnectionCollection();
 									if (connectionCollectionPtr != nullptr){
 										imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
 										for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-											qDebug() << "connectionElementId" << connectionElementId;
-
 											if (connectionElementId == connectionId){
-												qDebug() << "connectionElementId == connectionId";
-
 												imtbase::IObjectCollection::DataPtr connectionDataPtr;
 												if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
 													imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
 													if (connectionParamPtr != nullptr){
-														qDebug() << "GetConnectionType" << connectionParamPtr->GetConnectionType();
-														qDebug() << "GetServiceName" << connectionParamPtr->GetServiceName();
-														qDebug() << "GetUrl" << connectionParamPtr->GetUrl();
-
 														if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionParam::CT_INPUT){
+															int index = result->InsertNewItem();
+
+															QUrl url = connectionParamPtr->GetUrl();
+
+															QString urlStr = connectionParamPtr->GetServiceName() + "@" + "localhost" + ":" + QString::number(url.port());
+
+															result->SetData("Id", urlStr, index);
+															result->SetData("Name", urlStr, index);
+
 															QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
 
-															qDebug() << "incomingConnections count" << incomingConnections.count();
-
 															for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-																int index = result->InsertNewItem();
+																index = result->InsertNewItem();
 
 																QString urlStr = connectionParamPtr->GetServiceName() + "@" + incomingConnection.url.host() + ":" + QString::number(incomingConnection.url.port());
-
-																qDebug() << "urlStr" << urlStr;
 
 																result->SetData("Id", urlStr, index);
 																result->SetData("Name", urlStr, index);

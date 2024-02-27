@@ -1,19 +1,19 @@
 #include <agentinogql/CTopologyControllerComp.h>
 
 
+//Qt includes
+#include <QtCore/QPoint>
+
 // Acf includes
 #include <i2d/CPosition2d.h>
 
 // ImtCore includes
 #include <imtservice/CUrlConnectionParam.h>
-// #include <imtgql/CGqlObject.h>
 
 // Agentino includes
 #include <agentinodata/IAgentInfo.h>
 #include <agentinodata/IServiceInfo.h>
 
-//Qt includes
-#include <QtCore/QPoint>
 
 
 namespace agentinogql
@@ -24,7 +24,6 @@ namespace agentinogql
 
 imtbase::CTreeItemModel* CTopologyControllerComp::CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
 {
-
 	QByteArray commandId = gqlRequest.GetCommandId();
 
 	imtgql::IGqlRequest::RequestType requestType = gqlRequest.GetRequestType();
@@ -39,6 +38,7 @@ imtbase::CTreeItemModel* CTopologyControllerComp::CreateInternalResponse(const i
 			return SaveTopologyModel(gqlRequest, errorMessage);
 		}
 	}
+
 	errorMessage = QString("Unable to create internal response with command %1").arg(qPrintable(commandId));
 
 	SendErrorMessage(0, errorMessage);
@@ -100,8 +100,7 @@ imtbase::CTreeItemModel* CTopologyControllerComp::CreateTopologyModel() const
 											if (connectionParamPtr != nullptr){
 												if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionParam::CT_OUTPUT){
 													QUrl url = connectionParamPtr->GetUrl();
-													QString connectionServiceName = connectionParamPtr->GetServiceName();
-													QByteArray serviceId =  GetServiceId(url, connectionServiceName);
+													QByteArray serviceId =  GetServiceId(url, name);
 													// itemsModel->SetData("SecondText", description, index);
 													imtbase::CTreeItemModel* linkModel = itemsModel->GetTreeItemModel("Links", index);
 													if (linkModel == nullptr){
@@ -179,6 +178,8 @@ QByteArray CTopologyControllerComp::GetServiceId(const QUrl& url, const QString&
 						if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
 							agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
 							if (serviceInfoPtr != nullptr){
+								QString serviceName = serviceCollectionPtr->GetElementInfo(serviceElementId, imtbase::ICollectionInfo::EIT_NAME).toString();
+
 								// Get Connections
 								imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetConnectionCollection();
 								if (connectionCollectionPtr != nullptr){
@@ -190,11 +191,13 @@ QByteArray CTopologyControllerComp::GetServiceId(const QUrl& url, const QString&
 											imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
 											if (connectionParamPtr != nullptr){
 												if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionParam::CT_INPUT){
-													qDebug() << connectionParamPtr->GetUrl();
+													if (connectionParamPtr->GetUrl() == url/* && connectionServiceName == serviceName*/){
+														return serviceElementId;
+													}
+
 													QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
 													for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-														qDebug() << incomingConnection.url;
-														if (/*connectionParamPtr->() == connectionServiceName && */incomingConnection.url == url){
+														if (incomingConnection.url == url/* && connectionServiceName == serviceName*/){
 															return serviceElementId;
 														}
 													}
