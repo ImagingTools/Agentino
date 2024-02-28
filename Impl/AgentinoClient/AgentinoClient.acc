@@ -28,6 +28,18 @@
                     <AttributeInfo Id="CompanyName" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="ImagingTools GmbH"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="DefaultServerHost" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="localhost"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DefaultServerPort" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="7111"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DefaultWebSocketServerHost" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="localhost"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DefaultWebSocketServerPort" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="7112"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="GetAuthorizableDatabaseStatusCommandId" Type="Id" ExportId="">
                         <Data IsEnabled="true" Value="PumaGetDatabaseStatus"/>
                     </AttributeInfo>
