@@ -80,11 +80,12 @@ imtbase::CTreeItemModel* CTopologyControllerComp::CreateTopologyModel() const
 							int index = itemsModel->InsertNewItem();
 							QPoint point = GetServiceCoordinate(serviceElementId);
 							itemsModel->SetData("Id", serviceElementId, index);
+							itemsModel->SetData("AgentId", elementId, index);
 							itemsModel->SetData("X", point.x(), index);
 							itemsModel->SetData("Y", point.y(), index);
 							QString name = serviceCollectionPtr->GetElementInfo(serviceElementId, imtbase::ICollectionInfo::EIT_NAME).toString();
 							QString description = serviceCollectionPtr->GetElementInfo(serviceElementId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
-							itemsModel->SetData("MainText", agentName + "@" + name, index);
+							itemsModel->SetData("MainText", name + "@" + agentName, index);
 							itemsModel->SetData("SecondText", description, index);
 
 							if (serviceInfoPtr != nullptr){
