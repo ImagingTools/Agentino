@@ -25,9 +25,9 @@ class IServiceInfo:
 public:
 
 	/**
-		Supported service types.
+		Supported settings service types.
 	*/
-	enum ServiceType
+	enum SettingsType
 	{
 		/**
 			A commmon type service.
@@ -43,27 +43,23 @@ public:
 	/**
 		Get type of the service.
 	*/
-	virtual ServiceType GetServiceType() const = 0;
-
+	virtual SettingsType GetSettingsType() const = 0;
+	/**
+		Get type name of the service.
+	*/
+	virtual QString GetServiceTypeName() const = 0;
 	/**
 		Get path of the service.
 	*/
 	virtual QByteArray GetServicePath() const = 0;
-
 	/**
 		Get settings path of the service.
 	*/
 	virtual QByteArray GetServiceSettingsPath() const = 0;
-
 	/**
 		Get arguments of the service.
 	*/
 	virtual QByteArrayList GetServiceArguments() const = 0;
-
-	/**
-		Get metainfo of the service.
-	*/
-	virtual const IServiceMetaInfo* GetServiceMetaInfo() const = 0;
 
 	/**
 		Get autostart flag.
@@ -71,9 +67,13 @@ public:
 	virtual bool IsAutoStart() const = 0;
 
 	/**
-		Get connection collection.
+		Get input connection collection.
 	*/
-	virtual imtbase::IObjectCollection* GetConnectionCollection() = 0;
+	virtual imtbase::IObjectCollection* GetInputConnections() = 0;
+	/**
+		Get dependant service connection collection.
+	*/
+	virtual imtbase::IObjectCollection* GetDependantServiceConnections() = 0;
 };
 
 

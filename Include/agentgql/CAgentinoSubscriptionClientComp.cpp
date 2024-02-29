@@ -31,20 +31,7 @@ void CAgentinoSubscriptionClientComp::OnComponentCreated()
 
 void CAgentinoSubscriptionClientComp::OnResponseReceived(const QByteArray & subscriptionId, const QByteArray & subscriptionData)
 {
-//	istd::IChangeable::ChangeSet changeSet(istd::IChangeable::CF_ANY);
-//	agentinodata::IServiceController::NotifierStatusInfo notifierInfo;
-//	QJsonDocument document = QJsonDocument::fromJson(subscriptionData);
-//	QJsonObject subscriptionObject = document.object();
-//	if (subscriptionId == m_serviceStatusSubsriptionId){
-//		notifierInfo.serviceId = subscriptionObject.value("id").toString().toUtf8();
-//		QString status = subscriptionObject.value("status").toString();
-//		changeSet.SetChangeInfo(agentinodata::IServiceController::CN_STATUS_CHANGED, QVariant::fromValue(notifierInfo));
-//	}
-//	istd::CChangeNotifier notifier(this, &changeSet);
 
-//	if (m_gqlCollectionCompPtr.IsValid()){
-//		istd::CChangeNotifier notifier(m_gqlCollectionCompPtr.GetPtr(), &changeSet);
-//	}
 }
 
 

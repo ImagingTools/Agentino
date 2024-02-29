@@ -24,7 +24,8 @@ public:
 
 	imtbase::CTreeItemModel* CreateTopologyModel() const;
 	imtbase::CTreeItemModel* SaveTopologyModel(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const;
-	QByteArray GetServiceId(const QUrl& url, const QString& connectionServiceName) const;
+	QByteArray GetServiceId(const QUrl& url, const QString& connectionServiceTypeName) const;
+	QByteArray GetServiceId(const QByteArray& dependantServiceConnectionId) const;
 	QPoint GetServiceCoordinate(const QByteArray& serviceId) const;
 	bool SetServiceCoordinate(const QByteArray& serviceId, const QPoint& point) const;
 

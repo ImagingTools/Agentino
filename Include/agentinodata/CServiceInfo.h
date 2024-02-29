@@ -7,7 +7,6 @@
 
 // Agentino includes
 #include <agentinodata/IServiceInfo.h>
-#include <agentinodata/CServiceMetaInfo.h>
 
 
 namespace agentinodata
@@ -18,20 +17,21 @@ class CServiceInfo: virtual public IServiceInfo
 {
 
 public:
-	CServiceInfo(ServiceType serviceType = ST_PLUGIN);
+	CServiceInfo(const QString& typeName = QString(), SettingsType settingsType = ST_PLUGIN);
 	virtual void SetServicePath(const QByteArray& servicePath);
 	virtual void SetServiceSettingsPath(const QByteArray& serviceSettingsPath);
 	virtual void SetServiceArguments(const QByteArrayList &serviceArguments);
 	virtual void SetIsAutoStart(bool isAutoStart);
 
 	// reimplemented (agentinodata::IServiceInfo)
-	virtual ServiceType GetServiceType() const override;
+	virtual SettingsType GetSettingsType() const override;
+	virtual QString GetServiceTypeName() const override;
 	virtual QByteArray GetServicePath() const override;
 	virtual QByteArray GetServiceSettingsPath() const override;
 	virtual QByteArrayList GetServiceArguments() const override;
-	virtual const IServiceMetaInfo* GetServiceMetaInfo() const override;
 	virtual bool IsAutoStart() const override;
-	virtual imtbase::IObjectCollection* GetConnectionCollection() override;
+	virtual imtbase::IObjectCollection* GetInputConnections() override;
+	virtual imtbase::IObjectCollection* GetDependantServiceConnections() override;
 
 	// reimplemented (iser::ISerializable)
 	virtual bool Serialize(iser::IArchive &archive) override;
@@ -43,13 +43,14 @@ public:
 	virtual bool ResetData(CompatibilityMode mode = CM_WITHOUT_REFS) override;
 
 protected:
-	ServiceType m_serviceType;
+	SettingsType m_settingsType;
+	QString m_serviceTypeName;
 	QByteArray m_path;
 	QByteArray m_settingsPath;
 	QByteArrayList m_arguments;
-	CServiceMetaInfo m_serviceMetaInfo;
 
-	imtbase::CObjectCollection m_connectionCollection;
+	imtbase::CObjectCollection m_inputConnections;
+	imtbase::CObjectCollection m_dependantServiceConnections;
 	bool m_isAutoStart;
 };
 

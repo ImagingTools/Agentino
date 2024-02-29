@@ -7,6 +7,7 @@
 
 // ImtCore includes
 #include <imtservice/CUrlConnectionParam.h>
+#include <imtservice/CUrlConnectionLinkParam.h>
 
 
 namespace agentgql
@@ -98,121 +99,121 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::CreateInternalResponse(
 }
 
 
-agentinodata::IServiceInfo* CGetServiceControllerProxyComp::GetServiceInfoFromRepresentationModel(const imtbase::CTreeItemModel& representationModel) const
-{
-	istd::TDelPtr<agentinodata::CServiceInfo> serviceInfoPtr;
-	serviceInfoPtr.SetPtr(new agentinodata::CServiceInfo);
+// agentinodata::IServiceInfo* CGetServiceControllerProxyComp::GetServiceInfoFromRepresentationModel(const imtbase::CTreeItemModel& representationModel) const
+// {
+// 	istd::TDelPtr<agentinodata::CServiceInfo> serviceInfoPtr;
+// 	serviceInfoPtr.SetPtr(new agentinodata::CServiceInfo);
 
-	QByteArray serviceId;
-	if (representationModel.ContainsKey("Id")){
-		serviceId = representationModel.GetData("Id").toByteArray();
-	}
+// 	QByteArray serviceId;
+// 	if (representationModel.ContainsKey("Id")){
+// 		serviceId = representationModel.GetData("Id").toByteArray();
+// 	}
 
-	QString serviceName;
-	if (representationModel.ContainsKey("Name")){
-		serviceName = representationModel.GetData("Name").toString();
-	}
+// 	QString serviceName;
+// 	if (representationModel.ContainsKey("Name")){
+// 		serviceName = representationModel.GetData("Name").toString();
+// 	}
 
-	if (representationModel.ContainsKey("Path")){
-		QByteArray path = representationModel.GetData("Path").toByteArray();
-		serviceInfoPtr->SetServicePath(path);
-	}
+// 	if (representationModel.ContainsKey("Path")){
+// 		QByteArray path = representationModel.GetData("Path").toByteArray();
+// 		serviceInfoPtr->SetServicePath(path);
+// 	}
 
-	if (representationModel.ContainsKey("SettingsPath")){
-		QByteArray settingsPath = representationModel.GetData("SettingsPath").toByteArray();
-		serviceInfoPtr->SetServiceSettingsPath(settingsPath);
-	}
+// 	if (representationModel.ContainsKey("SettingsPath")){
+// 		QByteArray settingsPath = representationModel.GetData("SettingsPath").toByteArray();
+// 		serviceInfoPtr->SetServiceSettingsPath(settingsPath);
+// 	}
 
-	if (representationModel.ContainsKey("Arguments")){
-		QByteArray arguments = representationModel.GetData("Arguments").toByteArray();
-		serviceInfoPtr->SetServiceArguments(arguments.split(' '));
-	}
+// 	if (representationModel.ContainsKey("Arguments")){
+// 		QByteArray arguments = representationModel.GetData("Arguments").toByteArray();
+// 		serviceInfoPtr->SetServiceArguments(arguments.split(' '));
+// 	}
 
-	if (representationModel.ContainsKey("IsAutoStart")){
-		bool isAutoStart = representationModel.GetData("IsAutoStart").toBool();
-		serviceInfoPtr->SetIsAutoStart(isAutoStart);
-	}
+// 	if (representationModel.ContainsKey("IsAutoStart")){
+// 		bool isAutoStart = representationModel.GetData("IsAutoStart").toBool();
+// 		serviceInfoPtr->SetIsAutoStart(isAutoStart);
+// 	}
 
-	imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetConnectionCollection();
+// 	imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetConnectionCollection();
 
-	if (representationModel.ContainsKey("InputConnections")){
-		imtbase::CTreeItemModel* inputConnectionsModelPtr = representationModel.GetTreeItemModel("InputConnections");
-		if (inputConnectionsModelPtr != nullptr){
-			for (int i = 0; i < inputConnectionsModelPtr->GetItemsCount(); i++){
-				QByteArray id = inputConnectionsModelPtr->GetData("Id").toByteArray();
-				QString connectionName = inputConnectionsModelPtr->GetData("ConnectionName").toString();
-				QString description = inputConnectionsModelPtr->GetData("Description").toString();
-				QString host = inputConnectionsModelPtr->GetData("Host").toString();
-				int port = inputConnectionsModelPtr->GetData("Port").toInt();
+// 	if (representationModel.ContainsKey("InputConnections")){
+// 		imtbase::CTreeItemModel* inputConnectionsModelPtr = representationModel.GetTreeItemModel("InputConnections");
+// 		if (inputConnectionsModelPtr != nullptr){
+// 			for (int i = 0; i < inputConnectionsModelPtr->GetItemsCount(); i++){
+// 				QByteArray id = inputConnectionsModelPtr->GetData("Id").toByteArray();
+// 				QString connectionName = inputConnectionsModelPtr->GetData("ConnectionName").toString();
+// 				QString description = inputConnectionsModelPtr->GetData("Description").toString();
+// 				QString host = inputConnectionsModelPtr->GetData("Host").toString();
+// 				int port = inputConnectionsModelPtr->GetData("Port").toInt();
 
-				QUrl connectionUrl;
-				connectionUrl.setHost(host);
-				connectionUrl.setPort(port);
+// 				QUrl connectionUrl;
+// 				connectionUrl.setHost(host);
+// 				connectionUrl.setPort(port);
 
-				istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
-				urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam(
-												 serviceName.toUtf8(),
-												 imtservice::IServiceConnectionParam::CT_INPUT,
-												 connectionUrl)
-											 );
+// 				istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
+// 				urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam(
+// 												 serviceName.toUtf8(),
+// 												 imtservice::IServiceConnectionParam::CT_INPUT,
+// 												 connectionUrl)
+// 											 );
 
-				if (inputConnectionsModelPtr->ContainsKey("ExternPorts")){
-					imtbase::CTreeItemModel* externPortsModelPtr = inputConnectionsModelPtr->GetTreeItemModel("ExternPorts");
-					if (externPortsModelPtr != nullptr){
-						imtbase::CTreeItemModel* elementsModelPtr = externPortsModelPtr->GetTreeItemModel("Elements");
-						if (elementsModelPtr != nullptr){
-							for (int i = 0; i < elementsModelPtr->GetItemsCount(); i++){
-								QByteArray objectId = elementsModelPtr->GetData("Id", i).toByteArray();
-								QString description = elementsModelPtr->GetData("Description", i).toString();
-								QString externHost = elementsModelPtr->GetData("Host", i).toString();
-								int externPort = elementsModelPtr->GetData("Port", i).toInt();
+// 				if (inputConnectionsModelPtr->ContainsKey("ExternPorts")){
+// 					imtbase::CTreeItemModel* externPortsModelPtr = inputConnectionsModelPtr->GetTreeItemModel("ExternPorts");
+// 					if (externPortsModelPtr != nullptr){
+// 						imtbase::CTreeItemModel* elementsModelPtr = externPortsModelPtr->GetTreeItemModel("Elements");
+// 						if (elementsModelPtr != nullptr){
+// 							for (int i = 0; i < elementsModelPtr->GetItemsCount(); i++){
+// 								QByteArray objectId = elementsModelPtr->GetData("Id", i).toByteArray();
+// 								QString description = elementsModelPtr->GetData("Description", i).toString();
+// 								QString externHost = elementsModelPtr->GetData("Host", i).toString();
+// 								int externPort = elementsModelPtr->GetData("Port", i).toInt();
 
-								imtservice::IServiceConnectionParam::IncomingConnectionParam externConnection;
+// 								imtservice::IServiceConnectionParam::IncomingConnectionParam externConnection;
 
-								externConnection.description = description;
+// 								externConnection.description = description;
 
-								QUrl url;
-								url.setPort(externPort);
-								url.setHost(externHost);
+// 								QUrl url;
+// 								url.setPort(externPort);
+// 								url.setHost(externHost);
 
-								externConnection.description = description;
-								externConnection.url = url;
+// 								externConnection.description = description;
+// 								externConnection.url = url;
 
-								urlConnectionParamPtr->AddExternConnection(externConnection);
-							}
-						}
-					}
-				}
+// 								urlConnectionParamPtr->AddExternConnection(externConnection);
+// 							}
+// 						}
+// 					}
+// 				}
 
-				connectionCollectionPtr->InsertNewObject("ConnectionInfo", connectionName, description, urlConnectionParamPtr.PopPtr(), id);
-			}
-		}
-	}
+// 				connectionCollectionPtr->InsertNewObject("ConnectionInfo", connectionName, description, urlConnectionParamPtr.PopPtr(), id);
+// 			}
+// 		}
+// 	}
 
-	if (representationModel.ContainsKey("OutputConnections")){
-		imtbase::CTreeItemModel* outputConnectionsModelPtr = representationModel.GetTreeItemModel("OutputConnections");
-		if (outputConnectionsModelPtr != nullptr){
-			for (int i = 0; i < outputConnectionsModelPtr->GetItemsCount(); i++){
-				QByteArray id = outputConnectionsModelPtr->GetData("Id", i).toByteArray();
-				QString connectionName = outputConnectionsModelPtr->GetData("ConnectionName", i).toString();
-				QString serviceName = outputConnectionsModelPtr->GetData("ServiceName", i).toString();
-				QString description = outputConnectionsModelPtr->GetData("Description", i).toString();
-				QString urlStr = outputConnectionsModelPtr->GetData("Url", i).toString();
+// 	if (representationModel.ContainsKey("OutputConnections")){
+// 		imtbase::CTreeItemModel* outputConnectionsModelPtr = representationModel.GetTreeItemModel("OutputConnections");
+// 		if (outputConnectionsModelPtr != nullptr){
+// 			for (int i = 0; i < outputConnectionsModelPtr->GetItemsCount(); i++){
+// 				QByteArray id = outputConnectionsModelPtr->GetData("Id", i).toByteArray();
+// 				QString connectionName = outputConnectionsModelPtr->GetData("ConnectionName", i).toString();
+// 				QString serviceName = outputConnectionsModelPtr->GetData("ServiceName", i).toString();
+// 				QString description = outputConnectionsModelPtr->GetData("Description", i).toString();
+// 				QString urlStr = outputConnectionsModelPtr->GetData("Url", i).toString();
 
-				QUrl url = QUrl(urlStr);
+// 				QUrl url = QUrl(urlStr);
 
-				istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
-				urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam(
-												 serviceName.toUtf8(),
-												 imtservice::IServiceConnectionParam::CT_INPUT,
-												 url)
-											 );
-			}
-		}
-	}
+// 				istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
+// 				urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam(
+// 												 serviceName.toUtf8(),
+// 												 imtservice::IServiceConnectionParam::CT_INPUT,
+// 												 url)
+// 											 );
+// 			}
+// 		}
+// 	}
 
-	return serviceInfoPtr.PopPtr();
-}
+// 	return serviceInfoPtr.PopPtr();
+// }
 
 
 imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelFromServiceInfo(const imtbase::IObjectCollection& serviceCollection, const QByteArray& serviceId) const
@@ -241,7 +242,7 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelF
 			imtbase::CTreeItemModel* inputConnectionsModelPtr = serviceRepresentationModelPtr->AddTreeModel("InputConnections");
 			imtbase::CTreeItemModel* outputConnectionsModelPtr = serviceRepresentationModelPtr->AddTreeModel("OutputConnections");
 
-			imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetConnectionCollection();
+			imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
 			if (connectionCollectionPtr != nullptr){
 				imtbase::ICollectionInfo::Ids elementIds = connectionCollectionPtr->GetElementIds();
 				imtbase::IObjectCollection::DataPtr connectionDataPtr;
@@ -258,7 +259,8 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelF
 								inputConnectionsModelPtr->SetData("Id", connectionName, index);
 								inputConnectionsModelPtr->SetData("ConnectionName", connectionName, index);
 								inputConnectionsModelPtr->SetData("Description", connectionDescription, index);
-								inputConnectionsModelPtr->SetData("ServiceName", connectionParamPtr->GetServiceName(), index);
+								inputConnectionsModelPtr->SetData("ServiceTypeName", connectionParamPtr->GetServiceTypeName(), index);
+								inputConnectionsModelPtr->SetData("ServiceName", serviceName, index);
 
 								QUrl url = connectionParamPtr->GetUrl();
 								inputConnectionsModelPtr->SetData("Host", url.host(), index);
@@ -275,26 +277,44 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelF
 									externPortsModelPtr->SetData("Description", incomingConnection.description, externIndex);
 								}
 							}
-							else if (connectionType == imtservice::IServiceConnectionParam::CT_OUTPUT){
+						}
+					}
+				}
+			}
+
+			imtbase::IObjectCollection* dependantServiceCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
+			if (dependantServiceCollectionPtr != nullptr){
+				imtbase::ICollectionInfo::Ids elementIds = dependantServiceCollectionPtr->GetElementIds();
+				imtbase::IObjectCollection::DataPtr connectionDataPtr;
+				for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
+					if (connectionCollectionPtr->GetObjectData(elementId, connectionDataPtr)){
+						imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
+						if (connectionLinkParamPtr != nullptr){
+							// imtservice::IServiceConnectionParam::ConnectionType connectionType = connectionParamPtr->GetConnectionType();
+							QByteArray dependantServiceConnectionId = connectionLinkParamPtr->GetDependantServiceConnectionId();
+							imtbase::IObjectCollection::DataPtr connectionDependantDataPtr;
+							QString connectionName;
+							QString connectionDescription;
+
+							if (GetConnectionObjectData(dependantServiceConnectionId, connectionDependantDataPtr, connectionName, connectionDescription)
+										&& connectionDependantDataPtr.IsValid()){
 								int index = outputConnectionsModelPtr->InsertNewItem();
+								imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDependantDataPtr.GetPtr());
+								if (connectionParamPtr != nullptr){
+									QUrl url = connectionParamPtr->GetUrl();
+									outputConnectionsModelPtr->SetData("Id", connectionName, index);
+									outputConnectionsModelPtr->SetData("ConnectionName", connectionName, index);
+									outputConnectionsModelPtr->SetData("Description", connectionDescription, index);
+									outputConnectionsModelPtr->SetData("ServiceTypeName", connectionParamPtr->GetServiceTypeName(), index);
+									outputConnectionsModelPtr->SetData("ServiceName", serviceName, index);
 
-								QString connectionName = connectionCollectionPtr->GetElementInfo(elementId, imtbase::IObjectCollection::EIT_NAME).toString();
-								QString connectionDescription = connectionCollectionPtr->GetElementInfo(elementId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
-
-								QUrl url = connectionParamPtr->GetUrl();
-
-								outputConnectionsModelPtr->SetData("Id", connectionName, index);
-								outputConnectionsModelPtr->SetData("ConnectionName", connectionName, index);
-								outputConnectionsModelPtr->SetData("Description", connectionDescription, index);
-								outputConnectionsModelPtr->SetData("ServiceName", connectionParamPtr->GetServiceName(), index);
-
-								QString urlStr = connectionParamPtr->GetServiceName() + "@" + url.host() + ":" + QString::number(url.port());
-								outputConnectionsModelPtr->SetData("Url", urlStr, index);
-
-								imtbase::CTreeItemModel* connectionsModelPtr = GetConnectionsModel(connectionName.toUtf8());
-
-								outputConnectionsModelPtr->SetExternTreeModel("Elements", connectionsModelPtr, index);
+									QString urlStr = serviceName + "@" + url.host() + ":" + QString::number(url.port());
+									outputConnectionsModelPtr->SetData("Url", urlStr, index);
+									imtbase::CTreeItemModel* connectionsModelPtr = GetConnectionsModel(connectionName.toUtf8());
+									outputConnectionsModelPtr->SetExternTreeModel("Elements", connectionsModelPtr, index);
+								}
 							}
+
 						}
 					}
 				}
@@ -328,8 +348,9 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetConnectionsModel(con
 							if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
 								agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
 								if (serviceInfoPtr != nullptr){
+									QString serviceName = serviceCollectionPtr->GetElementInfo(serviceElementId, imtbase::IObjectCollection::EIT_NAME).toString();
 									// Get Connections
-									imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetConnectionCollection();
+									imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
 									if (connectionCollectionPtr != nullptr){
 										imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
 										for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
@@ -343,7 +364,7 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetConnectionsModel(con
 
 															QUrl url = connectionParamPtr->GetUrl();
 
-															QString urlStr = connectionParamPtr->GetServiceName() + "@" + "localhost" + ":" + QString::number(url.port());
+															QString urlStr = serviceName + "@" + "localhost" + ":" + QString::number(url.port());
 
 															result->SetData("Id", urlStr, index);
 															result->SetData("Name", urlStr, index);
@@ -353,7 +374,7 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetConnectionsModel(con
 															for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
 																index = result->InsertNewItem();
 
-																QString urlStr = connectionParamPtr->GetServiceName() + "@" + incomingConnection.url.host() + ":" + QString::number(incomingConnection.url.port());
+																QString urlStr = serviceName + "@" + incomingConnection.url.host() + ":" + QString::number(incomingConnection.url.port());
 
 																result->SetData("Id", urlStr, index);
 																result->SetData("Name", urlStr, index);
@@ -374,6 +395,54 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetConnectionsModel(con
 	}
 
 	return result.PopPtr();
+}
+
+
+bool CGetServiceControllerProxyComp::GetConnectionObjectData(
+			const imtbase::IObjectCollection::Id& connectionId,
+			imtbase::IObjectCollection::DataPtr& connectionDataPtr,
+			QString& connectionName,
+			QString &connectionDescription) const
+{
+	if (m_agentCollectionCompPtr.IsValid()){
+		imtbase::ICollectionInfo::Ids elementIds = m_agentCollectionCompPtr->GetElementIds();
+		for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
+			imtbase::IObjectCollection::DataPtr agentDataPtr;
+			if (m_agentCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
+				agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(agentDataPtr.GetPtr());
+				if (agentInfoPtr != nullptr){
+					// Get Services
+					imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+					if (serviceCollectionPtr != nullptr){
+						imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
+						for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
+							imtbase::IObjectCollection::DataPtr serviceDataPtr;
+							if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
+								agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+								if (serviceInfoPtr != nullptr){
+									// Get Connections
+									imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
+									if (connectionCollectionPtr != nullptr){
+										imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
+										for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
+											if (connectionElementId == connectionId){
+												connectionName = connectionCollectionPtr->GetElementInfo(elementId, imtbase::IObjectCollection::EIT_NAME).toString();
+												connectionDescription = connectionCollectionPtr->GetElementInfo(elementId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
+
+												return connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr);
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
 }
 
 

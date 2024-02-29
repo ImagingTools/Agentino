@@ -49,6 +49,7 @@ RemoteCollectionView {
 
     function getAdditionalInputParams(){
         let additionInputParams = {}
+        console.log("getAdditionalInputParams", root.clientId)
         additionInputParams["clientId"] = root.clientId;
         return additionInputParams
     }
@@ -60,6 +61,7 @@ RemoteCollectionView {
         function getAdditionalInputParams(){
             return root.getAdditionalInputParams()
         }
+
     }
 
     Component.onDestruction: {
@@ -102,8 +104,12 @@ RemoteCollectionView {
         ServiceEditor {
             id: serviceEditor
             commandsController: CommandsRepresentationProvider {
-                commandId: "Service";
+                // commandId: "Service";
                 uuid: serviceEditor.viewId;
+                Component.onCompleted: {
+                    commandId = "Service";
+                }
+
                 function getAdditionalInputParams(){
                     console.log("root getAdditionalInputParams");
                     return root.getAdditionalInputParams();

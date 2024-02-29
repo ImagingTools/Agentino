@@ -22,18 +22,26 @@ namespace agentinodata
 
 // public methods
 
-CServiceInfo::CServiceInfo(ServiceType serviceType):
-	m_serviceType(serviceType),
+CServiceInfo::CServiceInfo(const QString &typeName, SettingsType settingsType):
+	m_settingsType(settingsType),
+	m_serviceTypeName(typeName),
 	m_isAutoStart(true)
 {
 	typedef istd::TSingleFactory<istd::IChangeable, imtservice::CUrlConnectionParam> FactoryConnectionImpl;
-	m_connectionCollection.RegisterFactory<FactoryConnectionImpl>("ConnectionInfo");
+	m_inputConnections.RegisterFactory<FactoryConnectionImpl>("ConnectionInfo");
+	m_dependantServiceConnections.RegisterFactory<FactoryConnectionImpl>("ConnectionLink");
 }
 
 
-CServiceInfo::ServiceType CServiceInfo::GetServiceType() const
+CServiceInfo::SettingsType CServiceInfo::GetSettingsType() const
 {
-	return m_serviceType;
+	return m_settingsType;
+}
+
+
+QString CServiceInfo::GetServiceTypeName() const
+{
+	return m_serviceTypeName;
 }
 
 
@@ -78,12 +86,6 @@ void CServiceInfo::SetIsAutoStart(bool isAutoStart)
 	m_isAutoStart = isAutoStart;
 }
 
-const IServiceMetaInfo* CServiceInfo::GetServiceMetaInfo() const
-{
-	return &m_serviceMetaInfo;
-}
-
-
 
 bool CServiceInfo::IsAutoStart() const
 {
@@ -91,9 +93,15 @@ bool CServiceInfo::IsAutoStart() const
 }
 
 
-imtbase::IObjectCollection* CServiceInfo::GetConnectionCollection()
+imtbase::IObjectCollection* CServiceInfo::GetInputConnections()
 {
-	return &m_connectionCollection;
+	return &m_inputConnections;
+}
+
+
+imtbase::IObjectCollection* CServiceInfo::GetDependantServiceConnections()
+{
+	return &m_dependantServiceConnections;
 }
 
 
@@ -101,16 +109,21 @@ bool CServiceInfo::Serialize(iser::IArchive &archive)
 {
 	bool retVal = true;
 
-	int serviceType = m_serviceType;
+	int settingsType = m_settingsType;
 
 	iser::CArchiveTag idType("Type", "Type", iser::CArchiveTag::TT_LEAF);
 	retVal = retVal && archive.BeginTag(idType);
-	retVal = retVal && archive.Process(serviceType);
+	retVal = retVal && archive.Process(settingsType);
 	retVal = retVal && archive.EndTag(idType);
 
 	if (!archive.IsStoring()){
-		m_serviceType = (ServiceType)serviceType;
+		m_settingsType = (SettingsType)settingsType;
 	}
+
+	iser::CArchiveTag serviceTypeNameTag("TypeName", "TypeName", iser::CArchiveTag::TT_LEAF);
+	retVal = retVal && archive.BeginTag(serviceTypeNameTag);
+	retVal = retVal && archive.Process(m_serviceTypeName);
+	retVal = retVal && archive.EndTag(serviceTypeNameTag);
 
 	iser::CArchiveTag pathTag("Path", "Path", iser::CArchiveTag::TT_LEAF);
 	retVal = retVal && archive.BeginTag(pathTag);
@@ -138,11 +151,15 @@ bool CServiceInfo::Serialize(iser::IArchive &archive)
 	retVal = retVal && archive.Process(m_isAutoStart);
 	retVal = retVal && archive.EndTag(autoStartTag);
 
-	iser::CArchiveTag connectionsTag("Connections", "Connections", iser::CArchiveTag::TT_GROUP);
-	retVal = retVal && archive.BeginTag(connectionsTag);
-	retVal = retVal && m_connectionCollection.Serialize(archive);
-	retVal = retVal && archive.EndTag(connectionsTag);
+	iser::CArchiveTag inputConnectionsTag("InputConnections", "InputConnections", iser::CArchiveTag::TT_GROUP);
+	retVal = retVal && archive.BeginTag(inputConnectionsTag);
+	retVal = retVal && m_inputConnections.Serialize(archive);
+	retVal = retVal && archive.EndTag(inputConnectionsTag);
 
+	iser::CArchiveTag dependantServiceConnectionsTag("DependantServiceConnections", "DependantServiceConnections", iser::CArchiveTag::TT_GROUP);
+	retVal = retVal && archive.BeginTag(dependantServiceConnectionsTag);
+	retVal = retVal && m_dependantServiceConnections.Serialize(archive);
+	retVal = retVal && archive.EndTag(dependantServiceConnectionsTag);
 	return retVal;
 }
 
@@ -159,14 +176,18 @@ bool CServiceInfo::CopyFrom(const IChangeable &object, CompatibilityMode /*mode*
 	if (sourcePtr != nullptr){
 		istd::CChangeNotifier changeNotifier(this);
 
-		m_serviceType = sourcePtr->m_serviceType;
+		m_settingsType = sourcePtr->m_settingsType;
+		m_serviceTypeName = sourcePtr->m_serviceTypeName;
 		m_path = sourcePtr->m_path;
 		m_settingsPath = sourcePtr->m_settingsPath;
 		m_arguments = sourcePtr->m_arguments;
 		m_isAutoStart = sourcePtr->m_isAutoStart;
 
-		m_connectionCollection.ResetData();
-		m_connectionCollection.CopyFrom(sourcePtr->m_connectionCollection);
+		m_inputConnections.ResetData();
+		m_inputConnections.CopyFrom(sourcePtr->m_inputConnections);
+
+		m_dependantServiceConnections.ResetData();
+		m_dependantServiceConnections.CopyFrom(sourcePtr->m_dependantServiceConnections);
 
 		return true;
 	}
@@ -191,11 +212,13 @@ bool CServiceInfo::ResetData(CompatibilityMode /*mode*/)
 	istd::CChangeNotifier changeNotifier(this);
 
 	m_path.clear();
+	m_serviceTypeName.clear();
 	m_settingsPath = nullptr;
 	m_arguments.clear();
 	m_isAutoStart = true;
-	m_connectionCollection.ResetData();
-	m_serviceType = ST_NONE;
+	m_inputConnections.ResetData();
+	m_dependantServiceConnections.ResetData();
+	m_settingsType = ST_NONE;
 
 	return true;
 }

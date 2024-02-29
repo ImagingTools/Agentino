@@ -25,7 +25,6 @@ public:
 	virtual const int GetServicesCount() const = 0;
 	virtual const IServiceInfo* GetServiceInfo(const QByteArray& serviceId) const = 0;
 	virtual const iprm::IParamsSet* GetServiceConfiguration(const QByteArray& serviceId) const = 0;
-	virtual const IServiceMetaInfo* GetServiceMetaInfo(const QByteArray& serviceId) const = 0;
 };
 
 

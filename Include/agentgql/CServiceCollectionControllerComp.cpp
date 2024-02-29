@@ -83,8 +83,8 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 					elementInformation = serviceInfoPtr->GetServiceArguments().join(' ');
 				}
 				else if(informationId == "Type"){
-					agentinodata::IServiceInfo::ServiceType serviceType  = serviceInfoPtr->GetServiceType();
-					switch (serviceType){
+					agentinodata::IServiceInfo::SettingsType settingsType  = serviceInfoPtr->GetSettingsType();
+					switch (settingsType){
 					case agentinodata::IServiceInfo::ST_PLUGIN:
 						elementInformation = "ACF";
 						break;
@@ -247,18 +247,20 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 					if (objectCollection != nullptr){
 						QByteArrayList ids = collectionInfo->GetElementIds();
 						for (QByteArray id: ids){
-							const imtservice::IServiceConnectionParam* connectionMetaInfo = connectionCollection->GetConnectionMetaInfo(id);
-							if (connectionMetaInfo == nullptr){
+							const imtservice::IServiceConnectionParam* connectionParamPtr = connectionCollection->GetConnectionMetaInfo(id);
+							if (connectionParamPtr == nullptr){
 								continue;
 							}
-							if (connectionMetaInfo->GetConnectionType() == imtservice::IServiceConnectionParam::CT_INPUT){
+							if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionParam::CT_INPUT){
 								int index = inputConnectionsModelPtr->InsertNewItem();
 								QString connectionName = objectCollection->GetElementInfo(id, imtbase::IObjectCollection::EIT_NAME).toString();
 								QString connectionDescription = collectionInfo->GetElementInfo(id, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
 								inputConnectionsModelPtr->SetData("Id", connectionName, index);
 								inputConnectionsModelPtr->SetData("ConnectionName", connectionName, index);
+								inputConnectionsModelPtr->SetData("ServiceTypeName", connectionParamPtr->GetServiceTypeName(), index);
+								inputConnectionsModelPtr->SetData("UsageId", connectionParamPtr->GetUsageId(), index);
 								inputConnectionsModelPtr->SetData("Description", connectionDescription, index);
-								inputConnectionsModelPtr->SetData("ServiceName", connectionMetaInfo->GetServiceName(), index);
+								inputConnectionsModelPtr->SetData("ServiceName", serviceName, index);
 								inputConnectionsModelPtr->AddTreeModel("ExternPorts", index);
 
 								imtbase::IObjectCollection::DataPtr dataPtr;
@@ -277,7 +279,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 								outputConnectionsModelPtr->SetData("Id", connectionName, index);
 								outputConnectionsModelPtr->SetData("ConnectionName", connectionName, index);
 								outputConnectionsModelPtr->SetData("Description", connectionDescription, index);
-								outputConnectionsModelPtr->SetData("ServiceName", connectionMetaInfo->GetServiceName(), index);
+								outputConnectionsModelPtr->SetData("ServiceName", serviceName, index);
 
 								imtbase::IObjectCollection::DataPtr dataPtr;
 								objectCollection->GetObjectData(id, dataPtr);
@@ -285,7 +287,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 								if (connectionParam != nullptr){
 									QUrl url = connectionParam->GetUrl();
 
-									QString name = connectionMetaInfo->GetServiceName() + "@" + url.host() + QString::number(url.port());
+									QString name = serviceName + "@" + url.host() + QString::number(url.port());
 
 									outputConnectionsModelPtr->SetData("Url", name, index);
 
@@ -299,8 +301,8 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 				}
 			}
 
-			agentinodata::IServiceInfo::ServiceType serviceType  = serviceInfoPtr->GetServiceType();
-			switch (serviceType){
+			agentinodata::IServiceInfo::SettingsType settingsType  = serviceInfoPtr->GetSettingsType();
+			switch (settingsType){
 			case agentinodata::IServiceInfo::ST_PLUGIN:
 				dataModel->SetData("Type", "ACF");
 				break;
