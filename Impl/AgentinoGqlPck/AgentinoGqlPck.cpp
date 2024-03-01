@@ -64,6 +64,11 @@ I_EXPORT_COMPONENT(
 			"Topology controller",
 			"Topology controller");
 
+I_EXPORT_COMPONENT(
+			ServiceCollectionSubscriberController,
+			"Service collection subscriber controller",
+			"Service Collection Subscriber Controller");
+
 
 } // namespace AgentinoGqlPck
 

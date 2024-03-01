@@ -19,10 +19,13 @@ namespace agentinodata
 
 // public methods
 
-CAgentInfo::CAgentInfo()
+CAgentInfo::CAgentInfo():
+	m_modelUpdateBridge(this, imod::CModelUpdateBridge::UF_SOURCE)
 {
 	typedef istd::TSingleFactory<istd::IChangeable, agentinodata::CServiceInfo> FactoryServiceImpl;
 	m_serviceCollection.RegisterFactory<FactoryServiceImpl>("ServiceInfo");
+
+	m_serviceCollection.AttachObserver(&m_modelUpdateBridge);
 }
 
 

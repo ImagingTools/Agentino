@@ -7,6 +7,7 @@
 
 // Agentino includes
 #include <agentinodata/IServiceInfo.h>
+#include <agentinodata/IServiceManager.h>
 
 
 namespace agentgql
@@ -19,7 +20,7 @@ public:
 	typedef imtclientgql::CGqlRemoteRepresentationControllerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceControllerProxyComp);
-		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", true, "AgentCollection");
+		I_ASSIGN(m_serviceManagerCompPtr, "ServiceManager", "ServceManager", true, "ServiceManager");
 	I_END_COMPONENT;
 
 protected:
@@ -29,7 +30,7 @@ protected:
 	virtual imtbase::CTreeItemModel* GetRepresentationModelFromServiceInfo(const agentinodata::IServiceInfo& serviceInfo) const;
 
 protected:
-	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
+	I_REF(agentinodata::IServiceManager, m_serviceManagerCompPtr);
 };
 
 

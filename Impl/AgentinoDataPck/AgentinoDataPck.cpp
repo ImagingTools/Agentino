@@ -29,6 +29,11 @@ I_EXPORT_COMPONENT(
 			"ServiceManager agent controller",
 			"ServiceManager Agent Service Controller");
 
+I_EXPORT_COMPONENT(
+			AgentCollection,
+			"Agent collection",
+			"Agent Collection");
+
 
 } // namespace AgentinoDataPck
 

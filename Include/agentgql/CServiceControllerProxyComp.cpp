@@ -21,7 +21,7 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 	imtbase::CTreeItemModel* resultModelPtr = BaseClass::CreateInternalResponse(gqlRequest, errorMessage);
 
 	if (!resultModelPtr->ContainsKey("errors")){
-		if (m_agentCollectionCompPtr.IsValid()){
+		if (m_serviceManagerCompPtr.IsValid()){
 			const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParam("input");
 
 			QByteArray itemData;
@@ -62,25 +62,12 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 			}
 
 			istd::TDelPtr<agentinodata::IServiceInfo> serviceInfoPtr = GetServiceInfoFromRepresentationModel(itemModel);
-			if (serviceInfoPtr.IsValid()){
-				imtbase::IObjectCollection::DataPtr dataPtr;
-				if (m_agentCollectionCompPtr->GetObjectData(agentId, dataPtr)){
-					agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(dataPtr.GetPtr());
-					if (agentInfoPtr != nullptr){
-						imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-						if (serviceCollectionPtr != nullptr){
-							imtbase::IObjectCollection::DataPtr serviceDataPtr;
-							if (serviceCollectionPtr->GetObjectData(objectId, serviceDataPtr)){
-								serviceCollectionPtr->SetObjectData(objectId, *serviceInfoPtr.PopPtr());
-							}
-							else{
-								serviceCollectionPtr->InsertNewObject("ServiceInfo", serviceName, serviceDescription, serviceInfoPtr.PopPtr(), objectId);
-							}
-						}
-					}
 
-					m_agentCollectionCompPtr->SetObjectData(agentId, *agentInfoPtr);
-				}
+			if (m_serviceManagerCompPtr->ServiceExists(agentId, objectId)){
+				m_serviceManagerCompPtr->SetService(agentId, objectId, *serviceInfoPtr.PopPtr());
+			}
+			else{
+				m_serviceManagerCompPtr->AddService(agentId, *serviceInfoPtr.PopPtr());
 			}
 		}
 	}

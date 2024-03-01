@@ -16,6 +16,7 @@
 #include <agentinogql/CSubscriptionControllerComp.h>
 #include <agentinogql/CGqlRepresentationAgentDataComp.h>
 #include <agentinogql/CTopologyControllerComp.h>
+#include <agentinogql/CServiceCollectionSubscriberControllerComp.h>
 
 
 /**
@@ -34,6 +35,7 @@ typedef agentinogql::CAgentCollectionControllerComp AgentCollectionController;
 typedef icomp::TModelCompWrap<agentinogql::CSubscriptionControllerComp> SubscriptionController;
 typedef agentinogql::CGqlRepresentationAgentDataComp GqlRepresentationAgentData;
 typedef agentinogql::CTopologyControllerComp TopologyController;
+typedef agentinogql::CServiceCollectionSubscriberControllerComp ServiceCollectionSubscriberController;
 
 
 } // namespace AgentinoGqlPck

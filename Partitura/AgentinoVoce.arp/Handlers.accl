@@ -9,8 +9,8 @@
     </AcfHeader>
     <PositionMap>
         <Element ComponentName="ApplicationController" X="375" Y="375" Note=""/>
+        <Element ComponentName="LocalAuthorizableGQLServerFramework" X="875" Y="375" Note=""/>
         <Element ComponentName="Pages" X="375" Y="525" Note=""/>
-        <Element ComponentName="RemoteContextGQLServerFramework" X="725" Y="375" Note=""/>
         <Element ComponentName="SlaveGraphQLDemultiplexer" X="375" Y="175" Note=""/>
     </PositionMap>
     <EmbeddedRegistries/>

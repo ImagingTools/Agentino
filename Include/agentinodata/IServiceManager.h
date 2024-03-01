@@ -2,34 +2,47 @@
 
 
 // ACF includes
-#include <iprm/IParamsSet.h>
+#include <istd/IChangeable.h>
 
-// ServiceManager includes
-#include <agentinodata/IServiceController.h>
+// Agentino includes
 #include <agentinodata/IServiceInfo.h>
-#include <agentinodata/IServiceMetaInfo.h>
-#include <agentinodata/IAgentInfo.h>
 
 
 namespace agentinodata
 {
 
 
-/**
-	Interface for describing an agent.
-	\ingroup Service
-*/
-class IServiceManager: virtual public IServiceController, virtual public IAgentInfo
+class IServiceManager: virtual public istd::IChangeable
 {
 public:
-	virtual const int GetServicesCount() const = 0;
-	virtual const IServiceInfo* GetServiceInfo(const QByteArray& serviceId) const = 0;
-	virtual const iprm::IParamsSet* GetServiceConfiguration(const QByteArray& serviceId) const = 0;
+	/**
+		Change notification flags.
+	*/
+	enum ChangeFlags
+	{
+		/**
+			Service was added.
+		*/
+		CF_SERVICE_ADDED = 20000,
+
+		/**
+			Service was changed.
+		*/
+		CF_SERVICE_UPDATED,
+
+		/**
+			Service was removed.
+		*/
+		CF_SERVICE_REMOVED
+	};
+
+	virtual bool AddService(const QByteArray& agentId, const IServiceInfo& serviceInfo) = 0;
+	virtual bool RemoveService(const QByteArray& agentId, const QByteArray& serviceId) = 0;
+	virtual bool SetService(const QByteArray& agentId, const QByteArray& serviceId, const IServiceInfo& serviceInfo) = 0;
+	virtual bool ServiceExists(const QByteArray& agentId, const QByteArray& serviceId) const = 0;
 };
 
 
 } // namespace agentinodata
-
-
 
 

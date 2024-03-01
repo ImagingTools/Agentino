@@ -9,6 +9,7 @@
 #include <agentinodata/CServiceInfo.h>
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/CServiceControllerComp.h>
+#include <agentinodata/CAgentCollectionComp.h>
 
 
 /**
@@ -31,6 +32,7 @@ typedef icomp::TMakeComponentWrap<
 					istd::IChangeable> AgentInfo;
 
 typedef icomp::TModelCompWrap<agentinodata::CServiceControllerComp> ServiceController;
+typedef icomp::TModelCompWrap<agentinodata::CAgentCollectionComp> AgentCollection;
 
 
 } // namespace AgentinoDataPck

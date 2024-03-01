@@ -4,6 +4,7 @@ import imtcontrols 1.0
 import imtgui 1.0
 import imtguigql 1.0
 import imtcolgui 1.0
+import imtdocgui 1.0
 
 
 ViewBase {
@@ -40,7 +41,7 @@ ViewBase {
             if (commandId === "Save"){
                 saveModel.save()
             }
-    }
+        }
     }
 
     onContentXChanged: {
@@ -58,10 +59,84 @@ ViewBase {
         id: scheme
 
         Component.onCompleted: {
+            let documentManager = MainDocumentManager.getDocumentManager("Topology");
+            if (documentManager){
+                documentManager.registerDocumentView("Service", "ServiceView", serviceEditorComp);
+                documentManager.registerDocumentDataController("Service", serviceDataControllerComp);
+            }
         }
 
         onModelDataChanged: {
             commandsRepresentationProvider.setCommandIsEnabled("Save", true)
+        }
+
+        function goInside(){
+            let documentManager = MainDocumentManager.getDocumentManager("Topology");
+            if (documentManager){
+                if(objectModel.GetItemsCount() > selectedIndex && selectedIndex >= 0){
+                    let serviceId = objectModel.GetData("Id", selectedIndex);
+                    console.log("Go inside");
+
+                    documentManager.openDocument(serviceId, "Service", "ServiceView");
+                }
+            }
+        }
+    }
+
+    function getAdditionalInputParams(){
+        console.log("getAdditionalInputParams");
+        let additionInputParams = {}
+
+        console.log("scheme.selectedIndex", scheme.selectedIndex);
+
+        if(scheme.selectedIndex >= 0){
+            let agentId = scheme.objectModel.GetData("AgentId", scheme.selectedIndex);
+            additionInputParams["clientId"] = agentId;
+
+            console.log("additionInputParams", JSON.stringify(additionInputParams));
+        }
+
+        return additionInputParams
+    }
+
+    Component {
+        id: serviceEditorComp;
+
+        ServiceEditor {
+            id: serviceEditor
+            commandsController: CommandsRepresentationProvider {
+                commandId: "Service";
+                uuid: serviceEditor.viewId;
+                function getAdditionalInputParams(){
+                    return topologyPage.getAdditionalInputParams();
+                }
+            }
+        }
+    }
+
+    Component {
+        id: serviceDataControllerComp
+
+        GqlDocumentDataController {
+            gqlGetCommandId: "ServiceItem"
+            gqlUpdateCommandId: "ServiceUpdate"
+            gqlAddCommandId: "ServiceAdd"
+
+            subscriptionCommandId: "OnServicesCollectionChanged";
+
+            function getAdditionalInputParams(){
+                return topologyPage.getAdditionalInputParams();
+            }
+
+//            function getDocumentName() {
+//                let newName = qsTr("<New service>");
+
+//                if (documentName !== ""){
+//                    return documentName + "@" + root.clientName
+//                }
+
+//                return newName + "@" + root.clientName
+//            }
         }
     }
 
@@ -126,7 +201,7 @@ ViewBase {
                     return;
                 }
 
-                console.log("GetTopology ready:" )
+                console.log("GetTopology ready:", topolodyModel.toJSON())
 
                 if (topolodyModel.ContainsKey("data")){
                     dataModelLocal = topolodyModel.GetData("data");

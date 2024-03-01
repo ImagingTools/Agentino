@@ -20,7 +20,7 @@ public:
 	CServiceInfo(const QString& typeName = QString(), SettingsType settingsType = ST_PLUGIN);
 	virtual void SetServicePath(const QByteArray& servicePath);
 	virtual void SetServiceSettingsPath(const QByteArray& serviceSettingsPath);
-	virtual void SetServiceArguments(const QByteArrayList &serviceArguments);
+	virtual void SetServiceArguments(const QByteArrayList& serviceArguments);
 	virtual void SetIsAutoStart(bool isAutoStart);
 
 	// reimplemented (agentinodata::IServiceInfo)

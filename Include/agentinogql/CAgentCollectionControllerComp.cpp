@@ -203,7 +203,7 @@ imtbase::CTreeItemModel *CAgentCollectionControllerComp::ListObjects(const imtgq
 imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
-		errorMessage = QObject::tr("Internal error").toUtf8();
+		errorMessage = QString("Internal error").toUtf8();
 		return nullptr;
 	}
 
@@ -289,7 +289,7 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObject(
 		return agentPtr;
 	}
 
-	errorMessage = QObject::tr("Can not create agent: %1").arg(QString(objectId));
+	errorMessage = QString("Can not create agent: %1").arg(QString(objectId));
 
 	return nullptr;
 }
@@ -307,10 +307,23 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 	QByteArray objectId = GetObjectIdFromInputParams(inputParams);
 
 	imtbase::CTreeItemModel* retVal = nullptr;
-	const istd::IChangeable* agentObject = m_objectCollectionCompPtr->GetObjectPtr(objectId);
-	if (agentObject == nullptr){
+	const istd::IChangeable* agentObjectPtr = m_objectCollectionCompPtr->GetObjectPtr(objectId);
+	if (agentObjectPtr == nullptr){
 		retVal = BaseClass::InsertObject(gqlRequest, errorMessage);
 	}
+//	else{
+//		istd::IChangeable* nonConstAgentObjectPtr = const_cast<istd::IChangeable*>(agentObjectPtr);
+//		if (nonConstAgentObjectPtr != nullptr){
+//			agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(nonConstAgentObjectPtr);
+//			if (agentInfoPtr != nullptr){
+//				agentInfoPtr->SetLastConnection(QDateTime::currentDateTimeUtc());
+
+//				if (!m_objectCollectionCompPtr->SetObjectData(objectId, *agentInfoPtr)){
+//					qDebug() << QString("Unable to set data to the collection object with ID: %1.").arg(qPrintable(objectId));
+//				}
+//			}
+//		}
+//	}
 
 	return retVal;
 }

@@ -54,7 +54,6 @@ bool CServiceSubscriberControllerComp::SetSubscriptions()
 
 void CServiceSubscriberControllerComp::OnComponentCreated()
 {
-	qDebug() << "CServiceSubscriberControllerComp OnComponentCreated";
 	BaseClass::OnComponentCreated();
 
 	if (m_modelCompPtr.IsValid()) {

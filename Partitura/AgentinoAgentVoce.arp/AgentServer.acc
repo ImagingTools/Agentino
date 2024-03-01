@@ -187,9 +187,6 @@
                     <AttributeInfo Id="LogPath" Type="Reference" ExportId="LogPath">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="PumaUrlConnection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings/PumaUrl"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="ServerSettings" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings"/>
                     </AttributeInfo>

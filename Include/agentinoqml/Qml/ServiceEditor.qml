@@ -13,7 +13,6 @@ ViewBase {
     function blockEditing(){
         pathInput.readOnly = true;
         nameInput.readOnly = true;
-        settingsPathInput.readOnly = true;
         argumentsInput.readOnly = true;
     }
 
@@ -37,13 +36,6 @@ ViewBase {
         }
         else{
             pathInput.text = "";
-        }
-
-        if (serviceEditorContainer.model.ContainsKey("SettingsPath")){
-            settingsPathInput.text = serviceEditorContainer.model.GetData("SettingsPath");
-        }
-        else{
-            settingsPathInput.text = "";
         }
 
         if (serviceEditorContainer.model.ContainsKey("Arguments")){
@@ -73,7 +65,6 @@ ViewBase {
         serviceEditorContainer.model.SetData("Name", nameInput.text);
         serviceEditorContainer.model.SetData("Description", descriptionInput.text);
         serviceEditorContainer.model.SetData("Path", pathInput.text);
-        serviceEditorContainer.model.SetData("SettingsPath", settingsPathInput.text);
         serviceEditorContainer.model.SetData("Arguments", argumentsInput.text);
         serviceEditorContainer.model.SetData("IsAutoStart", switchAutoStart.checked);
     }
@@ -209,33 +200,6 @@ ViewBase {
                     serviceEditorContainer.doUpdateModel();
                 }
 
-                KeyNavigation.tab: settingsPathInput;
-            }
-
-            Text {
-                id: titleSettingsPath;
-
-                anchors.left: parent.left;
-
-                color: Style.textColor;
-                font.family: Style.fontFamily;
-                font.pixelSize: Style.fontSize_common;
-
-                text: qsTr("Settings Path");
-            }
-
-            CustomTextField {
-                id: settingsPathInput;
-
-                width: parent.width;
-                height: Style.itemSizeMedium;
-
-                placeHolderText: qsTr("Enter the settings path");
-
-                onEditingFinished: {
-                    serviceEditorContainer.doUpdateModel();
-                }
-
                 KeyNavigation.tab: argumentsInput;
             }
 
@@ -297,6 +261,8 @@ ViewBase {
                 font.pixelSize: Style.fontSize_common;
 
                 text: qsTr("Incoming Connections");
+
+                visible: false;
             }
 
             AuxTable {
@@ -309,6 +275,15 @@ ViewBase {
 
                 radius: 0;
                 selectable: false
+
+                visible: false;
+
+                onElementsChanged: {
+                    let count = elements.GetItemsCount();
+
+                    inputConnectionsTitle.visible = count > 0;
+                    inputConnTable.visible = count > 0;
+                }
 
                 onHeadersChanged: {
                     inputConnTable.setColumnContentComponent(1, textInputComp)
@@ -452,6 +427,8 @@ ViewBase {
             }
 
             Text {
+                id: dependantServicesTitle;
+
                 anchors.left: parent.left;
 
                 color: Style.textColor;
@@ -459,21 +436,32 @@ ViewBase {
                 font.pixelSize: Style.fontSize_common;
 
                 text: qsTr("Dependant Services");
+
+                visible: false;
             }
 
             AuxTable {
                 id: ouputConnTable;
 
                 width: parent.width;
-                height: contentHeight + headerHeight + 15;
+                height: visible ? contentHeight + headerHeight + 15 : 0;
 
                 canMoveColumns: true;
                 radius: 0;
                 selectable: false;
 
+                visible: false;
+
                 onHeadersChanged: {
                     ouputConnTable.setColumnContentComponent(2, textInputComp2)
                     ouputConnTable.setColumnContentComponent(3, comboBoxComp2)
+                }
+
+                onElementsChanged: {
+                    let count = elements.GetItemsCount();
+
+                    dependantServicesTitle.visible = count > 0;
+                    ouputConnTable.visible = count > 0;
                 }
 
                 TextInputCellContentComp {
@@ -496,28 +484,16 @@ ViewBase {
                         property bool ok: tableCellDelegate != null && ouputConnTable.elements;
 
                         onOkChanged: {
-                            console.log("onTableCellDelegateChanged onOkChanged")
-
                             if (tableCellDelegate){
                                 let value = tableCellDelegate.getValue();
-                                console.log("rowIndex", tableCellDelegate.rowIndex)
-
                                 let elementsModel = ouputConnTable.elements.GetData("Elements", tableCellDelegate.rowIndex);
-//                                console.log("elementsModel", elementsModel.toJSON())
-
                                 textLabel.text = value;
-
-                                console.log("value", value)
-
                                 cb.model = elementsModel;
+
                                 if (cb.model){
                                     for (let i = 0; i < cb.model.GetItemsCount(); i++){
                                         let id = cb.model.GetData("Id", i);
-                                        console.log("id", id)
-
                                         if (String(id) == String(value)){
-                                            console.log("==", value)
-
                                             cb.currentIndex = i;
                                             break;
                                         }
@@ -559,6 +535,10 @@ ViewBase {
                                 }
                             }
 
+                            onFinished: {
+                                cb.visible = false;
+                            }
+
                             onFocusChanged: {
                                 if (!focus){
                                     cb.visible = false;
@@ -578,15 +558,13 @@ ViewBase {
                                     cb.z = ma.z + 1;
 
                                     cb.forceActiveFocus();
+
+                                    cb.openPopupMenu();
                                 }
                             }
                         }
                     }
                 }
-
-//                ComboBoxCellContentComp {
-//                    id: comboBoxComp2;
-//                }
 
                 TreeItemModel {
                     id: headersModel2;

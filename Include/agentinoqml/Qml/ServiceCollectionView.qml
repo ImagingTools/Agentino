@@ -126,6 +126,8 @@ RemoteCollectionView {
             gqlUpdateCommandId: "ServiceUpdate"
             gqlAddCommandId: "ServiceAdd"
 
+            subscriptionCommandId: "OnServicesCollectionChanged";
+
             function getAdditionalInputParams(){
                 return root.getAdditionalInputParams();
             }

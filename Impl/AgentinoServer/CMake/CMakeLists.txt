@@ -36,7 +36,7 @@ endif()
 
 
 target_link_libraries(${PROJECT_NAME} iauth iservice)
-target_link_libraries(${PROJECT_NAME} imtqml  imtstyle imtauthgui imtauthgql imtstylecontrolsqml imtgui imtguigql imtlic imtauth)
+target_link_libraries(${PROJECT_NAME} imtqml imtstyle imtauthgui imtauthgql imtstylecontrolsqml imtgui imtguigql imtlic imtauth imtcrypt)
 target_link_libraries(${PROJECT_NAME} imtrest imtlicgui imtlicgql imtclientgql imtgql imtauthdb imtdb imtbase imtapp imtfile)
 target_link_libraries(${PROJECT_NAME} ImtCoreLoc AgentinoLoc)
 target_link_libraries(${PROJECT_NAME} agentinoqml agentinodata agentinogql agentgql)
@@ -51,5 +51,11 @@ if(WIN32)
 
 	windeploy(${PROJECT_NAME} "${listOptions}" "${files}")
 	unset(listOptions)
+endif()
+
+if(APPLE)
+	file(COPY ${PROJECT_SOURCE_DIR}/../../../Build/Migrations DESTINATION ${PROJECT_SOURCE_DIR}/../../../Bin/${CMAKE_BUILD_TYPE}_${TARGETNAME}/${PROJECT_NAME}.app/Contents/MacOS)
+else()
+	file(COPY ${PROJECT_SOURCE_DIR}/../../../Build/Migrations DESTINATION ${PROJECT_SOURCE_DIR}/../../../Bin/${CMAKE_BUILD_TYPE}_${TARGETNAME})
 endif()
 

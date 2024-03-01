@@ -1,6 +1,10 @@
 #pragma once
 
 
+// ACF includes
+#include <imod/CModelUpdateBridge.h>
+#include <imod/TModelWrap.h>
+
 // ImtCore includes
 #include <imtbase/TIdentifiableWrap.h>
 #include <imtbase/CObjectCollection.h>
@@ -38,7 +42,9 @@ public:
 protected:
 	QDateTime m_lastConnection;
 	QString m_computerName;
-	imtbase::CObjectCollection m_serviceCollection;
+	imod::TModelWrap<imtbase::CObjectCollection> m_serviceCollection;
+
+	imod::CModelUpdateBridge m_modelUpdateBridge;
 };
 
 

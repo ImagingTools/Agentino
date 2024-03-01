@@ -95,7 +95,6 @@ imtbase::CTreeItemModel* CTopologyControllerComp::CreateTopologyModel() const
 								if (connectionCollectionPtr != nullptr){
 									imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
 									for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-										qDebug() << "connectionElementId" << connectionElementId;
 										imtbase::IObjectCollection::DataPtr connectionDataPtr;
 										if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
 											imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
