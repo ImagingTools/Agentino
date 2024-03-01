@@ -13,7 +13,7 @@ RESOURCES += $$files($$_PRO_FILE_PWD_/../*.qrc, false)
 LIBS += -L../../../Lib/$$COMPILER_DIR -liauth -liqtgui -liservice
 LIBS += -limtbase -limtgui -limtauth -limtauthgui -limtlic -limtlicgui -limtwidgets -limtrest -limtcrypt -limt3dgui -limtrepo -limtstyle -limtqml -limtcom -limtdb
 LIBS += -limtcontrolsqml -limtstylecontrolsqml -limtguigqlqml -limtcolguiqml -limtdocguiqml -limtauthguiqml -limtlicguiqml -limtguiqml
-LIBS += -limtlicgql -limtguigql -limtgql -limtauthgql
+LIBS += -limtlicgql -limtguigql -limtgql -limtauthgql -limtclientgql
 LIBS += -lagentinoqml -lImtCoreLoc
 
 # Set OS-specific build options:
