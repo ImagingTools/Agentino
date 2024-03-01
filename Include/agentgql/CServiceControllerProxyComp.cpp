@@ -39,7 +39,6 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 
 			imtbase::CTreeItemModel itemModel;
 			if (gqlRequest.GetCommandId() == "ServiceAdd"){
-
 				imtbase::CTreeItemModel* dataModelPtr = resultModelPtr->GetTreeItemModel("item");
 				if (dataModelPtr != nullptr){
 					itemModel.CopyFrom(*dataModelPtr);
@@ -61,13 +60,14 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 				serviceDescription = itemModel.GetData("Description").toString();
 			}
 
-			istd::TDelPtr<agentinodata::IServiceInfo> serviceInfoPtr = GetServiceInfoFromRepresentationModel(itemModel);
+			istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInfoPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(GetServiceInfoFromRepresentationModel(itemModel));
+			serviceInfoPtr->SetObjectUuid(objectId);
 
 			if (m_serviceManagerCompPtr->ServiceExists(agentId, objectId)){
 				m_serviceManagerCompPtr->SetService(agentId, objectId, *serviceInfoPtr.PopPtr());
 			}
 			else{
-				m_serviceManagerCompPtr->AddService(agentId, *serviceInfoPtr.PopPtr());
+				m_serviceManagerCompPtr->AddService(agentId, *serviceInfoPtr.PopPtr(), objectId, serviceName, serviceDescription);
 			}
 		}
 	}
@@ -78,8 +78,8 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 
 agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepresentationModel(const imtbase::CTreeItemModel& representationModel) const
 {
-	istd::TDelPtr<agentinodata::CServiceInfo> serviceInfoPtr;
-	serviceInfoPtr.SetPtr(new agentinodata::CServiceInfo);
+	istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInfoPtr;
+	serviceInfoPtr.SetPtr(new agentinodata::CIdentifiableServiceInfo);
 
 	QByteArray serviceId;
 	if (representationModel.ContainsKey("Id")){

@@ -23,7 +23,8 @@ public:
 
 	I_BEGIN_COMPONENT(CAgentCollectionControllerComp);
 		I_ASSIGN(m_agentFactCompPtr, "AgentFactory", "Factory used for creation of the new agent instance", true, "AgentFactory");
-		I_ASSIGN(m_requestHandlerPtr, "RequestHandler", "Request handler", true, "RequestHandler");
+		I_ASSIGN(m_requestHandlerCompPtr, "GqlRequestHandler", "Graphql request handler to create the subscription body", false, "GqlRequestHandler");
+		I_ASSIGN(m_serviceStatusCollectionCompPtr, "ServiceStatusCollection", "Service status collection", false, "ServiceStatusCollection");
 	I_END_COMPONENT;
 
 protected:
@@ -42,7 +43,8 @@ protected:
 
 protected:
 	I_FACT(agentinodata::IAgentInfo, m_agentFactCompPtr);
-	I_REF(imtgql::IGqlRequestHandler, m_requestHandlerPtr);
+	I_REF(imtgql::IGqlRequestHandler, m_requestHandlerCompPtr);
+	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);
 };
 
 

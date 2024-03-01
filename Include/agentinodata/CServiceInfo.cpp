@@ -14,6 +14,7 @@
 
 // ImtCore includes
 #include <imtservice/CUrlConnectionParam.h>
+#include <imtservice/CUrlConnectionLinkParam.h>
 
 
 namespace agentinodata
@@ -29,7 +30,9 @@ CServiceInfo::CServiceInfo(const QString &typeName, SettingsType settingsType):
 {
 	typedef istd::TSingleFactory<istd::IChangeable, imtservice::CUrlConnectionParam> FactoryConnectionImpl;
 	m_inputConnections.RegisterFactory<FactoryConnectionImpl>("ConnectionInfo");
-	m_dependantServiceConnections.RegisterFactory<FactoryConnectionImpl>("ConnectionLink");
+
+	typedef istd::TSingleFactory<istd::IChangeable, imtservice::CUrlConnectionLinkParam> FactoryConnectionLinkImpl;
+	m_dependantServiceConnections.RegisterFactory<FactoryConnectionLinkImpl>("ConnectionLink");
 }
 
 

@@ -4,6 +4,7 @@
 // ACF includes
 
 // ImtCore includes
+#include <imtbase/IObjectCollection.h>
 #include <imtgql/CGqlSubscriberControllerCompBase.h>
 
 
@@ -20,6 +21,7 @@ public:
 
 	I_BEGIN_COMPONENT(CServiceSubscriberControllerComp);
 		I_ASSIGN(m_modelCompPtr, "Model", "Model", true, "Model");
+		I_ASSIGN(m_serviceStatusCollectionCompPtr, "ServiceStatusCollection", "Service status collection", true, "ServiceStatusCollection");
 	I_END_COMPONENT;
 
 protected:
@@ -34,6 +36,7 @@ protected:
 
 protected:
 	I_REF(imod::IModel, m_modelCompPtr);
+	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);
 };
 
 

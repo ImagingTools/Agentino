@@ -18,6 +18,7 @@
 #include <imtbase/IObjectCollectionIterator.h>
 #include <imtdb/CSqlDatabaseObjectCollectionComp.h>
 #include <imtservice/CUrlConnectionParam.h>
+#include <imtservice/CUrlConnectionLinkParam.h>
 
 // Agentino includes
 #include <agentinodata/agentinodata.h>
@@ -35,7 +36,17 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 			const QByteArray& collectionId,
 			QString& errorMessage) const
 {
-	if (!m_objectCollectionCompPtr.IsValid() || !m_serviceControllerCompPtr.IsValid()){
+	QByteArray agentId;
+	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParam("input");
+	if (gqlInputParamPtr != nullptr){
+		const imtgql::CGqlObject* addition =gqlInputParamPtr->GetFieldArgumentObjectPtr("addition");
+		if (addition != nullptr) {
+			agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
+		}
+	}
+
+	istd::TDelPtr<imtbase::IObjectCollection> collectionPtr = GetObjectCollection(agentId);
+	if (!collectionPtr.IsValid()){
 		errorMessage = QString("Unable to get list objects. Internal error.");
 		SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
 
@@ -46,11 +57,11 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 
 	QByteArrayList informationIds = GetInformationIds(gqlRequest, "items");
 
-	if (!informationIds.isEmpty() && m_objectCollectionCompPtr.IsValid()){
-		agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = nullptr;
+	if (!informationIds.isEmpty() && collectionPtr.IsValid()){
+		agentinodata::CServiceInfo* serviceInfoPtr = nullptr;
 		imtbase::IObjectCollection::DataPtr serviceDataPtr;
-		if (m_objectCollectionCompPtr->GetObjectData(collectionId, serviceDataPtr)){
-			serviceInfoPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(serviceDataPtr.GetPtr());
+		if (collectionPtr->GetObjectData(collectionId, serviceDataPtr)){
+			serviceInfoPtr = dynamic_cast<agentinodata::CServiceInfo*>(serviceDataPtr.GetPtr());
 		}
 
 		if (serviceInfoPtr != nullptr){
@@ -59,19 +70,17 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 				QVariant elementInformation;
 
 				if(informationId == "TypeId"){
-					elementInformation = m_objectCollectionCompPtr->GetObjectTypeId(collectionId);
+					elementInformation = collectionPtr->GetObjectTypeId(collectionId);
 				}
 				else if(informationId == "Id"){
-					serviceId = serviceInfoPtr->GetObjectUuid();
+					serviceId = collectionId;
 					elementInformation = serviceId;
 				}
 				else if(informationId == "Name"){
-					elementInformation = m_objectCollectionCompPtr->GetElementInfo(collectionId, imtbase::IObjectCollection::EIT_NAME).toString();
-					// elementInformation = serviceInfoPtr->GetServiceName();
+					elementInformation = collectionPtr->GetElementInfo(collectionId, imtbase::IObjectCollection::EIT_NAME).toString();
 				}
 				else if(informationId == "Description"){
-					elementInformation = m_objectCollectionCompPtr->GetElementInfo(collectionId, imtbase::IObjectCollection::EIT_NAME).toString();
-					// elementInformation = serviceInfoPtr->GetServiceDescription();
+					elementInformation = collectionPtr->GetElementInfo(collectionId, imtbase::IObjectCollection::EIT_NAME).toString();
 				}
 				else if(informationId == "Path"){
 					elementInformation = serviceInfoPtr->GetServicePath();
@@ -94,19 +103,22 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 					}
 				}
 				else if(informationId == "Status"){
-					QProcess::ProcessState state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
-					agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
-					elementInformation = processStateEnum.id;
+					if (m_serviceControllerCompPtr.IsValid()){
+						QProcess::ProcessState state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
+						agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
+						elementInformation = processStateEnum.id;
+					}
 				}
 				else if(informationId == "StatusName"){
-					QProcess::ProcessState state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
-					agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
-					elementInformation = processStateEnum.name;
+					if (m_serviceControllerCompPtr.IsValid()){
+						QProcess::ProcessState state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
+						agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
+						elementInformation = processStateEnum.name;
+					}
 				}
 				else if(informationId == "IsAutoStart"){
 					elementInformation = serviceInfoPtr->IsAutoStart();
 				}
-
 
 				if (elementInformation.isNull()){
 					elementInformation = "";
@@ -115,7 +127,7 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 				retVal = retVal && model.SetData(informationId, elementInformation, itemIndex);
 			}
 
-			return true;
+			return retVal;
 		}
 
 	}
@@ -127,13 +139,6 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 
 imtbase::CTreeItemModel *CServiceCollectionControllerComp::ListObjects(const imtgql::CGqlRequest &gqlRequest, QString &errorMessage) const
 {
-	if (!m_objectCollectionCompPtr.IsValid()){
-		errorMessage = QString("Unable to get list objects. Internal error.");
-		SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
-
-		return nullptr;
-	}
-
 	const QList<imtgql::CGqlObject> inputParams = gqlRequest.GetParams();
 
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
@@ -151,9 +156,24 @@ imtbase::CTreeItemModel *CServiceCollectionControllerComp::ListObjects(const imt
 		itemsModel = new imtbase::CTreeItemModel();
 		notificationModel = new imtbase::CTreeItemModel();
 
+		QByteArray agentId;
 		const imtgql::CGqlObject* viewParamsGql = nullptr;
 		if (inputParams.size() > 0){
 			viewParamsGql = inputParams.at(0).GetFieldArgumentObjectPtr("viewParams");
+
+			const imtgql::CGqlObject* addition = inputParams.at(0).GetFieldArgumentObjectPtr("addition");
+			if (addition != nullptr) {
+				agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
+			}
+		}
+
+		istd::TDelPtr<imtbase::IObjectCollection> collectionPtr = GetObjectCollection(agentId);
+
+		if (!collectionPtr.IsValid()){
+			errorMessage = QString("Unable to get list objects. Internal error.");
+			SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
+
+			return nullptr;
 		}
 
 		iprm::CParamsSet filterParams;
@@ -166,7 +186,7 @@ imtbase::CTreeItemModel *CServiceCollectionControllerComp::ListObjects(const imt
 			PrepareFilters(gqlRequest, *viewParamsGql, filterParams);
 		}
 
-		int elementsCount = m_objectCollectionCompPtr->GetElementsCount(&filterParams);
+		int elementsCount = collectionPtr->GetElementsCount(&filterParams);
 
 		int pagesCount = std::ceil(elementsCount / (double)count);
 		if (pagesCount <= 0){
@@ -176,7 +196,7 @@ imtbase::CTreeItemModel *CServiceCollectionControllerComp::ListObjects(const imt
 		notificationModel->SetData("PagesCount", pagesCount);
 		notificationModel->SetData("TotalCount", elementsCount);
 
-		imtbase::ICollectionInfo::Ids ids = m_objectCollectionCompPtr->GetElementIds(offset, count, &filterParams);
+		imtbase::ICollectionInfo::Ids ids = collectionPtr->GetElementIds(offset, count, &filterParams);
 
 		for (QByteArray id: ids){
 			int itemIndex = itemsModel->InsertNewItem();
@@ -209,26 +229,32 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
 	imtbase::CTreeItemModel* dataModel = new imtbase::CTreeItemModel();
 
-	QByteArray accountId = GetObjectIdFromInputParams(gqlRequest.GetParams());
+	QByteArray serviceId = GetObjectIdFromInputParams(gqlRequest.GetParams());
 
 	imtbase::IObjectCollection::DataPtr dataPtr;
-	if (m_objectCollectionCompPtr->GetObjectData(accountId, dataPtr)){
+	if (m_objectCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
 		const agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = dynamic_cast<const agentinodata::CIdentifiableServiceInfo*>(dataPtr.GetPtr());
 		if (serviceInfoPtr != nullptr){
-			QString serviceName = m_objectCollectionCompPtr->GetElementInfo(accountId, imtbase::IObjectCollection::EIT_NAME).toString();
-			QString description = m_objectCollectionCompPtr->GetElementInfo(accountId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
+			QString serviceName = m_objectCollectionCompPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_NAME).toString();
+			QString description = m_objectCollectionCompPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
 			QString servicePath = serviceInfoPtr->GetServicePath();
 			QString settingsPath = serviceInfoPtr->GetServiceSettingsPath();
 			QString arguments = serviceInfoPtr->GetServiceArguments().join(' ');
 			bool isAutoStart = serviceInfoPtr->IsAutoStart();
 
-			dataModel->SetData("Id", accountId);
+			dataModel->SetData("Id", serviceId);
 			dataModel->SetData("Name", serviceName);
 			dataModel->SetData("Description", description);
 			dataModel->SetData("Path", servicePath);
 			dataModel->SetData("SettingsPath", settingsPath);
 			dataModel->SetData("Arguments", arguments);
 			dataModel->SetData("IsAutoStart", isAutoStart);
+
+			if (m_serviceControllerCompPtr.IsValid()){
+				QProcess::ProcessState state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
+				agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
+				dataModel->SetData("Status", processStateEnum.id);
+			}
 
 			imtbase::CTreeItemModel* inputConnectionsModelPtr = dataModel->AddTreeModel("InputConnections");
 			imtbase::CTreeItemModel* outputConnectionsModelPtr = dataModel->AddTreeModel("OutputConnections");
@@ -251,6 +277,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 							if (connectionParamPtr == nullptr){
 								continue;
 							}
+
 							if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionParam::CT_INPUT){
 								int index = inputConnectionsModelPtr->InsertNewItem();
 								QString connectionName = objectCollection->GetElementInfo(id, imtbase::IObjectCollection::EIT_NAME).toString();
@@ -277,12 +304,14 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 								QString connectionName = objectCollection->GetElementInfo(id, imtbase::IObjectCollection::EIT_NAME).toString();
 								QString connectionDescription = collectionInfo->GetElementInfo(id, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
 								outputConnectionsModelPtr->SetData("Id", connectionName, index);
+								outputConnectionsModelPtr->SetData("UsageId", connectionParamPtr->GetUsageId(), index);
 								outputConnectionsModelPtr->SetData("ConnectionName", connectionName, index);
 								outputConnectionsModelPtr->SetData("Description", connectionDescription, index);
 								outputConnectionsModelPtr->SetData("ServiceName", serviceName, index);
 
 								imtbase::IObjectCollection::DataPtr dataPtr;
 								objectCollection->GetObjectData(id, dataPtr);
+
 								imtservice::CUrlConnectionParam* connectionParam = dynamic_cast<imtservice::CUrlConnectionParam*>(dataPtr.GetPtr());
 								if (connectionParam != nullptr){
 									QUrl url = connectionParam->GetUrl();
@@ -559,6 +588,21 @@ bool CServiceCollectionControllerComp::LoadPluginDirectory(const QString& plugin
 	}
 
 	return false;
+}
+
+
+imtbase::IObjectCollection* CServiceCollectionControllerComp::GetObjectCollection(const QByteArray& /*id*/) const
+{
+	if (!m_objectCollectionCompPtr.IsValid()){
+		return nullptr;
+	}
+
+	istd::TDelPtr<istd::IChangeable> collectionPtr = m_objectCollectionCompPtr->CloneMe();
+	if (!collectionPtr.IsValid()){
+		return nullptr;
+	}
+
+	return dynamic_cast<imtbase::IObjectCollection*>(collectionPtr.PopPtr());
 }
 
 

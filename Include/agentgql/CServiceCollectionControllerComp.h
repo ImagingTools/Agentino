@@ -25,8 +25,8 @@ public:
 	typedef imtgql::CObjectCollectionControllerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceCollectionControllerComp);
-		I_ASSIGN(m_serviceInfoFactCompPtr, "ServiceFactory", "Factory used for creation of the new service instance", true, "ServiceFactory");
-		I_ASSIGN(m_serviceControllerCompPtr, "ServiceController", "Service controller used to manage services", true, "ServiceController");
+		I_ASSIGN(m_serviceInfoFactCompPtr, "ServiceFactory", "Factory used for creation of the new service instance", false, "ServiceFactory");
+		I_ASSIGN(m_serviceControllerCompPtr, "ServiceController", "Service controller used to manage services", false, "ServiceController");
 	I_END_COMPONENT;
 
 protected:
@@ -47,6 +47,7 @@ protected:
 	virtual void OnComponentDestroyed() override;
 
 	bool LoadPluginDirectory(const QString& pluginDirectoryPath, const QString& serviceName) const;
+	virtual imtbase::IObjectCollection* GetObjectCollection(const QByteArray& id = QByteArray()) const;
 
 protected:
 	I_FACT(agentinodata::IServiceInfo, m_serviceInfoFactCompPtr);

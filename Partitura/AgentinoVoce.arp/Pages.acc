@@ -72,6 +72,9 @@
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="ServiceStatusCollection">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="TopologyCollection">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -243,11 +246,14 @@
                                 <AttributeInfo Id="AgentRepository" Type="Reference" ExportId="AgentRepository">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="GqlRequestHandler" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="ServicesRemoteRepresentationController"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="RequestHandler" Type="Reference" ExportId="">
-                                    <Data IsEnabled="true" Value="ServicesRemoteRepresentationController"/>
+                                <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="ServiceStatusCollection">
+                                    <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>
@@ -258,9 +264,6 @@
                     <Element Id="ChangeServiceControllerProxy" PackageId="AgentinoGqlPck" ComponentId="ServiceControllerProxy">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
-                                <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
                                 <AttributeInfo Id="ApiClient" Type="Reference" ExportId="ApiClient">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
@@ -315,11 +318,12 @@
                                 <AttributeInfo Id="GqlRequestHandlers" Type="Reference[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
+                                            <Value>GetServiceControllerProxy</Value>
                                             <Value>ServicesRemoteRepresentationController</Value>
                                             <Value>ChangeServiceControllerProxy</Value>
-                                            <Value>GetServiceControllerProxy</Value>
                                             <Value>TopologyPage</Value>
                                             <Value>AgentsPage</Value>
+                                            <Value>ServerServiceCollectionController</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -327,6 +331,95 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="ObjectCollection" PackageId="ImtCorePck" ComponentId="ObjectCollection">
+                        <Data IsEnabled="true" Flags="2">
+                            <AttributeInfoMap/>
+                        </Data>
+                    </Element>
+                    <Element Id="ServerServiceCollectionController" PackageId="AgentinoGqlPck" ComponentId="ServerServiceCollectionController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>ServicesList</Value>
+                                            <Value>ServicesInfo</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="HeadersProvider" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="ServiceHeadersDataProvider"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="AgentRepository">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectCollectionFactory" Type="Factory" ExportId="">
+                                    <Data IsEnabled="true" Value="ObjectCollection"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ServiceFactory" Type="Factory" ExportId="">
+                                    <Data IsEnabled="true" Value="ServiceInfo"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="ServiceStatusCollection">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="ServiceHeadersDataProvider" PackageId="ImtQmlPck" ComponentId="HeadersDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="HeadersIds" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Name</Value>
+                                            <Value>Description</Value>
+                                            <Value>StatusName</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="HeadersModelId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Software"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="HeadersNames" Type="Text[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Name</Value>
+                                            <Value>Description</Value>
+                                            <Value>Status</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="SearchByFilterIds" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Name</Value>
+                                            <Value>Description</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ShowComponentId" Type="Boolean" ExportId="">
+                                    <Data IsEnabled="true" Value="true"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="ServiceInfo" PackageId="AgentinoDataPck" ComponentId="ServiceInfo">
+                        <Data IsEnabled="true" Flags="2">
+                            <AttributeInfoMap/>
                         </Data>
                     </Element>
                     <Element Id="ServicesRemoteRepresentationController" PackageId="ImtClientGqlPck" ComponentId="GraphQLRemoteRepresentationController">
@@ -338,15 +431,11 @@
                                 <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="CommandIds">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>ServicesCommands</Value>
-                                            <Value>ServiceCommands</Value>
-                                            <Value>ServicesInfo</Value>
-                                            <Value>ServicesList</Value>
-                                            <Value>ServicesObjectView</Value>
                                             <Value>ServicesRemove</Value>
                                             <Value>ServicesSetDescription</Value>
                                             <Value>ServiceStart</Value>
                                             <Value>ServiceStop</Value>
+                                            <Value>ServiceItem</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -369,9 +458,6 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="TopologyCollection">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>

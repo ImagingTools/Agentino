@@ -69,6 +69,16 @@ I_EXPORT_COMPONENT(
 			"Service collection subscriber controller",
 			"Service Collection Subscriber Controller");
 
+I_EXPORT_COMPONENT(
+			ServerServiceCollectionController,
+			"Service collection subscriber controller",
+			"Service Collection Subscriber Controller");
+
+//I_EXPORT_COMPONENT(
+//			ServiceStatusController,
+//			"Service status controller",
+//			"Service Status Controller");
+
 
 } // namespace AgentinoGqlPck
 

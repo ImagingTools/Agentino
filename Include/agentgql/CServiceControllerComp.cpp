@@ -36,7 +36,7 @@ imtbase::CTreeItemModel* CServiceControllerComp::CreateInternalResponse(const im
 	}
 
 	if (serviceId.isEmpty()){
-		errorMessage = QObject::tr("Invalid input parameters, service Id missing.");
+		errorMessage = QString("Invalid input parameters, service Id missing.");
 	}
 
 	if (!errorMessage.isEmpty()){
@@ -44,13 +44,12 @@ imtbase::CTreeItemModel* CServiceControllerComp::CreateInternalResponse(const im
 		notificationItemModel->SetData("message", errorMessage);
 	}
 	else {
-
 		bool result = false;
 
 		if (commandId == "ServiceStart"){
 			result = m_serviceControllerCompPtr->StartService(serviceId);
 		}
-		else {
+		else if (commandId == "ServiceStop"){
 			result = m_serviceControllerCompPtr->StopService(serviceId);
 		}
 

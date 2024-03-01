@@ -29,6 +29,7 @@ RemoteCollectionView {
 
         commandsRepresentationProvider.commandId = root.collectionId;
         collectionRepresentation.collectionId = root.collectionId;
+
         let documentManagerPtr = MainDocumentManager.getDocumentManager(root.collectionId)
         if (documentManagerPtr){
             serviceCommandsDelegate.documentManager = documentManagerPtr
@@ -47,6 +48,16 @@ RemoteCollectionView {
         documentTypeId: "Service" + root.clientId
     }
 
+    dataController: CollectionRepresentation {
+        id: collectionRepresentation
+
+        additionalFieldIds: root.additionalFieldIds;
+
+        function getAdditionalInputParams(){
+            return root.getAdditionalInputParams()
+        }
+    }
+
     commandsController: CommandsRepresentationProvider {
         id: commandsRepresentationProvider
         uuid: root.viewId;
@@ -58,9 +69,15 @@ RemoteCollectionView {
             documentManagerPtr.unRegisterDocumentView("Service" + root.clientId, "ServiceEditor");
             documentManagerPtr.unRegisterDocumentDataController("Service" + root.clientId);
         }
+
         Events.unSubscribeEvent("ServiceCommandActivated", root.serviceCommandActivated);
     }
 
+    function getAdditionalInputParams(){
+        let additionInputParams = {}
+        additionInputParams["clientId"] = root.clientId;
+        return additionInputParams
+    }
 
     function serviceCommandActivated(commandId){
         let indexes = root.table.getSelectedIndexes();
@@ -82,18 +99,15 @@ RemoteCollectionView {
 
         ServiceEditor {
             id: serviceEditor
-            // commandsController: CommandsRepresentationProvider {
-            //     // commandId: "Service";
-            //     uuid: serviceEditor.viewId;
-            //     Component.onCompleted: {
-            //         commandId = "Service";
-            //     }
+             commandsController: CommandsRepresentationProvider {
+                 commandId: "Service";
+                 uuid: serviceEditor.viewId;
 
-            //     // function getAdditionalInputParams(){
-            //     //     console.log("root getAdditionalInputParams");
-            //     //     return root.getAdditionalInputParams();
-            //     // }
-            // }
+                  function getAdditionalInputParams(){
+                      console.log("root getAdditionalInputParams");
+                      return root.getAdditionalInputParams();
+                  }
+             }
         }
     }
 

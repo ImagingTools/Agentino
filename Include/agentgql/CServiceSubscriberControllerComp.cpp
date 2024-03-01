@@ -4,8 +4,9 @@
 // ImtCore includes
 #include <imtrest/IProtocolEngine.h>
 
-// ServiceManajer includes
+// Agentino includes
 #include <agentinodata/IServiceController.h>
+#include <agentinodata/CServiceStatusInfo.h>
 
 
 namespace agentgql
@@ -75,16 +76,34 @@ void CServiceSubscriberControllerComp::OnComponentDestroyed()
 
 void CServiceSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& changeSet)
 {
-//	IServiceController::NotifierStatusInfo notifierStatusInfo;
-//	notifierStatusInfo.serviceId = serviceId;
-//	notifierStatusInfo.serviceStatus = newState;
-//	changeSet.SetChangeInfo(IServiceController::CN_STATUS_CHANGED, QVariant::fromValue(notifierStatusInfo));
-
-	agentinodata::IServiceController::NotifierStatusInfo notifierStatusInfo = changeSet.GetChangeInfo(agentinodata::IServiceController::CN_STATUS_CHANGED).value<agentinodata::IServiceController::NotifierStatusInfo>();
+	agentinodata::IServiceController::NotifierStatusInfo notifierStatusInfo = changeSet.GetChangeInfo(
+				agentinodata::IServiceController::CN_STATUS_CHANGED).value<agentinodata::IServiceController::NotifierStatusInfo>();
 	QString status;
 	status = QVariant::fromValue(notifierStatusInfo.serviceStatus).toString();
+
+	QByteArray serviceId = notifierStatusInfo.serviceId;
 	QString data = QString("{ \"serviceId\": \"%1\", \"serviceStatus\": \"%2\" }").arg(QString(notifierStatusInfo.serviceId)).arg(status);
 	SetAllSubscriptions("OnServiceStateChanged", data.toUtf8());
+
+	if (m_serviceStatusCollectionCompPtr.IsValid()){
+		imtbase::IObjectCollection::DataPtr dataPtr;
+		if (m_serviceStatusCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
+			agentinodata::CServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::CServiceStatusInfo*>(dataPtr.GetPtr());
+			if (serviceStatusInfoPtr != nullptr){
+				if (status == "Running"){
+					serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_RUNNING);
+				}
+				else if (status == "NotRunning"){
+					serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);
+				}
+				else{
+					serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_NONE);
+				}
+
+				m_serviceStatusCollectionCompPtr->SetObjectData(serviceId, *serviceStatusInfoPtr);
+			}
+		}
+	}
 }
 
 

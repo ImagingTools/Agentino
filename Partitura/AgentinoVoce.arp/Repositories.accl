@@ -13,12 +13,26 @@
         <Element ComponentName="FileAutoPersistence" X="800" Y="75" Note=""/>
         <Element ComponentName="Position2d" X="875" Y="650" Note=""/>
         <Element ComponentName="RoleRepository" X="225" Y="525" Note=""/>
+        <Element ComponentName="ServiceStatusAutoPersistence" X="525" Y="525" Note=""/>
+        <Element ComponentName="ServiceStatusCollection" X="450" Y="650" Note=""/>
+        <Element ComponentName="ServiceStatusInfo" X="450" Y="775" Note=""/>
         <Element ComponentName="TopologyCollection" X="875" Y="525" Note=""/>
         <Element ComponentName="TopologyFileAutoPersistence" X="850" Y="425" Note=""/>
         <Element ComponentName="UserGroupRepository" X="225" Y="300" Note=""/>
         <Element ComponentName="UserRepository" X="225" Y="75" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
+        <EmbededRegistry Id="UserRepository">
+            <PositionMap>
+                <Element ComponentName="JsonSerializer" X="175" Y="350" Note=""/>
+                <Element ComponentName="Repository" X="550" Y="550" Note=""/>
+                <Element ComponentName="Types" X="550" Y="125" Note=""/>
+                <Element ComponentName="UserCollectionAdapter" X="200" Y="550" Note=""/>
+                <Element ComponentName="UserDatabaseDelegate" X="550" Y="350" Note=""/>
+                <Element ComponentName="UserInfo" X="875" Y="350" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
         <EmbededRegistry Id="RoleRepository">
             <PositionMap>
                 <Element ComponentName="JsonSerializer" X="325" Y="75" Note=""/>
@@ -28,17 +42,6 @@
                 <Element ComponentName="RoleDatabaseDelegate" X="575" Y="275" Note=""/>
                 <Element ComponentName="RoleMetaInfoCreator" X="550" Y="700" Note=""/>
                 <Element ComponentName="Types" X="825" Y="75" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
-        <EmbededRegistry Id="UserRepository">
-            <PositionMap>
-                <Element ComponentName="JsonSerializer" X="175" Y="350" Note=""/>
-                <Element ComponentName="Repository" X="550" Y="550" Note=""/>
-                <Element ComponentName="Types" X="550" Y="125" Note=""/>
-                <Element ComponentName="UserCollectionAdapter" X="200" Y="550" Note=""/>
-                <Element ComponentName="UserDatabaseDelegate" X="550" Y="350" Note=""/>
-                <Element ComponentName="UserInfo" X="875" Y="350" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

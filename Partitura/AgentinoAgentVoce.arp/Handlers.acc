@@ -118,6 +118,7 @@
                             <Values>
                                 <Value>ServiceStart</Value>
                                 <Value>ServiceStop</Value>
+                                <Value>GetServiceStatus</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

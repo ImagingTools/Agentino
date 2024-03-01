@@ -11,7 +11,12 @@ namespace agentinodata
 
 // reimplemented (agentinodata::IServiceManager)
 
-bool CAgentCollectionComp::AddService(const QByteArray& agentId, const IServiceInfo& serviceInfo)
+bool CAgentCollectionComp::AddService(
+			const QByteArray& agentId,
+			const IServiceInfo& serviceInfo,
+			const QByteArray& serviceId,
+			const QString& serviceName,
+			const QString& serviceDescription)
 {
 	ObjectInfo* objectInfoPtr = GetObjectInfo(agentId);
 	if (objectInfoPtr != nullptr){
@@ -19,7 +24,7 @@ bool CAgentCollectionComp::AddService(const QByteArray& agentId, const IServiceI
 		if (agentInfoPtr != nullptr){
 			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 			if (serviceCollectionPtr != nullptr){
-				QByteArray objectId = serviceCollectionPtr->InsertNewObject("ServiceInfo", "", "", &serviceInfo);
+				QByteArray objectId = serviceCollectionPtr->InsertNewObject("ServiceInfo", serviceName, serviceDescription, &serviceInfo, serviceId);
 				if (!objectId.isEmpty()){
 					ChangeSet changeSet(agentinodata::IServiceManager::CF_SERVICE_ADDED);
 					changeSet.SetChangeInfo("agentId", agentId);
