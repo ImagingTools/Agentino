@@ -47,21 +47,9 @@ RemoteCollectionView {
         documentTypeId: "Service" + root.clientId
     }
 
-    function getAdditionalInputParams(){
-        let additionInputParams = {}
-        console.log("getAdditionalInputParams", root.clientId)
-        additionInputParams["clientId"] = root.clientId;
-        return additionInputParams
-    }
-
     commandsController: CommandsRepresentationProvider {
         id: commandsRepresentationProvider
         uuid: root.viewId;
-
-        function getAdditionalInputParams(){
-            return root.getAdditionalInputParams()
-        }
-
     }
 
     Component.onDestruction: {
@@ -73,15 +61,6 @@ RemoteCollectionView {
         Events.unSubscribeEvent("ServiceCommandActivated", root.serviceCommandActivated);
     }
 
-    dataController: CollectionRepresentation {
-        id: collectionRepresentation
-
-        additionalFieldIds: root.additionalFieldIds;
-
-        function getAdditionalInputParams(){
-            return root.getAdditionalInputParams()
-        }
-    }
 
     function serviceCommandActivated(commandId){
         let indexes = root.table.getSelectedIndexes();
@@ -103,18 +82,18 @@ RemoteCollectionView {
 
         ServiceEditor {
             id: serviceEditor
-            commandsController: CommandsRepresentationProvider {
-                // commandId: "Service";
-                uuid: serviceEditor.viewId;
-                Component.onCompleted: {
-                    commandId = "Service";
-                }
+            // commandsController: CommandsRepresentationProvider {
+            //     // commandId: "Service";
+            //     uuid: serviceEditor.viewId;
+            //     Component.onCompleted: {
+            //         commandId = "Service";
+            //     }
 
-                function getAdditionalInputParams(){
-                    console.log("root getAdditionalInputParams");
-                    return root.getAdditionalInputParams();
-                }
-            }
+            //     // function getAdditionalInputParams(){
+            //     //     console.log("root getAdditionalInputParams");
+            //     //     return root.getAdditionalInputParams();
+            //     // }
+            // }
         }
     }
 
