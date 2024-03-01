@@ -7,7 +7,7 @@
 namespace agentinodata
 {
 
-const QByteArray IServiceController::CN_STATUS_CHANGED = QByteArrayLiteral("agentinodata:IService::StatusChanged");
+const QByteArray IServiceStatusProvider::CN_STATUS_CHANGED = QByteArrayLiteral("agentinodata:IService::StatusChanged");
 
 } // namespace agentinodata
 
