@@ -157,9 +157,11 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelF
 								for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
 									int externIndex = externPortsModelPtr->InsertNewItem();
 
+									externPortsModelPtr->SetData("Id", incomingConnection.id, externIndex);
+									externPortsModelPtr->SetData("Name", incomingConnection.name, externIndex);
+									externPortsModelPtr->SetData("Description", incomingConnection.description, externIndex);
 									externPortsModelPtr->SetData("Host", incomingConnection.url.host(), externIndex);
 									externPortsModelPtr->SetData("Port", incomingConnection.url.port(), externIndex);
-									externPortsModelPtr->SetData("Description", incomingConnection.description, externIndex);
 								}
 							}
 						}
@@ -184,15 +186,18 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelF
 
 							int index = outputConnectionsModelPtr->InsertNewItem();
 							outputConnectionsModelPtr->SetData("Id", elementId, index);
-							outputConnectionsModelPtr->SetData("ConnectionName", connectionName, index);
-							outputConnectionsModelPtr->SetData("Description", connectionDescription, index);
-							outputConnectionsModelPtr->SetData("ServiceTypeName", serviceTypeName, index);
-							outputConnectionsModelPtr->SetData("ServiceName", serviceName, index);
 							outputConnectionsModelPtr->SetData("UsageId", connectionLinkParamPtr->GetUsageId(), index);
+							outputConnectionsModelPtr->SetData("DependantConnectionId", dependantServiceConnectionId, index);
+							outputConnectionsModelPtr->SetData("ConnectionName", connectionName, index);
+							outputConnectionsModelPtr->SetData("ServiceName", serviceName, index);
+							outputConnectionsModelPtr->SetData("ServiceTypeName", serviceTypeName, index);
+							outputConnectionsModelPtr->SetData("Description", connectionDescription, index);
+
 							QUrl url = connectionLinkParamPtr->GetDefaultUrl();
 
-							QString urlStr = serviceTypeName + "@" + url.host() + ":" + QString::number(url.port());
-							outputConnectionsModelPtr->SetData("Url", urlStr, index);
+//							QString urlStr = serviceTypeName + "@" + url.host() + ":" + QString::number(url.port());
+							outputConnectionsModelPtr->SetData("Url", "", index);
+
 							imtbase::CTreeItemModel* connectionsModelPtr = GetConnectionsModel(connectionLinkParamPtr->GetUsageId());
 							outputConnectionsModelPtr->SetExternTreeModel("Elements", connectionsModelPtr, index);
 
@@ -205,7 +210,6 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelF
 									outputConnectionsModelPtr->SetData("Url", urlStr, index);
 								}
 							}
-
 						}
 					}
 				}

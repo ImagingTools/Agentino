@@ -92,11 +92,7 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 						break;
 					}
 				}
-				else if(informationId == "Status"){
-					if (m_serviceStatusCollectionCompPtr.IsValid()){
-					}
-				}
-				else if(informationId == "StatusName"){
+				else if(informationId == "Status" || informationId == "StatusName"){
 					if (m_serviceStatusCollectionCompPtr.IsValid()){
 						imtbase::IObjectCollection::DataPtr serviceStatusDataPtr;
 						if (m_serviceStatusCollectionCompPtr->GetObjectData(collectionId, serviceStatusDataPtr)){

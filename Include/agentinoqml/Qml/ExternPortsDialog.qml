@@ -117,6 +117,8 @@ Dialog {
                         if (commandId == "Add"){
                             let index = portsDialog.portsModel.InsertNewItem();
 
+                            portsDialog.portsModel.SetData("Id", UuidGenerator.generateUUID(), index);
+                            portsDialog.portsModel.SetData("Name", "", index);
                             portsDialog.portsModel.SetData("Host", "localhost", index);
                             portsDialog.portsModel.SetData("Port", "80", index);
                             portsDialog.portsModel.SetData("Description", "", index);

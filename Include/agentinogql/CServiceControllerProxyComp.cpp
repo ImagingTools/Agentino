@@ -122,7 +122,7 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 		imtbase::CTreeItemModel* inputConnectionsModelPtr = representationModel.GetTreeItemModel("InputConnections");
 		if (inputConnectionsModelPtr != nullptr){
 			for (int i = 0; i < inputConnectionsModelPtr->GetItemsCount(); i++){
-				// QByteArray id = inputConnectionsModelPtr->GetData("Id", i).toByteArray();
+				QByteArray id = inputConnectionsModelPtr->GetData("Id", i).toByteArray();
 				QString name = inputConnectionsModelPtr->GetData("ConnectionName", i).toString();
 				QString usageId = inputConnectionsModelPtr->GetData("UsageId", i).toString();
 				QString serviceTypeName = inputConnectionsModelPtr->GetData("ServiceTypeName", i).toString();
@@ -149,17 +149,21 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 						if (elementsModelPtr != nullptr){
 							for (int j = 0; j < elementsModelPtr->GetItemsCount(); j++){
 								QByteArray objectId = elementsModelPtr->GetData("Id", j).toByteArray();
+								QString objectName = elementsModelPtr->GetData("Name", j).toString();
 								QString externDescription = elementsModelPtr->GetData("Description", j).toString();
 								QString externHost = elementsModelPtr->GetData("Host", j).toString();
 								int externPort = elementsModelPtr->GetData("Port", j).toInt();
 
 								imtservice::IServiceConnectionParam::IncomingConnectionParam externConnection;
 
+								externConnection.id = objectId;
+								externConnection.name = objectName;
+								externConnection.description = externDescription;
+
 								QUrl url;
 								url.setPort(externPort);
 								url.setHost(externHost);
 
-								externConnection.description = externDescription;
 								externConnection.url = url;
 
 								urlConnectionParamPtr->AddExternConnection(externConnection);
@@ -168,7 +172,7 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 					}
 				}
 
-				connectionCollectionPtr->InsertNewObject("ConnectionInfo", name, description, urlConnectionParamPtr.PopPtr());
+				connectionCollectionPtr->InsertNewObject("ConnectionInfo", name, description, urlConnectionParamPtr.PopPtr(), id);
 			}
 		}
 	}
@@ -179,12 +183,11 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 		imtbase::CTreeItemModel* outputConnectionsModelPtr = representationModel.GetTreeItemModel("OutputConnections");
 		if (outputConnectionsModelPtr != nullptr && dependantServiceConnectionCollectionPtr != nullptr){
 			for (int i = 0; i < outputConnectionsModelPtr->GetItemsCount(); i++){
-				// QByteArray id = outputConnectionsModelPtr->GetData("Id", i).toByteArray();
-
-				QString name = outputConnectionsModelPtr->GetData("ConnectionName", i).toString();
-				QString serviceTypeName = outputConnectionsModelPtr->GetData("ServiceTypeName", i).toString();
+				QByteArray id = outputConnectionsModelPtr->GetData("Id", i).toByteArray();
 				QString usageId = outputConnectionsModelPtr->GetData("UsageId", i).toString();
+				QString name = outputConnectionsModelPtr->GetData("ConnectionName", i).toString();
 				QString description = outputConnectionsModelPtr->GetData("Description", i).toString();
+				QString serviceTypeName = outputConnectionsModelPtr->GetData("ServiceTypeName", i).toString();
 				QString dependantServiceConnectionId = outputConnectionsModelPtr->GetData("DependantConnectionId", i).toString();
 
 				istd::TDelPtr<imtservice::CUrlConnectionLinkParam> urlConnectionLinkParamPtr;
@@ -193,7 +196,7 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 													usageId.toUtf8(),
 													dependantServiceConnectionId.toUtf8()));
 
-				dependantServiceConnectionCollectionPtr->InsertNewObject("ConnectionLink", name, description, urlConnectionLinkParamPtr.PopPtr());
+				dependantServiceConnectionCollectionPtr->InsertNewObject("ConnectionLink", name, description, urlConnectionLinkParamPtr.PopPtr(), id);
 			}
 		}
 	}

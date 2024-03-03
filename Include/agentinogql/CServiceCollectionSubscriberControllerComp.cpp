@@ -25,8 +25,8 @@ void CServiceCollectionSubscriberControllerComp::OnUpdate(const istd::IChangeabl
 
 	if (
 			changeSet.Contains(agentinodata::IServiceManager::CF_SERVICE_ADDED) ||
-			changeSet.Contains(agentinodata::IServiceManager::CF_SERVICE_ADDED) ||
-			changeSet.Contains(agentinodata::IServiceManager::CF_SERVICE_ADDED)){
+			changeSet.Contains(agentinodata::IServiceManager::CF_SERVICE_UPDATED) ||
+			changeSet.Contains(agentinodata::IServiceManager::CF_SERVICE_REMOVED)){
 		QByteArray agentId = changeSet.GetChangeInfo("agentId").toByteArray();
 		QByteArray serviceId = changeSet.GetChangeInfo("serviceId").toByteArray();
 

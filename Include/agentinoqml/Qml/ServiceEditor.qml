@@ -486,6 +486,9 @@ ViewBase {
                         onOkChanged: {
                             if (tableCellDelegate){
                                 let value = tableCellDelegate.getValue();
+
+                                let dependantConnectionId = ouputConnTable.elements.GetData("DependantConnectionId", bodyItem.tableCellDelegate.rowIndex);
+
                                 let elementsModel = ouputConnTable.elements.GetData("Elements", tableCellDelegate.rowIndex);
                                 textLabel.text = value;
                                 cb.model = elementsModel;
@@ -493,7 +496,7 @@ ViewBase {
                                 if (cb.model){
                                     for (let i = 0; i < cb.model.GetItemsCount(); i++){
                                         let id = cb.model.GetData("Id", i);
-                                        if (String(id) == String(value)){
+                                        if (String(id) == dependantConnectionId){
                                             cb.currentIndex = i;
                                             break;
                                         }
@@ -527,9 +530,13 @@ ViewBase {
 
                                 if (bodyItem.tableCellDelegate){
                                     if (cb.model){
+                                        let id = cb.model.GetData("Id", cb.currentIndex)
                                         let name = cb.model.GetData("Name", cb.currentIndex)
 
                                         textLabel.text = name;
+
+                                        ouputConnTable.elements.SetData("DependantConnectionId", id, bodyItem.tableCellDelegate.rowIndex);
+
                                         bodyItem.tableCellDelegate.setValue(name);
                                     }
                                 }

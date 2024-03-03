@@ -272,7 +272,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 					const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
 					if (objectCollection != nullptr){
 						QByteArrayList ids = collectionInfo->GetElementIds();
-						for (QByteArray id: ids){
+						for (const QByteArray& id: ids){
 							const imtservice::IServiceConnectionParam* connectionParamPtr = connectionCollection->GetConnectionMetaInfo(id);
 							if (connectionParamPtr == nullptr){
 								continue;
@@ -282,7 +282,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 								int index = inputConnectionsModelPtr->InsertNewItem();
 								QString connectionName = objectCollection->GetElementInfo(id, imtbase::IObjectCollection::EIT_NAME).toString();
 								QString connectionDescription = collectionInfo->GetElementInfo(id, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
-								inputConnectionsModelPtr->SetData("Id", connectionName, index);
+								inputConnectionsModelPtr->SetData("Id", id, index);
 								inputConnectionsModelPtr->SetData("ConnectionName", connectionName, index);
 								inputConnectionsModelPtr->SetData("ServiceTypeName", connectionParamPtr->GetServiceTypeName(), index);
 								inputConnectionsModelPtr->SetData("UsageId", connectionParamPtr->GetUsageId(), index);
@@ -304,7 +304,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 								int index = outputConnectionsModelPtr->InsertNewItem();
 								QString connectionName = objectCollection->GetElementInfo(id, imtbase::IObjectCollection::EIT_NAME).toString();
 								QString connectionDescription = collectionInfo->GetElementInfo(id, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
-								outputConnectionsModelPtr->SetData("Id", connectionName, index);
+								outputConnectionsModelPtr->SetData("Id", id, index);
 								outputConnectionsModelPtr->SetData("UsageId", connectionParamPtr->GetUsageId(), index);
 								outputConnectionsModelPtr->SetData("ConnectionName", connectionName, index);
 								outputConnectionsModelPtr->SetData("Description", connectionDescription, index);

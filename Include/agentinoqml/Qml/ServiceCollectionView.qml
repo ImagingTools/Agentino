@@ -121,6 +121,12 @@ RemoteCollectionView {
 
             subscriptionCommandId: "OnServicesCollectionChanged";
 
+            onHasRemoteChangesChanged: {
+                if (hasRemoteChanges){
+//                    updateDocumentModel();
+                }
+            }
+
             function getAdditionalInputParams(){
                 return root.getAdditionalInputParams();
             }
