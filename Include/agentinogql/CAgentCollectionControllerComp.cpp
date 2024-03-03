@@ -403,7 +403,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 														QString serviceTypeName = agentOutputConnectionsModelPtr->GetData("ServiceTypeName", i).toString();
 														QString usageId = agentOutputConnectionsModelPtr->GetData("UsageId", i).toString();
 														QString description = agentOutputConnectionsModelPtr->GetData("Description", i).toString();
-														QString dependantServiceConnectionId = agentOutputConnectionsModelPtr->GetData("dependantConnectionId", i).toString();
+														QString dependantServiceConnectionId = agentOutputConnectionsModelPtr->GetData("DependantConnectionId", i).toString();
 
 														istd::TDelPtr<imtservice::CUrlConnectionLinkParam> urlConnectionLinkParamPtr;
 														urlConnectionLinkParamPtr.SetPtr(new imtservice::CUrlConnectionLinkParam(

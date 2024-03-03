@@ -256,7 +256,7 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetConnectionsModel(con
 
 														QString urlStr = serviceName + "@" + "localhost" + ":" + QString::number(url.port());
 
-														result->SetData("Id", urlStr, index);
+														result->SetData("Id", connectionElementId, index);
 														result->SetData("Name", urlStr, index);
 
 														QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
@@ -266,7 +266,7 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetConnectionsModel(con
 
 															QString urlStr = serviceName + "@" + incomingConnection.url.host() + ":" + QString::number(incomingConnection.url.port());
 
-															result->SetData("Id", urlStr, index);
+															result->SetData("Id", incomingConnection.id, index);
 															result->SetData("Name", urlStr, index);
 														}
 													}

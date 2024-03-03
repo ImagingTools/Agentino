@@ -577,8 +577,8 @@ ViewBase {
 
                         index = headersModel2.InsertNewItem();
 
-                        headersModel2.SetData("Id", "ServiceName", index)
-                        headersModel2.SetData("Name", "Service Name", index)
+                        headersModel2.SetData("Id", "ServiceTypeName", index)
+                        headersModel2.SetData("Name", "Service Type Name", index)
 
                         index = headersModel2.InsertNewItem();
 

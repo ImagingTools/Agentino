@@ -185,7 +185,7 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 				QString serviceTypeName = outputConnectionsModelPtr->GetData("ServiceTypeName", i).toString();
 				QString usageId = outputConnectionsModelPtr->GetData("UsageId", i).toString();
 				QString description = outputConnectionsModelPtr->GetData("Description", i).toString();
-				QString dependantServiceConnectionId = outputConnectionsModelPtr->GetData("dependantConnectionId", i).toString();
+				QString dependantServiceConnectionId = outputConnectionsModelPtr->GetData("DependantConnectionId", i).toString();
 
 				istd::TDelPtr<imtservice::CUrlConnectionLinkParam> urlConnectionLinkParamPtr;
 				urlConnectionLinkParamPtr.SetPtr(new imtservice::CUrlConnectionLinkParam(

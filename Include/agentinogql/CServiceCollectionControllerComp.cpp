@@ -70,7 +70,7 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 					elementInformation = serviceCollectionPtr->GetElementInfo(collectionId, imtbase::IObjectCollection::EIT_NAME).toString();
 				}
 				else if(informationId == "Description"){
-					elementInformation = serviceCollectionPtr->GetElementInfo(collectionId, imtbase::IObjectCollection::EIT_NAME).toString();
+					elementInformation = serviceCollectionPtr->GetElementInfo(collectionId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
 				}
 				else if(informationId == "Path"){
 					elementInformation = serviceInfoPtr->GetServicePath();
