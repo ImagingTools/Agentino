@@ -48,7 +48,7 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 	imtauth::ILoginStatusProvider::LoginStatusFlags loginStatus = (imtauth::ILoginStatusProvider::LoginStatusFlags)m_loginStatusCompPtr->GetLoginStatus();
 
 	if (loginStatus == imtauth::ILoginStatusProvider::LSF_LOGGED_IN){
-		imtgql::CGqlRequest* gqlInitRequest = new imtgql::CGqlRequest(imtgql::IGqlRequest::RT_MUTATION, "AgentUpdate");
+		imtgql::CGqlRequest* gqlInitRequest = new imtgql::CGqlRequest(imtgql::IGqlRequest::RT_MUTATION, "AgentAdd");
 		imtgql::CGqlObject inputDataParams("input");
 		QString clientId;
 		if (m_clientIdCompPtr.IsValid()){

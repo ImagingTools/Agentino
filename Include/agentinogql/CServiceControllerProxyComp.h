@@ -10,7 +10,7 @@
 #include <agentinodata/IServiceManager.h>
 
 
-namespace agentgql
+namespace agentinogql
 {
 
 
@@ -34,6 +34,6 @@ protected:
 };
 
 
-} // namespace agentgql
+} // namespace agentinogql
 
 

@@ -29,7 +29,12 @@ public:
 				const QString& serviceName = QString(),
 				const QString& serviceDescription = QString()) override;
 	virtual bool RemoveService(const QByteArray& agentId, const QByteArray& serviceId) override;
-	virtual bool SetService(const QByteArray& agentId, const QByteArray& serviceId, const IServiceInfo& serviceInfo) override;
+	virtual bool SetService(
+				const QByteArray& agentId,
+				const QByteArray& serviceId,
+				const IServiceInfo& serviceInfo,
+				const QString& serviceName = QString(),
+				const QString& serviceDescription = QString()) override;
 	virtual bool ServiceExists(const QByteArray& agentId, const QByteArray& serviceId) const override;
 };
 

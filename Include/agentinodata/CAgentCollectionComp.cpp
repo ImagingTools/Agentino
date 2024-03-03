@@ -68,7 +68,12 @@ bool CAgentCollectionComp::RemoveService(const QByteArray& agentId, const QByteA
 }
 
 
-bool CAgentCollectionComp::SetService(const QByteArray& agentId, const QByteArray& serviceId, const IServiceInfo& serviceInfo)
+bool CAgentCollectionComp::SetService(
+			const QByteArray& agentId,
+			const QByteArray& serviceId,
+			const IServiceInfo& serviceInfo,
+			const QString& serviceName,
+			const QString& serviceDescription)
 {
 	ObjectInfo* objectInfoPtr = GetObjectInfo(agentId);
 	if (objectInfoPtr != nullptr){
@@ -78,6 +83,9 @@ bool CAgentCollectionComp::SetService(const QByteArray& agentId, const QByteArra
 			if (serviceCollectionPtr != nullptr){
 				bool result = serviceCollectionPtr->SetObjectData(serviceId, serviceInfo);
 				if (result){
+					serviceCollectionPtr->SetElementName(serviceId, serviceName);
+					serviceCollectionPtr->SetElementDescription(serviceId, serviceDescription);
+
 					ChangeSet changeSet(agentinodata::IServiceManager::CF_SERVICE_UPDATED);
 					changeSet.SetChangeInfo("agentId", agentId);
 					changeSet.SetChangeInfo("serviceId", serviceId);

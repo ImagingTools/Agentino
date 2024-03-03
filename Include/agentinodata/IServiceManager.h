@@ -43,7 +43,12 @@ public:
 				const QString& serviceName = QString(),
 				const QString& serviceDescription = QString()) = 0;
 	virtual bool RemoveService(const QByteArray& agentId, const QByteArray& serviceId) = 0;
-	virtual bool SetService(const QByteArray& agentId, const QByteArray& serviceId, const IServiceInfo& serviceInfo) = 0;
+	virtual bool SetService(
+				const QByteArray& agentId,
+				const QByteArray& serviceId,
+				const IServiceInfo& serviceInfo,
+				const QString& serviceName = QString(),
+				const QString& serviceDescription = QString()) = 0;
 	virtual bool ServiceExists(const QByteArray& agentId, const QByteArray& serviceId) const = 0;
 };
 

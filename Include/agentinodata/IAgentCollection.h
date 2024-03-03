@@ -12,13 +12,13 @@ namespace agentinodata
 {
 
 
-class IServiceManager: virtual public istd::IChangeable
-{
-public:
-	virtual bool AddService(const IServiceInfo& serviceInfo) = 0;
-	virtual bool RemoveService(const QByteArray& serviceId) = 0;
-	virtual bool SetService(const QByteArray& serviceId, const IServiceInfo& serviceInfo) = 0;
-};
+// class IServiceManager: virtual public istd::IChangeable
+// {
+// public:
+// 	virtual bool AddService(const IServiceInfo& serviceInfo) = 0;
+// 	virtual bool RemoveService(const QByteArray& serviceId) = 0;
+// 	virtual bool SetService(const QByteArray& serviceId, const IServiceInfo& serviceInfo) = 0;
+// };
 
 
 } // namespace agentinodata

@@ -9,7 +9,7 @@
 #include <agentinodata/IServiceInfo.h>
 
 
-namespace agentgql
+namespace agentinogql
 {
 
 
@@ -28,7 +28,7 @@ protected:
 
 protected:
 	virtual imtbase::CTreeItemModel* GetRepresentationModelFromServiceInfo(const imtbase::IObjectCollection& serviceCollection, const QByteArray& serviceId) const;
-	virtual imtbase::CTreeItemModel* GetConnectionsModel(const QByteArray& connectionId) const;
+	virtual imtbase::CTreeItemModel* GetConnectionsModel(const QByteArray& connectionUsageId) const;
 	virtual bool GetConnectionObjectData(
 				const imtbase::IObjectCollection::Id& connectionId,
 				imtbase::IObjectCollection::DataPtr& connectionDataPtr,
@@ -40,6 +40,6 @@ protected:
 };
 
 
-} // namespace agentgql
+} // namespace agentinogql
 
 

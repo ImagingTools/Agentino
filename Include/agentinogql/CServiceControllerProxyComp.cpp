@@ -1,4 +1,4 @@
-#include <agentgql/CServiceControllerProxyComp.h>
+#include <agentinogql/CServiceControllerProxyComp.h>
 
 
 // ImtCore includes
@@ -10,7 +10,7 @@
 #include <agentinodata/CServiceInfo.h>
 
 
-namespace agentgql
+namespace agentinogql
 {
 
 
@@ -20,7 +20,7 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 {
 	imtbase::CTreeItemModel* resultModelPtr = BaseClass::CreateInternalResponse(gqlRequest, errorMessage);
 
-	if (!resultModelPtr->ContainsKey("errors")){
+	if (resultModelPtr && !resultModelPtr->ContainsKey("errors")){
 		if (m_serviceManagerCompPtr.IsValid()){
 			const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParam("input");
 
@@ -64,7 +64,7 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 			serviceInfoPtr->SetObjectUuid(objectId);
 
 			if (m_serviceManagerCompPtr->ServiceExists(agentId, objectId)){
-				m_serviceManagerCompPtr->SetService(agentId, objectId, *serviceInfoPtr.PopPtr());
+				m_serviceManagerCompPtr->SetService(agentId, objectId, *serviceInfoPtr.PopPtr(), serviceName, serviceDescription);
 			}
 			else{
 				m_serviceManagerCompPtr->AddService(agentId, *serviceInfoPtr.PopPtr(), objectId, serviceName, serviceDescription);
@@ -122,7 +122,8 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 		imtbase::CTreeItemModel* inputConnectionsModelPtr = representationModel.GetTreeItemModel("InputConnections");
 		if (inputConnectionsModelPtr != nullptr){
 			for (int i = 0; i < inputConnectionsModelPtr->GetItemsCount(); i++){
-				QByteArray id = inputConnectionsModelPtr->GetData("Id", i).toByteArray();
+				// QByteArray id = inputConnectionsModelPtr->GetData("Id", i).toByteArray();
+				QString name = inputConnectionsModelPtr->GetData("ConnectionName", i).toString();
 				QString usageId = inputConnectionsModelPtr->GetData("UsageId", i).toString();
 				QString serviceTypeName = inputConnectionsModelPtr->GetData("ServiceTypeName", i).toString();
 				QString description = inputConnectionsModelPtr->GetData("Description", i).toString();
@@ -167,7 +168,7 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 					}
 				}
 
-				connectionCollectionPtr->InsertNewObject("ConnectionInfo", serviceTypeName, description, urlConnectionParamPtr.PopPtr(), id);
+				connectionCollectionPtr->InsertNewObject("ConnectionInfo", name, description, urlConnectionParamPtr.PopPtr());
 			}
 		}
 	}
@@ -178,8 +179,9 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 		imtbase::CTreeItemModel* outputConnectionsModelPtr = representationModel.GetTreeItemModel("OutputConnections");
 		if (outputConnectionsModelPtr != nullptr && dependantServiceConnectionCollectionPtr != nullptr){
 			for (int i = 0; i < outputConnectionsModelPtr->GetItemsCount(); i++){
-				QByteArray id = outputConnectionsModelPtr->GetData("Id", i).toByteArray();
+				// QByteArray id = outputConnectionsModelPtr->GetData("Id", i).toByteArray();
 
+				QString name = outputConnectionsModelPtr->GetData("ConnectionName", i).toString();
 				QString serviceTypeName = outputConnectionsModelPtr->GetData("ServiceTypeName", i).toString();
 				QString usageId = outputConnectionsModelPtr->GetData("UsageId", i).toString();
 				QString description = outputConnectionsModelPtr->GetData("Description", i).toString();
@@ -191,7 +193,7 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 													usageId.toUtf8(),
 													dependantServiceConnectionId.toUtf8()));
 
-				dependantServiceConnectionCollectionPtr->InsertNewObject("ConnectionLink", serviceTypeName, description, urlConnectionLinkParamPtr.PopPtr(), id);
+				dependantServiceConnectionCollectionPtr->InsertNewObject("ConnectionLink", name, description, urlConnectionLinkParamPtr.PopPtr());
 			}
 		}
 	}
@@ -206,6 +208,6 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::GetRepresentationModelFrom
 }
 
 
-} // namespace agentgql
+} // namespace agentinogql
 
 

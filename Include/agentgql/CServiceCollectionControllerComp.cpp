@@ -288,6 +288,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 								inputConnectionsModelPtr->SetData("UsageId", connectionParamPtr->GetUsageId(), index);
 								inputConnectionsModelPtr->SetData("Description", connectionDescription, index);
 								inputConnectionsModelPtr->SetData("ServiceName", serviceName, index);
+								inputConnectionsModelPtr->SetData("DefaultUrl", connectionParamPtr->GetDefaultUrl().toString(), index);
 								inputConnectionsModelPtr->AddTreeModel("ExternPorts", index);
 
 								imtbase::IObjectCollection::DataPtr dataPtr;
@@ -308,6 +309,8 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 								outputConnectionsModelPtr->SetData("ConnectionName", connectionName, index);
 								outputConnectionsModelPtr->SetData("Description", connectionDescription, index);
 								outputConnectionsModelPtr->SetData("ServiceName", serviceName, index);
+								outputConnectionsModelPtr->SetData("ServiceTypeName", connectionParamPtr->GetServiceTypeName(), index);
+								outputConnectionsModelPtr->SetData("DefaultUrl", connectionParamPtr->GetDefaultUrl().toString(), index);
 
 								imtbase::IObjectCollection::DataPtr dataPtr;
 								objectCollection->GetObjectData(id, dataPtr);
@@ -316,7 +319,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 								if (connectionParam != nullptr){
 									QUrl url = connectionParam->GetUrl();
 
-									QString name = serviceName + "@" + url.host() + QString::number(url.port());
+									QString name = connectionParamPtr->GetUsageId() + "@" + url.host() + QString::number(url.port());
 
 									outputConnectionsModelPtr->SetData("Url", name, index);
 
@@ -352,7 +355,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::InsertObject(const im
 {
 	imtbase::CTreeItemModel* resultPtr = BaseClass::InsertObject(gqlRequest, errorMessage);
 
-	if (resultPtr->ContainsKey("data")){
+	if (resultPtr && resultPtr->ContainsKey("data")){
 		imtbase::CTreeItemModel* objectRepresentationDataModelPtr = GetObject(gqlRequest, errorMessage);
 		if (objectRepresentationDataModelPtr != nullptr){
 			resultPtr->SetExternTreeModel("item", objectRepresentationDataModelPtr->GetTreeItemModel("data"));
