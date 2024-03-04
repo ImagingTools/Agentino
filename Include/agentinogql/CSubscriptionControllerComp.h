@@ -31,9 +31,6 @@ public:
 	I_END_COMPONENT;
 
 protected:
-	// reimplemented (icomp::CComponentBase)
-	virtual void OnComponentCreated() override;
-
 	// reimplemented (imtclientgql::IGqlSubscriptionClient)
 	virtual void OnResponseReceived(const QByteArray& subscriptionId, const QByteArray& subscriptionData) override;
 	virtual void OnSubscriptionStatusChanged(const QByteArray& subscriptionId, const SubscriptionStatus& status, const QString& message) override;
@@ -41,6 +38,9 @@ protected:
 	// reimplemented (imod::CSingleModelObserverBase)
 	virtual void OnUpdate(const istd::IChangeable::ChangeSet& changeSet) override;
 
+	// reimplemented (icomp::CComponentBase)
+	virtual void OnComponentCreated() override;
+	virtual void OnComponentDestroyed() override;
 private:
 	I_REF(imtclientgql::IGqlSubscriptionManager, m_subscriptionManagerCompPtr);
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);

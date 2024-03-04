@@ -9,6 +9,9 @@
 // Agentino includes
 #include <agentinodata/IAgentInfo.h>
 
+// Qt includes
+#include <QtCore/QTimer>
+
 #undef GetObject
 
 
@@ -16,8 +19,9 @@ namespace agentinogql
 {
 
 
-class CAgentCollectionControllerComp: public imtgql::CObjectCollectionControllerCompBase
+class CAgentCollectionControllerComp: public QObject, public imtgql::CObjectCollectionControllerCompBase
 {
+	Q_OBJECT
 public:
 	typedef imtgql::CObjectCollectionControllerCompBase BaseClass;
 
@@ -28,6 +32,9 @@ public:
 	I_END_COMPONENT;
 
 protected:
+	// reimplemented (icomp::CComponentBase)
+	virtual void OnComponentCreated() override;
+
 	// reimplemented (imtgql::CObjectCollectionControllerCompBase)
 	virtual bool SetupGqlItem(
 				const imtgql::CGqlRequest& gqlRequest,
@@ -41,10 +48,16 @@ protected:
 	virtual imtbase::CTreeItemModel* InsertObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 	virtual imtbase::CTreeItemModel* UpdateObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 
+private:
+	void OnTimeout();
+
 protected:
 	I_FACT(agentinodata::IAgentInfo, m_agentFactCompPtr);
 	I_REF(imtgql::IGqlRequestHandler, m_requestHandlerCompPtr);
 	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);
+
+	mutable QTimer m_timer;
+	mutable QList<QByteArray> m_connectedAgents;
 };
 
 

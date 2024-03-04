@@ -75,12 +75,6 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 		QJsonDocument itemDocument;
 		itemDocument.setObject(item);
 
-//		imtgql::CGqlObject itemData("Item");
-//		itemData.InsertField("Name", QVariant("Test"));
-//		itemData.InsertField("Description", QVariant("Test description"));
-//		itemData.InsertField("HttpUrl", QVariant("htp://localhost:7222"));
-//		itemData.InsertField("WebSocketUrl", QVariant("htp://localhost:7223"));
-
 		inputDataParams.InsertField("Item", QVariant(itemDocument.toJson(QJsonDocument::Compact)));
 		gqlInitRequest->AddParam(inputDataParams);
 

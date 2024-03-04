@@ -1,4 +1,4 @@
-#include <agentgql/CServiceSubscriberControllerComp.h>
+#include <agentinogql/CServiceSubscriberControllerComp.h>
 
 
 // ImtCore includes
@@ -9,7 +9,7 @@
 #include <agentinodata/CServiceStatusInfo.h>
 
 
-namespace agentgql
+namespace agentinogql
 {
 
 
@@ -93,6 +93,9 @@ void CServiceSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeS
 				if (status == "Running"){
 					serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_RUNNING);
 				}
+				else if (status == "Starting"){
+					serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_STARTING);
+				}
 				else if (status == "NotRunning"){
 					serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);
 				}
@@ -107,5 +110,5 @@ void CServiceSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeS
 }
 
 
-} // namespace agentgql
+} // namespace agentinogql
 

@@ -9,7 +9,7 @@
 #include <agentgql/CServiceCollectionControllerComp.h>
 #include <agentgql/CServiceControllerComp.h>
 #include <agentgql/CAgentinoSubscriptionClientComp.h>
-#include <agentgql/CServiceSubscriberControllerComp.h>
+#include <agentinogql/CServiceSubscriberControllerComp.h>
 #include <agentinogql/CServiceControllerProxyComp.h>
 #include <agentinogql/CGetServiceControllerProxyComp.h>
 #include <agentinogql/CAgentCollectionControllerComp.h>
@@ -18,7 +18,6 @@
 #include <agentinogql/CTopologyControllerComp.h>
 #include <agentinogql/CServiceCollectionSubscriberControllerComp.h>
 #include <agentinogql/CServiceCollectionControllerComp.h>
-//#include <agentinogql/CServiceStatusControllerComp.h>
 
 
 /**
@@ -30,7 +29,7 @@ namespace AgentinoGqlPck
 typedef agentgql::CServiceCollectionControllerComp ServiceCollectionController;
 typedef agentgql::CServiceControllerComp ServiceController;
 typedef agentgql::CAgentinoSubscriptionClientComp AgentinoSubscriptionClient;
-typedef agentgql::CServiceSubscriberControllerComp ServiceSubscriberController;
+typedef agentinogql::CServiceSubscriberControllerComp ServiceSubscriberController;
 typedef agentinogql::CServiceControllerProxyComp ServiceControllerProxy;
 typedef agentinogql::CGetServiceControllerProxyComp GetServiceControllerProxy;
 typedef agentinogql::CAgentCollectionControllerComp AgentCollectionController;
@@ -39,7 +38,6 @@ typedef agentinogql::CGqlRepresentationAgentDataComp GqlRepresentationAgentData;
 typedef agentinogql::CTopologyControllerComp TopologyController;
 typedef agentinogql::CServiceCollectionSubscriberControllerComp ServiceCollectionSubscriberController;
 typedef agentinogql::CServiceCollectionControllerComp ServerServiceCollectionController;
-//typedef agentinogql::CServiceStatusControllerComp ServiceStatusController;
 
 
 } // namespace AgentinoGqlPck

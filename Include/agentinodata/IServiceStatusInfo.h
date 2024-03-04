@@ -19,11 +19,12 @@ public:
 	enum ServiceStatus
 	{
 		SS_NONE,
+		SS_STARTING,
 		SS_RUNNING,
 		SS_NOT_RUNNING
 	};
 
-	I_DECLARE_ENUM(ServiceStatus, SS_NONE, SS_RUNNING, SS_NOT_RUNNING);
+	I_DECLARE_ENUM(ServiceStatus, SS_NONE, SS_STARTING, SS_RUNNING, SS_NOT_RUNNING);
 
 	/**
 		Get ID of the service.

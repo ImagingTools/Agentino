@@ -272,7 +272,6 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 					const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
 					if (objectCollection != nullptr){
 						QByteArrayList ids = collectionInfo->GetElementIds();
-						qDebug() << "GetObject connection IDs: " << ids;
 						for (const QByteArray& id: ids){
 							const imtservice::IServiceConnectionParam* connectionParamPtr = connectionCollection->GetConnectionMetaInfo(id);
 							if (connectionParamPtr == nullptr){
@@ -305,13 +304,17 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 								int index = outputConnectionsModelPtr->InsertNewItem();
 								QString connectionName = objectCollection->GetElementInfo(id, imtbase::IObjectCollection::EIT_NAME).toString();
 								QString connectionDescription = collectionInfo->GetElementInfo(id, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
+								QString usageId = connectionParamPtr->GetUsageId();
+								QString serviceTypeName = connectionParamPtr->GetServiceTypeName();
+								QString defaultUrl = connectionParamPtr->GetDefaultUrl().toString();
+
 								outputConnectionsModelPtr->SetData("Id", id, index);
-								outputConnectionsModelPtr->SetData("UsageId", connectionParamPtr->GetUsageId(), index);
+								outputConnectionsModelPtr->SetData("UsageId", usageId, index);
 								outputConnectionsModelPtr->SetData("ConnectionName", connectionName, index);
 								outputConnectionsModelPtr->SetData("Description", connectionDescription, index);
 								outputConnectionsModelPtr->SetData("ServiceName", serviceName, index);
-								outputConnectionsModelPtr->SetData("ServiceTypeName", connectionParamPtr->GetServiceTypeName(), index);
-								outputConnectionsModelPtr->SetData("DefaultUrl", connectionParamPtr->GetDefaultUrl().toString(), index);
+								outputConnectionsModelPtr->SetData("ServiceTypeName", serviceTypeName, index);
+								outputConnectionsModelPtr->SetData("DefaultUrl", defaultUrl, index);
 
 								imtbase::IObjectCollection::DataPtr dataPtr;
 								objectCollection->GetObjectData(id, dataPtr);
@@ -320,9 +323,9 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 								if (connectionParam != nullptr){
 									QUrl url = connectionParam->GetUrl();
 
-									QString name = serviceName + "@" + url.host() + QString::number(url.port());
+									QString connectionInfoText = serviceName + "@" + url.host() + QString::number(url.port());
 
-									outputConnectionsModelPtr->SetData("Url", name, index);
+									outputConnectionsModelPtr->SetData("Url", connectionInfoText, index);
 
 									outputConnectionsModelPtr->AddTreeModel("Elements", index);
 								}

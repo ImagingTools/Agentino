@@ -17,23 +17,7 @@ namespace agentinogql
 
 // protected methods
 
-void CSubscriptionControllerComp::OnComponentCreated()
-{
-//	if (m_subscriptionManagerCompPtr.IsValid()){
-//		imtgql::CGqlRequest gqlAddRequest(imtgql::IGqlRequest::RT_SUBSCRIPTION, "OnServiceStateChanged");
-//		imtgql::CGqlObject subscriptionField("data");
-//		subscriptionField.InsertField("id");
-//		subscriptionField.InsertField("status");
-//		gqlAddRequest.AddField(subscriptionField);
-//		m_serviceStatusSubsriptionId = m_subscriptionManagerCompPtr->RegisterSubscription(gqlAddRequest, this);
-//	}
-	BaseClass::OnComponentCreated();
-
-	if (m_modelCompPtr.IsValid()) {
-		m_modelCompPtr->AttachObserver(this);
-	}
-}
-
+// reimplemented (imtclientgql::IGqlSubscriptionClient)
 
 void CSubscriptionControllerComp::OnResponseReceived(const QByteArray & subscriptionId, const QByteArray & subscriptionData)
 {
@@ -57,14 +41,13 @@ void CSubscriptionControllerComp::OnResponseReceived(const QByteArray & subscrip
 		changeSet.SetChangeInfo(agentinodata::IServiceController::CN_STATUS_CHANGED, QVariant::fromValue(notifierInfo));
 		istd::CChangeNotifier notifier(this, &changeSet);
 	}
-
-//	if (m_gqlCollectionCompPtr.IsValid()){
-//		istd::CChangeNotifier notifier(m_gqlCollectionCompPtr.GetPtr(), &changeSet);
-//	}
 }
 
 
-void CSubscriptionControllerComp::OnSubscriptionStatusChanged(const QByteArray & subscriptionId, const SubscriptionStatus & status, const QString & message)
+void CSubscriptionControllerComp::OnSubscriptionStatusChanged(
+			const QByteArray& /*subscriptionId*/,
+			const SubscriptionStatus& /*status*/,
+			const QString& /*message*/)
 {
 }
 
@@ -75,20 +58,6 @@ void CSubscriptionControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& c
 {
 	if (m_subscriptionManagerCompPtr.IsValid() && m_agentCollectionCompPtr.IsValid()){
 		imtbase::ICollectionInfo::Ids agentCollectionIds = m_agentCollectionCompPtr->GetElementIds();
-//		imtbase::ICollectionInfo::Ids ids = m_agentCollectionCompPtr->GetElementIds();
-//		QList<QByteArray> agentCollectionIds;
-//		for (QByteArray collectionId: ids){
-//			agentinodata::CIdentifiableAgentInfo* agentPtr = nullptr;
-//			imtbase::IObjectCollection::DataPtr agentDataPtr;
-//			if (m_agentCollectionCompPtr->GetObjectData(collectionId, agentDataPtr)){
-//				agentPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(agentDataPtr.GetPtr());
-//			}
-
-//			if (agentPtr != nullptr){
-//				QByteArray agentId = agentPtr->GetObjectUuid();
-//				agentCollectionIds.append(agentId);
-//			}
-//		}
 
 		for (QByteArray registeredAgentId: m_registeredAgents){
 			if (!agentCollectionIds.contains(registeredAgentId)){
@@ -115,6 +84,28 @@ void CSubscriptionControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& c
 			}
 		}
 	}
+}
+
+
+// reimplemented (icomp::CComponentBase)
+
+void CSubscriptionControllerComp::OnComponentCreated()
+{
+	BaseClass::OnComponentCreated();
+
+	if (m_modelCompPtr.IsValid()){
+		m_modelCompPtr->AttachObserver(this);
+	}
+}
+
+
+void CSubscriptionControllerComp::OnComponentDestroyed()
+{
+	if (m_modelCompPtr.IsValid() && m_modelCompPtr->IsAttached(this)){
+		m_modelCompPtr->DetachObserver(this);
+	}
+
+	BaseClass::OnComponentDestroyed();
 }
 
 
