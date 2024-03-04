@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5200" Description="ACF"/>
-            <Version Id="1" Number="2203" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394753" Description="Qt Framework"/>
+            <Version Id="0" Number="5191" Description="ACF"/>
+            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -94,6 +94,8 @@
                                             <Value>UndoPermissions</Value>
                                             <Value>RedoPermissions</Value>
                                             <Value>ClosePermissions</Value>
+                                            <Value>StopPermissions</Value>
+                                            <Value>StartPermissions</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -106,6 +108,8 @@
                                 <AttributeInfo Id="GuiElementModels" Type="Reference[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
+                                            <Value>Start</Value>
+                                            <Value>Stop</Value>
                                             <Value>Empty</Value>
                                             <Value>Save</Value>
                                             <Value>Empty</Value>
@@ -256,6 +260,86 @@
                                 </AttributeInfo>
                                 <AttributeInfo Id="EnableVerbose" Type="Boolean" ExportId="EnableVerbose">
                                     <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="Start" PackageId="ImtGuiPck" ComponentId="GuiElementModel">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="IconPath" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="Icons/Play"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Id" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Start"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="IsEnabled" Type="Boolean" ExportId="">
+                                    <Data IsEnabled="true" Value="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="IsVisible" Type="Boolean" ExportId="">
+                                    <Data IsEnabled="true" Value="true"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Name" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="Start service"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="StartPermissions" PackageId="ImtCorePck" ComponentId="SingleCommandPermissionsProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="StartService"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>StartService</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="Stop" PackageId="ImtGuiPck" ComponentId="GuiElementModel">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="IconPath" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="Icons/Stop"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Id" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Stop"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="IsEnabled" Type="Boolean" ExportId="">
+                                    <Data IsEnabled="true" Value="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="IsVisible" Type="Boolean" ExportId="">
+                                    <Data IsEnabled="true" Value="true"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Name" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="Stop service"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="StopPermissions" PackageId="ImtCorePck" ComponentId="SingleCommandPermissionsProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="StopService"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>StopService</Value>
+                                        </Values>
+                                    </Data>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                                     <Data IsEnabled="false"/>

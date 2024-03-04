@@ -537,7 +537,7 @@ ViewBase {
 
                                         ouputConnTable.elements.SetData("DependantConnectionId", id, bodyItem.tableCellDelegate.rowIndex);
 
-                                        bodyItem.tableCellDelegate.setValue(name);
+//                                        bodyItem.tableCellDelegate.setValue(name);
                                     }
                                 }
                             }

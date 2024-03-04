@@ -16,10 +16,6 @@ ViewBase {
     property TreeItemModel objectModel: TreeItemModel{};
 
     //for scrollBars
-    property real contentWidth: mainContainer.width.toFixed(3);
-    property real contentHeight: mainContainer.height.toFixed(3);
-    property real contentX: -mainContainer.x.toFixed(3);
-    property real contentY: -mainContainer.y.toFixed(3);
     property real originX: 0;
     property real originY: 0;
     //for scrollBars
@@ -41,17 +37,6 @@ ViewBase {
             if (commandId === "Save"){
                 saveModel.save()
             }
-        }
-    }
-
-    onContentXChanged: {
-        if(mainContainer.x !== - contentX){
-            mainContainer.x = - contentX;
-        }
-    }
-    onContentYChanged: {
-        if(mainContainer.y !== - contentY){
-            mainContainer.y = - contentY;
         }
     }
 
@@ -111,6 +96,7 @@ ViewBase {
                     return topologyPage.getAdditionalInputParams();
                 }
             }
+
         }
     }
 
@@ -128,6 +114,13 @@ ViewBase {
                 return topologyPage.getAdditionalInputParams();
             }
 
+            onHasRemoteChangesChanged: {
+                console.log("Topology onHasRemoteChangesChanged", hasRemoteChanges);
+                if (hasRemoteChanges){
+                    updateDocumentModel();
+                }
+            }
+
 //            function getDocumentName() {
 //                let newName = qsTr("<New service>");
 
@@ -137,6 +130,33 @@ ViewBase {
 
 //                return newName + "@" + root.clientName
 //            }
+        }
+    }
+
+    SubscriptionClient {
+        id: subscriptionClient;
+
+        Component.onCompleted: {
+            let subscriptionRequestId = "OnServiceStateChanged"
+            var query = Gql.GqlRequest("subscription", subscriptionRequestId);
+            var queryFields = Gql.GqlObject("notification");
+            queryFields.InsertField("Id");
+            query.AddField(queryFields);
+
+            subscriptionManager.registerSubscription(query, subscriptionClient);
+        }
+
+        onStateChanged: {
+            if (state === "Ready"){
+                console.log("TopologyPage OnServiceStateChanged Ready", subscriptionClient.toJSON());
+                if (subscriptionClient.ContainsKey("data")){
+
+                    let dataModel = subscriptionClient.GetData("data")
+                    if (dataModel.ContainsKey("OnServiceStateChanged")){
+                        dataModel = dataModel.GetData("OnServiceStateChanged")
+                    }
+                }
+            }
         }
     }
 

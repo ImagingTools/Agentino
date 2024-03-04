@@ -41,6 +41,8 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 			if (gqlRequest.GetCommandId() == "ServiceAdd"){
 				imtbase::CTreeItemModel* dataModelPtr = resultModelPtr->GetTreeItemModel("item");
 				if (dataModelPtr != nullptr){
+					qDebug() << "ServiceAdd dataModelPtr" << dataModelPtr->toJSON();
+
 					itemModel.CopyFrom(*dataModelPtr);
 				}
 			}

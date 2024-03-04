@@ -272,6 +272,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 					const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
 					if (objectCollection != nullptr){
 						QByteArrayList ids = collectionInfo->GetElementIds();
+						qDebug() << "GetObject connection IDs: " << ids;
 						for (const QByteArray& id: ids){
 							const imtservice::IServiceConnectionParam* connectionParamPtr = connectionCollection->GetConnectionMetaInfo(id);
 							if (connectionParamPtr == nullptr){
@@ -319,13 +320,11 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 								if (connectionParam != nullptr){
 									QUrl url = connectionParam->GetUrl();
 
-									QString name = connectionParamPtr->GetUsageId() + "@" + url.host() + QString::number(url.port());
+									QString name = serviceName + "@" + url.host() + QString::number(url.port());
 
 									outputConnectionsModelPtr->SetData("Url", name, index);
 
-									imtbase::CTreeItemModel* elementsModel = outputConnectionsModelPtr->AddTreeModel("Elements", index);
-									elementsModel->SetData("Id", name);
-									elementsModel->SetData("Name", name);
+									outputConnectionsModelPtr->AddTreeModel("Elements", index);
 								}
 							}
 						}
@@ -415,6 +414,8 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 						if (collectionInfoPtr == nullptr){
 							continue;
 						}
+
+						imtbase::ICollectionInfo::Ids ids = collectionInfoPtr->GetElementIds();
 
 						QUrl url;
 						url.setHost("localhost");

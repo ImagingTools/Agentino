@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5200" Description="ACF"/>
-            <Version Id="1" Number="2203" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394753" Description="Qt Framework"/>
+            <Version Id="0" Number="5191" Description="ACF"/>
+            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
@@ -26,6 +26,10 @@
                 <Element ComponentName="RedoPermissions" X="1025" Y="400" Note=""/>
                 <Element ComponentName="Save" X="400" Y="350" Note=""/>
                 <Element ComponentName="SavePermissions" X="1025" Y="300" Note=""/>
+                <Element ComponentName="Start" X="550" Y="500" Note=""/>
+                <Element ComponentName="StartPermissions" X="1025" Y="625" Note=""/>
+                <Element ComponentName="Stop" X="550" Y="575" Note=""/>
+                <Element ComponentName="StopPermissions" X="1025" Y="700" Note=""/>
                 <Element ComponentName="Undo" X="75" Y="475" Note=""/>
                 <Element ComponentName="UndoPermissions" X="1025" Y="550" Note=""/>
             </PositionMap>

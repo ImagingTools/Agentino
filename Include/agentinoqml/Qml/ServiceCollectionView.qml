@@ -122,8 +122,9 @@ RemoteCollectionView {
             subscriptionCommandId: "OnServicesCollectionChanged";
 
             onHasRemoteChangesChanged: {
+                console.log("onHasRemoteChangesChanged", hasRemoteChanges);
                 if (hasRemoteChanges){
-//                    updateDocumentModel();
+                    updateDocumentModel();
                 }
             }
 
