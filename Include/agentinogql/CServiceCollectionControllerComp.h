@@ -15,7 +15,6 @@ public:
 	typedef agentgql::CServiceCollectionControllerComp BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceCollectionControllerComp);
-		I_ASSIGN(m_objectCollectionFactCompPtr, "ObjectCollectionFactory", "Factory used for creation of the new object collection instance", true, "ObjectCollectionFactory");
 		I_ASSIGN(m_serviceStatusCollectionCompPtr, "ServiceStatusCollection", "Service status collection", true, "ServiceStatusCollection");
 	I_END_COMPONENT;
 
@@ -30,7 +29,6 @@ protected:
 	virtual imtbase::CTreeItemModel* ListObjects(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 
 protected:
-	I_FACT(imtbase::IObjectCollection, m_objectCollectionFactCompPtr);
 	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);
 };
 

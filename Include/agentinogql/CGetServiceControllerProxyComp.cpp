@@ -1,13 +1,13 @@
 #include <agentinogql/CGetServiceControllerProxyComp.h>
 
 
-// Agentino includes
-#include <agentinodata/CAgentInfo.h>
-#include <agentinodata/CServiceInfo.h>
-
 // ImtCore includes
 #include <imtservice/CUrlConnectionParam.h>
 #include <imtservice/CUrlConnectionLinkParam.h>
+
+// Agentino includes
+#include <agentinodata/CAgentInfo.h>
+#include <agentinodata/CServiceInfo.h>
 
 
 namespace agentinogql
@@ -195,8 +195,7 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelF
 
 							QUrl url = connectionLinkParamPtr->GetDefaultUrl();
 
-//							QString urlStr = serviceTypeName + "@" + url.host() + ":" + QString::number(url.port());
-							outputConnectionsModelPtr->SetData("Url", "", index);
+							outputConnectionsModelPtr->SetData("DisplayUrl", "", index);
 
 							imtbase::CTreeItemModel* connectionsModelPtr = GetConnectionsModel(connectionLinkParamPtr->GetUsageId());
 							outputConnectionsModelPtr->SetExternTreeModel("Elements", connectionsModelPtr, index);
@@ -206,8 +205,8 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelF
 								imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDependantDataPtr.GetPtr());
 								if (connectionParamPtr != nullptr){
 									QUrl url = connectionParamPtr->GetUrl();
-									QString urlStr = serviceName + "@" + url.host() + ":" + QString::number(url.port());
-									outputConnectionsModelPtr->SetData("Url", urlStr, index);
+									outputConnectionsModelPtr->SetData("Url", url.toString(), index);
+//									QString urlStr = serviceName + "@" + url.host() + ":" + QString::number(url.port());
 								}
 							}
 						}
@@ -262,6 +261,7 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetConnectionsModel(con
 
 														result->SetData("Id", connectionElementId, index);
 														result->SetData("Name", urlStr, index);
+														result->SetData("Url", url.toString(), index);
 
 														QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
 
@@ -272,6 +272,7 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetConnectionsModel(con
 
 															result->SetData("Id", incomingConnection.id, index);
 															result->SetData("Name", urlStr, index);
+															result->SetData("Url", incomingConnection.url.toString(), index);
 														}
 													}
 												}

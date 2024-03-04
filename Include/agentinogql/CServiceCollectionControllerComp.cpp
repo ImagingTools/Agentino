@@ -11,12 +11,16 @@ namespace agentinogql
 {
 
 
+// protected methods
+
+// reimplemented (imtgql::CObjectCollectionControllerCompBase)
+
 bool CServiceCollectionControllerComp::SetupGqlItem(
-		const imtgql::CGqlRequest& gqlRequest,
-		imtbase::CTreeItemModel& model,
-		int itemIndex,
-		const QByteArray& collectionId,
-		QString& errorMessage) const
+			const imtgql::CGqlRequest& gqlRequest,
+			imtbase::CTreeItemModel& model,
+			int itemIndex,
+			const QByteArray& collectionId,
+			QString& errorMessage) const
 {
 	QByteArray agentId;
 	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParam("input");
@@ -140,7 +144,9 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 }
 
 
-imtbase::CTreeItemModel *CServiceCollectionControllerComp::ListObjects(const imtgql::CGqlRequest &gqlRequest, QString &errorMessage) const
+imtbase::CTreeItemModel *CServiceCollectionControllerComp::ListObjects(
+			const imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
 {
 	const QList<imtgql::CGqlObject> inputParams = gqlRequest.GetParams();
 
@@ -227,29 +233,6 @@ imtbase::CTreeItemModel *CServiceCollectionControllerComp::ListObjects(const imt
 
 	return rootModelPtr.PopPtr();
 }
-
-
-//imtbase::IObjectCollection* CServiceCollectionControllerComp::GetObjectCollection(const QByteArray& id) const
-//{
-//	imtbase::IObjectCollection::DataPtr dataPtr;
-//	if (m_objectCollectionCompPtr->GetObjectData(id, dataPtr)){
-//		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(dataPtr.GetPtr());
-//		if (agentInfoPtr != nullptr){
-//			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-//			if (serviceCollectionPtr != nullptr){
-
-//				istd::TDelPtr<imtbase::IObjectCollection> objectCollectionPtr = m_objectCollectionFactCompPtr.CreateInstance();
-//				if (objectCollectionPtr.IsValid()){
-//					if (objectCollectionPtr->CopyFrom(*serviceCollectionPtr)){
-//						return objectCollectionPtr.PopPtr();
-//					}
-//				}
-//			}
-//		}
-//	}
-
-//	return nullptr;
-//}
 
 
 } // namespace agentinogql

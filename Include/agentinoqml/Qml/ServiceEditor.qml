@@ -532,10 +532,12 @@ ViewBase {
                                     if (cb.model){
                                         let id = cb.model.GetData("Id", cb.currentIndex)
                                         let name = cb.model.GetData("Name", cb.currentIndex)
+                                        let url = cb.model.GetData("Url", cb.currentIndex)
 
                                         textLabel.text = name;
 
                                         ouputConnTable.elements.SetData("DependantConnectionId", id, bodyItem.tableCellDelegate.rowIndex);
+                                        ouputConnTable.elements.SetData("Url", url, bodyItem.tableCellDelegate.rowIndex);
 
 //                                        bodyItem.tableCellDelegate.setValue(name);
                                     }
@@ -594,7 +596,7 @@ ViewBase {
 
                         index = headersModel2.InsertNewItem();
 
-                        headersModel2.SetData("Id", "Url", index)
+                        headersModel2.SetData("Id", "DisplayUrl", index)
                         headersModel2.SetData("Name", "Url", index)
 
                         ouputConnTable.headers = headersModel2;
