@@ -84,14 +84,12 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 		if (process != nullptr){
 			process->terminate();
 			process->waitForFinished(4000);
-			if (!process->isOpen()){
+			if (process->isOpen()){
 				process->kill();
 			}
 
 			retVal = true;
 		}
-
-		m_processMap.take(serviceId)->deleteLater();
 	}
 
 	return retVal;
@@ -147,11 +145,11 @@ void CServiceControllerComp::stateChanged(QProcess::ProcessState newState)
 					serviceInfoPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(serviceDataPtr.GetPtr());
 				}
 
-				if (serviceInfoPtr != nullptr && serviceInfoPtr->IsAutoStart()){
-					if (m_processMap.contains(serviceId)){
-						m_processMap.take(serviceId)->deleteLater();
-					}
+				if (m_processMap.contains(serviceId)){
+					m_processMap.take(serviceId)->deleteLater();
+				}
 
+				if (serviceInfoPtr != nullptr && serviceInfoPtr->IsAutoStart()){
 					StartService(serviceId);
 				}
 			}

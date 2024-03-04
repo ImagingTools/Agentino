@@ -21,7 +21,7 @@ public:
 
 	I_BEGIN_COMPONENT(CServiceSubscriberControllerComp);
 		I_ASSIGN(m_modelCompPtr, "Model", "Model", true, "Model");
-		I_ASSIGN(m_serviceStatusCollectionCompPtr, "ServiceStatusCollection", "Service status collection", true, "ServiceStatusCollection");
+		I_ASSIGN(m_serviceStatusCollectionCompPtr, "ServiceStatusCollection", "Service status collection", false, "ServiceStatusCollection");
 	I_END_COMPONENT;
 
 protected:
