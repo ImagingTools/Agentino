@@ -27,6 +27,7 @@
 namespace AgentinoGqlPck
 {
 
+
 typedef agentgql::CServiceCollectionControllerComp ServiceCollectionController;
 typedef agentgql::CServiceControllerComp ServiceController;
 typedef agentgql::CAgentinoSubscriptionClientComp AgentinoSubscriptionClient;

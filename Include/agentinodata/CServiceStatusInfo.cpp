@@ -16,7 +16,7 @@ namespace agentinodata
 // public methods
 
 CServiceStatusInfo::CServiceStatusInfo()
-	:m_serviceStatus(SS_INDEFDINED)
+	:m_serviceStatus(SS_UNDEFINED)
 {
 }
 
@@ -118,7 +118,7 @@ bool CServiceStatusInfo::ResetData(CompatibilityMode /*mode*/)
 	istd::CChangeNotifier changeNotifier(this);
 
 	m_serviceId.clear();
-	m_serviceStatus = SS_INDEFDINED;
+	m_serviceStatus = SS_UNDEFINED;
 
 	return true;
 }

@@ -239,6 +239,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 			QString description = m_objectCollectionCompPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
 			QString servicePath = serviceInfoPtr->GetServicePath();
 			QString settingsPath = serviceInfoPtr->GetServiceSettingsPath();
+			QString serviceTypeName = serviceInfoPtr->GetServiceTypeName();
 			QString arguments = serviceInfoPtr->GetServiceArguments().join(' ');
 			bool isAutoStart = serviceInfoPtr->IsAutoStart();
 
@@ -249,6 +250,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 			dataModel->SetData("SettingsPath", settingsPath);
 			dataModel->SetData("Arguments", arguments);
 			dataModel->SetData("IsAutoStart", isAutoStart);
+			dataModel->SetData("ServiceTypeName", serviceTypeName);
 
 			if (m_serviceControllerCompPtr.IsValid()){
 				QProcess::ProcessState state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
@@ -418,8 +420,6 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 							continue;
 						}
 
-						imtbase::ICollectionInfo::Ids ids = collectionInfoPtr->GetElementIds();
-
 						QUrl url;
 						url.setHost("localhost");
 						url.setPort(servicePort);
@@ -440,6 +440,14 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 				QString urlStr = outputConnectionsModelPtr->GetData("Url", i).toString();
 
 				QUrl url(urlStr);
+
+				if (url.host().isEmpty()){
+					url.setHost("localhost");
+				}
+
+				if (url.scheme().isEmpty()){
+					url.setScheme("http");
+				}
 
 				if (m_pluginMap.contains(serviceName)){
 					istd::TDelPtr<imtservice::IConnectionCollection> connectionCollection = m_pluginMap[serviceName].pluginPtr->GetConnectionCollectionFactory()->CreateInstance();

@@ -235,6 +235,8 @@ ViewBase {
 
                 anchors.left: parent.left;
 
+                width: parent.width;
+
                 color: Style.textColor;
                 font.family: Style.fontFamily;
                 font.pixelSize: Style.fontSize_common;
@@ -341,9 +343,7 @@ ViewBase {
                         property Item tableCellDelegate: null;
 
                         onTableCellDelegateChanged: {
-                            if (tableCellDelegate.mainMouseArea){
-//                                tableCellDelegate.mainMouseArea.hoverEnabled = false;
-
+                            if (tableCellDelegate){
                                 let valueModel = tableCellDelegate.getValue();
                                 if (valueModel){
                                     let values = []

@@ -74,7 +74,7 @@ void CServiceSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeS
 					serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);
 				}
 				else{
-					serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_INDEFDINED);
+					serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_UNDEFINED);
 				}
 
 				m_serviceStatusCollectionCompPtr->SetObjectData(serviceId, *serviceStatusInfoPtr);

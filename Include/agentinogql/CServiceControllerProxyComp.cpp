@@ -134,6 +134,8 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 				connectionUrl.setHost(host);
 				connectionUrl.setPort(port);
 
+				serviceInfoPtr->SetServiceTypeName(serviceTypeName.toUtf8());
+
 				istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
 				urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam(
 												 serviceTypeName.toUtf8(),

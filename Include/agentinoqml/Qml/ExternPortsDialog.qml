@@ -12,8 +12,6 @@ Dialog {
 
     property TreeItemModel portsModel: TreeItemModel {}
 
-    property TreeItemModel tableModel: TreeItemModel {}
-
     Component.onCompleted: {
         buttonsModel.append({Id: Enums.save, Name:qsTr("Save"), Enabled: true})
         buttonsModel.append({Id: Enums.cancel, Name:qsTr("Cancel"), Enabled: true})
@@ -125,7 +123,6 @@ Dialog {
                         }
                         else if (commandId == "Remove"){
                             let indexes = tableTreeView.getSelectedIndexes();
-
                             if (indexes.length > 0){
                                 let index = indexes[0];
 

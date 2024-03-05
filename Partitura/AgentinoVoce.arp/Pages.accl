@@ -28,7 +28,7 @@
                 <Element ComponentName="ChangeServiceControllerProxy" X="950" Y="400" Note=""/>
                 <Element ComponentName="GetServiceControllerProxy" X="725" Y="475" Note=""/>
                 <Element ComponentName="GraphQLDemultiplexer" X="575" Y="100" Note=""/>
-                <Element ComponentName="ObjectCollection" X="950" Y="600" Note=""/>
+                <Element ComponentName="RemoveServiceControllerProxy" X="225" Y="600" Note=""/>
                 <Element ComponentName="ServerServiceCollectionController" X="575" Y="600" Note=""/>
                 <Element ComponentName="ServiceHeadersDataProvider" X="575" Y="700" Note=""/>
                 <Element ComponentName="ServiceInfo" X="850" Y="700" Note=""/>

@@ -256,6 +256,7 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetConnectionsModel(con
 														int index = result->InsertNewItem();
 
 														QUrl url = connectionParamPtr->GetUrl();
+														url.setHost("localhost");
 
 														QString urlStr = serviceName + "@" + "localhost" + ":" + QString::number(url.port());
 

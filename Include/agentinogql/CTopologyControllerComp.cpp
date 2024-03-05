@@ -12,6 +12,7 @@
 #include <imtservice/CUrlConnectionLinkParam.h>
 
 // Agentino includes
+#include <agentinodata/agentinodata.h>
 #include <agentinodata/IAgentInfo.h>
 #include <agentinodata/IServiceInfo.h>
 #include <agentinodata/IServiceStatusInfo.h>
@@ -328,8 +329,8 @@ QString CTopologyControllerComp::GetServiceStatus(const QByteArray& serviceId) c
 			agentinodata::IServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::IServiceStatusInfo*>(serviceStatusDataPtr.GetPtr());
 			if (serviceStatusInfoPtr != nullptr){
 				agentinodata::IServiceStatusInfo::ServiceStatus status = serviceStatusInfoPtr->GetServiceStatus();
-				agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(status);
-				retVal = processStateEnum.id;
+//				agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(status);
+//				retVal = processStateEnum.id;
 			}
 		}
 	}

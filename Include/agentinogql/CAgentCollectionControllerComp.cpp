@@ -394,7 +394,7 @@ void CAgentCollectionControllerComp::OnTimeout()
 							serviceStatusInfoPtr.SetPtr(new agentinodata::CServiceStatusInfo);
 
 							serviceStatusInfoPtr->SetServiceId(id);
-							serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_INDEFDINED);
+							serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_UNDEFINED);
 
 							imtgql::CGqlRequest request(imtgql::CGqlRequest::RT_QUERY, "ServiceItem");
 							imtgql::CGqlObject inputObject("input");

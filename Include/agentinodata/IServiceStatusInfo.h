@@ -20,13 +20,13 @@ class IServiceStatusInfo: virtual public iser::IObject
 public:
 	enum ServiceStatus
 	{
-		SS_INDEFDINED,
+		SS_UNDEFINED,
 		SS_STARTING,
 		SS_RUNNING,
 		SS_NOT_RUNNING
 	};
 
-	I_DECLARE_ENUM(ServiceStatus, SS_INDEFDINED, SS_STARTING, SS_RUNNING, SS_NOT_RUNNING);
+	I_DECLARE_ENUM(ServiceStatus, SS_UNDEFINED, SS_STARTING, SS_RUNNING, SS_NOT_RUNNING);
 
 	/**
 		Get ID of the service.

@@ -22,6 +22,7 @@ public:
 	virtual void SetServiceSettingsPath(const QByteArray& serviceSettingsPath);
 	virtual void SetServiceArguments(const QByteArrayList& serviceArguments);
 	virtual void SetIsAutoStart(bool isAutoStart);
+	virtual void SetServiceTypeName(const QByteArray& serviceTypeName);
 
 	// reimplemented (agentinodata::IServiceInfo)
 	virtual SettingsType GetSettingsType() const override;

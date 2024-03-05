@@ -56,7 +56,11 @@ QByteArray CServiceInfo::GetServicePath() const
 
 void CServiceInfo::SetServicePath(const QByteArray& servicePath)
 {
-	m_path = servicePath;
+	if (m_path != servicePath){
+		istd::CChangeNotifier changeNotifier(this);
+
+		m_path = servicePath;
+	}
 }
 
 
@@ -68,7 +72,11 @@ QByteArray CServiceInfo::GetServiceSettingsPath() const
 
 void CServiceInfo::SetServiceSettingsPath(const QByteArray& serviceSettingsPath)
 {
-	m_settingsPath = serviceSettingsPath;
+	if (m_settingsPath != serviceSettingsPath){
+		istd::CChangeNotifier changeNotifier(this);
+
+		m_settingsPath = serviceSettingsPath;
+	}
 }
 
 
@@ -80,13 +88,31 @@ QByteArrayList CServiceInfo::GetServiceArguments() const
 
 void CServiceInfo::SetServiceArguments(const QByteArrayList& serviceArguments)
 {
-	m_arguments = serviceArguments;
+	if (m_arguments != serviceArguments){
+		istd::CChangeNotifier changeNotifier(this);
+
+		m_arguments = serviceArguments;
+	}
 }
 
 
 void CServiceInfo::SetIsAutoStart(bool isAutoStart)
 {
-	m_isAutoStart = isAutoStart;
+	if (m_isAutoStart != isAutoStart){
+		istd::CChangeNotifier changeNotifier(this);
+
+		m_isAutoStart = isAutoStart;
+	}
+}
+
+
+void CServiceInfo::SetServiceTypeName(const QByteArray& serviceTypeName)
+{
+	if (m_serviceTypeName != serviceTypeName){
+		istd::CChangeNotifier changeNotifier(this);
+
+		m_serviceTypeName = serviceTypeName;
+	}
 }
 
 
