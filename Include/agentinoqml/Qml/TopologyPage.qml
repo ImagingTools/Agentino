@@ -43,14 +43,6 @@ ViewBase {
         }
     }
 
-    // commandsDelegate: Item {
-    //     function commandHandle(commandId) {
-    //         if (commandId === "Save"){
-    //             saveModel.save()
-    //         }
-    //     }
-    // }
-
     commandsDelegate: ServiceCollectionViewCommandsDelegate {
         id: serviceCommandsDelegate
         collectionView: topologyPage
@@ -59,7 +51,10 @@ ViewBase {
             if (commandId === "Save"){
                 saveModel.save()
             }
-            serviceCommandsDelegate.commandActivated(commandId);
+            else if (commandId === "Edit"){
+                scheme.goInside()
+            }
+            else serviceCommandsDelegate.commandActivated(commandId);
         }
     }
 
@@ -95,21 +90,6 @@ ViewBase {
                 commandsRepresentationProvider.setCommandIsEnabled("Start", false)
                 commandsRepresentationProvider.setCommandIsEnabled("Stop", false)
                 commandsRepresentationProvider.setCommandIsEnabled("Edit", false)
-            }
-        }
-
-        function serviceCommandActivated(commandId){
-            let indexes = root.table.getSelectedIndexes();
-            if (indexes.length > 0){
-                let index = indexes[0];
-                let serviceId = root.table.elements.GetData("Id", index)
-
-                if (root.commandsController){
-                    commandsController.setCommandIsEnabled("Start", commandId === "Stop");
-                    commandsController.setCommandIsEnabled("Stop", commandId === "Start");
-                }
-
-                serviceCommandsDelegate.setServiceCommand(commandId, serviceId)
             }
         }
 
@@ -178,16 +158,6 @@ ViewBase {
                     updateDocumentModel();
                 }
             }
-
-//            function getDocumentName() {
-//                let newName = qsTr("<New service>");
-
-//                if (documentName !== ""){
-//                    return documentName + "@" + root.clientName
-//                }
-
-//                return newName + "@" + root.clientName
-//            }
         }
     }
 
@@ -213,12 +183,13 @@ ViewBase {
                         dataModel = dataModel.GetData("OnServiceStateChanged")
                         let serviceId = dataModel.GetData("serviceId")
                         let serviceStatus = dataModel.GetData("serviceStatus")
-                        objectModel.SetData("Status", serviceStatus, scheme.selectedIndex);
+                        console.log("serviceStatus", serviceStatus)
+                        scheme.objectModel.SetData("Status", serviceStatus, scheme.selectedIndex);
                         if (serviceStatus == "Running"){
-                            objectModel.SetData("IconUrl_1", "Icons/Running", scheme.selectedIndex);
+                            scheme.objectModel.SetData("IconUrl_1", "Icons/Running", scheme.selectedIndex);
                         }
                         else{
-                            objectModel.SetData("IconUrl_1", "Icons/Stopped", scheme.selectedIndex);
+                            scheme.objectModel.SetData("IconUrl_1", "Icons/Stopped", scheme.selectedIndex);
                         }
                         commandsController.setCommandIsEnabled("Start", serviceStatus !== "Running");
                         commandsController.setCommandIsEnabled("Stop", serviceStatus === "Running");
