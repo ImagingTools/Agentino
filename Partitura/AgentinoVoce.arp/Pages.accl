@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5191" Description="ACF"/>
-            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5200" Description="ACF"/>
+            <Version Id="1" Number="2203" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="394753" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
@@ -22,15 +22,6 @@
         <Element ComponentName="TopologyPage" X="100" Y="250" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="PagesPermissions">
-            <PositionMap>
-                <Element ComponentName="AdministrationPermissions" X="600" Y="375" Note=""/>
-                <Element ComponentName="AgentsPermissions" X="900" Y="375" Note=""/>
-                <Element ComponentName="PagePermissions" X="575" Y="150" Note=""/>
-                <Element ComponentName="TopologyPermissions" X="275" Y="375" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
         <EmbededRegistry Id="PageData">
             <PositionMap>
                 <Element ComponentName="AgentsPage" X="150" Y="375" Note=""/>
@@ -43,6 +34,15 @@
                 <Element ComponentName="ServiceInfo" X="850" Y="700" Note=""/>
                 <Element ComponentName="ServicesRemoteRepresentationController" X="350" Y="475" Note=""/>
                 <Element ComponentName="TopologyPage" X="1025" Y="100" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="PagesPermissions">
+            <PositionMap>
+                <Element ComponentName="AdministrationPermissions" X="600" Y="375" Note=""/>
+                <Element ComponentName="AgentsPermissions" X="900" Y="375" Note=""/>
+                <Element ComponentName="PagePermissions" X="575" Y="150" Note=""/>
+                <Element ComponentName="TopologyPermissions" X="275" Y="375" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

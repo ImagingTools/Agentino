@@ -5,6 +5,7 @@
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/CServiceInfo.h>
 #include <agentinodata/CServiceStatusInfo.h>
+#include <agentinodata/agentinodata.h>
 
 
 namespace agentinogql
@@ -105,20 +106,13 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 								agentinodata::IServiceStatusInfo::ServiceStatus status = serviceStatusInfoPtr->GetServiceStatus();
 
 								QString statusStr;
-								switch(status){
-								case agentinodata::IServiceStatusInfo::ServiceStatus::SS_NONE:
-									statusStr = "Unknown";
-									break;
-
-								case agentinodata::IServiceStatusInfo::ServiceStatus::SS_RUNNING:
-									statusStr = "Running";
-									break;
-								case agentinodata::IServiceStatusInfo::ServiceStatus::SS_NOT_RUNNING:
-									statusStr = "Not Running";
-									break;
+								agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(status);
+								if (informationId == "Status"){
+									elementInformation = processStateEnum.id;
 								}
-
-								elementInformation = statusStr;
+								else{
+									elementInformation = processStateEnum.name;
+								}
 							}
 						}
 					}

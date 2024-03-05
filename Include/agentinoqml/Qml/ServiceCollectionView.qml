@@ -14,7 +14,7 @@ RemoteCollectionView {
     filterMenuVisible: false;
 
     collectionId: "Services";
-    additionalFieldIds: ["Status"]
+    additionalFieldIds: ["Description","Status","StatusName"]
 
     onVisibleChanged: {
         if (visible && table.elements.GetItemsCount() !== 0){

@@ -20,6 +20,17 @@ ViewBase {
     property real originY: 0;
     //for scrollBars
 
+    Component.onCompleted: {
+        let documentManager = MainDocumentManager.getDocumentManager("Topology");
+        if (documentManager){
+            documentManager.registerDocumentView("Service", "ServiceView", serviceEditorComp);
+            documentManager.registerDocumentDataController("Service", serviceDataControllerComp);
+        }
+        Events.subscribeEvent("ServiceCommandActivated", topologyPage.serviceCommandActivated);
+    }
+
+
+
     commandsController: CommandsRepresentationProvider {
         id: commandsRepresentationProvider
         commandId: "Topology"
@@ -32,27 +43,74 @@ ViewBase {
         }
     }
 
-    commandsDelegate: Item {
+    // commandsDelegate: Item {
+    //     function commandHandle(commandId) {
+    //         if (commandId === "Save"){
+    //             saveModel.save()
+    //         }
+    //     }
+    // }
+
+    commandsDelegate: ServiceCollectionViewCommandsDelegate {
+        id: serviceCommandsDelegate
+        collectionView: topologyPage
+        documentTypeId: "Service" + root.clientId
         function commandHandle(commandId) {
             if (commandId === "Save"){
                 saveModel.save()
             }
+            serviceCommandsDelegate.commandActivated(commandId);
+        }
+    }
+
+    function serviceCommandActivated(commandId){
+        if (scheme.selectedService != ""){
+            if (topologyPage.commandsController){
+                topologyPage.commandsController.setCommandIsEnabled("Start", commandId === "Stop");
+                topologyPage.commandsController.setCommandIsEnabled("Stop", commandId === "Start");
+            }
+
+            serviceCommandsDelegate.setServiceCommand(commandId, scheme.selectedService)
         }
     }
 
     SchemeView {
         id: scheme
-
-        Component.onCompleted: {
-            let documentManager = MainDocumentManager.getDocumentManager("Topology");
-            if (documentManager){
-                documentManager.registerDocumentView("Service", "ServiceView", serviceEditorComp);
-                documentManager.registerDocumentDataController("Service", serviceDataControllerComp);
-            }
-        }
+        property string selectedService: ""
 
         onModelDataChanged: {
             commandsRepresentationProvider.setCommandIsEnabled("Save", true)
+        }
+
+        onSelectedIndexChanged: {
+            if(objectModel.GetItemsCount() > selectedIndex && selectedIndex >= 0){
+                selectedService = objectModel.GetData("Id", selectedIndex);
+                let status = objectModel.GetData("Status", selectedIndex);
+                commandsRepresentationProvider.setCommandIsEnabled("Start", status !== "Running")
+                commandsRepresentationProvider.setCommandIsEnabled("Stop", status === "Running")
+                commandsRepresentationProvider.setCommandIsEnabled("Edit", true)
+            }
+            else{
+                selectedService = ""
+                commandsRepresentationProvider.setCommandIsEnabled("Start", false)
+                commandsRepresentationProvider.setCommandIsEnabled("Stop", false)
+                commandsRepresentationProvider.setCommandIsEnabled("Edit", false)
+            }
+        }
+
+        function serviceCommandActivated(commandId){
+            let indexes = root.table.getSelectedIndexes();
+            if (indexes.length > 0){
+                let index = indexes[0];
+                let serviceId = root.table.elements.GetData("Id", index)
+
+                if (root.commandsController){
+                    commandsController.setCommandIsEnabled("Start", commandId === "Stop");
+                    commandsController.setCommandIsEnabled("Stop", commandId === "Start");
+                }
+
+                serviceCommandsDelegate.setServiceCommand(commandId, serviceId)
+            }
         }
 
         function goInside(){
@@ -150,10 +208,22 @@ ViewBase {
             if (state === "Ready"){
                 console.log("TopologyPage OnServiceStateChanged Ready", subscriptionClient.toJSON());
                 if (subscriptionClient.ContainsKey("data")){
-
                     let dataModel = subscriptionClient.GetData("data")
                     if (dataModel.ContainsKey("OnServiceStateChanged")){
                         dataModel = dataModel.GetData("OnServiceStateChanged")
+                        let serviceId = dataModel.GetData("serviceId")
+                        let serviceStatus = dataModel.GetData("serviceStatus")
+                        objectModel.SetData("Status", serviceStatus, scheme.selectedIndex);
+                        if (serviceStatus == "Running"){
+                            objectModel.SetData("IconUrl_1", "Icons/Running", scheme.selectedIndex);
+                        }
+                        else{
+                            objectModel.SetData("IconUrl_1", "Icons/Stopped", scheme.selectedIndex);
+                        }
+                        commandsController.setCommandIsEnabled("Start", serviceStatus !== "Running");
+                        commandsController.setCommandIsEnabled("Stop", serviceStatus === "Running");
+
+                        scheme.requestPaint()
                     }
                 }
             }

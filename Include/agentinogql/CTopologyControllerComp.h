@@ -17,6 +17,7 @@ public:
 	I_BEGIN_COMPONENT(CTopologyControllerComp);
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", true, "AgentCollection");
 		I_ASSIGN(m_topologyCollectionCompPtr, "TopologyCollection", "Topology collection", true, "TopologyCollection");
+		I_ASSIGN(m_serviceStatusCollectionCompPtr, "ServiceStatusCollection", "Service status collection", true, "ServiceStatusCollection");
 	I_END_COMPONENT;
 
 	// reimplemented (imtgql::CGqlRequestHandlerCompBase)
@@ -28,10 +29,12 @@ public:
 	QByteArray GetServiceId(const QByteArray& dependantServiceConnectionId) const;
 	QPoint GetServiceCoordinate(const QByteArray& serviceId) const;
 	bool SetServiceCoordinate(const QByteArray& serviceId, const QPoint& point) const;
+	QString GetServiceStatus(const QByteArray& serviceId) const;
 
 protected:
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
 	I_REF(imtbase::IObjectCollection, m_topologyCollectionCompPtr);
+	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);
 };
 
 

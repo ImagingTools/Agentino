@@ -14,6 +14,7 @@
 // Agentino includes
 #include <agentinodata/IAgentInfo.h>
 #include <agentinodata/IServiceInfo.h>
+#include <agentinodata/IServiceStatusInfo.h>
 
 
 
@@ -76,42 +77,53 @@ imtbase::CTreeItemModel* CTopologyControllerComp::CreateTopologyModel() const
 					imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
 					for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
 						imtbase::IObjectCollection::DataPtr serviceDataPtr;
-						if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
-							agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
-							int index = itemsModel->InsertNewItem();
-							QPoint point = GetServiceCoordinate(serviceElementId);
-							itemsModel->SetData("Id", serviceElementId, index);
-							itemsModel->SetData("AgentId", elementId, index);
-							itemsModel->SetData("X", point.x(), index);
-							itemsModel->SetData("Y", point.y(), index);
-							QString name = serviceCollectionPtr->GetElementInfo(serviceElementId, imtbase::ICollectionInfo::EIT_NAME).toString();
-							QString description = serviceCollectionPtr->GetElementInfo(serviceElementId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
-							itemsModel->SetData("MainText", name + "@" + agentName, index);
-							itemsModel->SetData("SecondText", description, index);
+						serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr);
+						agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+						if (serviceInfoPtr == nullptr){
+							continue;
+						}
+						int index = itemsModel->InsertNewItem();
+						QPoint point = GetServiceCoordinate(serviceElementId);
+						itemsModel->SetData("Id", serviceElementId, index);
+						itemsModel->SetData("AgentId", elementId, index);
+						itemsModel->SetData("X", point.x(), index);
+						itemsModel->SetData("Y", point.y(), index);
+						QString name = serviceCollectionPtr->GetElementInfo(serviceElementId, imtbase::ICollectionInfo::EIT_NAME).toString();
+						QString description = serviceCollectionPtr->GetElementInfo(serviceElementId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
+						QString typeName = serviceInfoPtr->GetServiceTypeName();
+						itemsModel->SetData("MainText", name + "@" + agentName, index);
+						itemsModel->SetData("SecondText", description, index);
+						itemsModel->SetData("ThirdText", typeName, index);
+						QString serviceStatus = GetServiceStatus(serviceElementId);
+						itemsModel->SetData("Status", serviceStatus, index);
+						if (serviceStatus == "Running"){
+							itemsModel->SetData("IconUrl_1", "Icons/Running", index);
+						}
+						else {
+							itemsModel->SetData("IconUrl_1", "Icons/Stopped", index);
+						}
 
-							if (serviceInfoPtr != nullptr){
-								// Get Connections
-								imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
-								if (connectionCollectionPtr != nullptr){
-									imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
-									for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-										imtbase::IObjectCollection::DataPtr connectionDataPtr;
-										if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
-											imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
-											if (connectionLinkParamPtr != nullptr){
-												QByteArray serviceId =  GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
-												// itemsModel->SetData("SecondText", description, index);
-												imtbase::CTreeItemModel* linkModel = itemsModel->GetTreeItemModel("Links", index);
-												if (linkModel == nullptr){
-													linkModel = itemsModel->AddTreeModel("Links", index);
-												}
-												int linkIndex = linkModel->InsertNewItem();
-												linkModel->SetData("ObjectId", serviceId, linkIndex);
-											}
+						// Get Connections
+						imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
+						if (connectionCollectionPtr != nullptr){
+							imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
+							for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
+								imtbase::IObjectCollection::DataPtr connectionDataPtr;
+								if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
+									imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
+									if (connectionLinkParamPtr != nullptr){
+										QByteArray serviceId =  GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
+										// itemsModel->SetData("SecondText", description, index);
+										imtbase::CTreeItemModel* linkModel = itemsModel->GetTreeItemModel("Links", index);
+										if (linkModel == nullptr){
+											linkModel = itemsModel->AddTreeModel("Links", index);
 										}
+										int linkIndex = linkModel->InsertNewItem();
+										linkModel->SetData("ObjectId", serviceId, linkIndex);
 									}
 								}
 							}
+
 						}
 					}
 				}
@@ -166,41 +178,43 @@ QByteArray CTopologyControllerComp::GetServiceId(const QUrl& url, const QString&
 		imtbase::IObjectCollection::DataPtr agentDataPtr;
 		if (m_agentCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
 			agentinodata::IAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::IAgentInfo*>(agentDataPtr.GetPtr());
-			if (agentInfoPtr != nullptr){
-				// Get Services
-				imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-				if (serviceCollectionPtr != nullptr){
-					imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
-					for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
-						imtbase::IObjectCollection::DataPtr serviceDataPtr;
-						if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
-							agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
-							if (serviceInfoPtr != nullptr){
-								QString serviceName = serviceCollectionPtr->GetElementInfo(serviceElementId, imtbase::ICollectionInfo::EIT_NAME).toString();
+			if (agentInfoPtr == nullptr){
+				continue;
+			}
+			// Get Services
+			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+			if (serviceCollectionPtr == nullptr){
+				continue;
+			}
+			imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
+			for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
+				imtbase::IObjectCollection::DataPtr serviceDataPtr;
+				if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
+					agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+					if (serviceInfoPtr == nullptr){
+						continue;
+					}
+					// Get Connections
+					imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
+					if (connectionCollectionPtr == nullptr){
+						continue;
+					}
+					imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
+					for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
+						qDebug() << "connectionElementId" << connectionElementId;
+						imtbase::IObjectCollection::DataPtr connectionDataPtr;
+						if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
+							imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
+							if (connectionParamPtr != nullptr){
+								if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionParam::CT_INPUT){
+									if (connectionParamPtr->GetUrl() == url/* && connectionServiceName == serviceName*/){
+										return serviceElementId;
+									}
 
-								// Get Connections
-								imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
-								if (connectionCollectionPtr != nullptr){
-									imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
-									for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-										qDebug() << "connectionElementId" << connectionElementId;
-										imtbase::IObjectCollection::DataPtr connectionDataPtr;
-										if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
-											imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
-											if (connectionParamPtr != nullptr){
-												if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionParam::CT_INPUT){
-													if (connectionParamPtr->GetUrl() == url/* && connectionServiceName == serviceName*/){
-														return serviceElementId;
-													}
-
-													QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
-													for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-														if (incomingConnection.url == url/* && connectionServiceName == serviceName*/){
-															return serviceElementId;
-														}
-													}
-												}
-											}
+									QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
+									for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
+										if (incomingConnection.url == url/* && connectionServiceName == serviceName*/){
+											return serviceElementId;
 										}
 									}
 								}
@@ -227,28 +241,32 @@ QByteArray CTopologyControllerComp::GetServiceId(const QByteArray& dependantServ
 		imtbase::IObjectCollection::DataPtr agentDataPtr;
 		if (m_agentCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
 			agentinodata::IAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::IAgentInfo*>(agentDataPtr.GetPtr());
-			if (agentInfoPtr != nullptr){
-				// Get Services
-				imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-				if (serviceCollectionPtr != nullptr){
-					imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
-					for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
-						imtbase::IObjectCollection::DataPtr serviceDataPtr;
-						if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
-							agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
-							if (serviceInfoPtr != nullptr){
-								// Get Connections
-								imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
-								if (connectionCollectionPtr != nullptr){
-									imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
-									for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-										qDebug() << "connectionElementId" << connectionElementId;
-										if (connectionElementId == dependantServiceConnectionId){
-											return serviceElementId;
-										}
-									}
-								}
-							}
+			if (agentInfoPtr == nullptr){
+				continue;
+			}
+			// Get Services
+			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+			if (serviceCollectionPtr == nullptr){
+				continue;
+			}
+			imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
+			for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
+				imtbase::IObjectCollection::DataPtr serviceDataPtr;
+				if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
+					agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+					if (serviceInfoPtr == nullptr){
+						continue;
+					}
+					// Get Connections
+					imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
+					if (connectionCollectionPtr == nullptr){
+						continue;
+					}
+					imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
+					for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
+						qDebug() << "connectionElementId" << connectionElementId;
+						if (connectionElementId == dependantServiceConnectionId){
+							return serviceElementId;
 						}
 					}
 				}
@@ -298,6 +316,25 @@ bool CTopologyControllerComp::SetServiceCoordinate(const QByteArray& serviceId, 
 	m_topologyCollectionCompPtr->InsertNewObject("Topology", "", "", &position2d, serviceId);
 
 	return true;
+}
+
+
+QString CTopologyControllerComp::GetServiceStatus(const QByteArray& serviceId) const
+{
+	QString retVal;
+	if (m_serviceStatusCollectionCompPtr.IsValid()){
+		imtbase::IObjectCollection::DataPtr serviceStatusDataPtr;
+		if (m_serviceStatusCollectionCompPtr->GetObjectData(serviceId, serviceStatusDataPtr)){
+			agentinodata::IServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::IServiceStatusInfo*>(serviceStatusDataPtr.GetPtr());
+			if (serviceStatusInfoPtr != nullptr){
+				agentinodata::IServiceStatusInfo::ServiceStatus status = serviceStatusInfoPtr->GetServiceStatus();
+				agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(status);
+				retVal = processStateEnum.id;
+			}
+		}
+	}
+
+	return retVal;
 }
 
 
