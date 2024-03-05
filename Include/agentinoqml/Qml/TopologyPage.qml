@@ -191,8 +191,8 @@ ViewBase {
                         else{
                             scheme.objectModel.SetData("IconUrl_1", "Icons/Stopped", scheme.selectedIndex);
                         }
-                        commandsController.setCommandIsEnabled("Start", serviceStatus !== "Running");
-                        commandsController.setCommandIsEnabled("Stop", serviceStatus === "Running");
+                        topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus !== "Running");
+                        topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === "Running");
 
                         scheme.requestPaint()
                     }

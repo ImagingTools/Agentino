@@ -13,8 +13,12 @@ Item {
 
         systemStatus: "NO_ERROR";
 
+        serverReady: true
+
         Component.onCompleted: {
             designProvider.applyDesignSchema("Light");
+            context.appName = "Agentino"
+
 
             application.firstModelsInit();
         }

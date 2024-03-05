@@ -105,14 +105,14 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 							if (serviceStatusInfoPtr != nullptr){
 								agentinodata::IServiceStatusInfo::ServiceStatus status = serviceStatusInfoPtr->GetServiceStatus();
 
-//								QString statusStr;
-//								agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(status);
-//								if (informationId == "Status"){
-//									elementInformation = processStateEnum.id;
-//								}
-//								else{
-//									elementInformation = processStateEnum.name;
-//								}
+								QString statusStr;
+								agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(status);
+								if (informationId == "Status"){
+									elementInformation = processStateEnum.id;
+								}
+								else{
+									elementInformation = processStateEnum.name;
+								}
 							}
 						}
 					}

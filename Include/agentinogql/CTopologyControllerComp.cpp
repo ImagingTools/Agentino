@@ -329,8 +329,8 @@ QString CTopologyControllerComp::GetServiceStatus(const QByteArray& serviceId) c
 			agentinodata::IServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::IServiceStatusInfo*>(serviceStatusDataPtr.GetPtr());
 			if (serviceStatusInfoPtr != nullptr){
 				agentinodata::IServiceStatusInfo::ServiceStatus status = serviceStatusInfoPtr->GetServiceStatus();
-//				agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(status);
-//				retVal = processStateEnum.id;
+				agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(status);
+				retVal = processStateEnum.id;
 			}
 		}
 	}
