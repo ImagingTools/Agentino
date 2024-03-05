@@ -223,11 +223,11 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 
 
 istd::IChangeable* CAgentCollectionControllerComp::CreateObject(
-		const QList<imtgql::CGqlObject>& inputParams,
-		QByteArray& objectId,
-		QString& name,
-		QString& description,
-		QString& errorMessage) const
+			const QList<imtgql::CGqlObject>& inputParams,
+			QByteArray& objectId,
+			QString& name,
+			QString& description,
+			QString& errorMessage) const
 {
 	if (!m_agentFactCompPtr.IsValid() || !m_objectCollectionCompPtr.IsValid()){
 		Q_ASSERT(false);
@@ -308,7 +308,6 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 }
 
 
-
 imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
 {
 	if (!m_agentFactCompPtr.IsValid() || !m_objectCollectionCompPtr.IsValid()){
@@ -332,7 +331,6 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtg
 			QString name;
 
 			if (!itemData.isEmpty()){
-
 				imtbase::CTreeItemModel itemModel;
 				itemModel.CreateFromJson(itemData);
 
@@ -363,6 +361,81 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtg
 	}
 
 	return retVal;
+}
+
+
+void CAgentCollectionControllerComp::UpdateAgentService(
+			const QByteArray& agentId,
+			const QByteArray& serviceId) const
+{
+	if (!m_requestHandlerCompPtr.IsValid()){
+		return;
+	}
+
+	if (!m_objectCollectionCompPtr.IsValid()){
+		return;
+	}
+
+	agentinodata::CAgentInfo* agentInfoPtr = nullptr;
+	imtbase::IObjectCollection::DataPtr agentDataPtr;
+	if (m_objectCollectionCompPtr->GetObjectData(agentId, agentDataPtr)){
+		agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(agentDataPtr.GetPtr());
+	}
+
+	if (agentInfoPtr == nullptr){
+		return;
+	}
+
+	imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+	if (serviceCollectionPtr == nullptr){
+		return;
+	}
+
+	agentinodata::CServiceInfo* serviceInfoInfoPtr = nullptr;
+	imtbase::IObjectCollection::DataPtr serviceDataPtr;
+	if (serviceCollectionPtr->GetObjectData(serviceId, serviceDataPtr)){
+		serviceInfoInfoPtr = dynamic_cast<agentinodata::CServiceInfo*>(serviceDataPtr.GetPtr());
+	}
+
+	if (serviceInfoInfoPtr == nullptr){
+		return;
+	}
+
+	imtbase::CTreeItemModel serviceRepresentationModel;
+	bool ok = m_serviceInfoRepresentationController.GetRepresentationFromDataModel(*serviceInfoInfoPtr, serviceRepresentationModel);
+	if (!ok){
+		return;
+	}
+
+	QString serviceName = serviceCollectionPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_NAME).toString();
+	QString description = serviceCollectionPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
+
+	serviceRepresentationModel.SetData("Name", serviceName);
+	serviceRepresentationModel.SetData("Description", description);
+
+	qDebug() << "serviceRepresentationModel" << serviceRepresentationModel.toJSON();
+
+	imtgql::CGqlRequest request(imtgql::CGqlRequest::RT_MUTATION, "ServiceUpdate");
+	imtgql::CGqlObject inputObject("input");
+	inputObject.InsertField(QByteArray("Id"), QVariant(serviceId));
+	inputObject.InsertField(QByteArray("Item"), QVariant(serviceRepresentationModel.toJSON()));
+
+	imtgql::CGqlObject additionObject("addition");
+	additionObject.InsertField("clientId", QVariant(agentId));
+	inputObject.InsertField("addition", additionObject);
+	request.AddParam(inputObject);
+
+	imtgql::CGqlObject updatedObject("updatedNotification");
+	updatedObject.InsertField("Id");
+	request.AddField(updatedObject);
+
+	QString errorMessage;
+	istd::TDelPtr<imtbase::CTreeItemModel> responseModelPtr = m_requestHandlerCompPtr->CreateResponse(request, errorMessage);
+	if (responseModelPtr.IsValid()){
+		QString responseJsonModel = responseModelPtr->toJSON();
+
+		qDebug() << "responseJsonModel" << responseJsonModel;
+	}
 }
 
 
@@ -458,11 +531,10 @@ void CAgentCollectionControllerComp::OnTimeout()
 
 															istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
 															urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam(
-																serviceTypeName.toUtf8(),
-																usageId.toUtf8(),
-																imtservice::IServiceConnectionParam::CT_INPUT,
-																connectionUrl)
-																						 );
+																		serviceTypeName.toUtf8(),
+																		usageId.toUtf8(),
+																		imtservice::IServiceConnectionParam::CT_INPUT,
+																		connectionUrl));
 
 															inputConnectionCollectionPtr->InsertNewObject("ConnectionInfo", serviceTypeName, description, urlConnectionParamPtr.PopPtr(), id);
 														}
@@ -503,6 +575,8 @@ void CAgentCollectionControllerComp::OnTimeout()
 							}
 						}
 
+						UpdateAgentService(agentId, id);
+
 						serviceCollectionPtr->SetObjectData(id, *serviceInfoInfoPtr);
 					}
 				}
@@ -512,7 +586,6 @@ void CAgentCollectionControllerComp::OnTimeout()
 		}
 	}
 }
-
 
 
 } // namespace agentinogql

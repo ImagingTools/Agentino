@@ -1,6 +1,9 @@
 #pragma once
 
 
+// Qt includes
+#include <QtCore/QByteArray>
+
 // ACF includes
 #include <istd/IChangeable.h>
 #include <ilog/TLoggerCompWrap.h>
@@ -14,18 +17,15 @@
 #include <imtauth/ILoginStatusProvider.h>
 #include <imtgql/IGqlResponse.h>
 
-// Qt includes
-#include <QtCore/QByteArray>
-
 
 namespace agentgql
 {
 
 
 class CAgentinoSubscriptionClientComp:
-		public ilog::CLoggerComponentBase,
-		public imod::CSingleModelObserverBase,
-		virtual public imtclientgql::IGqlSubscriptionClient
+			public ilog::CLoggerComponentBase,
+			public imod::CSingleModelObserverBase,
+			virtual public imtclientgql::IGqlSubscriptionClient
 {
 public:
 	typedef ilog::CLoggerComponentBase BaseClass;

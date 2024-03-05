@@ -30,8 +30,8 @@ ProcessStateEnum GetProcceStateRepresentation(IServiceStatusInfo::ServiceStatus 
 		break;
 
 	default:
-		processStateEnum.id = "Indefined";
-		processStateEnum.name = QObject::tr("Indefined");
+		processStateEnum.id = "Undefined";
+		processStateEnum.name = QObject::tr("Undefined");
 
 		break;
 	}

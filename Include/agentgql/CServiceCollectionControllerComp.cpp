@@ -372,6 +372,10 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::InsertObject(const im
 
 imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
 {
+	if (!m_serviceControllerCompPtr.IsValid()){
+		return nullptr;
+	}
+
 	imtbase::CTreeItemModel* resultPtr = BaseClass::UpdateObject(gqlRequest, errorMessage);
 
 	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParam("input");
@@ -395,25 +399,39 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 		servicePath = itemModel.GetData("Path").toString();
 	}
 
+	QString serviceTypeName;
+	if (itemModel.ContainsKey("ServiceTypeName")){
+		serviceTypeName = itemModel.GetData("ServiceTypeName").toString();
+	}
+
+	bool isRunning = false;
+	QProcess::ProcessState serviceStatus = m_serviceControllerCompPtr->GetServiceStatus(objectId);
+	if (serviceStatus == QProcess::ProcessState::Running){
+		isRunning = true;
+	}
+
+	if (isRunning){
+		m_serviceControllerCompPtr->StopService(objectId);
+	}
+
 	if (itemModel.ContainsKey("InputConnections")){
 		imtbase::CTreeItemModel* inputConnectionsModelPtr = itemModel.GetTreeItemModel("InputConnections");
 		if (inputConnectionsModelPtr != nullptr){
 			for (int i = 0; i < inputConnectionsModelPtr->GetItemsCount(); i++){
 				QByteArray inputConnectionId = inputConnectionsModelPtr->GetData("Id", i).toByteArray();
-				QByteArray serviceName = inputConnectionsModelPtr->GetData("ServiceName", i).toByteArray();
 				int servicePort = inputConnectionsModelPtr->GetData("Port", i).toInt();
 
 				QFileInfo fileInfo(servicePath);
 				QString pluginPath = fileInfo.path() + "/Plugins";
 
-				if (!m_pluginMap.contains(serviceName)){
-					LoadPluginDirectory(pluginPath, serviceName);
+				if (!m_pluginMap.contains(serviceTypeName)){
+					LoadPluginDirectory(pluginPath, serviceTypeName);
 				}
 
 				QStringList keys = m_pluginMap.keys();
 
-				if (m_pluginMap.contains(serviceName)){
-					istd::TDelPtr<imtservice::IConnectionCollection> connectionCollectionPtr = m_pluginMap[serviceName].pluginPtr->GetConnectionCollectionFactory()->CreateInstance();
+				if (m_pluginMap.contains(serviceTypeName)){
+					istd::TDelPtr<imtservice::IConnectionCollection> connectionCollectionPtr = m_pluginMap[serviceTypeName].pluginPtr->GetConnectionCollectionFactory()->CreateInstance();
 					if (connectionCollectionPtr != nullptr){
 						const imtbase::ICollectionInfo* collectionInfoPtr = connectionCollectionPtr->GetUrlList();
 						if (collectionInfoPtr == nullptr){
@@ -436,7 +454,6 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 		if (outputConnectionsModelPtr != nullptr){
 			for (int i = 0; i < outputConnectionsModelPtr->GetItemsCount(); i++){
 				QByteArray outputConnectionId = outputConnectionsModelPtr->GetData("Id", i).toByteArray();
-				QByteArray serviceName = outputConnectionsModelPtr->GetData("ServiceName", i).toByteArray();
 				QString urlStr = outputConnectionsModelPtr->GetData("Url", i).toString();
 
 				QUrl url(urlStr);
@@ -449,8 +466,8 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 					url.setScheme("http");
 				}
 
-				if (m_pluginMap.contains(serviceName)){
-					istd::TDelPtr<imtservice::IConnectionCollection> connectionCollection = m_pluginMap[serviceName].pluginPtr->GetConnectionCollectionFactory()->CreateInstance();
+				if (m_pluginMap.contains(serviceTypeName)){
+					istd::TDelPtr<imtservice::IConnectionCollection> connectionCollection = m_pluginMap[serviceTypeName].pluginPtr->GetConnectionCollectionFactory()->CreateInstance();
 					if (connectionCollection != nullptr){
 						const imtbase::ICollectionInfo* collectionInfoPtr = connectionCollection->GetUrlList();
 						if (collectionInfoPtr == nullptr){
@@ -464,12 +481,8 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 		}
 	}
 
-	if (m_serviceControllerCompPtr.IsValid()){
-		QProcess::ProcessState serviceStatus = m_serviceControllerCompPtr->GetServiceStatus(objectId);
-		if (serviceStatus == QProcess::ProcessState::Running){
-			m_serviceControllerCompPtr->StopService(objectId);
-			m_serviceControllerCompPtr->StartService(objectId);
-		}
+	if (isRunning){
+		m_serviceControllerCompPtr->StartService(objectId);
 	}
 
 	return resultPtr;

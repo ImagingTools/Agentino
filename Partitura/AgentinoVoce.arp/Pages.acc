@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5200" Description="ACF"/>
-            <Version Id="1" Number="2203" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394753" Description="Qt Framework"/>
+            <Version Id="0" Number="5191" Description="ACF"/>
+            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -319,8 +319,8 @@
                                     <Data IsEnabled="true">
                                         <Values>
                                             <Value>GetServiceControllerProxy</Value>
-                                            <Value>ServicesRemoteRepresentationController</Value>
                                             <Value>ChangeServiceControllerProxy</Value>
+                                            <Value>ServicesRemoteRepresentationController</Value>
                                             <Value>TopologyPage</Value>
                                             <Value>AgentsPage</Value>
                                             <Value>ServerServiceCollectionController</Value>
@@ -453,6 +453,7 @@
                                             <Value>ServiceStart</Value>
                                             <Value>ServiceStop</Value>
                                             <Value>ServiceItem</Value>
+                                            <Value>ServiceUpdate</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>

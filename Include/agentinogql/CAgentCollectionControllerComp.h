@@ -1,16 +1,18 @@
 #pragma once
 
 
+// Qt includes
+#include <QtCore/QTimer>
+
 // ImtCore includes
 #include <imtbase/IObjectCollection.h>
 #include <imtgql/CObjectCollectionControllerCompBase.h>
 #include <imtclientgql/TClientRequestManagerCompWrap.h>
 
 // Agentino includes
-#include <agentinodata/IAgentInfo.h>
+#include <agentinodata/CAgentInfo.h>
+#include <agentinodata/CServiceInfoRepresentationController.h>
 
-// Qt includes
-#include <QtCore/QTimer>
 
 #undef GetObject
 
@@ -49,6 +51,7 @@ protected:
 	virtual imtbase::CTreeItemModel* UpdateObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 
 private:
+	void UpdateAgentService(const QByteArray& agentId, const QByteArray& serviceId) const;
 	void OnTimeout();
 
 protected:
@@ -58,6 +61,7 @@ protected:
 
 	mutable QTimer m_timer;
 	mutable QList<QByteArray> m_connectedAgents;
+	agentinodata::CServiceInfoRepresentationController m_serviceInfoRepresentationController;
 };
 
 
