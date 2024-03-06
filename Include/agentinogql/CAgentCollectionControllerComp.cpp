@@ -4,6 +4,8 @@
 // ACF includes
 #include <idoc/IDocumentMetaInfo.h>
 #include <iprm/CTextParam.h>
+#include <istd/TDelPtr.h>
+#include <iprm/CParamsSet.h>
 
 // ImtCore includes
 #include <imtbase/CCollectionFilter.h>
@@ -23,6 +25,7 @@ namespace agentinogql
 
 
 // reimplemented (icomp::CComponentBase)
+
 void CAgentCollectionControllerComp::OnComponentCreated()
 {
 	m_timer.setInterval(500);
@@ -32,12 +35,13 @@ void CAgentCollectionControllerComp::OnComponentCreated()
 
 
 // reimplemented (imtgql::CObjectCollectionControllerCompBase)
+
 bool CAgentCollectionControllerComp::SetupGqlItem(
-		const imtgql::CGqlRequest& gqlRequest,
-		imtbase::CTreeItemModel& model,
-		int itemIndex,
-		const QByteArray& collectionId,
-		QString& errorMessage) const
+			const imtgql::CGqlRequest& gqlRequest,
+			imtbase::CTreeItemModel& model,
+			int itemIndex,
+			const QByteArray& collectionId,
+			QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		errorMessage = QString("Unable to get list objects. Internal error.");
@@ -401,8 +405,15 @@ void CAgentCollectionControllerComp::UpdateAgentService(
 		return;
 	}
 
+	istd::TDelPtr<iprm::CParamsSet> paramsPtr = new iprm::CParamsSet;
+
+	iser::ISerializable* objectCollectionPtr = dynamic_cast<iser::ISerializable*>(m_objectCollectionCompPtr.GetPtr());
+	if (objectCollectionPtr != nullptr){
+		paramsPtr->SetEditableParameter("AgentCollection", objectCollectionPtr);
+	}
+
 	imtbase::CTreeItemModel serviceRepresentationModel;
-	bool ok = m_serviceInfoRepresentationController.GetRepresentationFromDataModel(*serviceInfoInfoPtr, serviceRepresentationModel);
+	bool ok = m_serviceInfoRepresentationController.GetRepresentationFromDataModel(*serviceInfoInfoPtr, serviceRepresentationModel, paramsPtr.GetPtr());
 	if (!ok){
 		return;
 	}

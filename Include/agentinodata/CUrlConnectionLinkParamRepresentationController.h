@@ -2,20 +2,19 @@
 
 
 // ImtCore includes
+#include <imtbase/IObjectCollection.h>
 #include <imtbase/IRepresentationController.h>
-#include <imtservice/CUrlConnectionParamRepresentationController.h>
-
-// Agentino includes
-#include <agentinodata/CServiceInfo.h>
-#include <agentinodata/CUrlConnectionLinkParamRepresentationController.h>
+#include <imtservice/CUrlConnectionLinkParam.h>
 
 
 namespace agentinodata
 {
 
 
-class CServiceInfoRepresentationController: public imtbase::IRepresentationController
+class CUrlConnectionLinkParamRepresentationController: public imtbase::IRepresentationController
 {
+protected:
+	virtual QUrl GetDependantConnectionUrl(imtbase::IObjectCollection& objectCollection, const QByteArray& dependantId) const;
 public:
 	// reimplemented (imtbase::IRepresentationController)
 	virtual QByteArray GetModelId() const override;
@@ -27,14 +26,9 @@ public:
 	virtual bool GetDataModelFromRepresentation(
 				const imtbase::CTreeItemModel& representation,
 				istd::IChangeable& dataModel) const override;
-
-private:
-	imtservice::CUrlConnectionParamRepresentationController m_urlConnectionParamRepresentationController;
-	agentinodata::CUrlConnectionLinkParamRepresentationController m_urlConnectionLinkParamRepresentationController;
 };
 
 
 } // namespace agentinodata
-
 
 

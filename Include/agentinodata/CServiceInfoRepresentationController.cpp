@@ -67,7 +67,7 @@ bool CServiceInfoRepresentationController::GetRepresentationFromDataModel(
 				imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
 				if (connectionParamPtr != nullptr){
 					imtbase::CTreeItemModel representationModel;
-					bool ok = m_urlConnectionParamRepresentationController.GetRepresentationFromDataModel(*connectionParamPtr, representationModel);
+					bool ok = m_urlConnectionParamRepresentationController.GetRepresentationFromDataModel(*connectionParamPtr, representationModel, paramsPtr);
 					if (ok){
 						int index = inputConnectionsModelPtr->InsertNewItem();
 
@@ -87,9 +87,9 @@ bool CServiceInfoRepresentationController::GetRepresentationFromDataModel(
 				imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
 				if (connectionLinkParamPtr != nullptr){
 					imtbase::CTreeItemModel representationModel;
-					bool ok = m_urlConnectionLinkParamRepresentationController.GetRepresentationFromDataModel(*connectionLinkParamPtr, representationModel);
+					bool ok = m_urlConnectionLinkParamRepresentationController.GetRepresentationFromDataModel(*connectionLinkParamPtr, representationModel, paramsPtr);
 					if (ok){
-						int index = inputConnectionsModelPtr->InsertNewItem();
+						int index = outputConnectionsModelPtr->InsertNewItem();
 
 						outputConnectionsModelPtr->CopyItemDataFromModel(index, &representationModel);
 					}
@@ -103,12 +103,13 @@ bool CServiceInfoRepresentationController::GetRepresentationFromDataModel(
 
 
 bool CServiceInfoRepresentationController::GetDataModelFromRepresentation(
-		const imtbase::CTreeItemModel& representation,
-		istd::IChangeable& dataModel) const
+		const imtbase::CTreeItemModel& /*representation*/,
+		istd::IChangeable& /*dataModel*/) const
 {
 	return false;
 }
 
 
 } // namespace agentinodata
+
 

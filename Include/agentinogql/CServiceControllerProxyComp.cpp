@@ -74,6 +74,15 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 		else{
 			m_serviceManagerCompPtr->AddService(agentId, *serviceInfoPtr.PopPtr(), objectId, serviceName, serviceDescription);
 		}
+
+		istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr = new imtbase::CTreeItemModel;
+		imtbase::CTreeItemModel* dataModelPtr = rootModelPtr->AddTreeModel("data");
+		imtbase::CTreeItemModel* notificationModelPtr = dataModelPtr->AddTreeModel("updatedNotification");
+
+		notificationModelPtr->SetData("Id", objectId);
+		notificationModelPtr->SetData("Name", serviceName);
+
+		return rootModelPtr.PopPtr();
 	}
 
 	return resultModelPtr.PopPtr();
