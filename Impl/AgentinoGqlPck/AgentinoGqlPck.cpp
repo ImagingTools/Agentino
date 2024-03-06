@@ -79,6 +79,16 @@ I_EXPORT_COMPONENT(
 			"Remove service controller proxy",
 			"Remove Service Controller Proxy");
 
+I_EXPORT_COMPONENT(
+			ServiceStatusCollectionSubscriberController,
+			"Service status collection subscriber controller",
+			"Service Status Collection Subscriber Controller");
+
+I_EXPORT_COMPONENT(
+			ServiceStatusControllerProxy,
+			"Service status controller proxy",
+			"Service Status Controller Proxy");
+
 
 } // namespace AgentinoGqlPck
 

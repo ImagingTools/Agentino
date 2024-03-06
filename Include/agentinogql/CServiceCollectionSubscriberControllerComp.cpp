@@ -20,9 +20,6 @@ void CServiceCollectionSubscriberControllerComp::OnUpdate(const istd::IChangeabl
 		return;
 	}
 
-	qDebug() << "CServiceCollectionSubscriberControllerComp OnUpdate";
-	qDebug() << "m_registeredSubscribers " << m_registeredSubscribers.count();
-
 	if (
 			changeSet.Contains(agentinodata::IServiceManager::CF_SERVICE_ADDED) ||
 			changeSet.Contains(agentinodata::IServiceManager::CF_SERVICE_UPDATED) ||

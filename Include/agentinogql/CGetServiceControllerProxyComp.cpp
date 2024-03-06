@@ -15,9 +15,15 @@ namespace agentinogql
 
 
 imtbase::CTreeItemModel* CGetServiceControllerProxyComp::CreateInternalResponse(
-		const imtgql::CGqlRequest& gqlRequest,
-		QString& errorMessage) const
+			const imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
 {
+	istd::TDelPtr<imtbase::CTreeItemModel> representationFromAgentModelPtr = BaseClass::CreateInternalResponse(gqlRequest, errorMessage);
+	imtbase::CTreeItemModel* dataModelPtr = nullptr;
+	if (representationFromAgentModelPtr.IsValid() && representationFromAgentModelPtr->ContainsKey("data")){
+		dataModelPtr = representationFromAgentModelPtr->GetTreeItemModel("data");
+	}
+
 	if (m_agentCollectionCompPtr.IsValid()){
 		const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParam("input");
 
@@ -46,18 +52,11 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::CreateInternalResponse(
 							imtbase::CTreeItemModel* inputConnectionsModelPtr = serviceRepresentationModelPtr->GetTreeItemModel("InputConnections");
 							if (inputConnectionsModelPtr != nullptr){
 								if (inputConnectionsModelPtr->GetItemsCount() == 0){
-									imtbase::CTreeItemModel* baseModelPtr = BaseClass::CreateInternalResponse(gqlRequest, errorMessage);
-									qDebug() << "baseModelPtr" << baseModelPtr->toJSON();
-									if (baseModelPtr != nullptr){
-										if (baseModelPtr->ContainsKey("data")){
-											imtbase::CTreeItemModel* dataBaseModelPtr = baseModelPtr->GetTreeItemModel("data");
-											if (dataBaseModelPtr){
-												if (dataBaseModelPtr->ContainsKey("InputConnections")){
-													imtbase::CTreeItemModel* baseInputConnectionsModelPtr =  dataBaseModelPtr->GetTreeItemModel("InputConnections");
-													if (baseInputConnectionsModelPtr){
-														serviceRepresentationModelPtr->SetExternTreeModel("InputConnections", baseInputConnectionsModelPtr);
-													}
-												}
+									if (dataModelPtr != nullptr){
+										if (dataModelPtr->ContainsKey("InputConnections")){
+											imtbase::CTreeItemModel* baseInputConnectionsModelPtr =  dataModelPtr->GetTreeItemModel("InputConnections");
+											if (baseInputConnectionsModelPtr){
+												serviceRepresentationModelPtr->SetExternTreeModel("InputConnections", baseInputConnectionsModelPtr);
 											}
 										}
 									}
@@ -69,17 +68,11 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::CreateInternalResponse(
 							imtbase::CTreeItemModel* outputConnectionsModelPtr = serviceRepresentationModelPtr->GetTreeItemModel("OutputConnections");
 							if (outputConnectionsModelPtr != nullptr){
 								if (outputConnectionsModelPtr->GetItemsCount() == 0){
-									imtbase::CTreeItemModel* baseModelPtr = BaseClass::CreateInternalResponse(gqlRequest, errorMessage);
-									if (baseModelPtr != nullptr){
-										if (baseModelPtr->ContainsKey("data")){
-											imtbase::CTreeItemModel* dataBaseModelPtr = baseModelPtr->GetTreeItemModel("data");
-											if (dataBaseModelPtr){
-												if (dataBaseModelPtr->ContainsKey("OutputConnections")){
-													imtbase::CTreeItemModel* baseoutputConnectionsModelPtr =  dataBaseModelPtr->GetTreeItemModel("OutputConnections");
-													if (baseoutputConnectionsModelPtr){
-														serviceRepresentationModelPtr->SetExternTreeModel("OutputConnections", baseoutputConnectionsModelPtr);
-													}
-												}
+									if (dataModelPtr != nullptr){
+										if (dataModelPtr->ContainsKey("OutputConnections")){
+											imtbase::CTreeItemModel* baseoutputConnectionsModelPtr =  dataModelPtr->GetTreeItemModel("OutputConnections");
+											if (baseoutputConnectionsModelPtr){
+												serviceRepresentationModelPtr->SetExternTreeModel("OutputConnections", baseoutputConnectionsModelPtr);
 											}
 										}
 									}
@@ -96,11 +89,13 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::CreateInternalResponse(
 		}
 	}
 
-	return BaseClass::CreateInternalResponse(gqlRequest, errorMessage);
+	return representationFromAgentModelPtr.PopPtr();
 }
 
 
-imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelFromServiceInfo(const imtbase::IObjectCollection& serviceCollection, const QByteArray& serviceId) const
+imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelFromServiceInfo(
+			const imtbase::IObjectCollection& serviceCollection,
+			const QByteArray& serviceId) const
 {
 	istd::TDelPtr<imtbase::CTreeItemModel> serviceRepresentationModelPtr(new imtbase::CTreeItemModel());
 
@@ -177,7 +172,6 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelF
 					if (dependantServiceCollectionPtr->GetObjectData(elementId, connectionDataPtr)){
 						imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
 						if (connectionLinkParamPtr != nullptr){
-							// imtservice::IServiceConnectionParam::ConnectionType connectionType = connectionParamPtr->GetConnectionType();
 							QByteArray dependantServiceConnectionId = connectionLinkParamPtr->GetDependantServiceConnectionId();
 							imtbase::IObjectCollection::DataPtr connectionDependantDataPtr;
 							QString connectionName = dependantServiceCollectionPtr->GetElementInfo(elementId, imtbase::IObjectCollection::EIT_NAME).toString();
@@ -206,7 +200,6 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelF
 								if (connectionParamPtr != nullptr){
 									QUrl url = connectionParamPtr->GetUrl();
 									outputConnectionsModelPtr->SetData("Url", url.toString(), index);
-//									QString urlStr = serviceName + "@" + url.host() + ":" + QString::number(url.port());
 								}
 							}
 						}
@@ -222,8 +215,6 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelF
 
 imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetConnectionsModel(const QByteArray& connectionUsageId) const
 {
-	qDebug() << "GetConnectionsModel" << connectionUsageId;
-
 	istd::TDelPtr<imtbase::CTreeItemModel> result(new imtbase::CTreeItemModel());
 
 	if (m_agentCollectionCompPtr.IsValid()){

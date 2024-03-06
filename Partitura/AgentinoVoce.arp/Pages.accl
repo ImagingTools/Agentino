@@ -41,6 +41,7 @@
                 <Element ComponentName="ServerServiceCollectionController" X="575" Y="600" Note=""/>
                 <Element ComponentName="ServiceHeadersDataProvider" X="575" Y="700" Note=""/>
                 <Element ComponentName="ServiceInfo" X="850" Y="700" Note=""/>
+                <Element ComponentName="ServiceStatusControllerProxy" X="675" Y="350" Note=""/>
                 <Element ComponentName="ServicesRemoteRepresentationController" X="350" Y="475" Note=""/>
                 <Element ComponentName="TopologyPage" X="1025" Y="100" Note=""/>
             </PositionMap>

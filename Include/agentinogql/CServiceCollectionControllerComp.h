@@ -27,6 +27,7 @@ protected:
 				const QByteArray& collectionId,
 				QString& errorMessage) const override;
 	virtual imtbase::CTreeItemModel* ListObjects(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
+	virtual imtbase::CTreeItemModel* GetMetaInfo(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 
 protected:
 	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);

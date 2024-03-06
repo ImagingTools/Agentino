@@ -14,7 +14,7 @@
         <Element ComponentName="HttpServerFramework" X="575" Y="650" Note=""/>
         <Element ComponentName="Repositories" X="275" Y="250" Note=""/>
         <Element ComponentName="ServerSettings" X="150" Y="75" Note=""/>
-        <Element ComponentName="ServiceSubscriberController" X="975" Y="575" Note=""/>
+        <Element ComponentName="ServiceStatusSubscriberController" X="975" Y="575" Note=""/>
         <Element ComponentName="SubscriptionController" X="1050" Y="400" Note=""/>
         <Element ComponentName="Subscriptions" X="1025" Y="775" Note=""/>
         <Element ComponentName="WebSocketAgentinoHandlers" X="375" Y="500" Note=""/>
@@ -22,7 +22,11 @@
     <EmbeddedRegistries>
         <EmbededRegistry Id="Subscriptions">
             <PositionMap>
+                <Element ComponentName="RolesSubscriberController" X="525" Y="450" Note=""/>
                 <Element ComponentName="ServiceCollectionSubscriberController" X="550" Y="250" Note=""/>
+                <Element ComponentName="ServiceStatusCollectionSubscriberController" X="550" Y="675" Note=""/>
+                <Element ComponentName="UserGroupsSubscriberController" X="525" Y="525" Note=""/>
+                <Element ComponentName="UsersSubscriberController" X="525" Y="350" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

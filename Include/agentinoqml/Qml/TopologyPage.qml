@@ -71,6 +71,12 @@ ViewBase {
 
     SchemeView {
         id: scheme
+
+        anchors.left: parent.left;
+        anchors.right: metaInfo.left;
+        anchors.top: parent.top;
+        anchors.bottom: parent.bottom;
+
         property string selectedService: ""
 
         onModelDataChanged: {
@@ -84,12 +90,17 @@ ViewBase {
                 commandsRepresentationProvider.setCommandIsEnabled("Start", status !== "Running")
                 commandsRepresentationProvider.setCommandIsEnabled("Stop", status === "Running")
                 commandsRepresentationProvider.setCommandIsEnabled("Edit", true)
+
+                metaInfo.contentVisible = true;
+                metaInfoProvider.getMetaInfo(selectedService);
             }
             else{
                 selectedService = ""
                 commandsRepresentationProvider.setCommandIsEnabled("Start", false)
                 commandsRepresentationProvider.setCommandIsEnabled("Stop", false)
                 commandsRepresentationProvider.setCommandIsEnabled("Edit", false)
+
+                metaInfo.contentVisible = false;
             }
         }
 
@@ -103,6 +114,30 @@ ViewBase {
                     documentManager.openDocument(serviceId, "Service", "ServiceView");
                 }
             }
+        }
+    }
+
+    MetaInfo {
+        id: metaInfo;
+
+        anchors.right: parent.right;
+        anchors.top: parent.top;
+        anchors.bottom: parent.bottom;
+
+        width: 200;
+    }
+
+    MetaInfoProvider {
+        id: metaInfoProvider;
+
+        getMetaInfoGqlCommand: "GetServiceMetaInfo";
+
+        onMetaInfoModelChanged: {
+            metaInfo.metaInfoModel = metaInfoModel;
+        }
+
+        function getAdditionalInputParams(){
+            return topologyPage.getAdditionalInputParams();
         }
     }
 

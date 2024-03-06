@@ -1,6 +1,10 @@
 #include <agentinogql/CServiceCollectionControllerComp.h>
 
 
+// ImtCore includes
+#include <imtservice/CUrlConnectionParam.h>
+#include <imtservice/CUrlConnectionLinkParam.h>
+
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/CServiceInfo.h>
@@ -98,23 +102,24 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 					}
 				}
 				else if(informationId == "Status" || informationId == "StatusName"){
+					agentinodata::IServiceStatusInfo::ServiceStatus status = agentinodata::IServiceStatusInfo::SS_UNDEFINED;
+
 					if (m_serviceStatusCollectionCompPtr.IsValid()){
 						imtbase::IObjectCollection::DataPtr serviceStatusDataPtr;
 						if (m_serviceStatusCollectionCompPtr->GetObjectData(collectionId, serviceStatusDataPtr)){
 							agentinodata::CServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::CServiceStatusInfo*>(serviceStatusDataPtr.GetPtr());
 							if (serviceStatusInfoPtr != nullptr){
-								agentinodata::IServiceStatusInfo::ServiceStatus status = serviceStatusInfoPtr->GetServiceStatus();
-
-								QString statusStr;
-								agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(status);
-								if (informationId == "Status"){
-									elementInformation = processStateEnum.id;
-								}
-								else{
-									elementInformation = processStateEnum.name;
-								}
+								status = serviceStatusInfoPtr->GetServiceStatus();
 							}
 						}
+					}
+
+					agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(status);
+					if (informationId == "Status"){
+						elementInformation = processStateEnum.id;
+					}
+					else{
+						elementInformation = processStateEnum.name;
 					}
 				}
 				else if(informationId == "IsAutoStart"){
@@ -138,7 +143,7 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 }
 
 
-imtbase::CTreeItemModel *CServiceCollectionControllerComp::ListObjects(
+imtbase::CTreeItemModel* CServiceCollectionControllerComp::ListObjects(
 			const imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
@@ -224,6 +229,97 @@ imtbase::CTreeItemModel *CServiceCollectionControllerComp::ListObjects(
 	}
 
 	rootModelPtr->SetExternTreeModel("data", dataModel);
+
+	return rootModelPtr.PopPtr();
+}
+
+
+imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetMetaInfo(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+{
+	QByteArray agentId;
+	QByteArray serviceId;
+	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParam("input");
+	if (gqlInputParamPtr != nullptr){
+		serviceId = gqlInputParamPtr->GetFieldArgumentValue("Id").toByteArray();
+
+		const imtgql::CGqlObject* addition =gqlInputParamPtr->GetFieldArgumentObjectPtr("addition");
+		if (addition != nullptr) {
+			agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
+		}
+	}
+
+	imtbase::IObjectCollection* serviceCollectionPtr = nullptr;
+	imtbase::IObjectCollection::DataPtr dataPtr;
+	if (m_objectCollectionCompPtr->GetObjectData(agentId, dataPtr)){
+		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(dataPtr.GetPtr());
+		if (agentInfoPtr != nullptr){
+			serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+		}
+	}
+
+	if (serviceCollectionPtr == nullptr){
+		return nullptr;
+	}
+
+	imtbase::IObjectCollection* dependantCollectionPtr = nullptr;
+	imtbase::IObjectCollection* inputCollectionPtr = nullptr;
+
+	imtbase::IObjectCollection::DataPtr serviceDataPtr;
+	if (serviceCollectionPtr->GetObjectData(serviceId, serviceDataPtr)){
+		agentinodata::CServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::CServiceInfo*>(serviceDataPtr.GetPtr());
+		if (serviceInfoPtr != nullptr){
+			dependantCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
+			inputCollectionPtr = serviceInfoPtr->GetInputConnections();
+		}
+	}
+
+	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel);
+	imtbase::CTreeItemModel* dataModelPtr = rootModelPtr->AddTreeModel("data");
+
+	if (inputCollectionPtr != nullptr){
+		int index = dataModelPtr->InsertNewItem();
+
+		dataModelPtr->SetData("Name", "Incoming Connections", index);
+
+		imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
+
+		imtbase::ICollectionInfo::Ids connectionIds = inputCollectionPtr->GetElementIds();
+		for (const imtbase::ICollectionInfo::Id& connectionId : connectionIds){
+			imtbase::IObjectCollection::DataPtr connectionDataPtr;
+			if (inputCollectionPtr->GetObjectData(connectionId, connectionDataPtr)){
+				imtservice::CUrlConnectionParam* urlConnectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
+				if (urlConnectionParamPtr != nullptr){
+					int childIndex = contentModelPtr->InsertNewItem();
+					QUrl url = urlConnectionParamPtr->GetUrl();
+					QByteArray usageId = urlConnectionParamPtr->GetUsageId();
+
+					contentModelPtr->SetData("Value", usageId + " (Port: " + QString::number(url.port()) + ")", childIndex);
+				}
+			}
+		}
+	}
+
+	if (dependantCollectionPtr != nullptr){
+		int index = dataModelPtr->InsertNewItem();
+
+		dataModelPtr->SetData("Name", "Dependant Connections", index);
+
+		imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
+
+		imtbase::ICollectionInfo::Ids connectionIds = dependantCollectionPtr->GetElementIds();
+		for (const imtbase::ICollectionInfo::Id& connectionId : connectionIds){
+			imtbase::IObjectCollection::DataPtr connectionDataPtr;
+			if (dependantCollectionPtr->GetObjectData(connectionId, connectionDataPtr)){
+				imtservice::CUrlConnectionLinkParam* urlConnectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
+				if (urlConnectionLinkParamPtr != nullptr){
+					int childIndex = contentModelPtr->InsertNewItem();
+					QByteArray usageId = urlConnectionLinkParamPtr->GetUsageId();
+
+					contentModelPtr->SetData("Value", usageId, childIndex);
+				}
+			}
+		}
+	}
 
 	return rootModelPtr.PopPtr();
 }

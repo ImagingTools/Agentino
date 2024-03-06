@@ -121,8 +121,12 @@
                     <AttributeInfo Id="GqlSubscriberControllers" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>ServiceSubscriberController</Value>
+                                <Value>ServiceStatusSubscriberController</Value>
                                 <Value>Subscriptions/ServiceCollectionSubscriberController</Value>
+                                <Value>Subscriptions/UserGroupsSubscriberController</Value>
+                                <Value>Subscriptions/UsersSubscriberController</Value>
+                                <Value>Subscriptions/RolesSubscriberController</Value>
+                                <Value>Subscriptions/ServiceStatusCollectionSubscriberController</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -131,6 +135,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="RequestHandler" Type="Factory" ExportId="">
                         <Data IsEnabled="true" Value="AgentinoHandlers"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RuntimeStatus" Type="Reference" ExportId="RuntimeStatus">
+                        <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServerPort" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/ServerPort"/>
@@ -183,7 +190,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServiceSubscriberController" PackageId="AgentinoGqlPck" ComponentId="ServiceSubscriberController">
+        <Element Id="ServiceStatusSubscriberController" PackageId="AgentinoGqlPck" ComponentId="ServiceSubscriberController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
@@ -241,8 +248,20 @@
                     <AttributeInfo Id="RequestManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="HttpServerFramework/WebSocketServer"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/RoleRepository"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceStatusRepository" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserGroupRepository" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/UserGroupRepository"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserRepository" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/UserRepository"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -306,6 +325,31 @@
         <EmbeddedRegistry Id="Subscriptions">
             <Data Description="" Keywords="">
                 <ElementsList>
+                    <Element Id="RolesSubscriberController" PackageId="ImtGqlPck" ComponentId="ModelSubscriberController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>OnRolesCollectionChanged</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Model" Type="Reference" ExportId="RoleRepository">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
                     <Element Id="ServiceCollectionSubscriberController" PackageId="AgentinoGqlPck" ComponentId="ServiceCollectionSubscriberController">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
@@ -331,11 +375,90 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
+                    <Element Id="ServiceStatusCollectionSubscriberController" PackageId="AgentinoGqlPck" ComponentId="ServiceStatusCollectionSubscriberController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>OnServiceStatusChanged</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="ServiceStatusRepository">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="UserGroupsSubscriberController" PackageId="ImtGqlPck" ComponentId="ModelSubscriberController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>OnUserGroupsCollectionChanged</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Model" Type="Reference" ExportId="UserGroupRepository">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="UsersSubscriberController" PackageId="ImtGqlPck" ComponentId="ModelSubscriberController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>OnUsersCollectionChanged</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Model" Type="Reference" ExportId="UserRepository">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
                 </ElementsList>
                 <EmbeddedRegistriesList/>
                 <ExportedInterfaces/>
                 <ExportedComponents>
+                    <Component ExportedId="RolesSubscriberController" ComponentId="RolesSubscriberController"/>
                     <Component ExportedId="ServiceCollectionSubscriberController" ComponentId="ServiceCollectionSubscriberController"/>
+                    <Component ExportedId="ServiceStatusCollectionSubscriberController" ComponentId="ServiceStatusCollectionSubscriberController"/>
+                    <Component ExportedId="UserGroupsSubscriberController" ComponentId="UserGroupsSubscriberController"/>
+                    <Component ExportedId="UsersSubscriberController" ComponentId="UsersSubscriberController"/>
                 </ExportedComponents>
             </Data>
         </EmbeddedRegistry>

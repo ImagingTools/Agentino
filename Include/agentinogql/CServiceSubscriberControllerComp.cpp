@@ -56,7 +56,7 @@ void CServiceSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeS
 	status = QVariant::fromValue(notifierStatusInfo.serviceStatus).toString();
 
 	QByteArray serviceId = notifierStatusInfo.serviceId;
-	QString data = QString("{ \"serviceId\": \"%1\", \"serviceStatus\": \"%2\" }").arg(QString(notifierStatusInfo.serviceId)).arg(status);
+	QString data = QString("{ \"serviceId\": \"%1\", \"serviceStatus\": \"%2\" }").arg(qPrintable(notifierStatusInfo.serviceId)).arg(status);
 	SetAllSubscriptions("OnServiceStateChanged", data.toUtf8());
 
 	if (m_serviceStatusCollectionCompPtr.IsValid()){

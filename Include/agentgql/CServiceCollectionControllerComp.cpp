@@ -372,19 +372,48 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::InsertObject(const im
 
 imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
 {
+	if (!m_objectCollectionCompPtr.IsValid()){
+		return nullptr;
+	}
+
 	if (!m_serviceControllerCompPtr.IsValid()){
 		return nullptr;
 	}
 
 	imtbase::CTreeItemModel* resultPtr = BaseClass::UpdateObject(gqlRequest, errorMessage);
 
-	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParam("input");
-	if (gqlInputParamPtr == nullptr){
+	QByteArray objectId;
+	const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParam("input");
+	if (inputParamPtr != nullptr){
+		objectId = inputParamPtr->GetFieldArgumentValue("Id").toByteArray();
+	}
+
+	QString name;
+	QString description;
+	istd::IChangeable* savedObject = BaseClass::CreateObject(gqlRequest, objectId, name, description, errorMessage);
+	if (savedObject == nullptr){
 		return nullptr;
 	}
 
-	QByteArray objectId = gqlInputParamPtr->GetFieldArgumentValue("Id").toByteArray();
-	QByteArray itemData = gqlInputParamPtr->GetFieldArgumentValue("Item").toByteArray();
+	if (m_objectCollectionCompPtr->GetElementIds().contains(objectId)){
+		if (!m_objectCollectionCompPtr->SetObjectData(objectId, *savedObject)){
+			errorMessage = QString("Can not update object: %1").arg(qPrintable(objectId));
+			SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
+			return nullptr;
+		}
+	}
+	else{
+		QByteArray result = m_objectCollectionCompPtr->InsertNewObject("DocumentInfo", name, description, savedObject, objectId);
+		if (result.isEmpty()){
+			errorMessage = QString("Can not insert object: %1").arg(qPrintable(objectId));
+			SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
+			return nullptr;
+		}
+	}
+
+	QByteArray itemData = inputParamPtr->GetFieldArgumentValue("Item").toByteArray();
 	if (itemData.isEmpty()){
 		return nullptr;
 	}
@@ -404,14 +433,18 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 		serviceTypeName = itemModel.GetData("ServiceTypeName").toString();
 	}
 
-	bool isRunning = false;
+	bool wasRunning = false;
 	QProcess::ProcessState serviceStatus = m_serviceControllerCompPtr->GetServiceStatus(objectId);
 	if (serviceStatus == QProcess::ProcessState::Running){
-		isRunning = true;
-	}
+		wasRunning = true;
 
-	if (isRunning){
-		m_serviceControllerCompPtr->StopService(objectId);
+		bool wasStopped = m_serviceControllerCompPtr->StopService(objectId);
+		if (!wasStopped){
+			errorMessage = QString("Service '%1' cannot be stopped").arg(serviceTypeName);
+			SendErrorMessage(0, errorMessage);
+
+			return nullptr;
+		}
 	}
 
 	if (itemModel.ContainsKey("InputConnections")){
@@ -481,7 +514,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 		}
 	}
 
-	if (isRunning){
+	if (wasRunning){
 		m_serviceControllerCompPtr->StartService(objectId);
 	}
 

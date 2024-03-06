@@ -68,19 +68,25 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 		istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInfoPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(GetServiceInfoFromRepresentationModel(itemModel));
 		serviceInfoPtr->SetObjectUuid(objectId);
 
+		istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr = new imtbase::CTreeItemModel;
+		imtbase::CTreeItemModel* dataModelPtr = rootModelPtr->AddTreeModel("data");
+		imtbase::CTreeItemModel* notificationModelPtr = nullptr;
+
 		if (m_serviceManagerCompPtr->ServiceExists(agentId, objectId)){
 			m_serviceManagerCompPtr->SetService(agentId, objectId, *serviceInfoPtr.PopPtr(), serviceName, serviceDescription);
+
+			notificationModelPtr = dataModelPtr->AddTreeModel("updatedNotification");
 		}
 		else{
 			m_serviceManagerCompPtr->AddService(agentId, *serviceInfoPtr.PopPtr(), objectId, serviceName, serviceDescription);
+
+			notificationModelPtr = dataModelPtr->AddTreeModel("addedNotification");
 		}
 
-		istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr = new imtbase::CTreeItemModel;
-		imtbase::CTreeItemModel* dataModelPtr = rootModelPtr->AddTreeModel("data");
-		imtbase::CTreeItemModel* notificationModelPtr = dataModelPtr->AddTreeModel("updatedNotification");
-
-		notificationModelPtr->SetData("Id", objectId);
-		notificationModelPtr->SetData("Name", serviceName);
+		if (notificationModelPtr != nullptr){
+			notificationModelPtr->SetData("Id", objectId);
+			notificationModelPtr->SetData("Name", serviceName);
+		}
 
 		return rootModelPtr.PopPtr();
 	}

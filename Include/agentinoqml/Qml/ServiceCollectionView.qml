@@ -86,8 +86,10 @@ RemoteCollectionView {
             let serviceId = root.table.elements.GetData("Id", index)
 
             if (root.commandsController){
-                commandsController.setCommandIsEnabled("Start", commandId === "Stop");
-                commandsController.setCommandIsEnabled("Stop", commandId === "Start");
+//                commandsController.setCommandIsEnabled("Start", commandId === "Stop");
+//                commandsController.setCommandIsEnabled("Stop", commandId === "Start");
+                commandsController.setCommandIsEnabled("Start", false);
+                commandsController.setCommandIsEnabled("Stop", false);
             }
 
             serviceCommandsDelegate.setServiceCommand(commandId, serviceId)
@@ -217,7 +219,7 @@ RemoteCollectionView {
         id: subscriptionClient;
 
         Component.onCompleted: {
-            let subscriptionRequestId = "OnServiceStateChanged"
+            let subscriptionRequestId = "OnServiceStatusChanged"
             var query = Gql.GqlRequest("subscription", subscriptionRequestId);
             var queryFields = Gql.GqlObject("notification");
             queryFields.InsertField("Id");
@@ -228,12 +230,12 @@ RemoteCollectionView {
 
         onStateChanged: {
             if (state === "Ready"){
-                console.log("OnServiceStateChanged Ready", subscriptionClient.toJSON());
+                console.log("OnServiceStatusChanged Ready", subscriptionClient.toJSON());
                 if (subscriptionClient.ContainsKey("data")){
 
                     let dataModel = subscriptionClient.GetData("data")
-                    if (dataModel.ContainsKey("OnServiceStateChanged")){
-                        dataModel = dataModel.GetData("OnServiceStateChanged")
+                    if (dataModel.ContainsKey("OnServiceStatusChanged")){
+                        dataModel = dataModel.GetData("OnServiceStatusChanged")
 
                         let serviceId = dataModel.GetData("serviceId")
                         let serviceStatus = dataModel.GetData("serviceStatus")

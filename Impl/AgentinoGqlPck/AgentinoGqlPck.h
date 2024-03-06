@@ -19,6 +19,8 @@
 #include <agentinogql/CServiceCollectionSubscriberControllerComp.h>
 #include <agentinogql/CServiceCollectionControllerComp.h>
 #include <agentinogql/CRemoveServiceControllerProxyComp.h>
+#include <agentinogql/CServiceStatusCollectionSubscriberControllerComp.h>
+#include <agentinogql/CServiceStatusControllerProxyComp.h>
 
 
 /**
@@ -41,6 +43,8 @@ typedef agentinogql::CTopologyControllerComp TopologyController;
 typedef agentinogql::CServiceCollectionSubscriberControllerComp ServiceCollectionSubscriberController;
 typedef agentinogql::CServiceCollectionControllerComp ServerServiceCollectionController;
 typedef agentinogql::CRemoveServiceControllerProxyComp RemoveServiceControllerProxy;
+typedef agentinogql::CServiceStatusCollectionSubscriberControllerComp ServiceStatusCollectionSubscriberController;
+typedef agentinogql::CServiceStatusControllerProxyComp ServiceStatusControllerProxy;
 
 
 } // namespace AgentinoGqlPck

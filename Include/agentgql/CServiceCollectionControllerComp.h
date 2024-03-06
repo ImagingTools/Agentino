@@ -53,7 +53,6 @@ protected:
 	I_FACT(agentinodata::IServiceInfo, m_serviceInfoFactCompPtr);
 	I_REF(agentinodata::IServiceController, m_serviceControllerCompPtr);
 
-
 	struct PluginInfo
 	{
 		PluginInfo()

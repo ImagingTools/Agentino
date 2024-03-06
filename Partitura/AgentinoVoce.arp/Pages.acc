@@ -319,6 +319,7 @@
                                     <Data IsEnabled="true">
                                         <Values>
                                             <Value>GetServiceControllerProxy</Value>
+                                            <Value>ServiceStatusControllerProxy</Value>
                                             <Value>ChangeServiceControllerProxy</Value>
                                             <Value>ServicesRemoteRepresentationController</Value>
                                             <Value>TopologyPage</Value>
@@ -367,6 +368,7 @@
                                         <Values>
                                             <Value>ServicesList</Value>
                                             <Value>ServicesInfo</Value>
+                                            <Value>GetServiceMetaInfo</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -440,13 +442,39 @@
                             <AttributeInfoMap/>
                         </Data>
                     </Element>
+                    <Element Id="ServiceStatusControllerProxy" PackageId="AgentinoGqlPck" ComponentId="ServiceStatusControllerProxy">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ApiClient" Type="Reference" ExportId="ApiClient">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>ServiceStart</Value>
+                                            <Value>ServiceStop</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="ServiceStatusCollection">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
                     <Element Id="ServicesRemoteRepresentationController" PackageId="ImtClientGqlPck" ComponentId="GraphQLRemoteRepresentationController">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="ApiClient" Type="Reference" ExportId="ApiClient">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="CommandIds">
+                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
                                             <Value>ServicesSetDescription</Value>

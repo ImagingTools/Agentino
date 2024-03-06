@@ -497,7 +497,6 @@ void CAgentCollectionControllerComp::OnTimeout()
 							QString errorMessage;
 							istd::TDelPtr<imtbase::CTreeItemModel> responseModelPtr = m_requestHandlerCompPtr->CreateResponse(request, errorMessage);
 							if (responseModelPtr.IsValid()){
-								qDebug() << "responseModelPtr" << responseModelPtr->toJSON();
 								if (responseModelPtr->ContainsKey("data")){
 									imtbase::CTreeItemModel* dataModelPtr = responseModelPtr->GetTreeItemModel("data");
 									if (dataModelPtr != nullptr){
