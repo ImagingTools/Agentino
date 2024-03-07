@@ -50,4 +50,3 @@ typedef agentinogql::CServiceStatusControllerProxyComp ServiceStatusControllerPr
 } // namespace AgentinoGqlPck
 
 
-

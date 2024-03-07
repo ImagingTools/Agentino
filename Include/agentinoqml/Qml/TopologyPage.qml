@@ -29,8 +29,6 @@ ViewBase {
         Events.subscribeEvent("ServiceCommandActivated", topologyPage.serviceCommandActivated);
     }
 
-
-
     commandsController: CommandsRepresentationProvider {
         id: commandsRepresentationProvider
         commandId: "Topology"
@@ -54,7 +52,18 @@ ViewBase {
             else if (commandId === "Edit"){
                 scheme.goInside()
             }
-            else serviceCommandsDelegate.commandActivated(commandId);
+            else if (commandId === "ZoomIn"){
+                scheme.zoomIn();
+            }
+            else if (commandId === "ZoomOut"){
+                scheme.zoomOut();
+            }
+            else if (commandId === "ZoomReset"){
+                scheme.resetZoom();
+            }
+            else if (commandId === "ZoomToFit"){
+                scheme.zoomToFit();
+            }
         }
     }
 
