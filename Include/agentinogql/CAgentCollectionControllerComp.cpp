@@ -300,8 +300,18 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 	QByteArray agentId = GetObjectIdFromInputParams(inputParams);
 
 	imtbase::CTreeItemModel* retVal = nullptr;
-	const istd::IChangeable* agentObjectPtr = m_objectCollectionCompPtr->GetObjectPtr(agentId);
-	if (agentObjectPtr == nullptr){
+	imtbase::IObjectCollection::DataPtr dataPtr;
+	if (m_objectCollectionCompPtr->GetObjectData(agentId, dataPtr)){
+		agentinodata::CIdentifiableAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(dataPtr.GetPtr());
+		if (agentInfoPtr != nullptr){
+			agentInfoPtr->SetLastConnection(QDateTime::currentDateTimeUtc());
+
+			if (!m_objectCollectionCompPtr->SetObjectData(agentId, *agentInfoPtr)){
+				qDebug() << QString("Unable to set data to the collection object with ID: %1.").arg(qPrintable(agentId));
+			}
+		}
+	}
+	else{
 		retVal = BaseClass::InsertObject(gqlRequest, errorMessage);
 	}
 
@@ -424,8 +434,6 @@ void CAgentCollectionControllerComp::UpdateAgentService(
 	serviceRepresentationModel.SetData("Name", serviceName);
 	serviceRepresentationModel.SetData("Description", description);
 
-	qDebug() << "serviceRepresentationModel" << serviceRepresentationModel.toJSON();
-
 	imtgql::CGqlRequest request(imtgql::CGqlRequest::RT_MUTATION, "ServiceUpdate");
 	imtgql::CGqlObject inputObject("input");
 	inputObject.InsertField(QByteArray("Id"), QVariant(serviceId));
@@ -442,10 +450,8 @@ void CAgentCollectionControllerComp::UpdateAgentService(
 
 	QString errorMessage;
 	istd::TDelPtr<imtbase::CTreeItemModel> responseModelPtr = m_requestHandlerCompPtr->CreateResponse(request, errorMessage);
-	if (responseModelPtr.IsValid()){
-		QString responseJsonModel = responseModelPtr->toJSON();
-
-		qDebug() << "responseJsonModel" << responseJsonModel;
+	if (!responseModelPtr.IsValid()){
+		SendErrorMessage(0, QString("Unable to update service on the agent"));
 	}
 }
 
