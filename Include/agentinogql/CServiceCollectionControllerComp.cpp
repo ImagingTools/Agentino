@@ -18,6 +18,73 @@ namespace agentinogql
 
 // protected methods
 
+QUrl CServiceCollectionControllerComp::GetUrlByDependantId(const QByteArray& dependantId) const
+{
+	if (!m_objectCollectionCompPtr.IsValid()){
+		return QUrl();
+	}
+
+	imtbase::ICollectionInfo::Ids elementIds = m_objectCollectionCompPtr->GetElementIds();
+	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
+		imtbase::IObjectCollection::DataPtr agentDataPtr;
+		if (m_objectCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
+			agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(agentDataPtr.GetPtr());
+			if (agentInfoPtr == nullptr){
+				continue;
+			}
+
+			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+			if (serviceCollectionPtr == nullptr){
+				continue;
+			}
+
+			imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
+
+			for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
+				imtbase::IObjectCollection::DataPtr serviceDataPtr;
+				if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
+					agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+					if (serviceInfoPtr == nullptr){
+						continue;
+					}
+
+					imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
+					if (connectionCollectionPtr == nullptr){
+						continue;
+					}
+
+					imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
+					for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
+						imtbase::IObjectCollection::DataPtr connectionDataPtr;
+						imtservice::CUrlConnectionParam* urlConnectionParamPtr = nullptr;
+						if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
+							urlConnectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
+						}
+
+						if (urlConnectionParamPtr == nullptr){
+							continue;
+						}
+
+						if (connectionElementId == dependantId){
+							return urlConnectionParamPtr->GetUrl();
+						}
+
+						imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections = urlConnectionParamPtr->GetIncomingConnections();
+						for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
+							if (incomingConnection.id == dependantId){
+								return incomingConnection.url;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return QUrl();
+}
+
+
 // reimplemented (imtgql::CObjectCollectionControllerCompBase)
 
 bool CServiceCollectionControllerComp::SetupGqlItem(
@@ -314,8 +381,10 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetMetaInfo(const imt
 				if (urlConnectionLinkParamPtr != nullptr){
 					int childIndex = contentModelPtr->InsertNewItem();
 					QByteArray usageId = urlConnectionLinkParamPtr->GetUsageId();
+					QByteArray dependantServiceConnectionId = urlConnectionLinkParamPtr->GetDependantServiceConnectionId();
+					QUrl url = GetUrlByDependantId(dependantServiceConnectionId);
 
-					contentModelPtr->SetData("Value", usageId, childIndex);
+					contentModelPtr->SetData("Value", usageId + " (Port: " + QString::number(url.port()) + ")", childIndex);
 				}
 			}
 		}

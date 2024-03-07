@@ -19,6 +19,8 @@ public:
 	I_END_COMPONENT;
 
 protected:
+	QUrl GetUrlByDependantId(const QByteArray& dependantId) const;
+
 	// reimplemented (imtgql::CObjectCollectionControllerCompBase)
 	virtual bool SetupGqlItem(
 				const imtgql::CGqlRequest& gqlRequest,

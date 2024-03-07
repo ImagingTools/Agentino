@@ -37,9 +37,40 @@ DocumentCollectionViewDelegate {
     }
 
     onCommandActivated: {
-        if (commandId === "Start" || commandId === "Stop"){
-            console.log("ServiceCommands onCommandActivated", commandId);
-            Events.sendEvent("ServiceCommandActivated", commandId);
+        if (commandId == "Start" || commandId == "Stop"){
+            let commandsController = container.collectionView.commandsController;
+
+            commandsController.setCommandIsEnabled("Start", false);
+            commandsController.setCommandIsEnabled("Stop", false);
+        }
+
+        if (commandId === "Start"){
+            onStart();
+        }
+        else if (commandId === "Stop"){
+            onStop();
+        }
+    }
+
+    function onStart(){
+        let elements = container.collectionView.table.elements;
+        let indexes = container.collectionView.table.getSelectedIndexes();
+        if (indexes.length > 0){
+            let index = indexes[0];
+            let serviceId = elements.GetData("Id", index)
+
+            setServiceCommand("Start", serviceId);
+        }
+    }
+
+    function onStop(){
+        let elements = container.collectionView.table.elements;
+        let indexes = container.collectionView.table.getSelectedIndexes();
+        if (indexes.length > 0){
+            let index = indexes[0];
+            let serviceId = elements.GetData("Id", index)
+
+            setServiceCommand("Stop", serviceId);
         }
     }
 

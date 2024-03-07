@@ -63,7 +63,7 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 
 		process->setProgram(servicePath);
 		QStringList arguments;
-		for (QByteArray argument: serviceArguments){
+		for (const QByteArray& argument: serviceArguments){
 			arguments << QString(argument);
 		}
 		process->setArguments(arguments);
@@ -115,8 +115,17 @@ void CServiceControllerComp::OnComponentCreated()
 			serviceInfoPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(serviceDataPtr.GetPtr());
 		}
 
-		if (serviceInfoPtr != nullptr && serviceInfoPtr->IsAutoStart()){
-			StartService(serviceId);
+		if (serviceInfoPtr != nullptr){
+			QByteArray servicePath = serviceInfoPtr->GetServicePath();
+
+			istd::TDelPtr<QProcess> processPtr = new QProcess(this);
+			processPtr->setProgram(servicePath);
+
+			QProcess::ProcessState state = processPtr->state();
+
+			if (state == QProcess::Running || serviceInfoPtr->IsAutoStart()){
+				StartService(serviceId);
+			}
 		}
 	}
 }
@@ -128,7 +137,7 @@ void CServiceControllerComp::stateChanged(QProcess::ProcessState newState)
 
 	QList<QByteArray> keys = m_processMap.keys();
 
-	for (QByteArray serviceId: keys) {
+	for (const QByteArray& serviceId: keys) {
 		QProcess *process = m_processMap[serviceId];
 		if (process != nullptr && process == senderProcess){
 			istd::IChangeable::ChangeSet changeSet(istd::IChangeable::CF_ANY);

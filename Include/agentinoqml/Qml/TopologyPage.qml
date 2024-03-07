@@ -26,7 +26,6 @@ ViewBase {
             documentManager.registerDocumentView("Service", "ServiceView", serviceEditorComp);
             documentManager.registerDocumentDataController("Service", serviceDataControllerComp);
         }
-        Events.subscribeEvent("ServiceCommandActivated", topologyPage.serviceCommandActivated);
     }
 
     commandsController: CommandsRepresentationProvider {
@@ -44,8 +43,8 @@ ViewBase {
     commandsDelegate: ServiceCollectionViewCommandsDelegate {
         id: serviceCommandsDelegate
         collectionView: topologyPage
-        documentTypeId: "Service" + root.clientId
-        function commandHandle(commandId) {
+
+        onCommandActivated: {
             if (commandId === "Save"){
                 saveModel.save()
             }
@@ -64,17 +63,6 @@ ViewBase {
             else if (commandId === "ZoomToFit"){
                 scheme.zoomToFit();
             }
-        }
-    }
-
-    function serviceCommandActivated(commandId){
-        if (scheme.selectedService != ""){
-            if (topologyPage.commandsController){
-                topologyPage.commandsController.setCommandIsEnabled("Start", commandId === "Stop");
-                topologyPage.commandsController.setCommandIsEnabled("Stop", commandId === "Start");
-            }
-
-            serviceCommandsDelegate.setServiceCommand(commandId, scheme.selectedService)
         }
     }
 
@@ -151,16 +139,11 @@ ViewBase {
     }
 
     function getAdditionalInputParams(){
-        console.log("getAdditionalInputParams");
         let additionInputParams = {}
-
-        console.log("scheme.selectedIndex", scheme.selectedIndex);
 
         if(scheme.selectedIndex >= 0){
             let agentId = scheme.objectModel.GetData("AgentId", scheme.selectedIndex);
             additionInputParams["clientId"] = agentId;
-
-            console.log("additionInputParams", JSON.stringify(additionInputParams));
         }
 
         return additionInputParams

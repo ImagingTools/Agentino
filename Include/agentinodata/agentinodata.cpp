@@ -12,19 +12,19 @@ ProcessStateEnum GetProcceStateRepresentation(QProcess::ProcessState processStat
 	switch (processState) {
 	case QProcess::Starting:
 		processStateEnum.id = "Starting";
-		processStateEnum.name = QObject::tr("Starting");
+		processStateEnum.name = QString("Starting");
 
 		break;
 
 	case QProcess::Running:
 		processStateEnum.id = "Running";
-		processStateEnum.name = QObject::tr("Running");
+		processStateEnum.name = QString("Running");
 
 		break;
 
 	default:
 		processStateEnum.id = "NotRunning";
-		processStateEnum.name = QObject::tr("Not running");
+		processStateEnum.name = QString("Not running");
 
 		break;
 	}

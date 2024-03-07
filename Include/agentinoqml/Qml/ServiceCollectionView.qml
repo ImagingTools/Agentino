@@ -38,14 +38,19 @@ RemoteCollectionView {
             documentManagerPtr.registerDocumentView("Service" + root.clientId, "ServiceEditor", serviceEditorComp);
             documentManagerPtr.registerDocumentDataController("Service" + root.clientId, serviceDataControllerComp);
         }
-
-        Events.subscribeEvent("ServiceCommandActivated", root.serviceCommandActivated);
     }
 
     commandsDelegate: ServiceCollectionViewCommandsDelegate {
         id: serviceCommandsDelegate
         collectionView: root
         documentTypeId: "Service" + root.clientId
+
+        onCommandActivated: {
+            if (commandId == "Start" || commandId == "Stop"){
+                root.commandsController.setCommandIsEnabled("Start", false);
+                root.commandsController.setCommandIsEnabled("Stop", false);
+            }
+        }
     }
 
     dataController: CollectionRepresentation {
@@ -69,31 +74,12 @@ RemoteCollectionView {
             documentManagerPtr.unRegisterDocumentView("Service" + root.clientId, "ServiceEditor");
             documentManagerPtr.unRegisterDocumentDataController("Service" + root.clientId);
         }
-
-        Events.unSubscribeEvent("ServiceCommandActivated", root.serviceCommandActivated);
     }
 
     function getAdditionalInputParams(){
         let additionInputParams = {}
         additionInputParams["clientId"] = root.clientId;
         return additionInputParams
-    }
-
-    function serviceCommandActivated(commandId){
-        let indexes = root.table.getSelectedIndexes();
-        if (indexes.length > 0){
-            let index = indexes[0];
-            let serviceId = root.table.elements.GetData("Id", index)
-
-            if (root.commandsController){
-//                commandsController.setCommandIsEnabled("Start", commandId === "Stop");
-//                commandsController.setCommandIsEnabled("Stop", commandId === "Start");
-                commandsController.setCommandIsEnabled("Start", false);
-                commandsController.setCommandIsEnabled("Stop", false);
-            }
-
-            serviceCommandsDelegate.setServiceCommand(commandId, serviceId)
-        }
     }
 
     Component {
