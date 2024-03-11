@@ -229,7 +229,7 @@ ViewBase {
         id: subscriptionClient;
 
         Component.onCompleted: {
-            let subscriptionRequestId = "OnServiceStateChanged"
+            let subscriptionRequestId = "OnServiceStatusChanged"
             var query = Gql.GqlRequest("subscription", subscriptionRequestId);
             var queryFields = Gql.GqlObject("notification");
             queryFields.InsertField("Id");
@@ -240,23 +240,25 @@ ViewBase {
 
         onStateChanged: {
             if (state === "Ready"){
-                console.log("TopologyPage OnServiceStateChanged Ready", subscriptionClient.toJSON());
+                console.log("TopologyPage OnServiceStatusChanged Ready", subscriptionClient.toJSON());
                 if (subscriptionClient.ContainsKey("data")){
                     let dataModel = subscriptionClient.GetData("data")
-                    if (dataModel.ContainsKey("OnServiceStateChanged")){
-                        dataModel = dataModel.GetData("OnServiceStateChanged")
+                    if (dataModel.ContainsKey("OnServiceStatusChanged")){
+                        dataModel = dataModel.GetData("OnServiceStatusChanged")
                         let serviceId = dataModel.GetData("serviceId")
                         let serviceStatus = dataModel.GetData("serviceStatus")
                         console.log("serviceStatus", serviceStatus)
-                        scheme.objectModel.SetData("Status", serviceStatus, scheme.selectedIndex);
+
+                        let index = scheme.findModelIndex(serviceId);
+                        scheme.objectModel.SetData("Status", serviceStatus, index);
                         if (serviceStatus == "Running"){
-                            scheme.objectModel.SetData("IconUrl_1", "Icons/Running", scheme.selectedIndex);
+                            scheme.objectModel.SetData("IconUrl_1", "Icons/Running", index);
                         }
                         else if (serviceStatus === "NotRunning" || serviceStatus === "Stopping" || serviceStatus === "Starting"){
-                            scheme.objectModel.SetData("IconUrl_1", "Icons/Stopped", scheme.selectedIndex);
+                            scheme.objectModel.SetData("IconUrl_1", "Icons/Stopped", index);
                         }
                         else{
-                            scheme.objectModel.SetData("IconUrl_1", "Icons/Alert", scheme.selectedIndex);
+                            scheme.objectModel.SetData("IconUrl_1", "Icons/Alert", index);
                         }
 
                         topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus !== "Running");
