@@ -509,6 +509,9 @@
                                 <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="TopologyCollection">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
@@ -557,6 +560,9 @@
                                     <Data IsEnabled="true">
                                         <Values>
                                             <Value>ViewAgents</Value>
+                                            <Value>AddAgent</Value>
+                                            <Value>RemoveAgent</Value>
+                                            <Value>ChangeAgent</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>

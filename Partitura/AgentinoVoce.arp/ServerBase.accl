@@ -8,6 +8,7 @@
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
+        <Element ComponentName="AgentConnectionObserver" X="175" Y="725" Note=""/>
         <Element ComponentName="AgentinoHandlers" X="825" Y="75" Note=""/>
         <Element ComponentName="AgentinoLocalization" X="550" Y="325" Note=""/>
         <Element ComponentName="DatabaseEngine" X="1025" Y="225" Note=""/>

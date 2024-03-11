@@ -59,14 +59,14 @@ void CSubscriptionControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& c
 	if (m_subscriptionManagerCompPtr.IsValid() && m_agentCollectionCompPtr.IsValid()){
 		imtbase::ICollectionInfo::Ids agentCollectionIds = m_agentCollectionCompPtr->GetElementIds();
 
-		for (QByteArray registeredAgentId: m_registeredAgents){
+		for (const QByteArray& registeredAgentId: m_registeredAgents){
 			if (!agentCollectionIds.contains(registeredAgentId)){
 				m_subscriptionManagerCompPtr->UnregisterSubscription(m_registeredAgents[registeredAgentId]);
 				m_registeredAgents.remove(registeredAgentId);
 			}
 		}
 
-		for (QByteArray agentId: agentCollectionIds){
+		for (const QByteArray& agentId: agentCollectionIds){
 			if(!m_registeredAgents.contains(agentId)){
 				imtgql::CGqlRequest gqlAddRequest(imtgql::IGqlRequest::RT_SUBSCRIPTION, "OnServiceStateChanged");
 				imtgql::CGqlObject subscriptionInput("input");

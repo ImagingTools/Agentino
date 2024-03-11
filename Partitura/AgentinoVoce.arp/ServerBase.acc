@@ -10,6 +10,21 @@
     <Description></Description>
     <Keywords></Keywords>
     <ElementsList>
+        <Element Id="AgentConnectionObserver" PackageId="AgentinoGqlPck" ComponentId="AgentConnectionObserver">
+            <Data IsEnabled="true" Flags="1">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/AgentCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="LoginStatusProvider" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="HttpServerFramework/WebSocketServer"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="AgentinoHandlers" PackageId="AgentinoVoce" ComponentId="Handlers">
             <Data IsEnabled="true" Flags="2">
                 <AttributeInfoMap>

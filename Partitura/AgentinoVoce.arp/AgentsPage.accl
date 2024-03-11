@@ -20,6 +20,23 @@
         <Element ComponentName="ServiceCommands" X="1100" Y="150" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
+        <EmbededRegistry Id="ServiceCollectionCommands">
+            <PositionMap>
+                <Element ComponentName="CheckPermissionOr" X="575" Y="225" Note=""/>
+                <Element ComponentName="Commands" X="275" Y="350" Note=""/>
+                <Element ComponentName="CommandsJoiner" X="975" Y="225" Note=""/>
+                <Element ComponentName="CommandsRepresentation" X="550" Y="75" Note=""/>
+                <Element ComponentName="Edit" X="100" Y="450" Note=""/>
+                <Element ComponentName="EditPermissions" X="1000" Y="550" Note=""/>
+                <Element ComponentName="Empty" X="500" Y="475" Note=""/>
+                <Element ComponentName="Open" X="125" Y="650" Note=""/>
+                <Element ComponentName="Remove" X="175" Y="550" Note=""/>
+                <Element ComponentName="RemovePermissions" X="1000" Y="450" Note=""/>
+                <Element ComponentName="ServiceCollectionCommandsController" X="275" Y="225" Note=""/>
+                <Element ComponentName="ViewServicesPermissions" X="1000" Y="350" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
         <EmbededRegistry Id="ServiceCommands">
             <PositionMap>
                 <Element ComponentName="CheckPermissionOr" X="700" Y="225" Note=""/>
@@ -55,20 +72,6 @@
                 <Element ComponentName="SavePermissions" X="700" Y="575" Note=""/>
                 <Element ComponentName="Undo" X="100" Y="325" Note=""/>
                 <Element ComponentName="UndoPermissions" X="700" Y="425" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
-        <EmbededRegistry Id="ServiceCollectionCommands">
-            <PositionMap>
-                <Element ComponentName="CheckPermissionOr" X="575" Y="225" Note=""/>
-                <Element ComponentName="CollectionCommandPermissions" X="850" Y="225" Note=""/>
-                <Element ComponentName="Commands" X="275" Y="350" Note=""/>
-                <Element ComponentName="CommandsRepresentation" X="550" Y="75" Note=""/>
-                <Element ComponentName="Edit" X="150" Y="450" Note=""/>
-                <Element ComponentName="Empty" X="400" Y="450" Note=""/>
-                <Element ComponentName="Open" X="150" Y="650" Note=""/>
-                <Element ComponentName="Remove" X="150" Y="550" Note=""/>
-                <Element ComponentName="ServiceCollectionCommandsController" X="275" Y="225" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

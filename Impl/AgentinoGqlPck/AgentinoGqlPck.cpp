@@ -89,6 +89,11 @@ I_EXPORT_COMPONENT(
 			"Service status controller proxy",
 			"Service Status Controller Proxy");
 
+I_EXPORT_COMPONENT(
+			AgentConnectionObserver,
+			"Agent connection observer",
+			"Agent Connection Observer");
+
 
 } // namespace AgentinoGqlPck
 

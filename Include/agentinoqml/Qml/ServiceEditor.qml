@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import Acf 1.0
 import imtgui 1.0
+import imtauthgui 1.0
 import imtcontrols 1.0
 
 ViewBase {
@@ -10,10 +11,22 @@ ViewBase {
     property int panelWidth: 800;
     property int radius: 3;
 
-    function blockEditing(){
-        pathInput.readOnly = true;
-        nameInput.readOnly = true;
-        argumentsInput.readOnly = true;
+    Component.onCompleted: {
+        let ok = PermissionsController.checkPermission("ViewServices");
+
+        serviceEditorContainer.readOnly = ok;
+    }
+
+    function setReadOnly(readOnly){
+        nameInput.readOnly = readOnly;
+        pathInput.readOnly = readOnly;
+        argumentsInput.readOnly = readOnly;
+        descriptionInput.readOnly = readOnly;
+
+        inputConnTable.readOnly = readOnly;
+        ouputConnTable.readOnly = readOnly;
+
+        switchAutoStart.enabled = !readOnly;
     }
 
     function updateGui(){
@@ -304,27 +317,27 @@ ViewBase {
                         let index = headersModel.InsertNewItem();
 
                         headersModel.SetData("Id", "ConnectionName", index)
-                        headersModel.SetData("Name", "Connection Name", index)
+                        headersModel.SetData("Name", qsTr("Usage"), index)
 
                         index = headersModel.InsertNewItem();
 
                         headersModel.SetData("Id", "Description", index)
-                        headersModel.SetData("Name", "Description", index)
+                        headersModel.SetData("Name", qsTr("Description"), index)
 
                         index = headersModel.InsertNewItem();
 
                         headersModel.SetData("Id", "Host", index)
-                        headersModel.SetData("Name", "Host", index)
+                        headersModel.SetData("Name", qsTr("Host"), index)
 
                         index = headersModel.InsertNewItem();
 
                         headersModel.SetData("Id", "Port", index)
-                        headersModel.SetData("Name", "Port", index)
+                        headersModel.SetData("Name", qsTr("Port"), index)
 
                         index = headersModel.InsertNewItem();
 
                         headersModel.SetData("Id", "ExternPorts", index)
-                        headersModel.SetData("Name", "Extern Ports", index)
+                        headersModel.SetData("Name", qsTr("Extern Ports"), index)
 
                         inputConnTable.headers = headersModel;
                     }
@@ -386,6 +399,8 @@ ViewBase {
                             height: width;
 
                             iconSource: "../../../../" + Style.getIconPath("Icons/Edit", Icon.State.Off, Icon.Mode.Normal);
+
+                            visible: !serviceEditorContainer.readOnly;
 
                             onClicked: {
                                 if (inputConnTable.elements.ContainsKey("ExternPorts", content.tableCellDelegate.rowIndex)){
@@ -476,7 +491,7 @@ ViewBase {
 
                         property Item tableCellDelegate: null;
 
-                        z: parent.z + 1;
+//                        z: parent.z + 1;
 
                         width: parent.width;
                         height: 25;
@@ -560,6 +575,8 @@ ViewBase {
 
                             anchors.fill: parent;
 
+                            visible: !serviceEditorContainer.readOnly;
+
                             onDoubleClicked: {
                                 if (cb.model && cb.model.GetItemsCount() > 0){
                                     cb.visible = true;
@@ -582,22 +599,22 @@ ViewBase {
                         let index = headersModel2.InsertNewItem();
 
                         headersModel2.SetData("Id", "ConnectionName", index)
-                        headersModel2.SetData("Name", "Connection Name", index)
+                        headersModel2.SetData("Name", qsTr("Usage"), index)
 
                         index = headersModel2.InsertNewItem();
 
                         headersModel2.SetData("Id", "ServiceTypeName", index)
-                        headersModel2.SetData("Name", "Service Type Name", index)
+                        headersModel2.SetData("Name", qsTr("Service"), index)
 
                         index = headersModel2.InsertNewItem();
 
                         headersModel2.SetData("Id", "Description", index)
-                        headersModel2.SetData("Name", "Description", index)
+                        headersModel2.SetData("Name", qsTr("Description"), index)
 
                         index = headersModel2.InsertNewItem();
 
                         headersModel2.SetData("Id", "DisplayUrl", index)
-                        headersModel2.SetData("Name", "Url", index)
+                        headersModel2.SetData("Name", qsTr("Url"), index)
 
                         ouputConnTable.headers = headersModel2;
                     }

@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5200" Description="ACF"/>
-            <Version Id="1" Number="2203" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394753" Description="Qt Framework"/>
+            <Version Id="0" Number="5191" Description="ACF"/>
+            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -45,7 +45,7 @@
                     <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>ViewLicenses</Value>
+                                <Value>ViewServices</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -180,9 +180,8 @@
                     <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>EditLicense</Value>
-                                <Value>ChangeLicense</Value>
-                                <Value>ChangeLisenseNumber</Value>
+                                <Value>ChangeService</Value>
+                                <Value>AddService</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -225,9 +224,8 @@
                     <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>EditLicense</Value>
-                                <Value>ChangeLicense</Value>
-                                <Value>ChangeLisenseNumber</Value>
+                                <Value>ChangeService</Value>
+                                <Value>AddService</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -236,48 +234,6 @@
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="Start" PackageId="ImtGuiPck" ComponentId="GuiElementModel">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="IconPath" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="Icons/Save"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Id" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Start"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="IsEnabled" Type="Boolean" ExportId="">
-                        <Data IsEnabled="true" Value="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="IsVisible" Type="Boolean" ExportId="">
-                        <Data IsEnabled="true" Value="true"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Name" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="Start"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="Stop" PackageId="ImtGuiPck" ComponentId="GuiElementModel">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="IconPath" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="Icons/Save"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Id" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Stop"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="IsEnabled" Type="Boolean" ExportId="">
-                        <Data IsEnabled="true" Value="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="IsVisible" Type="Boolean" ExportId="">
-                        <Data IsEnabled="true" Value="true"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Name" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="Stop"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -312,9 +268,8 @@
                     <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>EditLicense</Value>
-                                <Value>ChangeLicense</Value>
-                                <Value>ChangeLisenseNumber</Value>
+                                <Value>ChangeService</Value>
+                                <Value>AddService</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

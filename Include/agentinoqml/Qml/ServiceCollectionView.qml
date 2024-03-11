@@ -37,6 +37,7 @@ RemoteCollectionView {
 
             documentManagerPtr.registerDocumentView("Service" + root.clientId, "ServiceEditor", serviceEditorComp);
             documentManagerPtr.registerDocumentDataController("Service" + root.clientId, serviceDataControllerComp);
+            documentManagerPtr.registerDocumentValidator("Service" + root.clientId, serviceValidatorComp);
         }
     }
 
@@ -96,6 +97,13 @@ RemoteCollectionView {
                       return root.getAdditionalInputParams();
                   }
              }
+        }
+    }
+
+    Component {
+        id: serviceValidatorComp;
+
+        ServiceValidator {
         }
     }
 
@@ -187,10 +195,13 @@ RemoteCollectionView {
 
                         image.source = "../../../../" + Style.getIconPath("Icons/Running", Icon.State.On, Icon.Mode.Normal);
                     }
-                    else{
+                    else if (status === "NotRunning" || status === "Stopping" || status === "Starting"){
                         console.log("Stopped" ,status);
 
                         image.source = "../../../../" + Style.getIconPath("Icons/Stopped", Icon.State.On, Icon.Mode.Normal);
+                    }
+                    else{
+                        image.source = "../../../../" + Style.getIconPath("Icons/Alert", Icon.State.On, Icon.Mode.Normal);
                     }
                 }
                 let value = tableCellDelegate.getValue();

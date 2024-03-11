@@ -32,6 +32,11 @@ ViewBase {
         id: commandsRepresentationProvider
         commandId: "Topology"
         uuid: topologyPage.viewId;
+
+        onCommandsModelChanged: {
+            setIsToggleable("AutoFit", true);
+            setToggled("AutoFit", scheme.autoFit);
+        }
     }
 
     onVisibleChanged: {
@@ -48,21 +53,42 @@ ViewBase {
             if (commandId === "Save"){
                 saveModel.save()
             }
-            else if (commandId === "Edit"){
-                scheme.goInside()
-            }
             else if (commandId === "ZoomIn"){
+                scheme.setAutoFit(false);
+
                 scheme.zoomIn();
             }
             else if (commandId === "ZoomOut"){
+                scheme.setAutoFit(false);
+
                 scheme.zoomOut();
             }
             else if (commandId === "ZoomReset"){
                 scheme.resetZoom();
             }
-            else if (commandId === "ZoomToFit"){
-                scheme.zoomToFit();
+            else if (commandId === "AutoFit"){
+                scheme.setAutoFit(!scheme.autoFit);
             }
+        }
+
+        function onStart(){
+            if(scheme.objectModel.GetItemsCount() > scheme.selectedIndex && scheme.selectedIndex >= 0){
+                let serviceId = scheme.objectModel.GetData("Id", scheme.selectedIndex);
+
+                serviceCommandsDelegate.setServiceCommand("Start", serviceId);
+            }
+        }
+
+        function onStop(){
+            if(scheme.objectModel.GetItemsCount() > scheme.selectedIndex && scheme.selectedIndex >= 0){
+                let serviceId = scheme.objectModel.GetData("Id", scheme.selectedIndex);
+
+                serviceCommandsDelegate.setServiceCommand("Stop", serviceId);
+            }
+        }
+
+        function onEdit(){
+            scheme.goInside()
         }
     }
 
@@ -75,6 +101,10 @@ ViewBase {
         anchors.bottom: parent.bottom;
 
         property string selectedService: ""
+
+        onAutoFitChanged: {
+            commandsRepresentationProvider.setToggled("AutoFit", scheme.autoFit);
+        }
 
         onModelDataChanged: {
             commandsRepresentationProvider.setCommandIsEnabled("Save", true)
@@ -106,8 +136,6 @@ ViewBase {
             if (documentManager){
                 if(objectModel.GetItemsCount() > selectedIndex && selectedIndex >= 0){
                     let serviceId = objectModel.GetData("Id", selectedIndex);
-                    console.log("Go inside");
-
                     documentManager.openDocument(serviceId, "Service", "ServiceView");
                 }
             }
@@ -161,7 +189,6 @@ ViewBase {
                     return topologyPage.getAdditionalInputParams();
                 }
             }
-
         }
     }
 
@@ -177,6 +204,16 @@ ViewBase {
 
             function getAdditionalInputParams(){
                 return topologyPage.getAdditionalInputParams();
+            }
+
+            function getDocumentName(){
+                if (scheme.selectedIndex >= 0){
+                    let name = scheme.objectModel.GetData("MainText", scheme.selectedIndex);
+
+                    return name;
+                }
+
+                return "";
             }
 
             onHasRemoteChangesChanged: {
@@ -215,9 +252,13 @@ ViewBase {
                         if (serviceStatus == "Running"){
                             scheme.objectModel.SetData("IconUrl_1", "Icons/Running", scheme.selectedIndex);
                         }
-                        else{
+                        else if (serviceStatus === "NotRunning" || serviceStatus === "Stopping" || serviceStatus === "Starting"){
                             scheme.objectModel.SetData("IconUrl_1", "Icons/Stopped", scheme.selectedIndex);
                         }
+                        else{
+                            scheme.objectModel.SetData("IconUrl_1", "Icons/Alert", scheme.selectedIndex);
+                        }
+
                         topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus !== "Running");
                         topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === "Running");
 

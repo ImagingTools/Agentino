@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5200" Description="ACF"/>
-            <Version Id="1" Number="2203" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394753" Description="Qt Framework"/>
+            <Version Id="0" Number="5191" Description="ACF"/>
+            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -32,14 +32,14 @@
                     <AttributeInfo Id="NewCommandPermissions" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>EditService</Value>
+                                <Value>AddService</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="RemoveCommandPermissions" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>EditService</Value>
+                                <Value>RemoveService</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -56,8 +56,6 @@
                                 <Value>Remove</Value>
                                 <Value>Empty</Value>
                                 <Value>Edit</Value>
-                                <Value>Empty</Value>
-                                <Value>EditSettings</Value>
                                 <Value>Empty</Value>
                                 <Value>Start</Value>
                                 <Value>Stop</Value>

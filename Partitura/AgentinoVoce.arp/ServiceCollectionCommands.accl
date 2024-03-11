@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5200" Description="ACF"/>
-            <Version Id="1" Number="2203" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394753" Description="Qt Framework"/>
+            <Version Id="0" Number="5191" Description="ACF"/>
+            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
@@ -15,14 +15,14 @@
         <Element ComponentName="CommandsRepresentation" X="550" Y="75" Note=""/>
         <Element ComponentName="Edit" X="125" Y="550" Note=""/>
         <Element ComponentName="EditSettings" X="275" Y="650" Note=""/>
-        <Element ComponentName="Empty" X="300" Y="525" Note=""/>
+        <Element ComponentName="Empty" X="325" Y="550" Note=""/>
         <Element ComponentName="New" X="100" Y="450" Note=""/>
         <Element ComponentName="Remove" X="375" Y="450" Note=""/>
         <Element ComponentName="ServiceCollectionCommandsController" X="275" Y="225" Note=""/>
         <Element ComponentName="Start" X="550" Y="525" Note=""/>
-        <Element ComponentName="StartPermissions" X="675" Y="300" Note=""/>
+        <Element ComponentName="StartPermissions" X="675" Y="325" Note=""/>
         <Element ComponentName="Stop" X="750" Y="525" Note=""/>
-        <Element ComponentName="StopPermissions" X="925" Y="300" Note=""/>
+        <Element ComponentName="StopPermissions" X="1000" Y="325" Note=""/>
     </PositionMap>
     <EmbeddedRegistries/>
 </Acf>

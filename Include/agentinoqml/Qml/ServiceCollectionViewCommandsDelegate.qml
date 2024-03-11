@@ -105,10 +105,19 @@ DocumentCollectionViewDelegate {
         onStateChanged: {
             console.log("State:", this.state);
             if (this.state === "Ready"){
+
+                console.log("servicesController: ", this.toJSON());
                 var dataModelLocal;
 
                 if (this.ContainsKey("errors")){
                     dataModelLocal = this.GetData("errors");
+
+                    if (dataModelLocal.ContainsKey("ServiceStart")){
+                        dataModelLocal = dataModelLocal.GetData("ServiceStart");
+                    }
+                    else if (dataModelLocal.ContainsKey("ServiceStop")){
+                        dataModelLocal = dataModelLocal.GetData("ServiceStop");
+                    }
 
                     let message = ""
                     if (dataModelLocal.ContainsKey("message")){
@@ -121,6 +130,8 @@ DocumentCollectionViewDelegate {
                     }
 
                     Events.sendEvent("SendError", {"Message": message, "ErrorType": type})
+
+                    console.log("SendError");
 
                     return;
                 }

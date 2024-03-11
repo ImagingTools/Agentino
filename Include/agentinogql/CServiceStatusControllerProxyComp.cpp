@@ -13,10 +13,10 @@ imtbase::CTreeItemModel* CServiceStatusControllerProxyComp::CreateInternalRespon
 			const imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	if (m_serviceStatusCollectionCompPtr.IsValid()){
-		QByteArray commandId = gqlRequest.GetCommandId();
-		QByteArray serviceId;
+	QByteArray serviceId;
+	QByteArray commandId = gqlRequest.GetCommandId();
 
+	if (m_serviceStatusCollectionCompPtr.IsValid()){
 		const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParam("input");
 		if (inputParamPtr != nullptr){
 			serviceId = inputParamPtr->GetFieldArgumentValue("serviceId").toByteArray();
@@ -48,7 +48,27 @@ imtbase::CTreeItemModel* CServiceStatusControllerProxyComp::CreateInternalRespon
 		}
 	}
 
-	return BaseClass::CreateInternalResponse(gqlRequest, errorMessage);
+	istd::TDelPtr<imtbase::CTreeItemModel> resultModelPtr = BaseClass::CreateInternalResponse(gqlRequest, errorMessage);
+	if (!resultModelPtr.IsValid() || (resultModelPtr.IsValid() && resultModelPtr->ContainsKey("errors"))){
+		imtbase::IObjectCollection::DataPtr dataPtr;
+		if (m_serviceStatusCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
+			agentinodata::CServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::CServiceStatusInfo*>(dataPtr.GetPtr());
+			serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_UNDEFINED);
+
+			m_serviceStatusCollectionCompPtr->SetObjectData(serviceId, *serviceStatusInfoPtr);
+		}
+
+		if (commandId == "ServiceStart"){
+			errorMessage = QString("The service cannot be started check the agent connection");
+		}
+		else if (commandId == "ServiceStop"){
+			errorMessage = QString("The service cannot be stopped check the agent connection");
+		}
+
+		return nullptr;
+	}
+
+	return resultModelPtr.PopPtr();
 }
 
 

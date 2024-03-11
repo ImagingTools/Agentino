@@ -344,47 +344,51 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetMetaInfo(const imt
 	imtbase::CTreeItemModel* dataModelPtr = rootModelPtr->AddTreeModel("data");
 
 	if (inputCollectionPtr != nullptr){
-		int index = dataModelPtr->InsertNewItem();
-
-		dataModelPtr->SetData("Name", "Incoming Connections", index);
-
-		imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
-
 		imtbase::ICollectionInfo::Ids connectionIds = inputCollectionPtr->GetElementIds();
-		for (const imtbase::ICollectionInfo::Id& connectionId : connectionIds){
-			imtbase::IObjectCollection::DataPtr connectionDataPtr;
-			if (inputCollectionPtr->GetObjectData(connectionId, connectionDataPtr)){
-				imtservice::CUrlConnectionParam* urlConnectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
-				if (urlConnectionParamPtr != nullptr){
-					int childIndex = contentModelPtr->InsertNewItem();
-					QUrl url = urlConnectionParamPtr->GetUrl();
-					QByteArray usageId = urlConnectionParamPtr->GetUsageId();
+		if (!connectionIds.isEmpty()){
+			int index = dataModelPtr->InsertNewItem();
 
-					contentModelPtr->SetData("Value", usageId + " (Port: " + QString::number(url.port()) + ")", childIndex);
+			dataModelPtr->SetData("Name", "Incoming Connections", index);
+
+			imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
+
+			for (const imtbase::ICollectionInfo::Id& connectionId : connectionIds){
+				imtbase::IObjectCollection::DataPtr connectionDataPtr;
+				if (inputCollectionPtr->GetObjectData(connectionId, connectionDataPtr)){
+					imtservice::CUrlConnectionParam* urlConnectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
+					if (urlConnectionParamPtr != nullptr){
+						int childIndex = contentModelPtr->InsertNewItem();
+						QUrl url = urlConnectionParamPtr->GetUrl();
+						QByteArray usageId = urlConnectionParamPtr->GetUsageId();
+
+						contentModelPtr->SetData("Value", usageId + " (Port: " + QString::number(url.port()) + ")", childIndex);
+					}
 				}
 			}
 		}
 	}
 
 	if (dependantCollectionPtr != nullptr){
-		int index = dataModelPtr->InsertNewItem();
-
-		dataModelPtr->SetData("Name", "Dependant Connections", index);
-
-		imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
-
 		imtbase::ICollectionInfo::Ids connectionIds = dependantCollectionPtr->GetElementIds();
-		for (const imtbase::ICollectionInfo::Id& connectionId : connectionIds){
-			imtbase::IObjectCollection::DataPtr connectionDataPtr;
-			if (dependantCollectionPtr->GetObjectData(connectionId, connectionDataPtr)){
-				imtservice::CUrlConnectionLinkParam* urlConnectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
-				if (urlConnectionLinkParamPtr != nullptr){
-					int childIndex = contentModelPtr->InsertNewItem();
-					QByteArray usageId = urlConnectionLinkParamPtr->GetUsageId();
-					QByteArray dependantServiceConnectionId = urlConnectionLinkParamPtr->GetDependantServiceConnectionId();
-					QUrl url = GetUrlByDependantId(dependantServiceConnectionId);
+		if (!connectionIds.isEmpty()){
+			int index = dataModelPtr->InsertNewItem();
 
-					contentModelPtr->SetData("Value", usageId + " (Port: " + QString::number(url.port()) + ")", childIndex);
+			dataModelPtr->SetData("Name", "Dependant Connections", index);
+
+			imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
+
+			for (const imtbase::ICollectionInfo::Id& connectionId : connectionIds){
+				imtbase::IObjectCollection::DataPtr connectionDataPtr;
+				if (dependantCollectionPtr->GetObjectData(connectionId, connectionDataPtr)){
+					imtservice::CUrlConnectionLinkParam* urlConnectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
+					if (urlConnectionLinkParamPtr != nullptr){
+						int childIndex = contentModelPtr->InsertNewItem();
+						QByteArray usageId = urlConnectionLinkParamPtr->GetUsageId();
+						QByteArray dependantServiceConnectionId = urlConnectionLinkParamPtr->GetDependantServiceConnectionId();
+						QUrl url = GetUrlByDependantId(dependantServiceConnectionId);
+
+						contentModelPtr->SetData("Value", usageId + " (Port: " + QString::number(url.port()) + ")", childIndex);
+					}
 				}
 			}
 		}
