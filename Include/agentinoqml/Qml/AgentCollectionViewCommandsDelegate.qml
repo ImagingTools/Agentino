@@ -19,7 +19,7 @@ DocumentCollectionViewDelegate {
             let itemName = container.collectionView.table.getSelectedNames()[0];
 
             let documentManagerPtr = MainDocumentManager.getDocumentManager("Agents")
-             if (documentManagerPtr){
+            if (documentManagerPtr){
                  documentManagerPtr.openDocument(itemId, documentTypeId, viewTypeId);
             }
         }

@@ -104,6 +104,7 @@ ViewBase {
         property string selectedService: ""
 
         onAutoFitChanged: {
+            console.log("onAutoFitChanged", scheme.autoFit);
             commandsRepresentationProvider.setToggled("AutoFit", scheme.autoFit);
         }
 
@@ -203,25 +204,18 @@ ViewBase {
     Shortcut {
         sequence: "Ctrl+S";
 
-        Component.onCompleted: {
-            console.log("shortcut onCompleted", enabled);
-        }
-
-        Component.onDestruction: {
-            console.log("shortcut onDestruction", enabled);
-        }
+        enabled: topologyPage.visible;
 
         onEnabledChanged: {
-            console.log("shortcut onEnabledChanged", enabled);
+            console.log("Topology onEnabledChanged", enabled, model.index);
         }
 
         onActivated: {
-            console.log("Ctrl+S onActivated");
-            if (!singleDocumentData.isDirty){
-                return
-            }
+            serviceCommandsDelegate.commandHandle("Save");
+        }
 
-            singleDocumentData.commandHandle("Save");
+        onActivatedAmbiguously: {
+            serviceCommandsDelegate.commandHandle("Save");
         }
     }
 
