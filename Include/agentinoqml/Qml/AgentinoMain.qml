@@ -8,6 +8,8 @@ ApplicationMain{
     useWebSocketSubscription: true
     applicationId: "Agentino"
 
+    canRecoveryPassword: false;
+
     ModalDialogManager {
         id: modalDialogManager;
 

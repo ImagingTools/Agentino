@@ -151,7 +151,7 @@ ViewBase {
         anchors.top: parent.top;
         anchors.bottom: parent.bottom;
 
-        width: 200;
+        width: 250;
     }
 
     MetaInfoProvider {
