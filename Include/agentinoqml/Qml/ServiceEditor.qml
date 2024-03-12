@@ -12,9 +12,9 @@ ViewBase {
     property int radius: 3;
 
     Component.onCompleted: {
-        let ok = PermissionsController.checkPermission("ViewServices");
+        let ok = PermissionsController.checkPermission("ChangeService");
 
-        serviceEditorContainer.readOnly = ok;
+        serviceEditorContainer.readOnly = !ok;
     }
 
     function setReadOnly(readOnly){

@@ -25,6 +25,7 @@ ViewBase {
         if (documentManager){
             documentManager.registerDocumentView("Service", "ServiceView", serviceEditorComp);
             documentManager.registerDocumentDataController("Service", serviceDataControllerComp);
+            documentManager.registerDocumentValidator("Service", serviceValidatorComp);
         }
     }
 
@@ -178,6 +179,13 @@ ViewBase {
     }
 
     Component {
+        id: serviceValidatorComp;
+
+        ServiceValidator {
+        }
+    }
+
+    Component {
         id: serviceEditorComp;
 
         ServiceEditor {
@@ -189,6 +197,31 @@ ViewBase {
                     return topologyPage.getAdditionalInputParams();
                 }
             }
+        }
+    }
+
+    Shortcut {
+        sequence: "Ctrl+S";
+
+        Component.onCompleted: {
+            console.log("shortcut onCompleted", enabled);
+        }
+
+        Component.onDestruction: {
+            console.log("shortcut onDestruction", enabled);
+        }
+
+        onEnabledChanged: {
+            console.log("shortcut onEnabledChanged", enabled);
+        }
+
+        onActivated: {
+            console.log("Ctrl+S onActivated");
+            if (!singleDocumentData.isDirty){
+                return
+            }
+
+            singleDocumentData.commandHandle("Save");
         }
     }
 
