@@ -18,6 +18,7 @@
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/CServiceInfo.h>
 #include <agentinodata/CServiceStatusInfo.h>
+#include <agentinodata/CAgentStatusInfo.h>
 
 
 namespace agentinogql
@@ -91,6 +92,29 @@ bool CAgentCollectionControllerComp::SetupGqlItem(
 						}
 
 						elementInformation = result.join(';');
+					}
+				}
+				else if(informationId == "Status"){
+					elementInformation = "Disconnected";
+
+					if (m_agentStatusCollectionCompPtr.IsValid()){
+						imtbase::IObjectCollection::DataPtr dataPtr;
+						if (m_agentStatusCollectionCompPtr->GetObjectData(collectionId, dataPtr)){
+							const agentinodata::CAgentStatusInfo* agentStatusInfoPtr = dynamic_cast<const agentinodata::CAgentStatusInfo*>(dataPtr.GetPtr());
+							if (agentStatusInfoPtr != nullptr){
+								agentinodata::IAgentStatusInfo::AgentStatus status = agentStatusInfoPtr->GetAgentStatus();
+								switch(status){
+								case agentinodata::IAgentStatusInfo::AS_CONNECTED:
+									elementInformation = "Connected";
+									break;
+								case agentinodata::IAgentStatusInfo::AS_DISCONNECTED:
+									elementInformation = "Disconnected";
+									break;
+								default:
+									elementInformation = "Undefined";
+								}
+							}
+						}
 					}
 				}
 				else if(informationId == "LastConnection"){
@@ -547,10 +571,10 @@ void CAgentCollectionControllerComp::OnTimeout()
 
 															istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
 															urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam(
-																		serviceTypeName.toUtf8(),
-																		usageId.toUtf8(),
-																		imtservice::IServiceConnectionParam::CT_INPUT,
-																		connectionUrl));
+																							 serviceTypeName.toUtf8(),
+																							 usageId.toUtf8(),
+																							 imtservice::IServiceConnectionParam::CT_INPUT,
+																							 connectionUrl));
 
 															inputConnectionCollectionPtr->InsertNewObject("ConnectionInfo", serviceTypeName, description, urlConnectionParamPtr.PopPtr(), id);
 														}
@@ -576,9 +600,9 @@ void CAgentCollectionControllerComp::OnTimeout()
 
 															istd::TDelPtr<imtservice::CUrlConnectionLinkParam> urlConnectionLinkParamPtr;
 															urlConnectionLinkParamPtr.SetPtr(new imtservice::CUrlConnectionLinkParam(
-																serviceTypeName.toUtf8(),
-																usageId.toUtf8(),
-																dependantServiceConnectionId.toUtf8()));
+																								 serviceTypeName.toUtf8(),
+																								 usageId.toUtf8(),
+																								 dependantServiceConnectionId.toUtf8()));
 
 															dependantConnectionCollectionPtr->InsertNewObject("ConnectionLink", serviceTypeName, description, urlConnectionLinkParamPtr.PopPtr(), id);
 														}

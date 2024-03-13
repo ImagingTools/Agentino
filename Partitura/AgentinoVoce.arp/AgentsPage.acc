@@ -28,6 +28,9 @@
                     <AttributeInfo Id="AgentFactory" Type="Factory" ExportId="">
                         <Data IsEnabled="true" Value="AgentInfo"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="AgentStatusCollection" Type="Reference" ExportId="AgentStatusCollection">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
@@ -92,6 +95,7 @@
                                 <Value>ComputerName</Value>
                                 <Value>Description</Value>
                                 <Value>Services</Value>
+                                <Value>Status</Value>
                                 <Value>LastConnection</Value>
                             </Values>
                         </Data>
@@ -106,6 +110,7 @@
                                 <Value>Computer Name</Value>
                                 <Value>Description</Value>
                                 <Value>Services</Value>
+                                <Value>Status</Value>
                                 <Value>Last Connection</Value>
                             </Values>
                         </Data>

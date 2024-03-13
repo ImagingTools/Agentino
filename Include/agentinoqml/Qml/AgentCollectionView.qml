@@ -31,6 +31,13 @@ RemoteCollectionView {
         }
     }
 
+    onHeadersChanged: {
+        if (root.table.headers.GetItemsCount() > 0){
+            let orderIndex = root.table.getHeaderIndex("Status");
+            root.table.setColumnContentComponent(orderIndex, stateColumnContentComp);
+        }
+    }
+
     function onEdit() {
         if (commandsDelegate){
             commandsDelegate.commandHandle("Services");
@@ -73,6 +80,67 @@ RemoteCollectionView {
         DocumentDataController {
             function getDocumentName() {
                 return root.table.getSelectedNames()[0];
+            }
+        }
+    }
+
+    Component {
+        id: stateColumnContentComp;
+        Item {
+            id: content
+            property var tableCellDelegate
+            Image {
+                id: image;
+
+                anchors.verticalCenter: parent.verticalCenter;
+                anchors.left: parent.left;
+                anchors.leftMargin: 5;
+
+                width: 9;
+                height: width;
+
+                sourceSize.width: width;
+                sourceSize.height: height;
+            }
+
+            Text {
+                id: lable;
+
+                anchors.left: image.right;
+                anchors.leftMargin: Style.size_smallMargin
+                anchors.right: parent.right;
+                anchors.verticalCenter: parent.verticalCenter;
+
+                font.pixelSize: Style.fontSize_common;
+                font.family: Style.fontFamily;
+                color: Style.textColor;
+
+                elide: Text.ElideRight;
+            }
+
+            Component.onCompleted: {
+                let loader = parent;
+                let tableCellDelegate = loader.parent;
+
+                let rowIndex = tableCellDelegate.rowIndex;
+                if (rowIndex >= 0){
+                    let status = root.table.elements.GetData("Status", rowIndex);
+
+                    if (status === "Connected"){
+                        image.source = "../../../../" + Style.getIconPath("Icons/Running", Icon.State.On, Icon.Mode.Normal);
+                    }
+                    else if (status === "Disconnected"){
+                        image.source = "../../../../" + Style.getIconPath("Icons/Stopped", Icon.State.On, Icon.Mode.Normal);
+                    }
+                    else{
+                        image.source = "../../../../" + Style.getIconPath("Icons/Alert", Icon.State.On, Icon.Mode.Normal);
+                    }
+                }
+
+                let value = tableCellDelegate.getValue();
+                if (value !== undefined){
+                    lable.text = value;
+                }
             }
         }
     }

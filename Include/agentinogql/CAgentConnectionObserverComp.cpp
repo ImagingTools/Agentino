@@ -13,19 +13,50 @@ namespace agentinogql
 
 // protected methods
 
-// reimplemented (imod::CSingleModelObserverBase)
-
-void CAgentConnectionObserverComp::OnUpdate(const istd::IChangeable::ChangeSet& changeSet)
+void CAgentConnectionObserverComp::SetAgentStatus(
+			const QByteArray& agentId,
+			agentinodata::IAgentStatusInfo::AgentStatus status) const
 {
 	if (!m_agentStatusCollectionCompPtr.IsValid()){
 		return;
 	}
 
-	if (!m_agentCollectionCompPtr.IsValid()){
+	istd::TDelPtr<agentinodata::CAgentStatusInfo> serviceStatusInfoPtr;
+	serviceStatusInfoPtr.SetPtr(new agentinodata::CAgentStatusInfo(agentId, status));
+
+	imtbase::ICollectionInfo::Ids elementIds = m_agentStatusCollectionCompPtr->GetElementIds();
+	if (elementIds.contains(agentId)){
+		m_agentStatusCollectionCompPtr->SetObjectData(agentId, *serviceStatusInfoPtr.PopPtr());
+	}
+	else{
+		m_agentStatusCollectionCompPtr->InsertNewObject("AgentStatusInfo", "", "", serviceStatusInfoPtr.PopPtr(), agentId);
+	}
+}
+
+
+void CAgentConnectionObserverComp::SetServiceStatus(
+			const QByteArray& serviceId,
+			agentinodata::IServiceStatusInfo::ServiceStatus status) const
+{
+	if (!m_serviceStatusCollectionCompPtr.IsValid()){
 		return;
 	}
 
-	if (!m_serviceStatusCollectionCompPtr.IsValid()){
+	istd::TDelPtr<agentinodata::CServiceStatusInfo> serviceStatusInfoPtr;
+	serviceStatusInfoPtr.SetPtr(new agentinodata::CServiceStatusInfo);
+
+	serviceStatusInfoPtr->SetServiceId(serviceId);
+	serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_UNDEFINED);
+
+	m_serviceStatusCollectionCompPtr->SetObjectData(serviceId, *serviceStatusInfoPtr.PopPtr());
+}
+
+
+// reimplemented (imod::CSingleModelObserverBase)
+
+void CAgentConnectionObserverComp::OnUpdate(const istd::IChangeable::ChangeSet& changeSet)
+{
+	if (!m_agentCollectionCompPtr.IsValid()){
 		return;
 	}
 
@@ -40,30 +71,16 @@ void CAgentConnectionObserverComp::OnUpdate(const istd::IChangeable::ChangeSet& 
 				if (serviceCollectionPtr != nullptr){
 					imtbase::ICollectionInfo::Ids elementIds = serviceCollectionPtr->GetElementIds();
 					for (const imtbase::ICollectionInfo::Id& elementId : elementIds){
-						istd::TDelPtr<agentinodata::CServiceStatusInfo> serviceStatusInfoPtr;
-						serviceStatusInfoPtr.SetPtr(new agentinodata::CServiceStatusInfo);
-
-						serviceStatusInfoPtr->SetServiceId(elementId);
-						serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_UNDEFINED);
-
-						m_serviceStatusCollectionCompPtr->SetObjectData(elementId, *serviceStatusInfoPtr.PopPtr());
+						SetServiceStatus(elementId, agentinodata::IServiceStatusInfo::SS_UNDEFINED);
 					}
 				}
 			}
 		}
+
+		SetAgentStatus(clientId, agentinodata::IAgentStatusInfo::AS_DISCONNECTED);
 	}
-
-	if (changeSet.Contains(imtauth::ILoginStatusProvider::LSF_LOGGED_IN)){
-		istd::TDelPtr<agentinodata::CAgentStatusInfo> serviceStatusInfoPtr;
-		serviceStatusInfoPtr.SetPtr(new agentinodata::CAgentStatusInfo(clientId, agentinodata::IAgentStatusInfo::AS_CONNECTED));
-
-		imtbase::ICollectionInfo::Ids elementIds = m_agentStatusCollectionCompPtr->GetElementIds();
-		if (elementIds.contains(clientId)){
-			m_agentStatusCollectionCompPtr->SetObjectData(clientId, *serviceStatusInfoPtr.PopPtr());
-		}
-		else{
-			m_agentStatusCollectionCompPtr->InsertNewObject("AgentStatusInfo", "", "", serviceStatusInfoPtr.PopPtr(), clientId);
-		}
+	else if (changeSet.Contains(imtauth::ILoginStatusProvider::LSF_LOGGED_IN)){
+		SetAgentStatus(clientId, agentinodata::IAgentStatusInfo::AS_CONNECTED);
 	}
 }
 

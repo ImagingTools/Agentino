@@ -9,6 +9,10 @@
 #include <imtauth/ILoginStatusProvider.h>
 #include <imtbase/IObjectCollection.h>
 
+// Agentino includes
+#include <agentinodata/CAgentStatusInfo.h>
+#include <agentinodata/CServiceStatusInfo.h>
+
 
 namespace agentinogql
 {
@@ -31,6 +35,9 @@ public:
 	I_END_COMPONENT;
 
 protected:
+	void SetAgentStatus(const QByteArray& agentId, agentinodata::IAgentStatusInfo::AgentStatus status) const;
+	void SetServiceStatus(const QByteArray& serviceId, agentinodata::IServiceStatusInfo::ServiceStatus status) const;
+
 	// reimplemented (imod::CSingleModelObserverBase)
 	virtual void OnUpdate(const istd::IChangeable::ChangeSet& changeSet) override;
 
