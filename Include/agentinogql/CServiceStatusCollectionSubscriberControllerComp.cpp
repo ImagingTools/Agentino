@@ -17,12 +17,6 @@ void CServiceStatusCollectionSubscriberControllerComp::OnUpdate(const istd::ICha
 		return;
 	}
 
-	if (
-			changeSet.Contains(imtbase::ICollectionInfo::CF_ADDED) ||
-			changeSet.Contains(imtbase::ICollectionInfo::CF_UPDATED) ||
-			changeSet.Contains(imtbase::ICollectionInfo::CF_REMOVED)){
-	}
-
 	QSet<int> changeIds = changeSet.GetIds();
 
 	QByteArray serviceId;

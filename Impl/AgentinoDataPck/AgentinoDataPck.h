@@ -11,6 +11,7 @@
 #include <agentinodata/CServiceControllerComp.h>
 #include <agentinodata/CAgentCollectionComp.h>
 #include <agentinodata/CServiceStatusInfo.h>
+#include <agentinodata/CAgentStatusInfo.h>
 
 
 /**
@@ -37,6 +38,11 @@ typedef icomp::TMakeComponentWrap<
 					agentinodata::IServiceStatusInfo,
 					iser::ISerializable,
 					istd::IChangeable> ServiceStatusInfo;
+typedef icomp::TMakeComponentWrap<
+					agentinodata::CAgentStatusInfo,
+					agentinodata::IAgentStatusInfo,
+					iser::ISerializable,
+					istd::IChangeable> AgentStatusInfo;
 
 
 } // namespace AgentinoDataPck

@@ -16,6 +16,9 @@
                     <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/AgentCollection"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="AgentStatusCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/AgentStatusCollection"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="LoginStatusProvider" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="HttpServerFramework/WebSocketServer"/>
                     </AttributeInfo>

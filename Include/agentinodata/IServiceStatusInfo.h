@@ -4,6 +4,7 @@
 // ACF includes
 #include <iser/IObject.h>
 
+// Agentino includes
 #include <agentinodata/agentinodata.h>
 
 
@@ -12,7 +13,7 @@ namespace agentinodata
 
 
 /**
-	Interface for describing an service status info.
+	Interface for describing a service status info.
 	\ingroup Service
 */
 class IServiceStatusInfo: virtual public iser::IObject
@@ -33,14 +34,13 @@ public:
 		Get ID of the service.
 	*/
 	virtual QByteArray GetServiceId() const = 0;
+
 	/**
-		Get ID of the service.
+		Get status of the service.
 	*/
 	virtual ServiceStatus GetServiceStatus() const = 0;
-	/**
-		Get all information about service status.
-	*/
 };
+
 
 ProcessStateEnum GetProcceStateRepresentation(IServiceStatusInfo::ServiceStatus processState);
 

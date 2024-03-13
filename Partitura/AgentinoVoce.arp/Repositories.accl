@@ -8,31 +8,21 @@
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
-        <Element ComponentName="AgentCollection" X="800" Y="200" Note=""/>
-        <Element ComponentName="AgentInfo" X="800" Y="300" Note=""/>
-        <Element ComponentName="FileAutoPersistence" X="800" Y="75" Note=""/>
-        <Element ComponentName="Position2d" X="875" Y="650" Note=""/>
-        <Element ComponentName="RoleRepository" X="225" Y="525" Note=""/>
-        <Element ComponentName="ServiceStatusAutoPersistence" X="525" Y="525" Note=""/>
-        <Element ComponentName="ServiceStatusCollection" X="450" Y="650" Note=""/>
-        <Element ComponentName="ServiceStatusInfo" X="450" Y="775" Note=""/>
-        <Element ComponentName="TopologyCollection" X="875" Y="525" Note=""/>
-        <Element ComponentName="TopologyFileAutoPersistence" X="850" Y="425" Note=""/>
-        <Element ComponentName="UserGroupRepository" X="225" Y="300" Note=""/>
-        <Element ComponentName="UserRepository" X="225" Y="75" Note=""/>
+        <Element ComponentName="AgentCollection" X="600" Y="175" Note=""/>
+        <Element ComponentName="AgentInfo" X="600" Y="275" Note=""/>
+        <Element ComponentName="AgentStatusCollection" X="625" Y="600" Note=""/>
+        <Element ComponentName="AgentStatusInfo" X="625" Y="775" Note=""/>
+        <Element ComponentName="FileAutoPersistence" X="600" Y="50" Note=""/>
+        <Element ComponentName="Position2d" X="1000" Y="275" Note=""/>
+        <Element ComponentName="RoleRepository" X="175" Y="275" Note=""/>
+        <Element ComponentName="ServiceStatusCollection" X="200" Y="600" Note=""/>
+        <Element ComponentName="ServiceStatusInfo" X="200" Y="775" Note=""/>
+        <Element ComponentName="TopologyCollection" X="1000" Y="175" Note=""/>
+        <Element ComponentName="TopologyFileAutoPersistence" X="1000" Y="50" Note=""/>
+        <Element ComponentName="UserGroupRepository" X="175" Y="175" Note=""/>
+        <Element ComponentName="UserRepository" X="175" Y="50" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="UserRepository">
-            <PositionMap>
-                <Element ComponentName="JsonSerializer" X="175" Y="350" Note=""/>
-                <Element ComponentName="Repository" X="550" Y="550" Note=""/>
-                <Element ComponentName="Types" X="550" Y="125" Note=""/>
-                <Element ComponentName="UserCollectionAdapter" X="200" Y="550" Note=""/>
-                <Element ComponentName="UserDatabaseDelegate" X="550" Y="350" Note=""/>
-                <Element ComponentName="UserInfo" X="875" Y="350" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
         <EmbededRegistry Id="RoleRepository">
             <PositionMap>
                 <Element ComponentName="JsonSerializer" X="325" Y="75" Note=""/>
@@ -53,6 +43,17 @@
                 <Element ComponentName="UserGroupDatabaseDelegate" X="575" Y="325" Note=""/>
                 <Element ComponentName="UserGroupInfo" X="950" Y="325" Note=""/>
                 <Element ComponentName="UserGroupInfoProvider" X="925" Y="550" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="UserRepository">
+            <PositionMap>
+                <Element ComponentName="JsonSerializer" X="175" Y="350" Note=""/>
+                <Element ComponentName="Repository" X="550" Y="550" Note=""/>
+                <Element ComponentName="Types" X="550" Y="125" Note=""/>
+                <Element ComponentName="UserCollectionAdapter" X="200" Y="550" Note=""/>
+                <Element ComponentName="UserDatabaseDelegate" X="550" Y="350" Note=""/>
+                <Element ComponentName="UserInfo" X="875" Y="350" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

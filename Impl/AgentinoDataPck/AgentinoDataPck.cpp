@@ -39,6 +39,11 @@ I_EXPORT_COMPONENT(
 			"Service status info",
 			"Service Status Info");
 
+I_EXPORT_COMPONENT(
+			AgentStatusInfo,
+			"Agent status info",
+			"Agent Status Info");
+
 
 } // namespace AgentinoDataPck
 

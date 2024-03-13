@@ -26,6 +26,7 @@ public:
 		I_ASSIGN(m_loginStatusProviderCompPtr, "LoginStatusProvider", "Login status provider", true, "LoginStatusProvider");
 		I_ASSIGN_TO(m_loginStatusModelCompPtr, m_loginStatusProviderCompPtr, true);
 		I_ASSIGN(m_serviceStatusCollectionCompPtr, "ServiceStatusCollection", "Service status collection", false, "ServiceStatusCollection");
+		I_ASSIGN(m_agentStatusCollectionCompPtr, "AgentStatusCollection", "Agent status collection", false, "AgentStatusCollection");
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", false, "AgentCollection");
 	I_END_COMPONENT;
 
@@ -41,6 +42,7 @@ protected:
 	I_REF(imtauth::ILoginStatusProvider, m_loginStatusProviderCompPtr);
 	I_REF(imod::IModel, m_loginStatusModelCompPtr);
 	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);
+	I_REF(imtbase::IObjectCollection, m_agentStatusCollectionCompPtr);
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
 };
 
