@@ -100,8 +100,11 @@ imtbase::CTreeItemModel* CTopologyControllerComp::CreateTopologyModel() const
 						if (serviceStatus == "Running"){
 							itemsModel->SetData("IconUrl_1", "Icons/Running", index);
 						}
-						else {
+						else if (serviceStatus == "NotRunning"){
 							itemsModel->SetData("IconUrl_1", "Icons/Stopped", index);
+						}
+						else{
+							itemsModel->SetData("IconUrl_1", "Icons/Alert", index);
 						}
 
 						// Get Connections
@@ -322,7 +325,7 @@ bool CTopologyControllerComp::SetServiceCoordinate(const QByteArray& serviceId, 
 
 QString CTopologyControllerComp::GetServiceStatus(const QByteArray& serviceId) const
 {
-	QString retVal;
+	QString retVal = "Undefined";
 	if (m_serviceStatusCollectionCompPtr.IsValid()){
 		imtbase::IObjectCollection::DataPtr serviceStatusDataPtr;
 		if (m_serviceStatusCollectionCompPtr->GetObjectData(serviceId, serviceStatusDataPtr)){
