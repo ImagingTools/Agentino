@@ -26,6 +26,8 @@ RemoteCollectionView {
 
             documentManagerPtr.registerDocumentView("Agent", "AgentView", singleDocumentWorkspaceView);
             documentManagerPtr.registerDocumentDataController("Agent", agentDataControllerComp);
+
+            documentManagerPtr.activeDocumentIndex = -1;
         }
     }
 

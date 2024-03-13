@@ -4,6 +4,7 @@ import imtcontrols 1.0
 import imtcolgui 1.0
 import imtguigql 1.0
 import imtdocgui 1.0
+import imtgui 1.0
 
 RemoteCollectionView {
     id: root;
@@ -88,15 +89,20 @@ RemoteCollectionView {
 
         ServiceEditor {
             id: serviceEditor
-             commandsController: CommandsRepresentationProvider {
-                 commandId: "Service";
-                 uuid: serviceEditor.viewId;
 
-                  function getAdditionalInputParams(){
-                      console.log("root getAdditionalInputParams");
-                      return root.getAdditionalInputParams();
-                  }
-             }
+            commandsDelegate: ViewCommandsDelegateBase {
+                view: serviceEditor;
+            }
+
+            commandsController: CommandsRepresentationProvider {
+                commandId: "Service";
+                uuid: serviceEditor.viewId;
+
+                function getAdditionalInputParams(){
+                    console.log("root getAdditionalInputParams");
+                    return root.getAdditionalInputParams();
+                }
+            }
         }
     }
 

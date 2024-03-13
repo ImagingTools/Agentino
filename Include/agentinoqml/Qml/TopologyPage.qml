@@ -6,7 +6,6 @@ import imtguigql 1.0
 import imtcolgui 1.0
 import imtdocgui 1.0
 
-
 ViewBase {
     id: topologyPage;
 
@@ -49,6 +48,7 @@ ViewBase {
     commandsDelegate: ServiceCollectionViewCommandsDelegate {
         id: serviceCommandsDelegate
         collectionView: topologyPage
+        view: topologyPage;
 
         onCommandActivated: {
             if (commandId === "Save"){
@@ -191,6 +191,10 @@ ViewBase {
 
         ServiceEditor {
             id: serviceEditor
+            commandsDelegate: ViewCommandsDelegateBase {
+                view: serviceEditor;
+            }
+
             commandsController: CommandsRepresentationProvider {
                 commandId: "Service";
                 uuid: serviceEditor.viewId;
@@ -198,24 +202,6 @@ ViewBase {
                     return topologyPage.getAdditionalInputParams();
                 }
             }
-        }
-    }
-
-    Shortcut {
-        sequence: "Ctrl+S";
-
-        enabled: topologyPage.visible;
-
-        onEnabledChanged: {
-            console.log("Topology onEnabledChanged", enabled, model.index);
-        }
-
-        onActivated: {
-            serviceCommandsDelegate.commandHandle("Save");
-        }
-
-        onActivatedAmbiguously: {
-            serviceCommandsDelegate.commandHandle("Save");
         }
     }
 
