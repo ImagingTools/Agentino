@@ -58,6 +58,9 @@
                     <AttributeInfo Id="MainQmlPath" Type="String" ExportId="">
                         <Data IsEnabled="true" Value=":/qml/AgentinoMain.qml"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="PreferenceDefaultPath" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoPreferences.xml"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ProductName" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="Agentino"/>
                     </AttributeInfo>

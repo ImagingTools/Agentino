@@ -594,7 +594,7 @@ void CAgentCollectionControllerComp::OnTimeout()
 																							 imtservice::IServiceConnectionParam::CT_INPUT,
 																							 connectionUrl));
 
-															inputConnectionCollectionPtr->InsertNewObject("ConnectionInfo", serviceTypeName, description, urlConnectionParamPtr.PopPtr(), id);
+															inputConnectionCollectionPtr->InsertNewObject("ConnectionInfo", serviceTypeName, description, urlConnectionParamPtr.PopPtr());
 														}
 													}
 												}

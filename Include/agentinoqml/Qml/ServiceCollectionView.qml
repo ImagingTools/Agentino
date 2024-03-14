@@ -99,7 +99,6 @@ RemoteCollectionView {
                 uuid: serviceEditor.viewId;
 
                 function getAdditionalInputParams(){
-                    console.log("root getAdditionalInputParams");
                     return root.getAdditionalInputParams();
                 }
             }

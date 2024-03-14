@@ -3,6 +3,7 @@ import Acf 1.0
 import imtcontrols 1.0
 import imtdocgui 1.0
 import imtguigql 1.0
+import imtgui 1.0
 
 SingleDocumentWorkspaceView {
     id: root;
@@ -21,6 +22,10 @@ SingleDocumentWorkspaceView {
 
         AgentEditor {
             id: agentEditor;
+
+            commandsDelegate: ViewCommandsDelegateBase {
+                view: agentEditor;
+            }
 
             commandsController: CommandsRepresentationProvider {
                 commandId: "Agent";

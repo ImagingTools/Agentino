@@ -65,7 +65,8 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 			serviceDescription = itemModel.GetData("Description").toString();
 		}
 
-		istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInfoPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(GetServiceInfoFromRepresentationModel(itemModel));
+		istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInfoPtr =
+					dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(GetServiceInfoFromRepresentationModel(itemModel));
 		serviceInfoPtr->SetObjectUuid(objectId);
 
 		istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr = new imtbase::CTreeItemModel;
@@ -95,7 +96,8 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 }
 
 
-agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepresentationModel(const imtbase::CTreeItemModel& representationModel) const
+agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepresentationModel(
+			const imtbase::CTreeItemModel& representationModel) const
 {
 	istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInfoPtr;
 	serviceInfoPtr.SetPtr(new agentinodata::CIdentifiableServiceInfo);
@@ -193,7 +195,12 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 					}
 				}
 
-				connectionCollectionPtr->InsertNewObject("ConnectionInfo", name, description, urlConnectionParamPtr.PopPtr(), id);
+				connectionCollectionPtr->InsertNewObject(
+							"ConnectionInfo",
+							name,
+							description,
+							urlConnectionParamPtr.PopPtr(),
+							id);
 			}
 		}
 	}
@@ -217,7 +224,12 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 													usageId.toUtf8(),
 													dependantServiceConnectionId.toUtf8()));
 
-				dependantServiceConnectionCollectionPtr->InsertNewObject("ConnectionLink", name, description, urlConnectionLinkParamPtr.PopPtr(), id);
+				dependantServiceConnectionCollectionPtr->InsertNewObject(
+							"ConnectionLink",
+							name,
+							description,
+							urlConnectionLinkParamPtr.PopPtr(),
+							id);
 			}
 		}
 	}

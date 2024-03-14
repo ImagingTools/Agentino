@@ -297,6 +297,7 @@ ViewBase {
 
                 canMoveColumns: true;
                 canFitHeight: true;
+                wrapMode_deleg: Text.WordWrap;
 
                 radius: 0;
                 selectable: false
@@ -390,16 +391,22 @@ ViewBase {
                             anchors.right: button.left;
 
                             elide: Text.ElideRight;
-                            wrapMode: Text.NoWrap;
+                            wrapMode: Text.WordWrap;
 
                             clip: true;
 
                             color: Style.textColor;
                             font.family: Style.fontFamily;
                             font.pixelSize: Style.fontSize_common;
+                            lineHeight: 1.5;
 
                             onTextChanged: {
-                                content.height = textLabel.height;
+                                if (content.tableCellDelegate){
+                                    console.log("onTextChanged", text);
+                                    let columnIndex = content.tableCellDelegate.columnIndex;
+                                    content.tableCellDelegate.pTableDelegateContainer.setHeightModelElememt(columnIndex, textLabel.height);
+                                    content.tableCellDelegate.pTableDelegateContainer.setCellHeight();
+                                }
                             }
                         }
 

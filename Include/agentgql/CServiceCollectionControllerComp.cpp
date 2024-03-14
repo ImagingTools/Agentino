@@ -284,7 +284,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 								int index = inputConnectionsModelPtr->InsertNewItem();
 								QString connectionName = objectCollection->GetElementInfo(id, imtbase::IObjectCollection::EIT_NAME).toString();
 								QString connectionDescription = collectionInfo->GetElementInfo(id, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
-								inputConnectionsModelPtr->SetData("Id", id, index);
+								inputConnectionsModelPtr->SetData("Id", "", index);
 								inputConnectionsModelPtr->SetData("ConnectionName", connectionName, index);
 								inputConnectionsModelPtr->SetData("ServiceTypeName", connectionParamPtr->GetServiceTypeName(), index);
 								inputConnectionsModelPtr->SetData("UsageId", connectionParamPtr->GetUsageId(), index);
@@ -463,6 +463,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 		if (inputConnectionsModelPtr != nullptr){
 			for (int i = 0; i < inputConnectionsModelPtr->GetItemsCount(); i++){
 				QByteArray inputConnectionId = inputConnectionsModelPtr->GetData("Id", i).toByteArray();
+				QByteArray usageId = inputConnectionsModelPtr->GetData("UsageId", i).toByteArray();
 				int servicePort = inputConnectionsModelPtr->GetData("Port", i).toInt();
 
 				QFileInfo fileInfo(servicePath);
@@ -486,7 +487,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 						url.setHost("localhost");
 						url.setPort(servicePort);
 
-						connectionCollectionPtr->SetUrl(inputConnectionId, url);
+						connectionCollectionPtr->SetUrl(usageId, url);
 					}
 				}
 			}
