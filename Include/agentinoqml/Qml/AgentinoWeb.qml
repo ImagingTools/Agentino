@@ -19,7 +19,6 @@ Item {
             designProvider.applyDesignSchema("Light");
             context.appName = "Agentino"
 
-
             application.firstModelsInit();
         }
     }

@@ -17,5 +17,9 @@ ApplicationMain{
 
         anchors.fill: parent;
     }
+
+    Component.onCompleted: {
+        context.appName = "Agentino"
+    }
 }
 
