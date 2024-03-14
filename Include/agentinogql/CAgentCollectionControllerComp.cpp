@@ -196,7 +196,7 @@ imtbase::CTreeItemModel *CAgentCollectionControllerComp::ListObjects(const imtgq
 
 		imtbase::ICollectionInfo::Ids ids = m_objectCollectionCompPtr->GetElementIds(offset, count, &filterParams);
 
-		for (QByteArray id: ids){
+		for (const imtbase::ICollectionInfo::Id& id: ids){
 			int itemIndex = itemsModel->InsertNewItem();
 			if (itemIndex >= 0){
 				if (!SetupGqlItem(gqlRequest, *itemsModel, itemIndex, id, errorMessage)){
@@ -269,12 +269,12 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObject(
 
 	QByteArray itemData = inputParams.at(0).GetFieldArgumentValue("Item").toByteArray();
 	if (!itemData.isEmpty()){
-		agentinodata::IAgentInfo* agentInstancePtr = m_agentFactCompPtr.CreateInstance();
+		istd::TDelPtr<agentinodata::IAgentInfo> agentInstancePtr = m_agentFactCompPtr.CreateInstance();
 		if (agentInstancePtr == nullptr){
 			return nullptr;
 		}
 
-		agentinodata::CIdentifiableAgentInfo* agentPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(agentInstancePtr);
+		agentinodata::CIdentifiableAgentInfo* agentPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(agentInstancePtr.GetPtr());
 		if (agentPtr == nullptr){
 			errorMessage = QT_TR_NOOP("Unable to get an service info!");
 			return nullptr;
@@ -303,7 +303,7 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObject(
 			agentPtr->SetComputerName(computerName);
 		}
 
-		return agentPtr;
+		return agentInstancePtr.PopPtr();
 	}
 
 	errorMessage = QString("Can not create agent: %1").arg(QString(objectId));
@@ -323,7 +323,6 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 
 	QByteArray agentId = GetObjectIdFromInputParams(inputParams);
 
-	imtbase::CTreeItemModel* retVal = nullptr;
 	imtbase::IObjectCollection::DataPtr dataPtr;
 	if (m_objectCollectionCompPtr->GetObjectData(agentId, dataPtr)){
 		agentinodata::CIdentifiableAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(dataPtr.GetPtr());
@@ -336,13 +335,28 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 		}
 	}
 	else{
-		retVal = BaseClass::InsertObject(gqlRequest, errorMessage);
+		QString name;
+		QString description;
+
+		istd::TDelPtr<istd::IChangeable> objectPtr = BaseClass::CreateObject(gqlRequest, agentId, name, description, errorMessage);
+		if (objectPtr == nullptr){
+			return nullptr;
+		}
+
+		agentinodata::CIdentifiableAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(objectPtr.GetPtr());
+		if (agentInfoPtr == nullptr){
+			return nullptr;
+		}
+
+		agentInfoPtr->SetLastConnection(QDateTime::currentDateTimeUtc());
+
+		m_objectCollectionCompPtr->InsertNewObject("DocumentInfo", name, description, agentInfoPtr, agentId);
 	}
 
 	m_connectedAgents.append(agentId);
 	m_timer.start();
 
-	return retVal;
+	return nullptr;
 }
 
 
@@ -429,13 +443,13 @@ void CAgentCollectionControllerComp::UpdateAgentService(
 		return;
 	}
 
-	agentinodata::CServiceInfo* serviceInfoInfoPtr = nullptr;
+	agentinodata::CServiceInfo* serviceInfoPtr = nullptr;
 	imtbase::IObjectCollection::DataPtr serviceDataPtr;
 	if (serviceCollectionPtr->GetObjectData(serviceId, serviceDataPtr)){
-		serviceInfoInfoPtr = dynamic_cast<agentinodata::CServiceInfo*>(serviceDataPtr.GetPtr());
+		serviceInfoPtr = dynamic_cast<agentinodata::CServiceInfo*>(serviceDataPtr.GetPtr());
 	}
 
-	if (serviceInfoInfoPtr == nullptr){
+	if (serviceInfoPtr == nullptr){
 		return;
 	}
 
@@ -447,7 +461,7 @@ void CAgentCollectionControllerComp::UpdateAgentService(
 	}
 
 	imtbase::CTreeItemModel serviceRepresentationModel;
-	bool ok = m_serviceInfoRepresentationController.GetRepresentationFromDataModel(*serviceInfoInfoPtr, serviceRepresentationModel, paramsPtr.GetPtr());
+	bool ok = m_serviceInfoRepresentationController.GetRepresentationFromDataModel(*serviceInfoPtr, serviceRepresentationModel, paramsPtr.GetPtr());
 	if (!ok){
 		return;
 	}
@@ -474,7 +488,9 @@ void CAgentCollectionControllerComp::UpdateAgentService(
 
 	QString errorMessage;
 	istd::TDelPtr<imtbase::CTreeItemModel> responseModelPtr = m_requestHandlerCompPtr->CreateResponse(request, errorMessage);
-	if (!responseModelPtr.IsValid()){
+	if (responseModelPtr.IsValid()){
+	}
+	else{
 		SendErrorMessage(0, QString("Unable to update service on the agent"));
 	}
 }
@@ -502,6 +518,8 @@ void CAgentCollectionControllerComp::OnTimeout()
 						if (serviceInfoInfoPtr == nullptr){
 							continue;
 						}
+
+						UpdateAgentService(agentId, id);
 
 						if (m_requestHandlerCompPtr.IsValid()){
 							istd::TDelPtr<agentinodata::CServiceStatusInfo> serviceStatusInfoPtr;
@@ -614,8 +632,6 @@ void CAgentCollectionControllerComp::OnTimeout()
 								}
 							}
 						}
-
-						UpdateAgentService(agentId, id);
 
 						serviceCollectionPtr->SetObjectData(id, *serviceInfoInfoPtr);
 					}

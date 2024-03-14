@@ -388,7 +388,7 @@
                                 <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>OnAgentsCollectionChanged</Value>
+                                            <Value>OnAgentStatusChanged</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>

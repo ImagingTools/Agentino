@@ -138,10 +138,37 @@ bool CUrlConnectionLinkParamRepresentationController::GetRepresentationFromDataM
 
 
 bool CUrlConnectionLinkParamRepresentationController::GetDataModelFromRepresentation(
-			const imtbase::CTreeItemModel& /*representation*/,
-			istd::IChangeable& /*dataModel*/) const
+			const imtbase::CTreeItemModel& representation,
+			istd::IChangeable& dataModel) const
 {
-	return false;
+	if (!IsModelSupported(dataModel)){
+		return false;
+	}
+
+	imtservice::CUrlConnectionLinkParam* urlConnectionParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(&dataModel);
+	if (urlConnectionParamPtr == nullptr) {
+		return false;
+	}
+
+	if (representation.ContainsKey("UsageId")){
+		QByteArray usageId = representation.GetData("UsageId").toByteArray();
+
+		urlConnectionParamPtr->SetUsageId(usageId);
+	}
+
+	if (representation.ContainsKey("ServiceTypeName")){
+		QByteArray serviceTypeName = representation.GetData("ServiceTypeName").toByteArray();
+
+		urlConnectionParamPtr->SetServiceTypeName(serviceTypeName);
+	}
+
+	if (representation.ContainsKey("DependantConnectionId")){
+		QByteArray dependantConnectionId = representation.GetData("DependantConnectionId").toByteArray();
+
+		urlConnectionParamPtr->SetDependantServiceConnectionId(dependantConnectionId);
+	}
+
+	return true;
 }
 
 

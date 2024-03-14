@@ -103,10 +103,129 @@ bool CServiceInfoRepresentationController::GetRepresentationFromDataModel(
 
 
 bool CServiceInfoRepresentationController::GetDataModelFromRepresentation(
-		const imtbase::CTreeItemModel& /*representation*/,
-		istd::IChangeable& /*dataModel*/) const
+			const imtbase::CTreeItemModel& representation,
+			istd::IChangeable& dataModel) const
 {
-	return false;
+	if (!IsModelSupported(dataModel)){
+		return false;
+	}
+
+	CServiceInfo* serviceInfoPtr = dynamic_cast<CServiceInfo*>(&dataModel);
+	if (serviceInfoPtr == nullptr) {
+		return false;
+	}
+
+	if (representation.ContainsKey("Path")){
+		QByteArray path = representation.GetData("Path").toByteArray();
+
+		serviceInfoPtr->SetServicePath(path);
+	}
+
+	if (representation.ContainsKey("SettingsPath")){
+		QByteArray settingsPath = representation.GetData("SettingsPath").toByteArray();
+
+		serviceInfoPtr->SetServiceSettingsPath(settingsPath);
+	}
+
+	if (representation.ContainsKey("Arguments")){
+		QByteArrayList arguments = representation.GetData("Arguments").toByteArray().split(' ');
+
+		serviceInfoPtr->SetServiceArguments(arguments);
+	}
+
+	if (representation.ContainsKey("IsAutoStart")){
+		bool isAutoStart = representation.GetData("IsAutoStart").toBool();
+
+		serviceInfoPtr->SetIsAutoStart(isAutoStart);
+	}
+
+	if (representation.ContainsKey("ServiceTypeName")){
+		QByteArray serviceTypeName = representation.GetData("ServiceTypeName").toByteArray();
+
+		serviceInfoPtr->SetServiceTypeName(serviceTypeName);
+	}
+
+	imtbase::IObjectCollection* incomingConnectionCollectionPtr = serviceInfoPtr->GetInputConnections();
+	if (incomingConnectionCollectionPtr != nullptr){
+		incomingConnectionCollectionPtr->ResetData();
+
+		if (representation.ContainsKey("InputConnections")){
+			imtbase::CTreeItemModel* inputConnectionsModelPtr = representation.GetTreeItemModel("InputConnections");
+			if (inputConnectionsModelPtr != nullptr){
+				for (int i = 0; i < inputConnectionsModelPtr->GetItemsCount(); i++){
+					imtbase::CTreeItemModel urlRepresentationModel;
+					if (!urlRepresentationModel.CopyItemDataFromModel(0, inputConnectionsModelPtr, i)){
+						continue;
+					}
+
+					QByteArray id;
+					if (urlRepresentationModel.ContainsKey("Id")){
+						id = urlRepresentationModel.GetData("Id").toByteArray();
+					}
+
+					QString name;
+					if (urlRepresentationModel.ContainsKey("ConnectionName")){
+						name = urlRepresentationModel.GetData("ConnectionName").toString();
+					}
+
+					QString description;
+					if (urlRepresentationModel.ContainsKey("Description")){
+						description = urlRepresentationModel.GetData("Description").toString();
+					}
+
+					istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
+					urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam);
+
+					bool ok = m_urlConnectionParamRepresentationController.GetDataModelFromRepresentation(urlRepresentationModel, *urlConnectionParamPtr.GetPtr());
+					if (ok){
+						incomingConnectionCollectionPtr->InsertNewObject("ConnectionInfo", name, description, urlConnectionParamPtr.PopPtr(), id);
+					}
+				}
+			}
+		}
+	}
+
+	imtbase::IObjectCollection* dependantConnectionCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
+	if (dependantConnectionCollectionPtr != nullptr){
+		dependantConnectionCollectionPtr->ResetData();
+
+		if (representation.ContainsKey("OutputConnections")){
+			imtbase::CTreeItemModel* outputConnectionsModelPtr = representation.GetTreeItemModel("OutputConnections");
+			if (outputConnectionsModelPtr != nullptr){
+				for (int i = 0; i < outputConnectionsModelPtr->GetItemsCount(); i++){
+					imtbase::CTreeItemModel urlRepresentationModel;
+					if (!urlRepresentationModel.CopyItemDataFromModel(0, outputConnectionsModelPtr, i)){
+						continue;
+					}
+
+					QByteArray id;
+					if (urlRepresentationModel.ContainsKey("Id")){
+						id = urlRepresentationModel.GetData("Id").toByteArray();
+					}
+
+					QString name;
+					if (urlRepresentationModel.ContainsKey("ConnectionName")){
+						name = urlRepresentationModel.GetData("ConnectionName").toString();
+					}
+
+					QString description;
+					if (urlRepresentationModel.ContainsKey("Description")){
+						description = urlRepresentationModel.GetData("Description").toString();
+					}
+
+					istd::TDelPtr<imtservice::CUrlConnectionLinkParam> urlConnectionLinkParamPtr;
+					urlConnectionLinkParamPtr.SetPtr(new imtservice::CUrlConnectionLinkParam);
+
+					bool ok = m_urlConnectionLinkParamRepresentationController.GetDataModelFromRepresentation(urlRepresentationModel, *urlConnectionLinkParamPtr.GetPtr());
+					if (ok){
+						dependantConnectionCollectionPtr->InsertNewObject("ConnectionLink", name, description, urlConnectionLinkParamPtr.PopPtr(), id);
+					}
+				}
+			}
+		}
+	}
+
+	return true;
 }
 
 

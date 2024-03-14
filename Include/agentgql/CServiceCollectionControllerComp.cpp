@@ -373,25 +373,34 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::InsertObject(const im
 imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
+		SendErrorMessage(0, QString("m_objectCollectionCompPtr is invalid"), "CServiceCollectionControllerComp");
+
 		return nullptr;
 	}
 
 	if (!m_serviceControllerCompPtr.IsValid()){
+		SendErrorMessage(0, QString("m_serviceControllerCompPtr is invalid"), "CServiceCollectionControllerComp");
+
 		return nullptr;
 	}
 
 	imtbase::CTreeItemModel* resultPtr = BaseClass::UpdateObject(gqlRequest, errorMessage);
 
-	QByteArray objectId;
 	const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParam("input");
-	if (inputParamPtr != nullptr){
-		objectId = inputParamPtr->GetFieldArgumentValue("Id").toByteArray();
+	if (inputParamPtr == nullptr){
+		SendErrorMessage(0, QString("GraphQL input params invalid"), "CServiceCollectionControllerComp");
+
+		return nullptr;
 	}
+
+	QByteArray objectId = inputParamPtr->GetFieldArgumentValue("Id").toByteArray();
 
 	QString name;
 	QString description;
 	istd::IChangeable* savedObject = BaseClass::CreateObject(gqlRequest, objectId, name, description, errorMessage);
 	if (savedObject == nullptr){
+		SendErrorMessage(0, QString("Unable to create object"), "CServiceCollectionControllerComp");
+
 		return nullptr;
 	}
 
@@ -420,6 +429,8 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 
 	imtbase::CTreeItemModel itemModel;
 	if (!itemModel.CreateFromJson(itemData)){
+		SendErrorMessage(0, QString("Unable to create tree model from json"), "CServiceCollectionControllerComp");
+
 		return nullptr;
 	}
 
@@ -516,6 +527,13 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 
 	if (wasRunning){
 		m_serviceControllerCompPtr->StartService(objectId);
+	}
+
+	if (resultPtr != nullptr){
+		imtbase::CTreeItemModel* objectRepresentationDataModelPtr = GetObject(gqlRequest, errorMessage);
+		if (objectRepresentationDataModelPtr != nullptr){
+			resultPtr->SetExternTreeModel("item", objectRepresentationDataModelPtr->GetTreeItemModel("data"));
+		}
 	}
 
 	return resultPtr;

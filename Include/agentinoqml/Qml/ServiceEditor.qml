@@ -7,14 +7,23 @@ import imtcontrols 1.0
 ViewBase {
     id: serviceEditorContainer;
 
-    property int mainMargin: 0;
-    property int panelWidth: 800;
     property int radius: 3;
+    property int flickableWidth: 800;
 
     Component.onCompleted: {
         let ok = PermissionsController.checkPermission("ChangeService");
 
         serviceEditorContainer.readOnly = !ok;
+    }
+
+    onWidthChanged: {
+        console.log("onWidthChanged", width);
+        if (width < flickableWidth + 50){
+            flickable.width = width - 50;
+        }
+        else{
+            flickable.width = flickableWidth;
+        }
     }
 
     function setReadOnly(readOnly){
@@ -119,7 +128,7 @@ ViewBase {
         anchors.left: parent.left;
         anchors.leftMargin: 20;
 
-        width: 700;
+        width: serviceEditorContainer.flickableWidth;
 
         contentWidth: bodyColumn.width;
         contentHeight: bodyColumn.height;
@@ -287,6 +296,7 @@ ViewBase {
                 height: contentHeight + headerHeight + 15;
 
                 canMoveColumns: true;
+                canFitHeight: true;
 
                 radius: 0;
                 selectable: false
@@ -337,7 +347,7 @@ ViewBase {
                         index = headersModel.InsertNewItem();
 
                         headersModel.SetData("Id", "ExternPorts", index)
-                        headersModel.SetData("Name", qsTr("Extern Ports"), index)
+                        headersModel.SetData("Name", qsTr("Extern Addresses"), index)
 
                         inputConnTable.headers = headersModel;
                     }
@@ -367,7 +377,7 @@ ViewBase {
                                         values.push(host + ":" + port)
                                     }
 
-                                    textLabel.text = values.join(';')
+                                    textLabel.text = values.join('\n')
                                 }
                             }
                         }
@@ -387,6 +397,10 @@ ViewBase {
                             color: Style.textColor;
                             font.family: Style.fontFamily;
                             font.pixelSize: Style.fontSize_common;
+
+                            onTextChanged: {
+                                content.height = textLabel.height;
+                            }
                         }
 
                         ToolButton {
@@ -431,7 +445,7 @@ ViewBase {
                                             externPortsModel.Copy(portsModel);
                                             externPortsModel.Refresh()
 
-                                            textLabel.text = ports.join(';');
+                                            textLabel.text = ports.join('\n');
                                         }
                                     }
                                 }

@@ -86,7 +86,9 @@ QUrl CServiceCollectionControllerComp::GetUrlByDependantId(const QByteArray& dep
 }
 
 
-QStringList CServiceCollectionControllerComp::GetConnectionInfoAboutDependOnService(const QByteArray& connectionId) const
+QStringList CServiceCollectionControllerComp::GetConnectionInfoAboutDependOnService(
+			const QUrl& url,
+			const QByteArray& connectionId) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		return QStringList();
@@ -141,9 +143,7 @@ QStringList CServiceCollectionControllerComp::GetConnectionInfoAboutDependOnServ
 
 						QByteArray dependantServiceConnectionId = urlConnectionParamPtr->GetDependantServiceConnectionId();
 						if (dependantServiceConnectionId == connectionId){
-
-
-							result << QString(serviceName + "@" + agentName);
+							result << QString(serviceName + "@" + agentName + " (Port: " + QString::number(url.port()) + ")");
 						}
 					}
 				}
@@ -356,7 +356,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::ListObjects(
 
 		imtbase::ICollectionInfo::Ids ids = serviceCollectionPtr->GetElementIds(offset, count, &filterParams);
 
-		for (QByteArray id: ids){
+		for (imtbase::ICollectionInfo::Id& id: ids){
 			int itemIndex = itemsModel->InsertNewItem();
 			if (itemIndex >= 0){
 				if (!SetupGqlItem(gqlRequest, *itemsModel, itemIndex, id, errorMessage)){
@@ -445,8 +445,9 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetMetaInfo(const imt
 										),
 									index);
 
-			imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
+			QStringList connectionInfos;
 
+			imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
 			for (const imtbase::ICollectionInfo::Id& connectionId : connectionIds){
 				imtbase::IObjectCollection::DataPtr connectionDataPtr;
 				if (inputCollectionPtr->GetObjectData(connectionId, connectionDataPtr)){
@@ -458,20 +459,36 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetMetaInfo(const imt
 
 						contentModelPtr->SetData("Value", usageId + " (Port: " + QString::number(url.port()) + ")", childIndex);
 
-						QStringList connectionInfos = GetConnectionInfoAboutDependOnService(connectionId);
-						if (!connectionInfos.isEmpty()){
-							int index = dataModelPtr->InsertNewItem();
+						connectionInfos << GetConnectionInfoAboutDependOnService(url, connectionId);
 
-							dataModelPtr->SetData("Name", "Depend on the service by port " + QString::number(url.port()),index);
-
-							imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
-
-							for (const QString& info : connectionInfos){
-								int childIndex = contentModelPtr->InsertNewItem();
-								contentModelPtr->SetData("Value", info, childIndex);
-							}
+						imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections = urlConnectionParamPtr->GetIncomingConnections();
+						for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
+							connectionInfos << GetConnectionInfoAboutDependOnService(incomingConnection.url, incomingConnection.id);
 						}
 					}
+				}
+			}
+
+			if (!connectionInfos.isEmpty()){
+				index = dataModelPtr->InsertNewItem();
+
+				QString dependantServicesStr = QT_TR_NOOP("Dependant services on port");
+
+				dataModelPtr->SetData(	"Name",
+										imtbase::GetTranslation(
+												m_translationManagerCompPtr.GetPtr(),
+												dependantServicesStr.toUtf8(),
+												languageId,
+												"agentinogql::CServiceCollectionControllerComp"
+											),
+										index);
+
+				imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
+
+				for (const QString& info : connectionInfos){
+					int childIndex = contentModelPtr->InsertNewItem();
+
+					contentModelPtr->SetData("Value", info, childIndex);
 				}
 			}
 		}
@@ -482,8 +499,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetMetaInfo(const imt
 		if (!connectionIds.isEmpty()){
 			int index = dataModelPtr->InsertNewItem();
 
-//			QString dependOnServiceStr = QT_TR_NOOP("Depend on the service");
-			QString serviceDependsOnStr = QT_TR_NOOP("The service depends on");
+			QString serviceDependsOnStr = QT_TR_NOOP("Service depends on");
 
 			dataModelPtr->SetData(	"Name",
 									imtbase::GetTranslation(

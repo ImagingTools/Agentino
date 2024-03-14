@@ -20,7 +20,7 @@ public:
 
 protected:
 	QUrl GetUrlByDependantId(const QByteArray& dependantId) const;
-	QStringList GetConnectionInfoAboutDependOnService(const QByteArray& connectionId) const;
+	QStringList GetConnectionInfoAboutDependOnService(const QUrl& url, const QByteArray& connectionId) const;
 	QStringList GetConnectionInfoAboutServiceDepends(const QByteArray& connectionId) const;
 
 	// reimplemented (imtgql::CObjectCollectionControllerCompBase)

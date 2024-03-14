@@ -144,4 +144,41 @@ RemoteCollectionView {
             }
         }
     }
+
+    SubscriptionClient {
+        id: subscriptionClient;
+
+        Component.onCompleted: {
+            let subscriptionRequestId = "OnAgentStatusChanged"
+            var query = Gql.GqlRequest("subscription", subscriptionRequestId);
+            var queryFields = Gql.GqlObject("notification");
+            queryFields.InsertField("Id");
+            query.AddField(queryFields);
+
+            Events.sendEvent("RegisterSubscription", {"Query": query, "Client": subscriptionClient});
+        }
+
+        onStateChanged: {
+            console.log("OnAgentStatusChanged", state);
+
+            if (state === "Ready"){
+                if (subscriptionClient.ContainsKey("data")){
+                    root.doUpdateGui();
+
+//                    let dataModelLocal = subscriptionClient.GetData("data")
+//                    if (dataModelLocal.ContainsKey("token")){
+//                        let accessToken = dataModelLocal.GetData("token");
+//                        Events.sendEvent("GetToken", function (token){
+//                            if (String(token) == String(accessToken)){
+//                                root.doUpdateGui();
+//                            }
+//                            else{
+//                                root.hasRemoteChanges = true;
+//                            }
+//                        });
+//                    }
+                }
+            }
+        }
+    }
 }
