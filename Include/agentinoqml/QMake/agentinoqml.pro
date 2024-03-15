@@ -1,5 +1,22 @@
 TARGET = agentinoqml
 
+include($(IMTCOREDIR)/Config/QMake/QmlControls.pri)
+
+buildwebdir = $$PWD/../../../Bin/web
+
+imtcoredir = $(IMTCOREDIR)
+
+prepareWebQml($$buildwebdir)
+
+copyToWebDir($$imtcoredir/Include/imtstylecontrolsqml/Qml/Fonts/, $$buildwebdir/Resources)
+copyToWebDir($$imtcoredir/Include/imtstylecontrolsqml/Qml/Acf/, $$buildwebdir/src/Acf)
+
+compyleWeb($$buildwebdir, "agentino")
+
+GENERATED_RESOURCES = $$_PRO_FILE_PWD_/../empty
+
+include($(IMTCOREDIR)/Config/QMake/WebQrc.pri)
+
 include($(ACFDIR)/Config/QMake/StaticConfig.pri)
 include($(IMTCOREDIR)/Config/QMake/ImtCore.pri)
 
