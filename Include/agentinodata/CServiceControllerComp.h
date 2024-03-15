@@ -45,6 +45,7 @@ private:
 	I_REF(imtbase::IObjectCollection, m_serviceCollectionCompPtr);
 
 	QMap<QByteArray, QProcess*> m_processMap;
+	mutable QList<QByteArray> m_restartProcessing;
 };
 
 

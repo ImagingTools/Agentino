@@ -116,8 +116,8 @@ ViewBase {
             if(objectModel.GetItemsCount() > selectedIndex && selectedIndex >= 0){
                 selectedService = objectModel.GetData("Id", selectedIndex);
                 let status = objectModel.GetData("Status", selectedIndex);
-                commandsRepresentationProvider.setCommandIsEnabled("Start", status !== "Undefined" && status !== "Running")
-                commandsRepresentationProvider.setCommandIsEnabled("Stop", status !== "Undefined" && status === "Running")
+                commandsRepresentationProvider.setCommandIsEnabled("Start", status === "NotRunning")
+                commandsRepresentationProvider.setCommandIsEnabled("Stop", status === "Running")
                 commandsRepresentationProvider.setCommandIsEnabled("Edit", true)
 
                 metaInfo.contentVisible = true;
@@ -274,8 +274,8 @@ ViewBase {
                             scheme.objectModel.SetData("IconUrl_1", "Icons/Alert", index);
                         }
                         if (index === scheme.selectedIndex){
-                            topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus !== "Undefined" && serviceStatus !== "Running");
-                            topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus !== "Undefined" &&  serviceStatus === "Running");
+                            topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus === "NotRunning");
+                            topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === "Running");
                         }
                         scheme.requestPaint()
                     }

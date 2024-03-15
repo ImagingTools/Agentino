@@ -10,9 +10,9 @@ namespace AgentinoGqlPck
 
 
 I_EXPORT_PACKAGE(
-			"ServiceManagerGqlPck",
-			"ServiceManager's graphql based components",
-			IM_PROJECT("ServiceManager") IM_COMPANY("ImagingTools") "Service manager");
+			"AgentinoGqlPck",
+			"Agentino's graphql based components",
+			IM_PROJECT("Agentino") IM_COMPANY("ImagingTools") "Agentino");
 
 I_EXPORT_COMPONENT(
 			ServiceCollectionController,
@@ -28,6 +28,11 @@ I_EXPORT_COMPONENT(
 			AgentinoSubscriptionClient,
 			"Service manager subscription client for agent",
 			"GraphQl Service  Subscription Client");
+
+I_EXPORT_COMPONENT(
+			ServiceLogController,
+			"Service log controller",
+			"Service Log Controller");
 
 I_EXPORT_COMPONENT(
 			ServiceSubscriberController,

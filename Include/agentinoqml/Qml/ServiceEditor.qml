@@ -189,7 +189,7 @@ ViewBase {
                 width: parent.width;
                 height: Style.itemSizeMedium;
 
-                placeHolderText: qsTr("Enter the name");
+                placeHolderText: qsTr("Enter the description");
 
                 onEditingFinished: {
                     serviceEditorContainer.doUpdateModel();

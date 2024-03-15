@@ -488,6 +488,7 @@
                                             <Value>ServiceStop</Value>
                                             <Value>ServiceItem</Value>
                                             <Value>ServiceUpdate</Value>
+                                            <Value>GetServiceLog</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>

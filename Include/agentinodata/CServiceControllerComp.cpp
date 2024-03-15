@@ -55,6 +55,13 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 
 	if (m_processMap.contains(serviceId)){
 		process = m_processMap.value(serviceId);
+
+		bool isStopped = process->property("isStopped").toBool();
+		if (isStopped){
+			m_restartProcessing.append(serviceId);
+
+			return true;
+		}
 	}
 	else{
 		process = new QProcess(this);
@@ -71,7 +78,7 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 
 	process->start();
 
-	return retVal;
+	return true;
 }
 
 
@@ -83,10 +90,12 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 		QProcess *process = m_processMap[serviceId];
 		if (process != nullptr){
 			process->terminate();
-			process->waitForFinished(4000);
+			process->waitForFinished(2000);
 			if (process->isOpen()){
 				process->kill();
 			}
+
+			process->setProperty("isStopped", true);
 
 			retVal = true;
 		}
@@ -158,8 +167,10 @@ void CServiceControllerComp::stateChanged(QProcess::ProcessState newState)
 					m_processMap.take(serviceId)->deleteLater();
 				}
 
-				if (serviceInfoPtr != nullptr && serviceInfoPtr->IsAutoStart()){
+				if (serviceInfoPtr != nullptr && (serviceInfoPtr->IsAutoStart() || m_restartProcessing.contains(serviceId))){
 					StartService(serviceId);
+
+					m_restartProcessing.removeAll(serviceId);
 				}
 			}
 

@@ -17,6 +17,14 @@ RemoteCollectionView {
     collectionId: "Services";
     additionalFieldIds: ["Description","Status","StatusName"]
 
+    Component.onDestruction: {
+        let documentManagerPtr = MainDocumentManager.getDocumentManager("Agents")
+        if (documentManagerPtr){
+            documentManagerPtr.unRegisterDocumentView("Service" + root.clientId, "ServiceEditor");
+            documentManagerPtr.unRegisterDocumentDataController("Service" + root.clientId);
+        }
+    }
+
     onVisibleChanged: {
         if (visible && table.elements.GetItemsCount() !== 0){
             root.doUpdateGui();
@@ -39,6 +47,13 @@ RemoteCollectionView {
             documentManagerPtr.registerDocumentView("Service" + root.clientId, "ServiceEditor", serviceEditorComp);
             documentManagerPtr.registerDocumentDataController("Service" + root.clientId, serviceDataControllerComp);
             documentManagerPtr.registerDocumentValidator("Service" + root.clientId, serviceValidatorComp);
+        }
+    }
+
+    onHeadersChanged: {
+        if (root.table.headers.GetItemsCount() > 0){
+            let orderIndex = root.table.getHeaderIndex("StatusName");
+            root.table.setColumnContentComponent(orderIndex, stateColumnContentComp);
         }
     }
 
@@ -70,18 +85,44 @@ RemoteCollectionView {
         uuid: root.viewId;
     }
 
-    Component.onDestruction: {
-        let documentManagerPtr = MainDocumentManager.getDocumentManager("Agents")
-        if (documentManagerPtr){
-            documentManagerPtr.unRegisterDocumentView("Service" + root.clientId, "ServiceEditor");
-            documentManagerPtr.unRegisterDocumentDataController("Service" + root.clientId);
-        }
-    }
-
     function getAdditionalInputParams(){
         let additionInputParams = {}
         additionInputParams["clientId"] = root.clientId;
         return additionInputParams
+    }
+
+    LogView {
+        id: log;
+
+        anchors.left: parent.left;
+        anchors.right: parent.right;
+        anchors.bottom: parent.bottom;
+
+        height: 200;
+    }
+
+    ServiceLogProvider {
+        id: serviceLogProvider;
+
+        function getAdditionalInputParams(){
+            return root.getAdditionalInputParams();
+        }
+
+        onServiceLogModelChanged: {
+            log.model = serviceLogModel;
+
+            log.doUpdateGui();
+        }
+    }
+
+    onSelectionChanged: {
+        if (selection.length > 0){
+            let index = selection[0];
+
+            let serviceId = root.table.elements.GetData("Id", index);
+
+            serviceLogProvider.updateServiceLog(serviceId);
+        }
     }
 
     Component {
@@ -142,13 +183,6 @@ RemoteCollectionView {
 
                 return newName + "@" + root.clientName
             }
-        }
-    }
-
-    onHeadersChanged: {
-        if (root.table.headers.GetItemsCount() > 0){
-            let orderIndex = root.table.getHeaderIndex("StatusName");
-            root.table.setColumnContentComponent(orderIndex, stateColumnContentComp);
         }
     }
 

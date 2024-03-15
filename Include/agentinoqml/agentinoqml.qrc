@@ -18,6 +18,7 @@
 	<file alias="ServiceCollectionViewCommandsDelegate.qml">Qml/ServiceCollectionViewCommandsDelegate.qml</file>
 	<file alias="ExternPortsDialog.qml">Qml/ExternPortsDialog.qml</file>
 	<file alias="TopologyPage.qml">Qml/TopologyPage.qml</file>
+	<file alias="ServiceLogProvider.qml">Qml/ServiceLogProvider.qml</file>
     </qresource>
     <qresource prefix="/Features">
         <file alias="AgentinoFeatures">Resources/Features/AgentinoFeatures.xml</file>

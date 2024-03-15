@@ -446,45 +446,93 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 		serviceTypeName = itemModel.GetData("ServiceTypeName").toString();
 	}
 
-	bool wasRunning = false;
-	QProcess::ProcessState serviceStatus = m_serviceControllerCompPtr->GetServiceStatus(objectId);
-	if (serviceStatus == QProcess::ProcessState::Running){
-		wasRunning = true;
+	QFileInfo fileInfo(servicePath);
+	QString pluginPath = fileInfo.path() + "/Plugins";
 
-		bool wasStopped = m_serviceControllerCompPtr->StopService(objectId);
-		if (!wasStopped){
-			errorMessage = QString("Service '%1' cannot be stopped").arg(serviceTypeName);
-			SendErrorMessage(0, errorMessage);
+	if (!m_pluginMap.contains(serviceTypeName)){
+		if (!LoadPluginDirectory(pluginPath, serviceTypeName)){
+			SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(serviceTypeName), "CServiceCollectionControllerComp");
 
 			return nullptr;
 		}
 	}
 
+	istd::TDelPtr<imtservice::IConnectionCollection> connectionCollectionPtr;
+	if (m_pluginMap.contains(serviceTypeName)){
+		connectionCollectionPtr.SetPtr(m_pluginMap[serviceTypeName].pluginPtr->GetConnectionCollectionFactory()->CreateInstance());
+	}
+
+	if (!connectionCollectionPtr.IsValid()){
+		SendErrorMessage(0, QString("Connection collection for '%1' from plugin is invalid").arg(serviceTypeName), "CServiceCollectionControllerComp");
+
+		return nullptr;
+	}
+
+	bool needToUpdate = false;
 	if (itemModel.ContainsKey("InputConnections")){
 		imtbase::CTreeItemModel* inputConnectionsModelPtr = itemModel.GetTreeItemModel("InputConnections");
 		if (inputConnectionsModelPtr != nullptr){
 			for (int i = 0; i < inputConnectionsModelPtr->GetItemsCount(); i++){
-				QByteArray inputConnectionId = inputConnectionsModelPtr->GetData("Id", i).toByteArray();
 				QByteArray usageId = inputConnectionsModelPtr->GetData("UsageId", i).toByteArray();
 				int servicePort = inputConnectionsModelPtr->GetData("Port", i).toInt();
 
-				QFileInfo fileInfo(servicePath);
-				QString pluginPath = fileInfo.path() + "/Plugins";
+				if (connectionCollectionPtr.IsValid()){
+					const QUrl* actualUrlPtr = connectionCollectionPtr->GetUrl(usageId);
+					if (actualUrlPtr != nullptr && actualUrlPtr->port() != servicePort){
+						needToUpdate = true;
 
-				if (!m_pluginMap.contains(serviceTypeName)){
-					LoadPluginDirectory(pluginPath, serviceTypeName);
+						break;
+					}
 				}
+			}
+		}
+	}
 
-				QStringList keys = m_pluginMap.keys();
+	if (!needToUpdate && itemModel.ContainsKey("OutputConnections")){
+		imtbase::CTreeItemModel* outputConnectionsModelPtr = itemModel.GetTreeItemModel("OutputConnections");
+		if (outputConnectionsModelPtr != nullptr){
+			for (int i = 0; i < outputConnectionsModelPtr->GetItemsCount(); i++){
+				QByteArray outputConnectionId = outputConnectionsModelPtr->GetData("Id", i).toByteArray();
+				QString urlStr = outputConnectionsModelPtr->GetData("Url", i).toString();
 
-				if (m_pluginMap.contains(serviceTypeName)){
-					istd::TDelPtr<imtservice::IConnectionCollection> connectionCollectionPtr = m_pluginMap[serviceTypeName].pluginPtr->GetConnectionCollectionFactory()->CreateInstance();
-					if (connectionCollectionPtr != nullptr){
-						const imtbase::ICollectionInfo* collectionInfoPtr = connectionCollectionPtr->GetUrlList();
-						if (collectionInfoPtr == nullptr){
-							continue;
-						}
+				QUrl url(urlStr);
 
+				if (connectionCollectionPtr.IsValid()){
+					const QUrl* actualUrlPtr = connectionCollectionPtr->GetUrl(outputConnectionId);
+					if (actualUrlPtr != nullptr && actualUrlPtr->port() != url.port()){
+						needToUpdate = true;
+
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	if (needToUpdate){
+		bool wasRunning = false;
+		QProcess::ProcessState serviceStatus = m_serviceControllerCompPtr->GetServiceStatus(objectId);
+		if (serviceStatus == QProcess::ProcessState::Running){
+			wasRunning = true;
+
+			bool wasStopped = m_serviceControllerCompPtr->StopService(objectId);
+			if (!wasStopped){
+				errorMessage = QString("Service '%1' cannot be stopped").arg(serviceTypeName);
+				SendErrorMessage(0, errorMessage);
+
+				return nullptr;
+			}
+		}
+
+		if (itemModel.ContainsKey("InputConnections")){
+			imtbase::CTreeItemModel* inputConnectionsModelPtr = itemModel.GetTreeItemModel("InputConnections");
+			if (inputConnectionsModelPtr != nullptr){
+				for (int i = 0; i < inputConnectionsModelPtr->GetItemsCount(); i++){
+					QByteArray inputConnectionId = inputConnectionsModelPtr->GetData("Id", i).toByteArray();
+					QByteArray usageId = inputConnectionsModelPtr->GetData("UsageId", i).toByteArray();
+					int servicePort = inputConnectionsModelPtr->GetData("Port", i).toInt();
+
+					if (connectionCollectionPtr.IsValid()){
 						QUrl url;
 						url.setHost("localhost");
 						url.setPort(servicePort);
@@ -494,42 +542,34 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 				}
 			}
 		}
-	}
 
-	if (itemModel.ContainsKey("OutputConnections")){
-		imtbase::CTreeItemModel* outputConnectionsModelPtr = itemModel.GetTreeItemModel("OutputConnections");
-		if (outputConnectionsModelPtr != nullptr){
-			for (int i = 0; i < outputConnectionsModelPtr->GetItemsCount(); i++){
-				QByteArray outputConnectionId = outputConnectionsModelPtr->GetData("Id", i).toByteArray();
-				QString urlStr = outputConnectionsModelPtr->GetData("Url", i).toString();
+		if (itemModel.ContainsKey("OutputConnections")){
+			imtbase::CTreeItemModel* outputConnectionsModelPtr = itemModel.GetTreeItemModel("OutputConnections");
+			if (outputConnectionsModelPtr != nullptr){
+				for (int i = 0; i < outputConnectionsModelPtr->GetItemsCount(); i++){
+					QByteArray outputConnectionId = outputConnectionsModelPtr->GetData("Id", i).toByteArray();
+					QString urlStr = outputConnectionsModelPtr->GetData("Url", i).toString();
 
-				QUrl url(urlStr);
+					QUrl url(urlStr);
 
-				if (url.host().isEmpty()){
-					url.setHost("localhost");
-				}
+					if (url.host().isEmpty()){
+						url.setHost("localhost");
+					}
 
-				if (url.scheme().isEmpty()){
-					url.setScheme("http");
-				}
+					if (url.scheme().isEmpty()){
+						url.setScheme("http");
+					}
 
-				if (m_pluginMap.contains(serviceTypeName)){
-					istd::TDelPtr<imtservice::IConnectionCollection> connectionCollection = m_pluginMap[serviceTypeName].pluginPtr->GetConnectionCollectionFactory()->CreateInstance();
-					if (connectionCollection != nullptr){
-						const imtbase::ICollectionInfo* collectionInfoPtr = connectionCollection->GetUrlList();
-						if (collectionInfoPtr == nullptr){
-							continue;
-						}
-
-						connectionCollection->SetUrl(outputConnectionId, url);
+					if (connectionCollectionPtr.IsValid()){
+						connectionCollectionPtr->SetUrl(outputConnectionId, url);
 					}
 				}
 			}
 		}
-	}
 
-	if (wasRunning){
-		m_serviceControllerCompPtr->StartService(objectId);
+		if (wasRunning){
+			m_serviceControllerCompPtr->StartService(objectId);
+		}
 	}
 
 	if (resultPtr != nullptr){
