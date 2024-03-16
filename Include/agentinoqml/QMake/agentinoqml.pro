@@ -8,6 +8,9 @@ imtcoredir = $(IMTCOREDIR)
 
 prepareWebQml($$buildwebdir)
 
+# copy project qml from to
+copyToWebDir($$PWD/../Qml/, $$buildwebdir/src)
+copyToWebDir($$PWD/../Resources/html/, $$buildwebdir/Resources)
 copyToWebDir($$imtcoredir/Include/imtstylecontrolsqml/Qml/Fonts/, $$buildwebdir/Resources)
 copyToWebDir($$imtcoredir/Include/imtstylecontrolsqml/Qml/Acf/, $$buildwebdir/src/Acf)
 
