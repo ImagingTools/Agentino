@@ -149,12 +149,14 @@ void CServiceControllerComp::stateChanged(QProcess::ProcessState newState)
 	for (const QByteArray& serviceId: keys) {
 		QProcess *process = m_processMap[serviceId];
 		if (process != nullptr && process == senderProcess){
-			istd::IChangeable::ChangeSet changeSet(istd::IChangeable::CF_ANY);
-			IServiceController::NotifierStatusInfo notifierStatusInfo;
-			notifierStatusInfo.serviceId = serviceId;
-			notifierStatusInfo.serviceStatus = newState;
-			changeSet.SetChangeInfo(IServiceController::CN_STATUS_CHANGED, QVariant::fromValue(notifierStatusInfo));
-			istd::CChangeNotifier notifier(this, &changeSet);
+			{
+				istd::IChangeable::ChangeSet changeSet(istd::IChangeable::CF_ANY);
+				IServiceController::NotifierStatusInfo notifierStatusInfo;
+				notifierStatusInfo.serviceId = serviceId;
+				notifierStatusInfo.serviceStatus = newState;
+				changeSet.SetChangeInfo(IServiceController::CN_STATUS_CHANGED, QVariant::fromValue(notifierStatusInfo));
+				istd::CChangeNotifier notifier(this, &changeSet);
+			}
 
 			if (newState == QProcess::NotRunning){
 				agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = nullptr;
