@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5191" Description="ACF"/>
-            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5204" Description="ACF"/>
+            <Version Id="1" Number="2203" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -18,6 +18,12 @@
         <Element Id="PageData" PackageId="" ComponentId="PageData">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="AgentinoUrl" Type="Reference" ExportId="AgentinoUrl">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Login" Type="Reference" ExportId="Login">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ServiceController" Type="Reference" ExportId="ServiceController">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -40,6 +46,7 @@
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>PageData/ServicesPage</Value>
+                                <Value>PageData/AgentSettingsPage</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -58,7 +65,7 @@
                     <AttributeInfo Id="GuiElementModels" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>ServicesPage</Value>
+                                <Value>SettingsPage</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -161,11 +168,44 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="SettingsPage" PackageId="ImtQmlPck" ComponentId="PageGuiElementModel">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="IconPath" Type="Text" ExportId="">
+                        <Data IsEnabled="true" Value="Icons/Workflow"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Id" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="AgentSettings"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Name" Type="Text" ExportId="">
+                        <Data IsEnabled="true" Value="Settings"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="PageQmlItem" Type="Text" ExportId="">
+                        <Data IsEnabled="true" Value="../../AgentSettings.qml"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
     </ElementsList>
     <EmbeddedRegistriesList>
         <EmbeddedRegistry Id="PageData">
             <Data Description="" Keywords="">
                 <ElementsList>
+                    <Element Id="AgentSettingsPage" PackageId="AgentinoAgentVoce" ComponentId="AgentSettingsPage">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="AgentinoUrl" Type="Reference" ExportId="AgentinoUrl">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Login" Type="Reference" ExportId="Login">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
                     <Element Id="ServicesPage" PackageId="AgentinoAgentVoce" ComponentId="ServicesPage">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
@@ -194,6 +234,7 @@
                 <EmbeddedRegistriesList/>
                 <ExportedInterfaces/>
                 <ExportedComponents>
+                    <Component ExportedId="AgentSettingsPage" ComponentId="AgentSettingsPage"/>
                     <Component ExportedId="ServicesPage" ComponentId="ServicesPage"/>
                 </ExportedComponents>
             </Data>

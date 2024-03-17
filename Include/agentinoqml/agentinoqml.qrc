@@ -13,6 +13,7 @@
 	<file alias="ServiceEditor.qml">Qml/ServiceEditor.qml</file>
 	<file alias="ServiceValidator.qml">Qml/ServiceValidator.qml</file>
 	<file alias="AgentEditor.qml">Qml/AgentEditor.qml</file>
+	<file alias="AgentSettings.qml">Qml/AgentSettings.qml</file>
 	<file alias="AgentCollectionViewCommandsDelegate.qml">Qml/AgentCollectionViewCommandsDelegate.qml</file>
 	<file alias="AgentsSingleDocWorkspaceView.qml">Qml/AgentsSingleDocWorkspaceView.qml</file>
 	<file alias="ServiceCollectionViewCommandsDelegate.qml">Qml/ServiceCollectionViewCommandsDelegate.qml</file>

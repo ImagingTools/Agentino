@@ -35,6 +35,11 @@ I_EXPORT_COMPONENT(
 			"Service Log Controller");
 
 I_EXPORT_COMPONENT(
+			AgentSettingsController,
+			"Agent settings controller",
+			"Agent Settings Controller");
+
+I_EXPORT_COMPONENT(
 			ServiceSubscriberController,
 			"Service subscriber controller",
 			"GraphQl Service Subscriber Controller");

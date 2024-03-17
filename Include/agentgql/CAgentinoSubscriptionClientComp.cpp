@@ -66,7 +66,6 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 
 		item.insert("Name", name);
 		item.insert("ComputerName", name);
-		item.insert("Description", "Test description");
 		item.insert("HttpUrl", "http://localhost:7222");
 		item.insert("WebSocketUrl", "http://localhost:7223");
 

@@ -10,6 +10,7 @@
 #include <agentgql/CServiceControllerComp.h>
 #include <agentgql/CAgentinoSubscriptionClientComp.h>
 #include <agentgql/CServiceLogControllerComp.h>
+#include <agentgql/CAgentSettingsControllerComp.h>
 #include <agentinogql/CServiceSubscriberControllerComp.h>
 #include <agentinogql/CServiceControllerProxyComp.h>
 #include <agentinogql/CGetServiceControllerProxyComp.h>
@@ -36,6 +37,7 @@ typedef agentgql::CServiceCollectionControllerComp ServiceCollectionController;
 typedef agentgql::CServiceControllerComp ServiceController;
 typedef agentgql::CAgentinoSubscriptionClientComp AgentinoSubscriptionClient;
 typedef agentgql::CServiceLogControllerComp ServiceLogController;
+typedef agentgql::CAgentSettingsControllerComp AgentSettingsController;
 typedef agentinogql::CServiceSubscriberControllerComp ServiceSubscriberController;
 typedef agentinogql::CServiceControllerProxyComp ServiceControllerProxy;
 typedef agentinogql::CGetServiceControllerProxyComp GetServiceControllerProxy;

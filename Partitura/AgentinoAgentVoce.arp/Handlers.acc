@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5191" Description="ACF"/>
-            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5204" Description="ACF"/>
+            <Version Id="1" Number="2203" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -13,7 +13,13 @@
         <Element Id="AgentPages" PackageId="AgentinoAgentVoce" ComponentId="AgentPages">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="AgentinoUrl" Type="Reference" ExportId="AgentinoUrl">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Login" Type="Reference" ExportId="Login">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceController" Type="Reference" ExportId="ServiceController">
@@ -37,6 +43,9 @@
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="DatabaseEngine">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="DatabaseServerConnectionChecker" Type="Reference" ExportId="DatabaseServerConnectionChecker">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -51,23 +60,32 @@
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="RoleRepository">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ServerSettings" Type="Reference" ExportId="ServerSettings">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="UserCollection" Type="Reference" ExportId="UserCollection">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserGroupRepository" Type="Reference" ExportId="UserGroupRepository">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserRepository" Type="Reference" ExportId="UserRepository">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="RemoteContextGQLServerFramework" PackageId="ImtHttpServerVoce" ComponentId="RemoteAuthorizableServerFramework">
+        <Element Id="LocalAuthorizableGQLServerFramework" PackageId="ImtServerVoce" ComponentId="LocalAuthorizableGQLServerFramework">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
-                    <AttributeInfo Id="CacheClearingInterval" Type="Integer" ExportId="">
-                        <Data IsEnabled="true" Value="60"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="FileAccessCommandId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Agent/Views*"/>
+                        <Data IsEnabled="true" Value="Agent/files*"/>
                     </AttributeInfo>
                     <AttributeInfo Id="GqlRequestHandler" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
@@ -98,8 +116,14 @@
                     <AttributeInfo Id="RedirectToCommandId" Type="Id" ExportId="">
                         <Data IsEnabled="true" Value="Agent/Views/html/indexAgent.html?item=Pages/StartPage.qml"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="RemoteGqlRequest" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ApplicationController"/>
+                    <AttributeInfo Id="SessionCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ApplicationController/UserSessionRepository"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserCollection" Type="Reference" ExportId="UserCollection">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserSettingsCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ApplicationController/UserSettingsRepository"/>
                     </AttributeInfo>
                     <AttributeInfo Id="WebCommandId" Type="Id" ExportId="">
                         <Data IsEnabled="true" Value="Agent/Views*"/>
@@ -135,7 +159,7 @@
     <EmbeddedRegistriesList/>
     <ExportedInterfaces>
         <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="ApplicationController"/>
-        <Interface InterfaceId="imtrest::IRequestServlet" ComponentId="RemoteContextGQLServerFramework"/>
+        <Interface InterfaceId="imtrest::IRequestServlet" ComponentId="LocalAuthorizableGQLServerFramework"/>
     </ExportedInterfaces>
     <ExportedComponents/>
 </Acf>

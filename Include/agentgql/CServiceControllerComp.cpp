@@ -68,8 +68,9 @@ imtbase::CTreeItemModel* CServiceControllerComp::CreateInternalResponse(const im
 			}
 		}
 		rootModelPtr->SetExternTreeModel("data", dataModel);
-		return rootModelPtr.PopPtr();
 	}
+
+	return rootModelPtr.PopPtr();
 }
 
 

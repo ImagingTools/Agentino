@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5191" Description="ACF"/>
-            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5204" Description="ACF"/>
+            <Version Id="1" Number="2203" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -13,14 +13,26 @@
         <Element Id="AgentHandlers" PackageId="AgentinoAgentVoce" ComponentId="Handlers">
             <Data IsEnabled="true" Flags="2">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="AgentinoUrl" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/WebSocketAgentinoServerUrl"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="DatabaseEngine"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="LogPath" Type="Reference" ExportId="LogPath">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Login" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="WebSocketClient"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/RoleRepository"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServerSettings" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings"/>
@@ -33,6 +45,15 @@
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/UserRepository"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserGroupRepository" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/UserGroupRepository"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserRepository" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/UserRepository"/>
                     </AttributeInfo>
                     <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
                         <Data IsEnabled="false"/>
@@ -77,6 +98,36 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="DatabaseEngine" PackageId="ImtCoreVoce" ComponentId="DatabaseEngine">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="DbName" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="agent"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DbPath" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="agent"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DbType" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="QSQLITE"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="MigrationPath" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="Migrations"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Password" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="root"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="PgHostName" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="localhost"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="PgPort" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="5432"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="HttpServerFramework" PackageId="ImtHttpServerVoce" ComponentId="HttpServerFramework">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
@@ -108,6 +159,9 @@
         <Element Id="Repositories" PackageId="" ComponentId="Repositories">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="DatabaseEngine"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -196,14 +250,26 @@
         <Element Id="WebSocketAgentHandlers" PackageId="AgentinoAgentVoce" ComponentId="Handlers">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="AgentinoUrl" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/WebSocketAgentinoServerUrl"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="DatabaseEngine"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="LogPath" Type="Reference" ExportId="LogPath">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Login" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="WebSocketClient"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/RoleRepository"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServerSettings" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings"/>
@@ -216,6 +282,15 @@
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/UserRepository"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserGroupRepository" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/UserGroupRepository"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserRepository" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/UserRepository"/>
                     </AttributeInfo>
                     <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
                         <Data IsEnabled="false"/>
@@ -316,13 +391,31 @@
                             <AttributeInfoMap/>
                         </Data>
                     </Element>
+                    <Element Id="UserLocalRepositories" PackageId="ImtAuthVoce" ComponentId="UserLocalRepositories">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="DatabaseEngine">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
                 </ElementsList>
                 <EmbeddedRegistriesList/>
                 <ExportedInterfaces>
                     <Interface InterfaceId="istd::IPolymorphic" ComponentId="FileAutoPersistence/AutoPersistence"/>
                 </ExportedInterfaces>
                 <ExportedComponents>
+                    <Component ExportedId="RoleRepository" ComponentId="UserLocalRepositories/RoleRepository"/>
                     <Component ExportedId="ServiceCollection" ComponentId="ServiceCollection"/>
+                    <Component ExportedId="UserGroupRepository" ComponentId="UserLocalRepositories/UserGroupRepository"/>
+                    <Component ExportedId="UserRepository" ComponentId="UserLocalRepositories/UserRepository"/>
                 </ExportedComponents>
             </Data>
         </EmbeddedRegistry>

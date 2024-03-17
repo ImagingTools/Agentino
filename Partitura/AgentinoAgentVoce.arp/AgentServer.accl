@@ -2,15 +2,16 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5191" Description="ACF"/>
-            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5204" Description="ACF"/>
+            <Version Id="1" Number="2203" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
         <Element ComponentName="AgentHandlers" X="525" Y="200" Note=""/>
         <Element ComponentName="AgentinoLocalization" X="375" Y="100" Note=""/>
         <Element ComponentName="AgentsSubscriptionManager" X="450" Y="725" Note=""/>
+        <Element ComponentName="DatabaseEngine" X="800" Y="125" Note=""/>
         <Element ComponentName="HttpServerFramework" X="500" Y="550" Note=""/>
         <Element ComponentName="Repositories" X="625" Y="300" Note=""/>
         <Element ComponentName="ServerSettings" X="100" Y="450" Note=""/>
@@ -18,7 +19,7 @@
         <Element ComponentName="ServiceManagerSubscriptionClient" X="925" Y="725" Note=""/>
         <Element ComponentName="ServiceSubscriberController" X="900" Y="450" Note=""/>
         <Element ComponentName="WebSocketAgentHandlers" X="325" Y="375" Note=""/>
-        <Element ComponentName="WebSocketClient" X="925" Y="625" Note=""/>
+        <Element ComponentName="WebSocketClient" X="775" Y="625" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
         <EmbededRegistry Id="Repositories">
@@ -26,6 +27,7 @@
                 <Element ComponentName="FileAutoPersistence" X="800" Y="200" Note=""/>
                 <Element ComponentName="ServiceCollection" X="525" Y="200" Note=""/>
                 <Element ComponentName="ServiceInfo" X="550" Y="300" Note=""/>
+                <Element ComponentName="UserLocalRepositories" X="525" Y="100" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
