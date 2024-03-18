@@ -20,6 +20,8 @@ ViewBase {
     //for scrollBars
 
     Component.onCompleted: {
+        console.log("TopologyPage onCompleted");
+
         let documentManager = MainDocumentManager.getDocumentManager("Topology");
         if (documentManager){
             documentManager.registerDocumentView("Service", "ServiceView", serviceEditorComp);
@@ -220,10 +222,13 @@ ViewBase {
             }
 
             function getDocumentName(){
-                if (scheme.selectedIndex >= 0){
-                    let name = scheme.objectModel.GetData("MainText", scheme.selectedIndex);
+                for (let i = 0; i < scheme.objectModel.GetItemsCount(); i++){
+                    let id = scheme.objectModel.GetData("Id", i);
+                    if (id == documentId){
+                        let name = scheme.objectModel.GetData("MainText", i);
 
-                    return name;
+                        return name;
+                    }
                 }
 
                 return "";
@@ -242,11 +247,16 @@ ViewBase {
         id: topologySubscriptionClient;
 
         Component.onCompleted: {
+            console.log("topologySubscriptionClient onCompleted", topologySubscriptionClient);
+
             let subscriptionRequestId = "OnTopologyChanged"
             var query = Gql.GqlRequest("subscription", subscriptionRequestId);
             var queryFields = Gql.GqlObject("notification");
             queryFields.InsertField("Id");
             query.AddField(queryFields);
+
+            console.log("OnTopologyChanged registerSubscription", query, topologySubscriptionClient);
+            console.log("subscriptionManager", subscriptionManager);
 
             subscriptionManager.registerSubscription(query, topologySubscriptionClient);
         }

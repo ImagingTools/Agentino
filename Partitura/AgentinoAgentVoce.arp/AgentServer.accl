@@ -9,7 +9,7 @@
     </AcfHeader>
     <PositionMap>
         <Element ComponentName="AgentHandlers" X="575" Y="200" Note=""/>
-        <Element ComponentName="AgentinoLocalization" X="325" Y="100" Note=""/>
+        <Element ComponentName="AgentinoLocalization" X="275" Y="75" Note=""/>
         <Element ComponentName="AgentsSubscriptionManager" X="450" Y="725" Note=""/>
         <Element ComponentName="DatabaseEngine" X="800" Y="125" Note=""/>
         <Element ComponentName="HttpServerFramework" X="500" Y="550" Note=""/>

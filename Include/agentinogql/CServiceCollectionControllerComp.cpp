@@ -379,10 +379,6 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::ListObjects(
 
 imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetMetaInfo(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
 {
-	if (!m_translationManagerCompPtr.IsValid()){
-		return nullptr;
-	}
-
 	QByteArray agentId;
 	QByteArray serviceId;
 	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParam("input");
@@ -436,14 +432,16 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetMetaInfo(const imt
 
 			QString incomingConnectionStr = QT_TR_NOOP("Incoming Connections");
 
-			dataModelPtr->SetData(	"Name",
-									imtbase::GetTranslation(
-											m_translationManagerCompPtr.GetPtr(),
-											incomingConnectionStr.toUtf8(),
-											languageId,
-											"agentinogql::CServiceCollectionControllerComp"
-										),
-									index);
+			if (m_translationManagerCompPtr.IsValid()){
+				incomingConnectionStr = imtbase::GetTranslation(
+						m_translationManagerCompPtr.GetPtr(),
+						incomingConnectionStr.toUtf8(),
+						languageId,
+						"agentinogql::CServiceCollectionControllerComp"
+					);
+			}
+
+			dataModelPtr->SetData("Name", incomingConnectionStr, index);
 
 			QStringList connectionInfos;
 
@@ -474,14 +472,15 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetMetaInfo(const imt
 
 				QString dependantServicesStr = QT_TR_NOOP("Dependant services on port");
 
-				dataModelPtr->SetData(	"Name",
-										imtbase::GetTranslation(
-												m_translationManagerCompPtr.GetPtr(),
-												dependantServicesStr.toUtf8(),
-												languageId,
-												"agentinogql::CServiceCollectionControllerComp"
-											),
-										index);
+				if (m_translationManagerCompPtr.IsValid()){
+					dependantServicesStr = imtbase::GetTranslation(
+							m_translationManagerCompPtr.GetPtr(),
+							dependantServicesStr.toUtf8(),
+							languageId,
+							"agentinogql::CServiceCollectionControllerComp"
+						);
+				}
+				dataModelPtr->SetData("Name", dependantServicesStr, index);
 
 				imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
 
@@ -501,14 +500,15 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetMetaInfo(const imt
 
 			QString serviceDependsOnStr = QT_TR_NOOP("Service depends on");
 
-			dataModelPtr->SetData(	"Name",
-									imtbase::GetTranslation(
-											m_translationManagerCompPtr.GetPtr(),
-											serviceDependsOnStr.toUtf8(),
-											languageId,
-											"agentinogql::CServiceCollectionControllerComp"
-										),
-									index);
+			if (m_translationManagerCompPtr.IsValid()){
+				serviceDependsOnStr = imtbase::GetTranslation(
+						m_translationManagerCompPtr.GetPtr(),
+						serviceDependsOnStr.toUtf8(),
+						languageId,
+						"agentinogql::CServiceCollectionControllerComp"
+					);
+			}
+			dataModelPtr->SetData(	"Name", serviceDependsOnStr, index);
 
 			imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
 

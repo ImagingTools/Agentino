@@ -366,13 +366,13 @@ ViewBase {
                         cellWidthModel.SetData("Width", 150, index);
 
                         index = cellWidthModel.InsertNewItem();
-                        cellWidthModel.SetData("Width", 320, index);
+                        cellWidthModel.SetData("Width", 300, index);
 
                         index = cellWidthModel.InsertNewItem();
-                        cellWidthModel.SetData("Width", -1, index);
+                        cellWidthModel.SetData("Width", 100, index);
 
                         index = cellWidthModel.InsertNewItem();
-                        cellWidthModel.SetData("Width", -1, index);
+                        cellWidthModel.SetData("Width", 100, index);
 
                         index = cellWidthModel.InsertNewItem();
                         cellWidthModel.SetData("Width", -1, index);

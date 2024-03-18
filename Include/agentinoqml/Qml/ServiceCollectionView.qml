@@ -91,29 +91,29 @@ RemoteCollectionView {
         return additionInputParams
     }
 
-    LogView {
-        id: log;
+//    LogView {
+//        id: log;
 
-        anchors.left: parent.left;
-        anchors.right: parent.right;
-        anchors.bottom: parent.bottom;
+//        anchors.left: parent.left;
+//        anchors.right: parent.right;
+//        anchors.bottom: parent.bottom;
 
-        height: 200;
-    }
+//        height: 200;
+//    }
 
-    ServiceLogProvider {
-        id: serviceLogProvider;
+//    ServiceLogProvider {
+//        id: serviceLogProvider;
 
-        function getAdditionalInputParams(){
-            return root.getAdditionalInputParams();
-        }
+//        function getAdditionalInputParams(){
+//            return root.getAdditionalInputParams();
+//        }
 
-        onServiceLogModelChanged: {
-            log.model = serviceLogModel;
+//        onServiceLogModelChanged: {
+//            log.model = serviceLogModel;
 
-            log.doUpdateGui();
-        }
-    }
+//            log.doUpdateGui();
+//        }
+//    }
 
     onSelectionChanged: {
         if (selection.length > 0){
@@ -121,7 +121,7 @@ RemoteCollectionView {
 
             let serviceId = root.table.elements.GetData("Id", index);
 
-            serviceLogProvider.updateServiceLog(serviceId);
+//            serviceLogProvider.updateServiceLog(serviceId);
         }
     }
 
