@@ -22,6 +22,9 @@
                     <AttributeInfo Id="LogPath" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Application/LogFilePath"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="RuntimeStatus" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Application/RuntimeStatus"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="VersionInfo"/>
                     </AttributeInfo>

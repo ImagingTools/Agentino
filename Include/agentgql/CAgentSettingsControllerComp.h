@@ -7,9 +7,7 @@
 #include <imtauth/ILogin.h>
 
 // Agentino includes
-
 #include <agentinodata/IServiceController.h>
-
 
 
 namespace agentgql
@@ -33,7 +31,6 @@ protected:
 protected:
 	I_REF(imtbase::IUrlParam, m_agentinoUrlCompPtr);
 	I_REF(imtauth::ILogin, m_loginCompPtr);
-
 };
 
 

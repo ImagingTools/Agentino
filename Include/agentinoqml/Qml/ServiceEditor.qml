@@ -315,6 +315,8 @@ ViewBase {
                     inputConnTable.setColumnContentComponent(1, textInputComp)
                     inputConnTable.setColumnContentComponent(3, textInputComp)
                     inputConnTable.setColumnContentComponent(4, externCompEditComp)
+
+                    inputConnTable.tableDecorator = inputTableDecoratorModel;
                 }
 
                 onSelectionChanged: {
@@ -351,6 +353,29 @@ ViewBase {
                         headersModel.SetData("Name", qsTr("Extern Addresses"), index)
 
                         inputConnTable.headers = headersModel;
+                    }
+                }
+
+                TreeItemModel {
+                    id: inputTableDecoratorModel;
+
+                    Component.onCompleted: {
+                        var cellWidthModel = inputTableDecoratorModel.AddTreeModel("CellWidth");
+
+                        let index = cellWidthModel.InsertNewItem();
+                        cellWidthModel.SetData("Width", 150, index);
+
+                        index = cellWidthModel.InsertNewItem();
+                        cellWidthModel.SetData("Width", 320, index);
+
+                        index = cellWidthModel.InsertNewItem();
+                        cellWidthModel.SetData("Width", -1, index);
+
+                        index = cellWidthModel.InsertNewItem();
+                        cellWidthModel.SetData("Width", -1, index);
+
+                        index = cellWidthModel.InsertNewItem();
+                        cellWidthModel.SetData("Width", -1, index);
                     }
                 }
 
@@ -491,6 +516,8 @@ ViewBase {
                 onHeadersChanged: {
                     ouputConnTable.setColumnContentComponent(2, textInputComp2)
                     ouputConnTable.setColumnContentComponent(3, comboBoxComp2)
+
+                    ouputConnTable.tableDecorator = outputTableDecoratorModel;
                 }
 
                 onElementsChanged: {
@@ -547,6 +574,9 @@ ViewBase {
                             anchors.verticalCenter: parent.verticalCenter;
 
                             width: parent.width;
+
+                            elide: Text.ElideRight;
+                            wrapMode: Text.NoWrap;
 
                             color: Style.textColor;
                             font.family: Style.fontFamily;
@@ -638,6 +668,26 @@ ViewBase {
                         headersModel2.SetData("Name", qsTr("Url"), index)
 
                         ouputConnTable.headers = headersModel2;
+                    }
+                }
+
+                TreeItemModel {
+                    id: outputTableDecoratorModel;
+
+                    Component.onCompleted: {
+                        var cellWidthModel = outputTableDecoratorModel.AddTreeModel("CellWidth");
+
+                        let index = cellWidthModel.InsertNewItem();
+                        cellWidthModel.SetData("Width", 150, index);
+
+                        index = cellWidthModel.InsertNewItem();
+                        cellWidthModel.SetData("Width", 80, index);
+
+                        index = cellWidthModel.InsertNewItem();
+                        cellWidthModel.SetData("Width", 350, index);
+
+                        index = cellWidthModel.InsertNewItem();
+                        cellWidthModel.SetData("Width", -1, index);
                     }
                 }
             }

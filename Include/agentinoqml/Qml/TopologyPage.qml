@@ -239,6 +239,32 @@ ViewBase {
     }
 
     SubscriptionClient {
+        id: topologySubscriptionClient;
+
+        Component.onCompleted: {
+            let subscriptionRequestId = "OnTopologyChanged"
+            var query = Gql.GqlRequest("subscription", subscriptionRequestId);
+            var queryFields = Gql.GqlObject("notification");
+            queryFields.InsertField("Id");
+            query.AddField(queryFields);
+
+            subscriptionManager.registerSubscription(query, topologySubscriptionClient);
+        }
+
+        onStateChanged: {
+            if (state === "Ready"){
+                console.log("OnTopologyChanged Ready", topologySubscriptionClient.toJSON());
+
+                if (topologySubscriptionClient.ContainsKey("data")){
+                    console.log("updateModel");
+
+                    topologyPage.itemsTopologyModel.updateModel()
+                }
+            }
+        }
+    }
+
+    SubscriptionClient {
         id: subscriptionClient;
 
         Component.onCompleted: {
@@ -315,11 +341,9 @@ ViewBase {
                         }
                     }
                 }
-
             }
         }
     }
-
 
     property GqlModel itemsTopologyModel: GqlModel {
         id: topolodyModel
@@ -359,9 +383,6 @@ ViewBase {
                     }
                 }
             }
-            else if (this.state === "Error"){
-            }
         }
     }
-
 }

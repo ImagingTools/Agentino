@@ -11,14 +11,12 @@ ViewBase {
     property int panelWidth: 700;
 
     Component.onCompleted: {
-        viewId = "AgentSettings"
-        settingsModel.updateModel()
+        settingsGetModel.updateModel()
     }
 
     commandsController: CommandsRepresentationProvider {
         id: commandsRepresentationProvider
-        commandId: agentSettingsContainer.viewId;
-//        uuid: agentSettingsContainer.viewId;
+        commandId: "AgentSettings";
     }
 
     commandsDelegate: ViewCommandsDelegateBase {
@@ -33,28 +31,17 @@ ViewBase {
         }
     }
 
-    function blockEditing(){
-        descriptionInput.readOnly = true;
-        nameInput.readOnly = true;
+    Connections {
+        target: agentSettingsContainer.model;
+
+        function onDataChanged(){
+            commandsRepresentationProvider.setCommandIsEnabled("Save", true);
+        }
     }
 
     function updateGui(){
-//        if (agentSettingsContainer.model.ContainsKey("Name")){
-//            nameInput.text = agentSettingsContainer.model.GetData("Name");
-//        }
-//        else{
-//            nameInput.text = "";
-//        }
-
-//        if (agentSettingsContainer.model.ContainsKey("Description")){
-//            descriptionInput.text = agentSettingsContainer.model.GetData("Description");
-//        }
-//        else{
-//            descriptionInput.text = "";
-//        }
-
-        if (agentSettingsContainer.model.ContainsKey("agentinoUrl")){
-            agentinoUrlInput.text = agentSettingsContainer.model.GetData("agentinoUrl");
+        if (agentSettingsContainer.model.ContainsKey("Url")){
+            agentinoUrlInput.text = agentSettingsContainer.model.GetData("Url");
         }
         else{
             agentinoUrlInput.text = "";
@@ -62,10 +49,7 @@ ViewBase {
     }
 
     function updateModel(){
-        console.log("updateModel()")
-//        agentSettingsContainer.model.SetData("Name", nameInput.text);
-//        agentSettingsContainer.model.SetData("Description", descriptionInput.text);
-        agentSettingsContainer.model.SetData("agentinoUrl", agentinoUrlInput.text);
+        agentSettingsContainer.model.SetData("Url", agentinoUrlInput.text);
     }
 
     Rectangle {
@@ -92,52 +76,18 @@ ViewBase {
 
                 spacing: Style.size_mainMargin;
 
-//                TextFieldWithTitle {
-//                    id: nameInput;
-
-//                    width: parent.width
-
-//                    title: qsTr("Name");
-
-//                    placeHolderText: qsTr("Enter the name");
-
-//                    onEditingFinished: {
-//                        agentSettingsContainer.doUpdateModel();
-//                    }
-
-//                    KeyNavigation.tab: nameInput;
-//                }
-
-//                TextFieldWithTitle {
-//                    id: descriptionInput;
-
-//                    width: parent.width
-
-//                    title: qsTr("Description");
-
-//                    placeHolderText: qsTr("Enter the descriptionl");
-
-//                    onEditingFinished: {
-//                        agentSettingsContainer.doUpdateModel();
-//                    }
-
-//                    KeyNavigation.tab: nameInput;
-//                }
-
                 TextFieldWithTitle {
                     id: agentinoUrlInput;
 
                     width: parent.width
 
-                    title: qsTr("Agentino Web Socket Url");
+                    title: qsTr("Agentino URL");
 
-                    placeHolderText: qsTr("Enter the agentino Url");
+                    placeHolderText: qsTr("Enter the agentino URL");
 
                     onEditingFinished: {
                         agentSettingsContainer.doUpdateModel();
                     }
-
-                    KeyNavigation.tab: nameInput;
                 }
             }//Column bodyColumn
         }//columnContainer
@@ -150,8 +100,7 @@ ViewBase {
             var query = Gql.GqlRequest("mutation", "SetAgentSettings");
 
             var inputParams = Gql.GqlObject("input");
-            inputParams.InsertField ("agentinoUrl", agentinoUrlInput.text);
-
+            inputParams.InsertField ("Item", agentSettingsContainer.model.toJSON());
             query.AddParam(inputParams);
 
             var queryFields = Gql.GqlObject("updatedNotification");
@@ -169,8 +118,8 @@ ViewBase {
                     let dataModelLocal = saveModel.GetData("data");
                     if (dataModelLocal.ContainsKey("SetAgentSettings")){
                         dataModelLocal = dataModelLocal.GetData("SetAgentSettings");
-                        if (dataModelLocal.ContainsKey("updateNotification")){
-//                            commandsRepresentationProvider.setCommandIsEnabled("Save", false)
+                        if (dataModelLocal.ContainsKey("updatedNotification")){
+                            commandsRepresentationProvider.setCommandIsEnabled("Save", false)
                         }
                     }
                 }
@@ -179,45 +128,38 @@ ViewBase {
         }
     }
 
-
     property GqlModel settingsGetModel: GqlModel {
         id: settingsModel
 
         function updateModel() {
             console.log( "topologyPage updateModel", "GetAgentSettings");
             var query = Gql.GqlRequest("query", "GetAgentSettings");
-            var queryFields = Gql.GqlObject("settings");
-
-            query.AddField(queryFields);
+            var queryFields = Gql.GqlObject("input");
+            query.AddParam(queryFields);
 
             var gqlData = query.GetQuery();
-
-            console.log("settingsGetModel query ", gqlData);
             this.SetGqlQuery(gqlData);
         }
 
         onStateChanged: {
-            console.log("State:", this.state);
             if (this.state === "Ready"){
+                console.log("GetAgentSettings Ready:", this.toJSON());
+
                 var dataModelLocal;
-                if (settingsModel.ContainsKey("errors")){
+                if (this.ContainsKey("errors")){
                     return;
                 }
 
-                console.log("GetTopology ready:", settingsModel.toJSON())
-
-                if (settingsModel.ContainsKey("data")){
-                    dataModelLocal = settingsModel.GetData("data");
+                if (this.ContainsKey("data")){
+                    dataModelLocal = this.GetData("data");
                     if (dataModelLocal.ContainsKey("GetAgentSettings")){
                         dataModelLocal = dataModelLocal.GetData("GetAgentSettings");
-                        if (dataModelLocal.ContainsKey("settings")){
-                            agentinoUrlInput.text = dataModelLocal.GetData("settings").GetData("agentinoUrl");
-//                            commandsRepresentationProvider.setCommandIsEnabled("Save", false)
-                        }
+
+                        agentSettingsContainer.model = dataModelLocal;
+
+                        agentSettingsContainer.doUpdateGui();
                     }
                 }
-            }
-            else if (this.state === "Error"){
             }
         }
     }

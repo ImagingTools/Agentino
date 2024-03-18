@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5191" Description="ACF"/>
-            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5210" Description="ACF"/>
+            <Version Id="1" Number="2205" Description="ACF-Solutions"/>
             <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -46,9 +46,6 @@
                     <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="DatabaseEngine"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="LanguageConstraints" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -66,9 +63,6 @@
                     </AttributeInfo>
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
                     </AttributeInfo>
                     <AttributeInfo Id="UserCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/UserRepository"/>
@@ -150,6 +144,7 @@
                                 <Value>Subscriptions/ServiceStatusCollectionSubscriberController</Value>
                                 <Value>Subscriptions/AgentStatusCollectionSubscriber</Value>
                                 <Value>Subscriptions/AgentsSubscriberController</Value>
+                                <Value>Subscriptions/TopologySubscriber</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -235,9 +230,6 @@
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
-                    </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
         </Element>
@@ -283,8 +275,8 @@
                     <AttributeInfo Id="ServiceStatusRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
                     </AttributeInfo>
                     <AttributeInfo Id="UserGroupRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/UserGroupRepository"/>
@@ -313,9 +305,6 @@
                     <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="DatabaseEngine"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="LanguageConstraints" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -333,9 +322,6 @@
                     </AttributeInfo>
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
                     </AttributeInfo>
                     <AttributeInfo Id="UserCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/UserRepository"/>
@@ -482,6 +468,31 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
+                    <Element Id="TopologySubscriber" PackageId="ImtGqlPck" ComponentId="ModelSubscriberController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>OnTopologyChanged</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Model" Type="Reference" ExportId="TopologyCollection">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
                     <Element Id="UserGroupsSubscriberController" PackageId="ImtGqlPck" ComponentId="ModelSubscriberController">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
@@ -541,6 +552,7 @@
                     <Component ExportedId="RolesSubscriberController" ComponentId="RolesSubscriberController"/>
                     <Component ExportedId="ServiceCollectionSubscriberController" ComponentId="ServiceCollectionSubscriberController"/>
                     <Component ExportedId="ServiceStatusCollectionSubscriberController" ComponentId="ServiceStatusCollectionSubscriberController"/>
+                    <Component ExportedId="TopologySubscriber" ComponentId="TopologySubscriber"/>
                     <Component ExportedId="UserGroupsSubscriberController" ComponentId="UserGroupsSubscriberController"/>
                     <Component ExportedId="UsersSubscriberController" ComponentId="UsersSubscriberController"/>
                 </ExportedComponents>
