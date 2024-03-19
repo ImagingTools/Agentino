@@ -1,0 +1,36 @@
+import QtQuick 2.12
+import imtauthgui 1.0
+import imtgui 1.0
+import imtcontrols 1.0
+
+DecoratorBase {
+    id: topRightPanelDecorator;
+
+    Component.onCompleted: {
+        Events.subscribeEvent("UserModeChanged", topRightPanelDecorator.onUserModeChanged);
+    }
+
+    Component.onDestruction: {
+        Events.unSubscribeEvent("UserModeChanged", topRightPanelDecorator.onUserModeChanged);
+    }
+
+    function onUserModeChanged(userMode){
+        if (userMode === "NO_USER_MANAGEMENT"){
+            userPanel.visible = false;
+        }
+        else if (userMode === "OPTIONAL_USER_MANAGEMENT"){
+            userPanel.visible = true;
+        }
+        else if (userMode === "STRONG_USER_MANAGEMENT"){
+            userPanel.visible = true;
+        }
+    }
+
+    UserPanel {
+        id: userPanel;
+
+        anchors.verticalCenter: parent ? parent.verticalCenter : undefined;
+
+        visible: false;
+    }
+}

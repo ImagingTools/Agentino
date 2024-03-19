@@ -104,6 +104,11 @@ I_EXPORT_COMPONENT(
 			"Agent connection observer",
 			"Agent Connection Observer");
 
+I_EXPORT_COMPONENT(
+			AgentConnectionSubscriberController,
+			"Agent connection subscriber controller",
+			"Agent Connection Subscriber Controller");
+
 
 } // namespace AgentinoGqlPck
 

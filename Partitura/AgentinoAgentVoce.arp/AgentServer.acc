@@ -10,6 +10,28 @@
     <Description></Description>
     <Keywords></Keywords>
     <ElementsList>
+        <Element Id="AgentConnectionSubscriberController" PackageId="AgentinoGqlPck" ComponentId="AgentConnectionSubscriberController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>OnAgentConnectionChanged</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="LoginStatusProvider" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="WebSocketClient"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RequestManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="HttpServerFramework/WebSocketServer"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="AgentHandlers" PackageId="AgentinoAgentVoce" ComponentId="Handlers">
             <Data IsEnabled="true" Flags="2">
                 <AttributeInfoMap>
@@ -135,6 +157,7 @@
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>ServiceSubscriberController</Value>
+                                <Value>AgentConnectionSubscriberController</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

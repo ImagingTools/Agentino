@@ -8,6 +8,7 @@
     <qresource prefix="/qml">
         <file alias="AgentinoMain.qml">Qml/AgentinoMain.qml</file>
 	<file alias="AgentinoWeb.qml">Qml/AgentinoWeb.qml</file>
+	<file alias="AgentWeb.qml">Qml/AgentWeb.qml</file>
 	<file alias="ServiceCollectionView.qml">Qml/ServiceCollectionView.qml</file>
 	<file alias="AgentCollectionView.qml">Qml/AgentCollectionView.qml</file>
 	<file alias="ServiceEditor.qml">Qml/ServiceEditor.qml</file>
@@ -20,6 +21,7 @@
 	<file alias="ExternPortsDialog.qml">Qml/ExternPortsDialog.qml</file>
 	<file alias="TopologyPage.qml">Qml/TopologyPage.qml</file>
 	<file alias="ServiceLogProvider.qml">Qml/ServiceLogProvider.qml</file>
+	<file alias="AgentTopRightPanelDecorator.qml">Qml/AgentTopRightPanelDecorator.qml</file>
     </qresource>
     <qresource prefix="/Features">
         <file alias="AgentinoFeatures">Resources/Features/AgentinoFeatures.xml</file>
