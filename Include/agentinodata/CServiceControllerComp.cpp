@@ -89,13 +89,12 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 	if (m_processMap.contains(serviceId)){
 		QProcess *process = m_processMap[serviceId];
 		if (process != nullptr){
+			process->setProperty("isStopped", true);
 			process->terminate();
 			process->waitForFinished(2000);
 			if (process->isOpen()){
 				process->kill();
 			}
-
-			process->setProperty("isStopped", true);
 
 			retVal = true;
 		}
@@ -165,11 +164,14 @@ void CServiceControllerComp::stateChanged(QProcess::ProcessState newState)
 					serviceInfoPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(serviceDataPtr.GetPtr());
 				}
 
+				bool isStoped = false;
+
 				if (m_processMap.contains(serviceId)){
+					isStoped = m_processMap[serviceId]->property("isStopped").toBool();
 					m_processMap.take(serviceId)->deleteLater();
 				}
 
-				if (serviceInfoPtr != nullptr && (serviceInfoPtr->IsAutoStart() || m_restartProcessing.contains(serviceId))){
+				if ((serviceInfoPtr != nullptr && serviceInfoPtr->IsAutoStart() && isStoped != true) || m_restartProcessing.contains(serviceId)){
 					StartService(serviceId);
 
 					m_restartProcessing.removeAll(serviceId);
