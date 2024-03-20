@@ -1,11 +1,12 @@
 #pragma once
 
+
 // ImtCore includes
 #include <imtgql/CObjectCollectionControllerCompBase.h>
 #include <imtbase/PluginInterface.h>
 #include <imtservice/IConnectionCollectionPlugin.h>
 
-// ServiceManager includes
+// Agentino includes
 #include <agentinodata/IServiceInfo.h>
 #include <agentinodata/IServiceController.h>
 

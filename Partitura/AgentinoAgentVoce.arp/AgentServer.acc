@@ -2,7 +2,7 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5210" Description="ACF"/>
+            <Version Id="0" Number="5211" Description="ACF"/>
             <Version Id="1" Number="2205" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394753" Description="Qt Framework"/>
         </VersionInfos>
@@ -28,6 +28,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="RequestManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="HttpServerFramework/WebSocketServer"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -65,6 +68,9 @@
                     <AttributeInfo Id="ServiceRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="UserCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/UserRepository"/>
                     </AttributeInfo>
@@ -76,6 +82,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="WebSocketUrl" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/WebSocketServerPort"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -249,6 +258,9 @@
                     <AttributeInfo Id="RequestManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketClient"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
         </Element>
@@ -285,6 +297,9 @@
                     <AttributeInfo Id="ServiceRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="UserCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/UserRepository"/>
                     </AttributeInfo>
@@ -296,6 +311,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="WebSocketUrl" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/WebSocketServerPort"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
