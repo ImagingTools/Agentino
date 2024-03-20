@@ -4,7 +4,7 @@
         <VersionInfos>
             <Version Id="0" Number="5210" Description="ACF"/>
             <Version Id="1" Number="2205" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="1023" Number="394753" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -117,32 +117,17 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="DatabaseEngine" PackageId="ImtCoreVoce" ComponentId="DatabaseEngine">
+        <Element Id="DatabaseEngine" PackageId="ImtCoreVoce" ComponentId="SqLiteDatabaseEngine">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
-                    <AttributeInfo Id="DbName" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="agent"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DbPath" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="agent"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DbType" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="QSQLITE"/>
+                    <AttributeInfo Id="DatabaseSqlFilePath" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="agent.sqlite"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="MigrationPath" Type="String" ExportId="">
                         <Data IsEnabled="true" Value="Migrations"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Password" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="root"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="PgHostName" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="localhost"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="PgPort" Type="Integer" ExportId="">
-                        <Data IsEnabled="true" Value="5432"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>

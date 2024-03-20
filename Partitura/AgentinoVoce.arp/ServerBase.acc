@@ -4,7 +4,7 @@
         <VersionInfos>
             <Version Id="0" Number="5210" Description="ACF"/>
             <Version Id="1" Number="2205" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="1023" Number="394753" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -46,6 +46,9 @@
                     <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="DatabaseEngine"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="LanguageConstraints" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -63,6 +66,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
                     </AttributeInfo>
                     <AttributeInfo Id="UserCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/UserRepository"/>
@@ -82,6 +88,9 @@
         <Element Id="AgentinoLocalization" PackageId="ImtCoreVoce" ComponentId="AppLocalization">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="InstallTranslator" Type="Boolean" ExportId="">
+                        <Data IsEnabled="true" Value="true"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="LanguageIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
@@ -91,38 +100,26 @@
                             </Values>
                         </Data>
                     </AttributeInfo>
+                    <AttributeInfo Id="LanguageSelection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="DatabaseEngine" PackageId="ImtCoreVoce" ComponentId="DatabaseEngine">
+        <Element Id="DatabaseEngine" PackageId="ImtCoreVoce" ComponentId="SqLiteDatabaseEngine">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
-                    <AttributeInfo Id="DbName" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="agentino"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DbPath" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="agentino"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DbType" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="QSQLITE"/>
+                    <AttributeInfo Id="DatabaseSqlFilePath" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="agentino.sqlite"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="MigrationPath" Type="String" ExportId="">
                         <Data IsEnabled="true" Value="Migrations"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Password" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="root"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="PgHostName" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="localhost"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="PgPort" Type="Integer" ExportId="">
-                        <Data IsEnabled="true" Value="5432"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -230,6 +227,9 @@
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
         </Element>
@@ -278,6 +278,9 @@
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="UserGroupRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/UserGroupRepository"/>
                     </AttributeInfo>
@@ -305,6 +308,9 @@
                     <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="DatabaseEngine"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="LanguageConstraints" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -322,6 +328,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
                     </AttributeInfo>
                     <AttributeInfo Id="UserCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/UserRepository"/>
@@ -565,6 +574,7 @@
     </ExportedInterfaces>
     <ExportedComponents>
         <Component ExportedId="AgentCollection" ComponentId="Repositories/AgentCollection"/>
+        <Component ExportedId="AgentinoLocalization" ComponentId="AgentinoLocalization"/>
         <Component ExportedId="AutoPersistence" ComponentId="Repositories/AutoPersistence"/>
         <Component ExportedId="DatabaseEngine" ComponentId="DatabaseEngine"/>
         <Component ExportedId="ServerSettings" ComponentId="ServerSettings"/>

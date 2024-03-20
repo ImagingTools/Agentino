@@ -1,6 +1,8 @@
 // Qt includes
 #include <QtCore/QDir>
 #include <QtCore/QCoreApplication>
+#include <QtSql/QSqlDatabase>
+#include <QtSql/QSqlDriver>
 
 // ACF includes
 #include <ibase/IApplication.h>
