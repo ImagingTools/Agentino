@@ -30,7 +30,7 @@ ViewBase {
         }
     }
 
-    commandsController: CommandsRepresentationProvider {
+    commandsControllerComp: Component {CommandsRepresentationProvider {
         id: commandsRepresentationProvider
         commandId: "Topology"
         uuid: topologyPage.viewId;
@@ -40,6 +40,7 @@ ViewBase {
             setToggled("AutoFit", scheme.autoFit);
         }
     }
+    }
 
     onVisibleChanged: {
         if (topologyPage.visible){
@@ -47,7 +48,7 @@ ViewBase {
         }
     }
 
-    commandsDelegate: ServiceCollectionViewCommandsDelegate {
+    commandsDelegateComp: Component {ServiceCollectionViewCommandsDelegate {
         id: serviceCommandsDelegate
         collectionView: topologyPage
         view: topologyPage;
@@ -93,6 +94,7 @@ ViewBase {
         function onEdit(){
             scheme.goInside()
         }
+    }
     }
 
     SchemeView {
@@ -193,17 +195,18 @@ ViewBase {
 
         ServiceEditor {
             id: serviceEditor
-            commandsDelegate: ViewCommandsDelegateBase {
+            commandsDelegateComp: Component {ViewCommandsDelegateBase {
                 view: serviceEditor;
             }
+            }
 
-            commandsController: CommandsRepresentationProvider {
+            commandsControllerComp: Component {CommandsRepresentationProvider {
                 commandId: "Service";
                 uuid: serviceEditor.viewId;
                 function getAdditionalInputParams(){
                     return topologyPage.getAdditionalInputParams();
                 }
-            }
+            }}
         }
     }
 

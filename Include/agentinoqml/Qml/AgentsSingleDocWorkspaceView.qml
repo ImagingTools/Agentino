@@ -23,13 +23,15 @@ SingleDocumentWorkspaceView {
         AgentEditor {
             id: agentEditor;
 
-            commandsDelegate: ViewCommandsDelegateBase {
+            commandsDelegateComp: Component {ViewCommandsDelegateBase {
                 view: agentEditor;
             }
+            }
 
-            commandsController: CommandsRepresentationProvider {
+            commandsControllerComp: Component {CommandsRepresentationProvider {
                 commandId: "Agent";
                 uuid: agentEditor.viewId;
+            }
             }
         }
     }

@@ -57,7 +57,7 @@ RemoteCollectionView {
         }
     }
 
-    commandsDelegate: ServiceCollectionViewCommandsDelegate {
+    commandsDelegateComp: Component {ServiceCollectionViewCommandsDelegate {
         id: serviceCommandsDelegate
         collectionView: root
         documentTypeId: "Service" + root.clientId
@@ -69,8 +69,9 @@ RemoteCollectionView {
             }
         }
     }
+    }
 
-    dataController: CollectionRepresentation {
+    dataControllerComp: Component {CollectionRepresentation {
         id: collectionRepresentation
 
         additionalFieldIds: root.additionalFieldIds;
@@ -79,10 +80,12 @@ RemoteCollectionView {
             return root.getAdditionalInputParams()
         }
     }
+    }
 
-    commandsController: CommandsRepresentationProvider {
+    commandsControllerComp: Component {CommandsRepresentationProvider {
         id: commandsRepresentationProvider
         uuid: root.viewId;
+    }
     }
 
     function getAdditionalInputParams(){
@@ -131,17 +134,19 @@ RemoteCollectionView {
         ServiceEditor {
             id: serviceEditor
 
-            commandsDelegate: ViewCommandsDelegateBase {
+            commandsDelegateComp: Component {ViewCommandsDelegateBase {
                 view: serviceEditor;
             }
+            }
 
-            commandsController: CommandsRepresentationProvider {
+            commandsControllerComp: Component {CommandsRepresentationProvider {
                 commandId: "Service";
                 uuid: serviceEditor.viewId;
 
                 function getAdditionalInputParams(){
                     return root.getAdditionalInputParams();
                 }
+            }
             }
         }
     }
