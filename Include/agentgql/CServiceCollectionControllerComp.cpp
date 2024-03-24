@@ -275,7 +275,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 					const imtbase::ICollectionInfo* collectionInfo = connectionCollection->GetUrlList();
 					const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
 					if (objectCollection != nullptr){
-						QByteArrayList ids = collectionInfo->GetElementIds();
+						imtbase::ICollectionInfo::Ids ids = collectionInfo->GetElementIds();
 						for (const QByteArray& id: ids){
 							const imtservice::IServiceConnectionParam* connectionParamPtr = connectionCollection->GetConnectionMetaInfo(id);
 							if (connectionParamPtr == nullptr){

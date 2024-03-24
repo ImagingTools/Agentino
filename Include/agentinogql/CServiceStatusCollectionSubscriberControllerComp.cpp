@@ -43,7 +43,7 @@ void CServiceStatusCollectionSubscriberControllerComp::OnUpdate(const istd::ICha
 
 	agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(serviceStatus);
 
-	QString data = QString("{ \"serviceId\": \"%1\", \"serviceStatus\": \"%2\" }").arg(serviceId).arg(processStateEnum.id);
+	QString data = QString("{ \"serviceId\": \"%1\", \"serviceStatus\": \"%2\" }").arg(qPrintable(serviceId)).arg(qPrintable(processStateEnum.id));
 
 	SetAllSubscriptions("OnServiceStatusChanged", data.toUtf8());
 }
