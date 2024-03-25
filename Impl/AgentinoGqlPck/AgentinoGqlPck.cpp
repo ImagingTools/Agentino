@@ -35,6 +35,11 @@ I_EXPORT_COMPONENT(
 			"Service Log Controller");
 
 I_EXPORT_COMPONENT(
+			MessageCollectionController,
+			"Message collection controller",
+			"Message Collection Controller");
+
+I_EXPORT_COMPONENT(
 			AgentSettingsController,
 			"Agent settings controller",
 			"Agent Settings Controller");

@@ -109,29 +109,29 @@ ViewBase {
 
         onAutoFitChanged: {
             console.log("onAutoFitChanged", scheme.autoFit);
-            commandsRepresentationProvider.setToggled("AutoFit", scheme.autoFit);
+            topologyPage.commandsController.setToggled("AutoFit", scheme.autoFit);
         }
 
         onModelDataChanged: {
-            commandsRepresentationProvider.setCommandIsEnabled("Save", true)
+            topologyPage.commandsController.setCommandIsEnabled("Save", true)
         }
 
         onSelectedIndexChanged: {
             if(objectModel.GetItemsCount() > selectedIndex && selectedIndex >= 0){
                 selectedService = objectModel.GetData("Id", selectedIndex);
                 let status = objectModel.GetData("Status", selectedIndex);
-                commandsRepresentationProvider.setCommandIsEnabled("Start", status === "NotRunning")
-                commandsRepresentationProvider.setCommandIsEnabled("Stop", status === "Running")
-                commandsRepresentationProvider.setCommandIsEnabled("Edit", true)
+                topologyPage.commandsController.setCommandIsEnabled("Start", status === "NotRunning")
+                topologyPage.commandsController.setCommandIsEnabled("Stop", status === "Running")
+                topologyPage.commandsController.setCommandIsEnabled("Edit", true)
 
                 metaInfo.contentVisible = true;
                 metaInfoProvider.getMetaInfo(selectedService);
             }
             else{
                 selectedService = ""
-                commandsRepresentationProvider.setCommandIsEnabled("Start", false)
-                commandsRepresentationProvider.setCommandIsEnabled("Stop", false)
-                commandsRepresentationProvider.setCommandIsEnabled("Edit", false)
+                topologyPage.commandsController.setCommandIsEnabled("Start", false)
+                topologyPage.commandsController.setCommandIsEnabled("Stop", false)
+                topologyPage.commandsController.setCommandIsEnabled("Edit", false)
 
                 metaInfo.contentVisible = false;
             }
@@ -350,7 +350,7 @@ ViewBase {
                     if (dataModelLocal.ContainsKey("SaveTopology")){
                         dataModelLocal = dataModelLocal.GetData("SaveTopology");
                         if (dataModelLocal.ContainsKey("notification")){
-                            commandsRepresentationProvider.setCommandIsEnabled("Save", false)
+                            topologyPage.commandsController.setCommandIsEnabled("Save", false)
                         }
                     }
                 }
@@ -391,7 +391,7 @@ ViewBase {
                         if (dataModelLocal.ContainsKey("items")){
                             scheme.objectModel = dataModelLocal.GetData("items");
                             scheme.requestPaint()
-                            commandsRepresentationProvider.setCommandIsEnabled("Save", false)
+                            topologyPage.commandsController.setCommandIsEnabled("Save", false)
                         }
                     }
                 }

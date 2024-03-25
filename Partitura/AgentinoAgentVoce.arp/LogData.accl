@@ -8,9 +8,11 @@
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
-        <Element ComponentName="AgentServer" X="300" Y="450" Note=""/>
-        <Element ComponentName="Application" X="625" Y="350" Note=""/>
-        <Element ComponentName="VersionInfo" X="925" Y="475" Note=""/>
+        <Element ComponentName="CheckPermissionOr" X="675" Y="550" Note=""/>
+        <Element ComponentName="Demultiplexer" X="625" Y="100" Note=""/>
+        <Element ComponentName="MessageCollectionController" X="625" Y="225" Note=""/>
+        <Element ComponentName="MessageHeadersDataProvider" X="450" Y="400" Note=""/>
+        <Element ComponentName="MessageViewDataProvider" X="825" Y="425" Note=""/>
     </PositionMap>
     <EmbeddedRegistries/>
 </Acf>

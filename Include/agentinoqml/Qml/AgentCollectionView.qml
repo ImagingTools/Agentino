@@ -38,8 +38,8 @@ RemoteCollectionView {
     }
 
     function onEdit() {
-        if (commandsDelegate){
-            commandsDelegate.commandHandle("Services");
+        if (root.commandsDelegate){
+            root.commandsDelegate.commandHandle("Services");
         }
     }
 

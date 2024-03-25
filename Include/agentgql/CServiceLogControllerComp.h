@@ -1,11 +1,15 @@
 #pragma once
 
 
+// ACF includes
+#include <istd/TDelPtr.h>
+
 // ImtCore includes
 #include <imtbase/PluginInterface.h>
 #include <imtbase/IObjectCollection.h>
 #include <imtgql/CGqlRequestHandlerCompBase.h>
 #include <imtservice/IObjectCollectionPlugin.h>
+#include <imtbase/TPluginManager.h>
 
 IMT_DECLARE_PLUGIN_INTERFACE(ServiceLog, imtservice::IObjectCollectionPlugin);
 
@@ -24,27 +28,30 @@ public:
 	I_END_COMPONENT;
 
 protected:
-	bool LoadPluginDirectory(const QString& pluginDirectoryPath, const QString& serviceName) const;
-
 	// reimplemented (imtgql::CGqlRequestHandlerCompBase)
 	virtual imtbase::CTreeItemModel* CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 
 protected:
 	I_REF(imtbase::IObjectCollection, m_serviceCollectionCompPtr);
 
-	struct PluginInfo
+	class PluginManager: public imtbase::TPluginManager<
+				imtservice::IObjectCollectionPlugin,
+				IMT_CREATE_PLUGIN_FUNCTION(ServiceLog),
+				IMT_DESTROY_PLUGIN_FUNCTION(ServiceLog)>
 	{
-		PluginInfo()
-			:pluginPtr(nullptr)
+	public:
+		PluginManager(
+					const QByteArray& createMethodName,
+					const QByteArray& destroyMethodName,
+					imtbase::IPluginStatusMonitor* pluginStatusMonitorPtr)
 		{
+			m_createMethodName = createMethodName;
+			m_destroyMethodName = destroyMethodName;
+			m_pluginStatusMonitorPtr = pluginStatusMonitorPtr;
 		}
-
-		imtservice::IObjectCollectionPlugin* pluginPtr;
-		QString pluginPath;
-		IMT_DESTROY_PLUGIN_FUNCTION(ServiceLog) destroyFunc;
 	};
 
-	typedef QMap<QString, PluginInfo> PluginMap;
+	typedef QMap<QByteArray, istd::TDelPtr<PluginManager>> PluginMap;
 	mutable PluginMap m_pluginMap;
 };
 

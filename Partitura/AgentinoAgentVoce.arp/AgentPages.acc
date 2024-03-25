@@ -4,7 +4,7 @@
         <VersionInfos>
             <Version Id="0" Number="5210" Description="ACF"/>
             <Version Id="1" Number="2205" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -47,6 +47,7 @@
                             <Values>
                                 <Value>PageData/ServicesPage</Value>
                                 <Value>PageData/AgentSettingsPage</Value>
+                                <Value>PageData/LogData</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -209,6 +210,21 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
+                    <Element Id="LogData" PackageId="AgentinoAgentVoce" ComponentId="LogData">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ServiceRepository" Type="Reference" ExportId="ServiceRepository">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
                     <Element Id="ServicesPage" PackageId="AgentinoAgentVoce" ComponentId="ServicesPage">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
@@ -238,6 +254,7 @@
                 <ExportedInterfaces/>
                 <ExportedComponents>
                     <Component ExportedId="AgentSettingsPage" ComponentId="AgentSettingsPage"/>
+                    <Component ExportedId="LogData" ComponentId="LogData"/>
                     <Component ExportedId="ServicesPage" ComponentId="ServicesPage"/>
                 </ExportedComponents>
             </Data>

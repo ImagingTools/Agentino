@@ -235,11 +235,11 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 	if (m_objectCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
 		const agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = dynamic_cast<const agentinodata::CIdentifiableServiceInfo*>(dataPtr.GetPtr());
 		if (serviceInfoPtr != nullptr){
-			QString serviceName = m_objectCollectionCompPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_NAME).toString();
+			QByteArray serviceName = m_objectCollectionCompPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_NAME).toByteArray();
 			QString description = m_objectCollectionCompPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
 			QString servicePath = serviceInfoPtr->GetServicePath();
 			QString settingsPath = serviceInfoPtr->GetServiceSettingsPath();
-			QString serviceTypeName = serviceInfoPtr->GetServiceTypeName();
+			QByteArray serviceTypeName = serviceInfoPtr->GetServiceTypeName().toUtf8();
 			QString arguments = serviceInfoPtr->GetServiceArguments().join(' ');
 			bool isAutoStart = serviceInfoPtr->IsAutoStart();
 
@@ -263,12 +263,28 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 
 			QFileInfo fileInfo(servicePath);
 			QString pluginPath = fileInfo.path() + "/Plugins";
-			if (!m_pluginMap.contains(serviceName)){
-				LoadPluginDirectory(pluginPath, serviceName);
+
+			istd::TDelPtr<PluginManager>& pluginManagerPtr = m_pluginMap[serviceName];
+			pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), nullptr));
+
+			if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")) {
+				SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(serviceName), "CServiceCollectionControllerComp");
+				m_pluginMap.remove(serviceName);
+
+				return nullptr;
 			}
 
 			if (m_pluginMap.contains(serviceName)){
-				const imtservice::IConnectionCollectionPlugin::IConnectionCollectionFactory* connectionCollectionFactoryPtr = m_pluginMap[serviceName].pluginPtr->GetConnectionCollectionFactory();
+				const imtservice::IConnectionCollectionPlugin::IConnectionCollectionFactory* connectionCollectionFactoryPtr = nullptr;
+				//= m_pluginMap[serviceName].pluginPtr->GetConnectionCollectionFactory();
+				for (int index = 0; index < m_pluginMap[serviceName]->m_plugins.count(); index++){
+					imtservice::IConnectionCollectionPlugin* pluginPtr = m_pluginMap[serviceName]->m_plugins[index].pluginPtr;
+					if (pluginPtr != nullptr){
+						connectionCollectionFactoryPtr = pluginPtr->GetConnectionCollectionFactory();
+
+						break;
+					}
+				}
 				Q_ASSERT(connectionCollectionFactoryPtr != nullptr);
 				istd::TDelPtr<imtservice::IConnectionCollection> connectionCollection = connectionCollectionFactoryPtr->CreateInstance();
 				if (connectionCollection != nullptr){
@@ -441,25 +457,33 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 		servicePath = itemModel.GetData("Path").toString();
 	}
 
-	QString serviceTypeName;
+	QByteArray serviceTypeName;
 	if (itemModel.ContainsKey("ServiceTypeName")){
-		serviceTypeName = itemModel.GetData("ServiceTypeName").toString();
+		serviceTypeName = itemModel.GetData("ServiceTypeName").toByteArray();
 	}
 
 	QFileInfo fileInfo(servicePath);
 	QString pluginPath = fileInfo.path() + "/Plugins";
 
-	if (!m_pluginMap.contains(serviceTypeName)){
-		if (!LoadPluginDirectory(pluginPath, serviceTypeName)){
-			SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(serviceTypeName), "CServiceCollectionControllerComp");
+	istd::TDelPtr<PluginManager>& pluginManagerPtr = m_pluginMap[serviceTypeName];
+	pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), nullptr));
 
-			return nullptr;
-		}
+	if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")) {
+		SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(serviceTypeName), "CServiceCollectionControllerComp");
+		m_pluginMap.remove(serviceTypeName);
+
+		return nullptr;
 	}
 
 	istd::TDelPtr<imtservice::IConnectionCollection> connectionCollectionPtr;
 	if (m_pluginMap.contains(serviceTypeName)){
-		connectionCollectionPtr.SetPtr(m_pluginMap[serviceTypeName].pluginPtr->GetConnectionCollectionFactory()->CreateInstance());
+		for (int index = 0; index < m_pluginMap[serviceTypeName]->m_plugins.count(); index++){
+			imtservice::IConnectionCollectionPlugin* pluginPtr = m_pluginMap[serviceTypeName]->m_plugins[index].pluginPtr;
+			if (pluginPtr != nullptr){
+				connectionCollectionPtr.SetPtr( pluginPtr->GetConnectionCollectionFactory()->CreateInstance());
+				break;
+			}
+		}
 	}
 
 	if (!connectionCollectionPtr.IsValid()){
@@ -662,54 +686,9 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObject(
 
 void CServiceCollectionControllerComp::OnComponentDestroyed()
 {
-	for (typename PluginMap::iterator iter = m_pluginMap.begin(); iter != m_pluginMap.end(); ++iter){
-		iter->destroyFunc(iter->pluginPtr);
-	}
-
 	m_pluginMap.clear();
 
 	BaseClass::OnComponentDestroyed();
-}
-
-
-bool CServiceCollectionControllerComp::LoadPluginDirectory(const QString& pluginDirectoryPath, const QString& serviceName) const
-{
-	SendInfoMessage(0, QString("Looking for the document plugins in '%1'").arg(pluginDirectoryPath));
-
-	if (!pluginDirectoryPath.isEmpty() && QFileInfo(pluginDirectoryPath).exists()){
-		QDir pluginsDirectory(pluginDirectoryPath);
-
-		QFileInfoList pluginsList = pluginsDirectory.entryInfoList(QStringList() << "*.plugin");
-
-		for (const QFileInfo& pluginPath : pluginsList){
-#ifdef Q_OS_WIN
-			SetDllDirectory(pluginPath.absolutePath().toStdWString().c_str());
-#endif
-			SendInfoMessage(0, QString("Load: '%1'").arg(pluginPath.canonicalFilePath()));
-
-			QLibrary library(pluginPath.canonicalFilePath());
-			if (library.load()){
-				IMT_CREATE_PLUGIN_FUNCTION(ServiceSettings) createPluginFunc = (IMT_CREATE_PLUGIN_FUNCTION(ServiceSettings))library.resolve(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings));
-				if (createPluginFunc != NULL){
-					istd::TDelPtr<imtservice::IConnectionCollectionPlugin> pluginInstancePtr = createPluginFunc();
-					if (pluginInstancePtr.IsValid()){
-						PluginInfo pluginInfo;
-						pluginInfo.pluginPath = pluginPath.canonicalFilePath();
-						pluginInfo.pluginPtr = pluginInstancePtr.PopPtr();
-						pluginInfo.destroyFunc = (IMT_DESTROY_PLUGIN_FUNCTION(ServiceSettings))library.resolve(IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings));
-						m_pluginMap.insert(serviceName, pluginInfo);
-					}
-				}
-			}
-			else{
-				SendErrorMessage(0, QString("%1").arg(library.errorString()));
-			}
-		}
-
-		return true;
-	}
-
-	return false;
 }
 
 

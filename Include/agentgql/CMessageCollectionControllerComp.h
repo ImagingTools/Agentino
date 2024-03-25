@@ -4,14 +4,14 @@
 // ImtCore includes
 #include <imtgql/CObjectCollectionControllerCompBase.h>
 #include <imtbase/PluginInterface.h>
-#include <imtservice/IConnectionCollectionPlugin.h>
+#include <imtservice/IObjectCollectionPlugin.h>
 #include <imtbase/TPluginManager.h>
 
 // Agentino includes
 #include <agentinodata/IServiceInfo.h>
 #include <agentinodata/IServiceController.h>
 
-IMT_DECLARE_PLUGIN_INTERFACE(ServiceSettings, imtservice::IConnectionCollectionPlugin);
+IMT_DECLARE_PLUGIN_INTERFACE(ServiceLog, imtservice::IObjectCollectionPlugin);
 
 
 #undef GetObject
@@ -21,12 +21,12 @@ namespace agentgql
 {
 
 
-class CServiceCollectionControllerComp: public imtgql::CObjectCollectionControllerCompBase
+class CMessageCollectionControllerComp: public imtgql::CObjectCollectionControllerCompBase
 {
 public:
 	typedef imtgql::CObjectCollectionControllerCompBase BaseClass;
 
-	I_BEGIN_COMPONENT(CServiceCollectionControllerComp);
+	I_BEGIN_COMPONENT(CMessageCollectionControllerComp);
 		I_ASSIGN(m_serviceInfoFactCompPtr, "ServiceFactory", "Factory used for creation of the new service instance", false, "ServiceFactory");
 		I_ASSIGN(m_serviceControllerCompPtr, "ServiceController", "Service controller used to manage services", false, "ServiceController");
 	I_END_COMPONENT;
@@ -43,21 +43,19 @@ protected:
 	virtual imtbase::CTreeItemModel* GetObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 	virtual imtbase::CTreeItemModel* InsertObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 	virtual imtbase::CTreeItemModel* UpdateObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
-	virtual istd::IChangeable* CreateObject(const QList<imtgql::CGqlObject>& inputParams, QByteArray &objectId, QString &name, QString &description, QString& errorMessage) const override;
 
 	// reimplemented (icomp::CComponentBase)
 	virtual void OnComponentDestroyed() override;
 
-	virtual imtbase::IObjectCollection* GetObjectCollection(const QByteArray& id = QByteArray()) const;
-
+	virtual imtbase::IObjectCollection* GetMessageCollection(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const;
 protected:
 	I_FACT(agentinodata::IServiceInfo, m_serviceInfoFactCompPtr);
 	I_REF(agentinodata::IServiceController, m_serviceControllerCompPtr);
 
 	class PluginManager: public imtbase::TPluginManager<
-							  imtservice::IConnectionCollectionPlugin,
-							  IMT_CREATE_PLUGIN_FUNCTION(ServiceSettings),
-							  IMT_DESTROY_PLUGIN_FUNCTION(ServiceSettings)>
+							  imtservice::IObjectCollectionPlugin,
+							  IMT_CREATE_PLUGIN_FUNCTION(ServiceLog),
+							  IMT_DESTROY_PLUGIN_FUNCTION(ServiceLog)>
 	{
 	public:
 		PluginManager(

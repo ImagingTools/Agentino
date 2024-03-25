@@ -9,6 +9,7 @@
         <file alias="AgentinoMain.qml">Qml/AgentinoMain.qml</file>
 	<file alias="AgentinoWeb.qml">Qml/AgentinoWeb.qml</file>
 	<file alias="AgentWeb.qml">Qml/AgentWeb.qml</file>
+	<file alias="ServiceCollectionViewBase.qml">Qml/ServiceCollectionViewBase.qml</file>
 	<file alias="ServiceCollectionView.qml">Qml/ServiceCollectionView.qml</file>
 	<file alias="AgentCollectionView.qml">Qml/AgentCollectionView.qml</file>
 	<file alias="ServiceEditor.qml">Qml/ServiceEditor.qml</file>
