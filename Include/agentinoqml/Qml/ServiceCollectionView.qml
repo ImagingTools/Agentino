@@ -6,21 +6,23 @@ import imtguigql 1.0
 import imtdocgui 1.0
 import imtgui 1.0
 
-Item {
+SplitView {
     id: container
 
     anchors.fill: parent
+    hasAnimation: true;
 
     property alias clientId: serviceCollectionView.clientId
     property alias clientName: serviceCollectionView.clientName
 
+    orientation: Qt.Vertical
+
+
     ServiceCollectionViewBase {
         id: serviceCollectionView;
 
-        anchors.top: parent.top
-        anchors.left: parent.left;
-        anchors.right: parent.right;
-        anchors.bottom: log.top;
+        width: parent.width
+        height: 200 //container.height - log.height
 
         onSelectionChanged: {
             if (selection.length > 0){
@@ -34,33 +36,17 @@ Item {
     }
 
 
-    TreeItemModel {
-        id: logTableDecoratorModel;
-
-        Component.onCompleted: {
-            var cellWidthModel = logTableDecoratorModel.AddTreeModel("CellWidth");
-
-            let index = cellWidthModel.InsertNewItem();
-            cellWidthModel.SetData("Width", -1, index);
-
-            index = cellWidthModel.InsertNewItem();
-            cellWidthModel.SetData("Width", 200, index);
-
-            index = cellWidthModel.InsertNewItem();
-            cellWidthModel.SetData("Width", 300, index);
-        }
-    }
-
     RemoteCollectionView {
         id: log;
 
-        anchors.left: parent.left;
-        anchors.right: parent.right;
-        anchors.bottom: parent.bottom;
+        width: parent.width
         height: 200;
+
+        commandsControllerComp: null
 
         collectionId: "ServiceLog";
         property string serviceId
+        property alias clientId: container.clientId
 
         filterMenuVisible: false;
 
@@ -79,7 +65,9 @@ Item {
             console.log("DEBUG:log Component.onCompleted", collectionId, container.clientId)
             collectionFilter.setSortingOrder("DESC");
             collectionFilter.setSortingInfoId("LastModified");
+        }
 
+        onClientIdChanged: {
             dataController.collectionId = log.collectionId
         }
 
@@ -93,10 +81,28 @@ Item {
         } }
 
         function getAdditionalInputParams(){
+            console.log("getAdditionalInputParams", log.clientId)
             let additionInputParams = {}
-            additionInputParams["clientId"] = container.clientId;
+            additionInputParams["clientId"] = log.clientId;
             additionInputParams["serviceId"] = log.serviceId;
             return additionInputParams
+        }
+
+        TreeItemModel {
+            id: logTableDecoratorModel;
+
+            Component.onCompleted: {
+                var cellWidthModel = logTableDecoratorModel.AddTreeModel("CellWidth");
+
+                let index = cellWidthModel.InsertNewItem();
+                cellWidthModel.SetData("Width", -1, index);
+
+                index = cellWidthModel.InsertNewItem();
+                cellWidthModel.SetData("Width", 200, index);
+
+                index = cellWidthModel.InsertNewItem();
+                cellWidthModel.SetData("Width", 300, index);
+            }
         }
 
     }

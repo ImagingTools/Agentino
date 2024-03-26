@@ -90,7 +90,7 @@ bool CMessageCollectionControllerComp::SetupGqlItem(
 					elementInformation = messagePtr->GetInformationSource();
 				}
 				else if(informationId == "MessageTimeStamp"){
-					elementInformation = messagePtr->GetInformationTimeStamp().toString();
+					elementInformation = messagePtr->GetInformationTimeStamp().toString("dd.MM.yyyy hh:mm:ss.zzz");
 				}
 
 

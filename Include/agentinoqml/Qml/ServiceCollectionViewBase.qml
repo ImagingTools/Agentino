@@ -17,6 +17,8 @@ RemoteCollectionView {
     collectionId: "Services";
     additionalFieldIds: ["Description","Status","StatusName"]
 
+    hasPagination: false
+
     Component.onDestruction: {
         let documentManagerPtr = MainDocumentManager.getDocumentManager("Agents")
         if (documentManagerPtr){
@@ -93,29 +95,6 @@ RemoteCollectionView {
         return additionInputParams
     }
 
-//    LogView {
-//        id: log;
-
-//        anchors.left: parent.left;
-//        anchors.right: parent.right;
-//        anchors.bottom: parent.bottom;
-
-//        height: 200;
-//    }
-
-//    ServiceLogProvider {
-//        id: serviceLogProvider;
-
-//        function getAdditionalInputParams(){
-//            return root.getAdditionalInputParams();
-//        }
-
-//        onServiceLogModelChanged: {
-//            log.model = serviceLogModel;
-
-//            log.doUpdateGui();
-//        }
-//    }
 
     onSelectionChanged: {
         if (selection.length > 0){
