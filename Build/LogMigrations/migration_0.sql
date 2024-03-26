@@ -4,7 +4,7 @@ CREATE TABLE "Messages"
     "DocumentId" character varying(1000) NOT NULL,
     "Document" jsonb,
     "RevisionNumber" bigint,
-    "LastModified" timestamp without time zone,
+    "LastModified" text,
     "Checksum" bigint,
     "IsActive" boolean
 );

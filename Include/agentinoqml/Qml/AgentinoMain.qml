@@ -9,6 +9,7 @@ ApplicationMain{
     applicationId: "Agentino"
 
     canRecoveryPassword: false;
+    authorizationServerConnected: true;
 
     ModalDialogManager {
         id: modalDialogManager;
@@ -20,18 +21,6 @@ ApplicationMain{
 
     Component.onCompleted: {
         context.appName = "Agentino"
-    }
-
-    function startSystemStatusChecking(){
-        console.log("startSystemStatusChecking")
-
-        systemStatusController.serverStatusGqlCommandId = "AgentinoTestConnection"
-        // systemStatusController.databaseStatusGqlCommandId = "ProLifeGetDatabaseStatus"
-        systemStatusController.serverName = "Agentino"
-        // systemStatusController.slaveSystemStatusController = pumaSystemStatusController;
-
-        systemStatusController.updateSystemStatus();
-        // firstModelsInit()
     }
 }
 
