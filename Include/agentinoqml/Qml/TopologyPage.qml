@@ -258,10 +258,7 @@ ViewBase {
             queryFields.InsertField("Id");
             query.AddField(queryFields);
 
-            console.log("OnTopologyChanged registerSubscription", query, topologySubscriptionClient);
-            console.log("subscriptionManager", subscriptionManager);
-
-            subscriptionManager.registerSubscription(query, topologySubscriptionClient);
+            Events.sendEvent("RegisterSubscription", {"Query": query, "Client": topologySubscriptionClient});
         }
 
         onStateChanged: {
@@ -269,8 +266,6 @@ ViewBase {
                 console.log("OnTopologyChanged Ready", topologySubscriptionClient.toJSON());
 
                 if (topologySubscriptionClient.ContainsKey("data")){
-                    console.log("updateModel");
-
                     topologyPage.itemsTopologyModel.updateModel()
                 }
             }
@@ -287,7 +282,7 @@ ViewBase {
             queryFields.InsertField("Id");
             query.AddField(queryFields);
 
-            subscriptionManager.registerSubscription(query, subscriptionClient);
+            Events.sendEvent("RegisterSubscription", {"Query": query, "Client": subscriptionClient});
         }
 
         onStateChanged: {

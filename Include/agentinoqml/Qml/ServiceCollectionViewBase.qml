@@ -244,7 +244,7 @@ RemoteCollectionView {
             queryFields.InsertField("Id");
             query.AddField(queryFields);
 
-            subscriptionManager.registerSubscription(query, subscriptionClient);
+            Events.sendEvent("RegisterSubscription", {"Query": query, "Client": subscriptionClient});
         }
 
         onStateChanged: {
