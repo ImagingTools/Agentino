@@ -64,7 +64,7 @@ SplitView {
         Component.onCompleted: {
             console.log("DEBUG:log Component.onCompleted", collectionId, container.clientId)
             collectionFilter.setSortingOrder("DESC");
-            collectionFilter.setSortingInfoId("LastModified");
+            collectionFilter.setSortingInfoId("Timestamp");
         }
 
         onClientIdChanged: {

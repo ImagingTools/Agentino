@@ -70,9 +70,9 @@
                     <AttributeInfo Id="HeadersIds" Type="String[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>MessageDescription</Value>
-                                <Value>MessageTimeStamp</Value>
-                                <Value>MessageSource</Value>
+                                <Value>Text</Value>
+                                <Value>Timestamp</Value>
+                                <Value>Source</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -94,8 +94,9 @@
                     <AttributeInfo Id="SearchByFilterIds" Type="String[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>Name</Value>
-                                <Value>Description</Value>
+                                <Value>Text</Value>
+                                <Value>Timestamp</Value>
+                                <Value>Source</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

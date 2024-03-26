@@ -74,22 +74,22 @@ bool CMessageCollectionControllerComp::SetupGqlItem(
 					serviceId = collectionId;
 					elementInformation = serviceId;
 				}
-				else if(informationId == "MessageDescription"){
+				else if(informationId == "Text"){
 					elementInformation = messagePtr->GetInformationDescription();
 				}
-				else if(informationId == "MessageCategory"){
+				else if(informationId == "Category"){
 					elementInformation = messagePtr->GetInformationCategory();
 				}
-				else if(informationId == "MessageId"){
+				else if(informationId == "ID"){
 					elementInformation = messagePtr->GetInformationId();
 				}
-				else if(informationId == "MessageFlags"){
+				else if(informationId == "Flags"){
 					elementInformation = messagePtr->GetInformationFlags();
 				}
-				else if(informationId == "MessageSource"){
+				else if(informationId == "Source"){
 					elementInformation = messagePtr->GetInformationSource();
 				}
-				else if(informationId == "MessageTimeStamp"){
+				else if(informationId == "Timestamp"){
 					elementInformation = messagePtr->GetInformationTimeStamp().toString("dd.MM.yyyy hh:mm:ss.zzz");
 				}
 
