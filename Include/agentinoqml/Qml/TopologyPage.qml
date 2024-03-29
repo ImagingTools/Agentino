@@ -28,6 +28,8 @@ ViewBase {
             documentManager.registerDocumentDataController("Service", serviceDataControllerComp);
             documentManager.registerDocumentValidator("Service", serviceValidatorComp);
         }
+
+        itemsTopologyModel.updateModel()
     }
 
     commandsControllerComp: Component {CommandsRepresentationProvider {
