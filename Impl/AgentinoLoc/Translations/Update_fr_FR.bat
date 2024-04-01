@@ -1,1 +1,1 @@
-%QTDIR%\bin\lupdate.exe ..\..\..\ -target-language fr_FR -ts ServiceManager_fr_FR.ts -recursive -locations relative
+%QTDIR%\bin\lupdate.exe ..\..\..\ -target-language fr_FR -ts Agentino_fr_FR.ts -recursive -locations relative
