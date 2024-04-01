@@ -56,7 +56,9 @@ list(APPEND webdirs ${buildwebdir}/src/imtcontrols)
 # copy Translations from to
 list(APPEND webdirs ${PROJECT_SOURCE_DIR}/../../../Impl/AgentinoLoc/Translations)
 list(APPEND webdirs ${buildwebdir}/Resources/Translations)
-# message("SMDIR ${SMDIR}")
+
+list(APPEND webdirs ${IMTCOREDIR}/Impl/ImtCoreLoc/Translations)
+list(APPEND webdirs ${buildwebdir}/Resources/Translations)
 
 if(DEFINED WEB_COMPILE AND  WEB_COMPILE)
 	add_compile_definitions(WEB_COMPILE)

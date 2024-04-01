@@ -9,4 +9,13 @@
         <file alias="main.js">main.js</file>
         <file alias="jqml.agentino.js">jqml.agentino.js</file>
     </qresource>
+    <qresource prefix="/Translations">
+        <file alias="Agentino_ru_RU.ts">Translations/Agentino_ru_RU.ts</file>
+        <file alias="Agentino_de_DE.ts">Translations/Agentino_de_DE.ts</file>
+        <file alias="Agentino_en_US.ts">Translations/Agentino_en_US.ts</file>
+
+	<file alias="ImtCore_ru_RU.ts">Translations/ImtCore_ru_RU.ts</file>
+        <file alias="ImtCore_de_DE.ts">Translations/ImtCore_de_DE.ts</file>
+        <file alias="ImtCore_en_US.ts">Translations/ImtCore_en_US.ts</file>
+    </qresource>
 </RCC>
