@@ -16,6 +16,7 @@ Item {
         Component.onCompleted: {
             designProvider.applyDesignSchema("Light");
             context.appName = "Agentino"
+            context.application = ["ImtCore", "Agentino"];
         }
 
         function getServerUrl(){
