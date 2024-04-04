@@ -249,14 +249,16 @@ imtbase::IObjectCollection* CMessageCollectionControllerComp::GetMessageCollecti
 			QFileInfo fileInfo(servicePath);
 			QString pluginPath = fileInfo.path() + "/Plugins";
 
-			istd::TDelPtr<PluginManager>& pluginManagerPtr = m_pluginMap[serviceName];
-			pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceLog), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceLog), nullptr));
+			if (!m_pluginMap.contains(serviceName)){
+				istd::TDelPtr<PluginManager>& pluginManagerPtr = m_pluginMap[serviceName];
+				pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceLog), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceLog), nullptr));
 
-			if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceLog")) {
-				SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(serviceName), "CMessageCollectionControllerComp");
-				m_pluginMap.remove(serviceName);
+				if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceLog")) {
+					SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(serviceName), "CMessageCollectionControllerComp");
+					m_pluginMap.remove(serviceName);
 
-				return nullptr;
+					return nullptr;
+				}
 			}
 
 			if (m_pluginMap.contains(serviceName)){

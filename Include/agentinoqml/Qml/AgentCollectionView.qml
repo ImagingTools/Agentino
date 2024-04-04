@@ -85,9 +85,9 @@ RemoteCollectionView {
 
     Component {
         id: stateColumnContentComp;
-        Item {
+        TableCellDelegateBase {
             id: content
-            property var tableCellDelegate
+
             Image {
                 id: image;
 
@@ -117,11 +117,7 @@ RemoteCollectionView {
                 elide: Text.ElideRight;
             }
 
-            Component.onCompleted: {
-                let loader = parent;
-                let tableCellDelegate = loader.parent;
-
-                let rowIndex = tableCellDelegate.rowIndex;
+            onRowIndexChanged: {
                 if (rowIndex >= 0){
                     let status = root.table.elements.GetData("Status", rowIndex);
 
@@ -136,7 +132,7 @@ RemoteCollectionView {
                     }
                 }
 
-                let value = tableCellDelegate.getValue();
+                let value = getValue();
                 if (value !== undefined){
                     lable.text = value;
                 }

@@ -60,8 +60,7 @@ imtbase::CTreeItemModel* CServiceLogControllerComp::CreateInternalResponse(
 		istd::TDelPtr<PluginManager>& pluginManagerPtr = m_pluginMap[serviceName];
 		pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceLog), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceLog), nullptr));
 
-		// if (!LoadPluginDirectory(pluginPath, serviceName)){
-		if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, serviceName, "ServiceLog")){
+		if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceLog")){
 			SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(serviceName), "CServiceCollectionControllerComp");
 			m_pluginMap.remove(serviceName);
 

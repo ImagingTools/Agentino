@@ -8,11 +8,9 @@
 #include <imtbase/TPluginManager.h>
 
 // Agentino includes
+#include <agentgql/CServiceLog.h>
 #include <agentinodata/IServiceInfo.h>
 #include <agentinodata/IServiceController.h>
-
-IMT_DECLARE_PLUGIN_INTERFACE(ServiceLog, imtservice::IObjectCollectionPlugin);
-
 
 #undef GetObject
 
@@ -21,7 +19,9 @@ namespace agentgql
 {
 
 
-class CMessageCollectionControllerComp: public imtgql::CObjectCollectionControllerCompBase
+class CMessageCollectionControllerComp:
+			public imtgql::CObjectCollectionControllerCompBase,
+			public CServiceLog
 {
 public:
 	typedef imtgql::CObjectCollectionControllerCompBase BaseClass;
@@ -51,26 +51,6 @@ protected:
 protected:
 	I_FACT(agentinodata::IServiceInfo, m_serviceInfoFactCompPtr);
 	I_REF(agentinodata::IServiceController, m_serviceControllerCompPtr);
-
-	class PluginManager: public imtbase::TPluginManager<
-							  imtservice::IObjectCollectionPlugin,
-							  IMT_CREATE_PLUGIN_FUNCTION(ServiceLog),
-							  IMT_DESTROY_PLUGIN_FUNCTION(ServiceLog)>
-	{
-	public:
-		PluginManager(
-			const QByteArray& createMethodName,
-			const QByteArray& destroyMethodName,
-			imtbase::IPluginStatusMonitor* pluginStatusMonitorPtr)
-		{
-			m_createMethodName = createMethodName;
-			m_destroyMethodName = destroyMethodName;
-			m_pluginStatusMonitorPtr = pluginStatusMonitorPtr;
-		}
-	};
-
-	typedef QMap<QByteArray, istd::TDelPtr<PluginManager>> PluginMap;
-	mutable PluginMap m_pluginMap;
 };
 
 

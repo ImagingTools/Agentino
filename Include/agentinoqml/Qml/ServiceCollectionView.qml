@@ -88,6 +88,23 @@ SplitView {
             return additionInputParams
         }
 
+        function handleSubscription(dataModel){
+            if (!dataModel){
+                return;
+            }
+            console.log("*DEBUG* handleSubscription", dataModel.toJSON())
+            if (dataModel.ContainsKey("OnServiceLogChanged")){
+                let body = dataModel.GetData("OnServiceLogChanged");
+                console.log("*DEBUG* body", body.toJSON())
+                if (body.ContainsKey("serviceId")){
+                    let id = body.GetData("serviceId")
+                    if (id  === serviceId){
+                        log.doUpdateGui()
+                    }
+                }
+            }
+        }
+
         TreeItemModel {
             id: logTableDecoratorModel;
 

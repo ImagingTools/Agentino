@@ -12,6 +12,7 @@
 #include <agentgql/CServiceLogControllerComp.h>
 #include <agentgql/CMessageCollectionControllerComp.h>
 #include <agentgql/CAgentSettingsControllerComp.h>
+#include <agentgql/CServiceLogSubscriberControllerComp.h>
 #include <agentinogql/CServiceSubscriberControllerComp.h>
 #include <agentinogql/CServiceControllerProxyComp.h>
 #include <agentinogql/CGetServiceControllerProxyComp.h>
@@ -26,7 +27,7 @@
 #include <agentinogql/CServiceStatusControllerProxyComp.h>
 #include <agentinogql/CAgentConnectionObserverComp.h>
 #include <agentinogql/CAgentConnectionSubscriberControllerComp.h>
-
+#include <agentinogql/CAgentsSubscriberProxyControllerComp.h>
 
 /**
 	AgentinoGqlPck package
@@ -41,6 +42,7 @@ typedef agentgql::CAgentinoSubscriptionClientComp AgentinoSubscriptionClient;
 typedef agentgql::CServiceLogControllerComp ServiceLogController;
 typedef agentgql::CMessageCollectionControllerComp MessageCollectionController;
 typedef agentgql::CAgentSettingsControllerComp AgentSettingsController;
+typedef agentgql::CServiceLogSubscriberControllerComp ServiceLogSubscriberController;
 typedef agentinogql::CServiceSubscriberControllerComp ServiceSubscriberController;
 typedef agentinogql::CServiceControllerProxyComp ServiceControllerProxy;
 typedef agentinogql::CGetServiceControllerProxyComp GetServiceControllerProxy;
@@ -55,6 +57,7 @@ typedef agentinogql::CServiceStatusCollectionSubscriberControllerComp ServiceSta
 typedef agentinogql::CServiceStatusControllerProxyComp ServiceStatusControllerProxy;
 typedef agentinogql::CAgentConnectionObserverComp AgentConnectionObserver;
 typedef agentinogql::CAgentConnectionSubscriberControllerComp AgentConnectionSubscriberController;
+typedef agentinogql::CAgentsSubscriberProxyControllerComp AgentsSubscriberProxyController;
 
 
 } // namespace AgentinoGqlPck

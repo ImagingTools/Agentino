@@ -45,6 +45,11 @@ I_EXPORT_COMPONENT(
 			"Agent Settings Controller");
 
 I_EXPORT_COMPONENT(
+			ServiceLogSubscriberController,
+			"Service log subscriber controller",
+			"Service Log Subscriber Controller");
+
+I_EXPORT_COMPONENT(
 			ServiceSubscriberController,
 			"Service subscriber controller",
 			"GraphQl Service Subscriber Controller");
@@ -113,6 +118,11 @@ I_EXPORT_COMPONENT(
 			AgentConnectionSubscriberController,
 			"Agent connection subscriber controller",
 			"Agent Connection Subscriber Controller");
+
+I_EXPORT_COMPONENT(
+			AgentsSubscriberProxyController,
+			"Agent subscriber proxy controller",
+			"Agent Subscriber Proxy Controller");
 
 
 } // namespace AgentinoGqlPck

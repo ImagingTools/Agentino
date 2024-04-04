@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5211" Description="ACF"/>
+            <Version Id="0" Number="5210" Description="ACF"/>
             <Version Id="1" Number="2205" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
@@ -16,8 +16,8 @@
         <Element ComponentName="Repositories" X="275" Y="250" Note=""/>
         <Element ComponentName="ServerSettings" X="150" Y="75" Note=""/>
         <Element ComponentName="ServiceStatusSubscriberController" X="975" Y="575" Note=""/>
+        <Element ComponentName="Subscribers" X="1025" Y="775" Note=""/>
         <Element ComponentName="SubscriptionController" X="1050" Y="400" Note=""/>
-        <Element ComponentName="Subscriptions" X="1025" Y="775" Note=""/>
         <Element ComponentName="WebSocketAgentinoHandlers" X="375" Y="500" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
@@ -25,6 +25,7 @@
             <PositionMap>
                 <Element ComponentName="AgentCollectionSubscriber" X="550" Y="75" Note=""/>
                 <Element ComponentName="AgentStatusCollectionSubscriber" X="525" Y="150" Note=""/>
+                <Element ComponentName="AgentsSubscriberProxyController" X="922" Y="430" Note=""/>
                 <Element ComponentName="RolesSubscriberController" X="525" Y="450" Note=""/>
                 <Element ComponentName="ServiceCollectionSubscriberController" X="550" Y="250" Note=""/>
                 <Element ComponentName="ServiceStatusCollectionSubscriberController" X="550" Y="675" Note=""/>
