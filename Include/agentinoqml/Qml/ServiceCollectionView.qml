@@ -45,34 +45,52 @@ SplitView {
         commandsControllerComp: null
 
         collectionId: "ServiceLog";
+
         property string serviceId
         property alias clientId: container.clientId
 
         filterMenuVisible: false;
 
+        collectionFilter: MessageCollectionFilter {
+
+        }
+
         onHeadersChanged: {
             if (log.table.headers.GetItemsCount() > 0){
                 log.table.tableDecorator = logTableDecoratorModel
+                log.table.setColumnContentComponent(0, stateColumnContentComp);
             }
         }
 
         onServiceIdChanged: {
             dataController.elementsModel.Clear()
-            dataController.updateModel()
+            if (dataController.collectionId !== log.collectionId){
+                dataController.collectionId = log.collectionId
+            }
+            else{
+                dataController.updateModel()
+            }
         }
 
         Component.onCompleted: {
             console.log("DEBUG:log Component.onCompleted", collectionId, container.clientId)
             collectionFilter.setSortingOrder("DESC");
             collectionFilter.setSortingInfoId("Timestamp");
+            filterMenu.decorator = messageCollectionFilterComp;
         }
 
-        onClientIdChanged: {
-            dataController.collectionId = log.collectionId
+        function onFilterChanged(filterId, filterValue) {
+            if (filterId === "TextFilter"){
+                collectionFilter.setTextFilter(filterValue);
+            }
+            else{
+                collectionFilter.setMessageStatusFilter(filterId, filterValue);
+            }
         }
 
         dataControllerComp: Component { CollectionRepresentation {
             id: messageCollectionRepresentation
+            additionalFieldIds: ["Id", "Name", "Category"]
 
             function getAdditionalInputParams(){
                 console.log("LogCollectionView", container.clientId)
@@ -92,14 +110,13 @@ SplitView {
             if (!dataModel){
                 return;
             }
-            console.log("*DEBUG* handleSubscription", dataModel.toJSON())
             if (dataModel.ContainsKey("OnServiceLogChanged")){
                 let body = dataModel.GetData("OnServiceLogChanged");
-                console.log("*DEBUG* body", body.toJSON())
                 if (body.ContainsKey("serviceId")){
                     let id = body.GetData("serviceId")
                     if (id  === serviceId){
-                        log.doUpdateGui()
+                        dataController.elementsModel.Clear()
+                        dataController.updateModel()
                     }
                 }
             }
@@ -122,7 +139,34 @@ SplitView {
             }
         }
 
-    }
+        Component {
+            id: messageCollectionFilterComp;
 
+            MessageCollectionFilterDecorator {}
+        }
+
+        Component {
+            id: stateColumnContentComp;
+            TableCellIconTextDelegate {
+                onRowIndexChanged: {
+                    if (rowIndex >= 0){
+                        let category = rowDelegate.tableItem.elements.GetData("Category", rowIndex);
+                        if (category === 1){
+                            icon.source = "../../../../" + Style.getIconPath("Icons/Info", Icon.State.On, Icon.Mode.Normal);
+                        }
+                        else if (category === 2){
+                            icon.source = "../../../../" + Style.getIconPath("Icons/Warning", Icon.State.On, Icon.Mode.Normal);
+                        }
+                        else if (category === 3){
+                            icon.source = "../../../../" + Style.getIconPath("Icons/Error", Icon.State.On, Icon.Mode.Normal);
+                        }
+                        else if (category === 4){
+                            icon.source = "../../../../" + Style.getIconPath("Icons/Critical", Icon.State.On, Icon.Mode.Normal);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 

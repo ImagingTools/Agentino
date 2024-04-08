@@ -209,6 +209,26 @@ imtbase::CTreeItemModel* CMessageCollectionControllerComp::UpdateObject(const im
 }
 
 
+void CMessageCollectionControllerComp::SetObjectFilter(
+	const imtgql::CGqlRequest& /*gqlRequest*/,
+	const imtbase::CTreeItemModel& objectFilterModel,
+	iprm::CParamsSet& filterParams) const
+{
+	QByteArrayList keys;
+	keys << "InfoFilter" << "WarningFilter" << "ErrorFilter" << "CriticalFilter";
+	for (QByteArray key: keys){
+		if (objectFilterModel.ContainsKey(key)){
+			QByteArray filterValue = objectFilterModel.GetData(key).toByteArray();
+			if (!filterValue.isEmpty()){
+				istd::TDelPtr<iprm::CTextParam> textParamPtr(new iprm::CTextParam());
+				textParamPtr->SetText(filterValue);
+				filterParams.SetEditableParameter(key, textParamPtr.PopPtr());
+			}
+		}
+	}
+}
+
+
 // reimplemented (icomp::CComponentBase)
 
 void CMessageCollectionControllerComp::OnComponentDestroyed()
