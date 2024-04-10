@@ -45,6 +45,11 @@ public:
 	*/
 	virtual SettingsType GetSettingsType() const = 0;
 	/**
+		Get version of the service.
+	*/
+	virtual QString GetServiceVersion() const = 0;
+
+	/**
 		Get type name of the service.
 	*/
 	virtual QString GetServiceTypeName() const = 0;

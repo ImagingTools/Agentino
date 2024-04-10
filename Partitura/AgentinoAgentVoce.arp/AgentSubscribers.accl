@@ -9,8 +9,9 @@
     </AcfHeader>
     <PositionMap>
         <Element ComponentName="AgentConnectionSubscriberController" X="625" Y="350" Note=""/>
+        <Element ComponentName="ObjectCollectionSubscriberController" X="625" Y="550" Note=""/>
         <Element ComponentName="ServiceLogSubscriberController" X="625" Y="450" Note=""/>
-        <Element ComponentName="ServiceSubscriberController" X="600" Y="250" Note=""/>
+        <Element ComponentName="ServiceStatusSubscriberController" X="600" Y="250" Note=""/>
     </PositionMap>
     <EmbeddedRegistries/>
 </Acf>

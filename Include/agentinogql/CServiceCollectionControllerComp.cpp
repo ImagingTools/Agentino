@@ -268,6 +268,9 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 				else if(informationId == "IsAutoStart"){
 					elementInformation = serviceInfoPtr->IsAutoStart();
 				}
+				else if(informationId == "Version"){
+					elementInformation = serviceInfoPtr->GetServiceVersion();
+				}
 
 				if (elementInformation.isNull()){
 					elementInformation = "";

@@ -125,6 +125,9 @@ bool CAgentCollectionControllerComp::SetupGqlItem(
 						elementInformation = lastConnection.toLocalTime().toString("dd.MM.yyyy hh:mm:ss");
 					}
 				}
+				else if(informationId == "Version"){
+					elementInformation = agentPtr->GetVersion();
+				}
 
 				if (elementInformation.isNull()){
 					elementInformation = "";
@@ -303,6 +306,11 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObject(
 			agentPtr->SetComputerName(computerName);
 		}
 
+		if (itemModel.ContainsKey("Version")){
+			QString version = itemModel.GetData("Version").toString();
+			agentPtr->SetVersion(version);
+		}
+
 		return agentInstancePtr.PopPtr();
 	}
 
@@ -328,6 +336,15 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 		agentinodata::CIdentifiableAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(dataPtr.GetPtr());
 		if (agentInfoPtr != nullptr){
 			agentInfoPtr->SetLastConnection(QDateTime::currentDateTimeUtc());
+
+			if (inputParams.count() > 0){
+				QByteArray item = inputParams.at(0).GetFieldArgumentValue("Item").toByteArray();
+				QJsonDocument itemDoc = QJsonDocument::fromJson(item);
+				if (itemDoc.object().contains("Version")){
+					QString version = itemDoc.object().value("Version").toString();
+					agentInfoPtr->SetVersion(version);
+				}
+			}
 
 			if (!m_objectCollectionCompPtr->SetObjectData(agentId, *agentInfoPtr)){
 				qDebug() << QString("Unable to set data to the collection object with ID: %1.").arg(qPrintable(agentId));
@@ -566,6 +583,10 @@ void CAgentCollectionControllerComp::OnTimeout()
 													m_serviceStatusCollectionCompPtr->InsertNewObject("ServiceStatusInfo", "", "", serviceStatusInfoPtr.PopPtr(), id);
 												}
 											}
+										}
+										if (dataModelPtr->ContainsKey("Version")){
+											QByteArray serviceVersion = dataModelPtr->GetData("Version").toByteArray();
+											serviceInfoInfoPtr->SetServiceVersion(serviceVersion);
 										}
 
 										// Если на сервере есть сервис без input портов то берем из агента

@@ -40,7 +40,7 @@ void CAgentinoSubscriptionClientComp::OnSubscriptionStatusChanged(const QByteArr
 
 void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSet& changeSet)
 {
-	if (!m_loginStatusCompPtr.IsValid() || !m_gqlClientCompPtr.IsValid()){
+	if (!m_loginStatusCompPtr.IsValid() || !m_gqlClientCompPtr.IsValid() || !m_applicationInfoCompPtr.IsValid()){
 		return;
 	}
 	imtauth::ILoginStatusProvider::LoginStatusFlags loginStatus = (imtauth::ILoginStatusProvider::LoginStatusFlags)m_loginStatusCompPtr->GetLoginStatus();
@@ -62,12 +62,15 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 			name += "@" + domainMain;
 		}
 
+		QString version = m_applicationInfoCompPtr->GetApplicationAttribute(ibase::IApplicationInfo::AA_MAIN_VERSION);
+
 		QJsonObject item;
 
 		item.insert("Name", name);
 		item.insert("ComputerName", name);
 		item.insert("HttpUrl", "http://localhost:7222");
 		item.insert("WebSocketUrl", "http://localhost:7223");
+		item.insert("Version", version);
 
 		QJsonDocument itemDocument;
 		itemDocument.setObject(item);

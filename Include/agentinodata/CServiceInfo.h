@@ -23,9 +23,11 @@ public:
 	virtual void SetServiceArguments(const QByteArrayList& serviceArguments);
 	virtual void SetIsAutoStart(bool isAutoStart);
 	virtual void SetServiceTypeName(const QByteArray& serviceTypeName);
+	virtual void SetServiceVersion(const QString& serviceVersion);
 
 	// reimplemented (agentinodata::IServiceInfo)
 	virtual SettingsType GetSettingsType() const override;
+	virtual QString GetServiceVersion() const override;
 	virtual QString GetServiceTypeName() const override;
 	virtual QByteArray GetServicePath() const override;
 	virtual QByteArray GetServiceSettingsPath() const override;
@@ -45,6 +47,7 @@ public:
 
 protected:
 	SettingsType m_settingsType;
+	QString m_serviceVersion;
 	QString m_serviceTypeName;
 	QByteArray m_path;
 	QByteArray m_settingsPath;

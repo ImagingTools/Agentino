@@ -23,6 +23,11 @@ class IAgentInfo: virtual public iser::IObject
 {
 public:
 	/**
+		Get version of the agent.
+	*/
+	virtual QString GetVersion() const = 0;
+
+	/**
 		Get last connection of the agent.
 	*/
 	virtual QDateTime GetLastConnection() const = 0;

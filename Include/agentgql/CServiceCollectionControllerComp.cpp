@@ -119,6 +119,9 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 				else if(informationId == "IsAutoStart"){
 					elementInformation = serviceInfoPtr->IsAutoStart();
 				}
+				else if(informationId == "Version"){
+					elementInformation = serviceInfoPtr->GetServiceVersion();
+				}
 
 				if (elementInformation.isNull()){
 					elementInformation = "";
@@ -242,6 +245,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 			QByteArray serviceTypeName = serviceInfoPtr->GetServiceTypeName().toUtf8();
 			QString arguments = serviceInfoPtr->GetServiceArguments().join(' ');
 			bool isAutoStart = serviceInfoPtr->IsAutoStart();
+			QString serviceVersion = serviceInfoPtr->GetServiceVersion();
 
 			dataModel->SetData("Id", serviceId);
 			dataModel->SetData("Name", serviceName);
@@ -251,6 +255,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 			dataModel->SetData("Arguments", arguments);
 			dataModel->SetData("IsAutoStart", isAutoStart);
 			dataModel->SetData("ServiceTypeName", serviceTypeName);
+			dataModel->SetData("Version", serviceVersion);
 
 			if (m_serviceControllerCompPtr.IsValid()){
 				QProcess::ProcessState state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
@@ -276,7 +281,6 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 
 			if (m_pluginMap.contains(serviceName)){
 				const imtservice::IConnectionCollectionPlugin::IConnectionCollectionFactory* connectionCollectionFactoryPtr = nullptr;
-				//= m_pluginMap[serviceName].pluginPtr->GetConnectionCollectionFactory();
 				for (int index = 0; index < m_pluginMap[serviceName]->m_plugins.count(); index++){
 					imtservice::IConnectionCollectionPlugin* pluginPtr = m_pluginMap[serviceName]->m_plugins[index].pluginPtr;
 					if (pluginPtr != nullptr){
@@ -288,6 +292,8 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 				Q_ASSERT(connectionCollectionFactoryPtr != nullptr);
 				istd::TDelPtr<imtservice::IConnectionCollection> connectionCollection = connectionCollectionFactoryPtr->CreateInstance();
 				if (connectionCollection != nullptr){
+					serviceVersion = connectionCollection->GetServiceVersion();
+					dataModel->SetData("Version", serviceVersion);
 					const imtbase::ICollectionInfo* collectionInfo = connectionCollection->GetUrlList();
 					const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
 					if (objectCollection != nullptr){
@@ -402,7 +408,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 		return nullptr;
 	}
 
-	imtbase::CTreeItemModel* resultPtr = BaseClass::UpdateObject(gqlRequest, errorMessage);
+	//imtbase::CTreeItemModel* resultPtr = BaseClass::UpdateObject(gqlRequest, errorMessage);
 
 	const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParam("input");
 	if (inputParamPtr == nullptr){
@@ -412,33 +418,6 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 	}
 
 	QByteArray objectId = inputParamPtr->GetFieldArgumentValue("Id").toByteArray();
-
-	QString name;
-	QString description;
-	istd::IChangeable* savedObject = BaseClass::CreateObject(gqlRequest, objectId, name, description, errorMessage);
-	if (savedObject == nullptr){
-		SendErrorMessage(0, QString("Unable to create object"), "CServiceCollectionControllerComp");
-
-		return nullptr;
-	}
-
-	if (m_objectCollectionCompPtr->GetElementIds().contains(objectId)){
-		if (!m_objectCollectionCompPtr->SetObjectData(objectId, *savedObject)){
-			errorMessage = QString("Can not update object: %1").arg(qPrintable(objectId));
-			SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
-
-			return nullptr;
-		}
-	}
-	else{
-		QByteArray result = m_objectCollectionCompPtr->InsertNewObject("DocumentInfo", name, description, savedObject, objectId);
-		if (result.isEmpty()){
-			errorMessage = QString("Can not insert object: %1").arg(qPrintable(objectId));
-			SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
-
-			return nullptr;
-		}
-	}
 
 	QByteArray itemData = inputParamPtr->GetFieldArgumentValue("Item").toByteArray();
 	if (itemData.isEmpty()){
@@ -490,6 +469,43 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 		SendErrorMessage(0, QString("Connection collection for '%1' from plugin is invalid").arg(serviceTypeName), "CServiceCollectionControllerComp");
 
 		return nullptr;
+	}
+
+
+	QString name;
+	QString description;
+	const QList<imtgql::CGqlObject> params = gqlRequest.GetParams();
+	if (params.size() > 0){
+		name = params.at(0).GetFieldArgumentValue("name").toByteArray();
+		description = params.at(0).GetFieldArgumentValue("description").toString();
+	}
+	istd::IChangeable* savedObject = BaseClass::CreateObject(gqlRequest, objectId, name, description, errorMessage);
+	agentinodata::CServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::CServiceInfo*>(savedObject);
+	if (serviceInfoPtr == nullptr){
+		SendErrorMessage(0, QString("Unable to create object"), "CServiceCollectionControllerComp");
+
+		return nullptr;
+	}
+
+	QString serviceVersion = connectionCollectionPtr->GetServiceVersion();
+	serviceInfoPtr->SetServiceVersion(serviceVersion);
+
+	if (m_objectCollectionCompPtr->GetElementIds().contains(objectId)){
+		if (!m_objectCollectionCompPtr->SetObjectData(objectId, *savedObject)){
+			errorMessage = QString("Can not update object: %1").arg(qPrintable(objectId));
+			SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
+			return nullptr;
+		}
+	}
+	else{
+		QByteArray result = m_objectCollectionCompPtr->InsertNewObject("DocumentInfo", name, description, savedObject, objectId);
+		if (result.isEmpty()){
+			errorMessage = QString("Can not insert object: %1").arg(qPrintable(objectId));
+			SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
+			return nullptr;
+		}
 	}
 
 	bool needToUpdate = false;
@@ -596,14 +612,29 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 		}
 	}
 
-	if (resultPtr != nullptr){
-		imtbase::CTreeItemModel* objectRepresentationDataModelPtr = GetObject(gqlRequest, errorMessage);
-		if (objectRepresentationDataModelPtr != nullptr){
-			resultPtr->SetExternTreeModel("item", objectRepresentationDataModelPtr->GetTreeItemModel("data"));
-		}
+	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
+
+	imtbase::CTreeItemModel* dataModel = nullptr;
+	imtbase::CTreeItemModel* notificationModel = nullptr;
+
+	if (!errorMessage.isEmpty()){
+		imtbase::CTreeItemModel* errorsModel = rootModelPtr->AddTreeModel("errors");
+		errorsModel->SetData("message", errorMessage);
+	}
+	else{
+		dataModel = new imtbase::CTreeItemModel();
+		notificationModel = new imtbase::CTreeItemModel();
+		notificationModel->SetData("Id", objectId);
+		notificationModel->SetData("Name", name);
+		dataModel->SetExternTreeModel("updatedNotification", notificationModel);
+	}
+	rootModelPtr->SetExternTreeModel("data", dataModel);
+	imtbase::CTreeItemModel* objectRepresentationDataModelPtr = GetObject(gqlRequest, errorMessage);
+	if (objectRepresentationDataModelPtr != nullptr){
+		rootModelPtr->SetExternTreeModel("item", objectRepresentationDataModelPtr->GetTreeItemModel("data"));
 	}
 
-	return resultPtr;
+	return rootModelPtr.PopPtr();
 }
 
 

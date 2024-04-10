@@ -42,6 +42,12 @@ CServiceInfo::SettingsType CServiceInfo::GetSettingsType() const
 }
 
 
+QString CServiceInfo::GetServiceVersion() const
+{
+	return m_serviceVersion;
+}
+
+
 QString CServiceInfo::GetServiceTypeName() const
 {
 	return m_serviceTypeName;
@@ -112,6 +118,16 @@ void CServiceInfo::SetServiceTypeName(const QByteArray& serviceTypeName)
 		istd::CChangeNotifier changeNotifier(this);
 
 		m_serviceTypeName = serviceTypeName;
+	}
+}
+
+
+void CServiceInfo::SetServiceVersion(const QString& serviceVersion)
+{
+	if (m_serviceVersion != serviceVersion){
+		istd::CChangeNotifier changeNotifier(this);
+
+		m_serviceVersion = serviceVersion;
 	}
 }
 
@@ -189,6 +205,12 @@ bool CServiceInfo::Serialize(iser::IArchive &archive)
 	retVal = retVal && archive.BeginTag(dependantServiceConnectionsTag);
 	retVal = retVal && m_dependantServiceConnections.Serialize(archive);
 	retVal = retVal && archive.EndTag(dependantServiceConnectionsTag);
+
+	iser::CArchiveTag versionTag("Version", "Version", iser::CArchiveTag::TT_LEAF);
+	retVal = retVal && archive.BeginTag(versionTag);
+	retVal = retVal && archive.Process(m_serviceVersion);
+	retVal = retVal && archive.EndTag(versionTag);
+
 	return retVal;
 }
 
@@ -211,6 +233,7 @@ bool CServiceInfo::CopyFrom(const IChangeable &object, CompatibilityMode /*mode*
 		m_settingsPath = sourcePtr->m_settingsPath;
 		m_arguments = sourcePtr->m_arguments;
 		m_isAutoStart = sourcePtr->m_isAutoStart;
+		m_serviceVersion = sourcePtr->m_serviceVersion;
 
 		m_inputConnections.ResetData();
 		m_inputConnections.CopyFrom(sourcePtr->m_inputConnections);

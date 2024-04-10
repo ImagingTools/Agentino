@@ -43,16 +43,41 @@ SplitView {
         height: 200;
 
         commandsControllerComp: null
+        table.enableAlternating: false
 
         collectionId: "ServiceLog";
 
         property string serviceId
         property alias clientId: container.clientId
 
-        filterMenuVisible: false;
-
         collectionFilter: MessageCollectionFilter {
 
+        }
+
+        TreeItemModel {
+            id: collectionHeadersModel;
+
+            Component.onCompleted: {
+                log.updateHeaders();
+            }
+        }
+
+        function updateHeaders(){
+            collectionHeadersModel.Clear();
+
+            let index = collectionHeadersModel.InsertNewItem();
+            collectionHeadersModel.SetData("Id", "Text", index);
+            collectionHeadersModel.SetData("Name", qsTr("Description"), index);
+
+            index = collectionHeadersModel.InsertNewItem();
+            collectionHeadersModel.SetData("Id", "Timestamp", index);
+            collectionHeadersModel.SetData("Name", qsTr("Time"), index);
+
+            index = collectionHeadersModel.InsertNewItem();
+            collectionHeadersModel.SetData("Id", "Source", index);
+            collectionHeadersModel.SetData("Name", qsTr("Source"), index);
+
+            log.dataController.headersModel  = collectionHeadersModel;
         }
 
         onHeadersChanged: {
@@ -95,6 +120,11 @@ SplitView {
             function getAdditionalInputParams(){
                 console.log("LogCollectionView", container.clientId)
                 return log.getAdditionalInputParams()
+            }
+
+            function updateModel(){
+                console.log("Collection representation updateModel");
+                log.doUpdateGui()
             }
         } }
 

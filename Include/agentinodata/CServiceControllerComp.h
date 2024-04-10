@@ -6,11 +6,15 @@
 
 // ImtCore includes
 #include <imtbase/CObjectCollection.h>
+#include <imtbase/TPluginManager.h>
+#include <imtbase/PluginInterface.h>
+#include <imtservice/IConnectionCollectionPlugin.h>
 
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/IServiceController.h>
 
+IMT_DECLARE_PLUGIN_INTERFACE(ServiceSettings, imtservice::IConnectionCollectionPlugin);
 
 namespace agentinodata
 {
@@ -40,6 +44,29 @@ public:
 
 public	Q_SLOTS:
 	void stateChanged(QProcess::ProcessState newState);
+
+private:
+	void updateServiceVersion(const QByteArray& serviceId);
+
+	class PluginManager: public imtbase::TPluginManager<
+							  imtservice::IConnectionCollectionPlugin,
+							  IMT_CREATE_PLUGIN_FUNCTION(ServiceSettings),
+							  IMT_DESTROY_PLUGIN_FUNCTION(ServiceSettings)>
+	{
+	public:
+		PluginManager(
+			const QByteArray& createMethodName,
+			const QByteArray& destroyMethodName,
+			imtbase::IPluginStatusMonitor* pluginStatusMonitorPtr)
+		{
+			m_createMethodName = createMethodName;
+			m_destroyMethodName = destroyMethodName;
+			m_pluginStatusMonitorPtr = pluginStatusMonitorPtr;
+		}
+	};
+
+	typedef QMap<QByteArray, istd::TDelPtr<PluginManager>> PluginMap;
+	mutable PluginMap m_pluginMap;
 
 private:
 	I_REF(imtbase::IObjectCollection, m_serviceCollectionCompPtr);

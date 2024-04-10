@@ -10,6 +10,7 @@
 #include <ilog/CMessageContainer.h>
 #include <imod/TSingleModelObserverBase.h>
 #include <iprm/ITextParam.h>
+#include <ibase/IApplicationInfo.h>
 
 // ImtCore includes
 #include <imtclientgql/IGqlSubscriptionManager.h>
@@ -37,6 +38,7 @@ public:
 		I_ASSIGN(m_loginStatusCompPtr, "WebLoginStatus", "Web login status", true, "WebLoginStatus");
 		I_ASSIGN_TO(m_webLoginStatusModelCompPtr, m_loginStatusCompPtr, true);
 		I_ASSIGN(m_clientIdCompPtr, "ClientIdParam", "Parameter providing the client-ID that needs to be identified on the server", false, "ClientIdParam");
+		I_ASSIGN(m_applicationInfoCompPtr, "ApplicationInfo", "Application info", true, "ApplicationInfo");
 	I_END_COMPONENT;
 
 protected:
@@ -55,6 +57,7 @@ private:
 	I_REF(imtauth::ILoginStatusProvider, m_loginStatusCompPtr);
 	I_REF(imod::IModel, m_webLoginStatusModelCompPtr);
 	I_REF(iprm::ITextParam, m_clientIdCompPtr);
+	I_REF(ibase::IApplicationInfo, m_applicationInfoCompPtr);
 
 	QByteArray m_serviceStatusSubsriptionId;
 };

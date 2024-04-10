@@ -35,6 +35,31 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="ObjectCollectionSubscriberController" PackageId="ImtGqlPck" ComponentId="ObjectCollectionSubscriberController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>OnServiceChanged</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="ServiceCollection">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RequestManager" Type="Reference" ExportId="WebSocketClient">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="ServiceLogSubscriberController" PackageId="AgentinoGqlPck" ComponentId="ServiceLogSubscriberController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
@@ -54,7 +79,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServiceSubscriberController" PackageId="AgentinoGqlPck" ComponentId="ServiceSubscriberController">
+        <Element Id="ServiceStatusSubscriberController" PackageId="AgentinoGqlPck" ComponentId="ServiceSubscriberController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
@@ -88,6 +113,6 @@
     <ExportedComponents>
         <Component ExportedId="AgentConnectionSubscriberController" ComponentId="AgentConnectionSubscriberController"/>
         <Component ExportedId="ServiceLogSubscriberController" ComponentId="ServiceLogSubscriberController"/>
-        <Component ExportedId="ServiceSubscriberController" ComponentId="ServiceSubscriberController"/>
+        <Component ExportedId="ServiceStatusSubscriberController" ComponentId="ServiceStatusSubscriberController"/>
     </ExportedComponents>
 </Acf>

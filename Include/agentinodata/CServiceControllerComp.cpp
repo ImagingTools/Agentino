@@ -36,6 +36,8 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 		return retVal;
 	}
 
+	updateServiceVersion(serviceId);
+
 	agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = nullptr;
 	imtbase::IObjectCollection::DataPtr serviceDataPtr;
 	if (m_serviceCollectionCompPtr->GetObjectData(serviceId, serviceDataPtr)){
@@ -181,6 +183,59 @@ void CServiceControllerComp::stateChanged(QProcess::ProcessState newState)
 			break;
 		}
 	}
+}
+
+
+void CServiceControllerComp::updateServiceVersion(const QByteArray& serviceId)
+{
+	if (!m_serviceCollectionCompPtr.IsValid()){
+		Q_ASSERT(0);
+
+		return;
+	}
+	imtbase::IObjectCollection::DataPtr dataPtr;
+	if (m_serviceCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
+		agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(dataPtr.GetPtr());
+		if (serviceInfoPtr != nullptr){
+			QByteArray serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_NAME).toByteArray();
+			QString servicePath = serviceInfoPtr->GetServicePath();
+
+			QFileInfo fileInfo(servicePath);
+			QString pluginPath = fileInfo.path() + "/Plugins";
+
+			istd::TDelPtr<PluginManager>& pluginManagerPtr = m_pluginMap[serviceId];
+			pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), nullptr));
+
+			if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")) {
+				SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(serviceName), "CServiceControllerComp");
+				m_pluginMap.remove(serviceId);
+
+				return;
+			}
+
+			if (m_pluginMap.contains(serviceId)){
+				const imtservice::IConnectionCollectionPlugin::IConnectionCollectionFactory* connectionCollectionFactoryPtr = nullptr;
+				for (int index = 0; index < m_pluginMap[serviceId]->m_plugins.count(); index++){
+					imtservice::IConnectionCollectionPlugin* pluginPtr = m_pluginMap[serviceId]->m_plugins[index].pluginPtr;
+					if (pluginPtr != nullptr){
+						connectionCollectionFactoryPtr = pluginPtr->GetConnectionCollectionFactory();
+
+						break;
+					}
+				}
+				Q_ASSERT(connectionCollectionFactoryPtr != nullptr);
+				istd::TDelPtr<imtservice::IConnectionCollection> connectionCollection = connectionCollectionFactoryPtr->CreateInstance();
+				if (connectionCollection != nullptr){
+					QString serviceVersion = connectionCollection->GetServiceVersion();
+					if (serviceInfoPtr->GetServiceVersion() != serviceVersion){
+						serviceInfoPtr->SetServiceVersion(serviceVersion);
+						m_serviceCollectionCompPtr->SetObjectData(serviceId, *serviceInfoPtr);
+					}
+				}
+			}
+		}
+	}
+
 }
 
 

@@ -408,6 +408,7 @@
                                             <Value>Name</Value>
                                             <Value>Description</Value>
                                             <Value>StatusName</Value>
+                                            <Value>Version</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -420,6 +421,7 @@
                                             <Value>Name</Value>
                                             <Value>Description</Value>
                                             <Value>Status</Value>
+                                            <Value>Version</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>

@@ -39,6 +39,12 @@ void CAgentInfo::SetLastConnection(const QDateTime& lastConnection)
 }
 
 
+void CAgentInfo::SetVersion(const QString& version)
+{
+	m_version = version;
+}
+
+
 void CAgentInfo::SetComputerName(const QString& computerName)
 {
 	if (m_computerName != computerName){
@@ -50,6 +56,11 @@ void CAgentInfo::SetComputerName(const QString& computerName)
 
 
 // reimplemented (agentinodata::IAgentInfo)
+
+QString CAgentInfo::GetVersion() const
+{
+	return m_version;
+}
 
 QDateTime CAgentInfo::GetLastConnection() const
 {
@@ -90,6 +101,11 @@ bool CAgentInfo::Serialize(iser::IArchive &archive)
 	retVal = retVal && m_serviceCollection.Serialize(archive);
 	retVal = retVal && archive.EndTag(servicesTag);
 
+	iser::CArchiveTag versionTag("Version", "Version", iser::CArchiveTag::TT_LEAF);
+	retVal = retVal && archive.BeginTag(versionTag);
+	retVal = retVal && archive.Process(m_version);
+	retVal = retVal && archive.EndTag(versionTag);
+
 	return retVal;
 }
 
@@ -108,6 +124,7 @@ bool CAgentInfo::CopyFrom(const IChangeable &object, CompatibilityMode /*mode*/)
 
 		m_lastConnection = sourcePtr->m_lastConnection;
 		m_computerName = sourcePtr->m_computerName;
+		m_version = sourcePtr->m_version;
 
 		m_serviceCollection.ResetData();
 		m_serviceCollection.CopyFrom(sourcePtr->m_serviceCollection);

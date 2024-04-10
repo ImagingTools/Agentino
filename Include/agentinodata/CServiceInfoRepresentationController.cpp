@@ -48,12 +48,14 @@ bool CServiceInfoRepresentationController::GetRepresentationFromDataModel(
 	QString arguments = serviceInfoPtr->GetServiceArguments().join(' ');
 	bool isAutoStart = serviceInfoPtr->IsAutoStart();
 	QString serviceTypeName = serviceInfoPtr->GetServiceTypeName();
+	QString serviceVersion = serviceInfoPtr->GetServiceVersion();
 
 	representation.SetData("Path", servicePath);
 	representation.SetData("SettingsPath", settingsPath);
 	representation.SetData("Arguments", arguments);
 	representation.SetData("IsAutoStart", isAutoStart);
 	representation.SetData("ServiceTypeName", serviceTypeName);
+	representation.SetData("Version", serviceVersion);
 
 	imtbase::CTreeItemModel* inputConnectionsModelPtr = representation.AddTreeModel("InputConnections");
 	imtbase::CTreeItemModel* outputConnectionsModelPtr = representation.AddTreeModel("OutputConnections");
@@ -143,6 +145,12 @@ bool CServiceInfoRepresentationController::GetDataModelFromRepresentation(
 		QByteArray serviceTypeName = representation.GetData("ServiceTypeName").toByteArray();
 
 		serviceInfoPtr->SetServiceTypeName(serviceTypeName);
+	}
+
+	if (representation.ContainsKey("Version")){
+		QByteArray serviceVersion = representation.GetData("Version").toByteArray();
+
+		serviceInfoPtr->SetServiceVersion(serviceVersion);
 	}
 
 	imtbase::IObjectCollection* incomingConnectionCollectionPtr = serviceInfoPtr->GetInputConnections();

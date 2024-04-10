@@ -23,9 +23,11 @@ public:
 	CAgentInfo();
 
 	virtual void SetLastConnection(const QDateTime& lastConnection);
+	virtual void SetVersion(const QString& version);
 	virtual void SetComputerName(const QString& computerName);
 
 	// reimplemented (agentinodata::IAgentInfo)
+	virtual QString GetVersion() const override;
 	virtual QDateTime GetLastConnection() const override;
 	virtual QString GetComputerName() const override;
 	virtual imtbase::IObjectCollection* GetServiceCollection() override;
@@ -41,6 +43,7 @@ public:
 
 protected:
 	QDateTime m_lastConnection;
+	QString m_version;
 	QString m_computerName;
 	imod::TModelWrap<imtbase::CObjectCollection> m_serviceCollection;
 

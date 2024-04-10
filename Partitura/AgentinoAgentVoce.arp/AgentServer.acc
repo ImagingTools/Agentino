@@ -149,7 +149,7 @@
                     <AttributeInfo Id="GqlSubscriberControllers" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>AgentSubscribers/ServiceSubscriberController</Value>
+                                <Value>AgentSubscribers/ServiceStatusSubscriberController</Value>
                                 <Value>AgentSubscribers/AgentConnectionSubscriberController</Value>
                                 <Value>AgentSubscribers/ServiceLogSubscriberController</Value>
                             </Values>
@@ -224,6 +224,9 @@
         <Element Id="ServiceManagerSubscriptionClient" PackageId="AgentinoGqlPck" ComponentId="AgentinoSubscriptionClient">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/ClientId"/>
                     </AttributeInfo>

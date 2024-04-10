@@ -56,7 +56,7 @@
                         <Data IsEnabled="true" Value="AgentinoAgentServerLog.txt"/>
                     </AttributeInfo>
                     <AttributeInfo Id="MainVersionId" Type="Integer" ExportId="">
-                        <Data IsEnabled="true" Value="2023"/>
+                        <Data IsEnabled="true" Value="2022"/>
                     </AttributeInfo>
                     <AttributeInfo Id="SeriviceDescription" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="Service Management System Server"/>
