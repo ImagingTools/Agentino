@@ -91,14 +91,6 @@ ViewBase {
         serviceEditorContainer.model.SetData("IsAutoStart", switchAutoStart.checked);
     }
 
-    Rectangle {
-        id: background;
-
-        anchors.fill: flickable;
-
-        color: Style.backgroundColor;
-    }
-
     MouseArea {
         anchors.fill: background;
 

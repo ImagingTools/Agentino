@@ -111,6 +111,8 @@ SplitView {
             else{
                 collectionFilter.setMessageStatusFilter(filterId, filterValue);
             }
+
+            log.doUpdateGui();
         }
 
         dataControllerComp: Component { CollectionRepresentation {
