@@ -75,6 +75,9 @@
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="ServiceCompositeInfo">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="ServiceStatusCollection">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -515,7 +518,7 @@
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="ServiceStatusCollection">
+                                <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="ServiceCompositeInfo">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="TopologyCollection">

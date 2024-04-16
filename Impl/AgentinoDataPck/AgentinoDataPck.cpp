@@ -20,6 +20,11 @@ I_EXPORT_COMPONENT(
 			"Service Information");
 
 I_EXPORT_COMPONENT(
+			ServiceCompositeInfo,
+			"Service composed information",
+			"Service Composed Information");
+
+I_EXPORT_COMPONENT(
 			AgentInfo,
 			"Agent information",
 			"Agent Information");

@@ -70,7 +70,7 @@ SplitView {
             collectionHeadersModel.SetData("Name", qsTr("Description"), index);
 
             index = collectionHeadersModel.InsertNewItem();
-            collectionHeadersModel.SetData("Id", "Timestamp", index);
+            collectionHeadersModel.SetData("Id", "LastModified", index);
             collectionHeadersModel.SetData("Name", qsTr("Time"), index);
 
             index = collectionHeadersModel.InsertNewItem();
@@ -100,7 +100,7 @@ SplitView {
         Component.onCompleted: {
             console.log("DEBUG:log Component.onCompleted", collectionId, container.clientId)
             collectionFilter.setSortingOrder("DESC");
-            collectionFilter.setSortingInfoId("Timestamp");
+            collectionFilter.setSortingInfoId("LastModified");
             filterMenu.decorator = messageCollectionFilterComp;
         }
 

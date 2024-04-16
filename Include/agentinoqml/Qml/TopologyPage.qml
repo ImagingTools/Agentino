@@ -296,6 +296,7 @@ ViewBase {
                         dataModel = dataModel.GetData("OnServiceStatusChanged")
                         let serviceId = dataModel.GetData("serviceId")
                         let serviceStatus = dataModel.GetData("serviceStatus")
+                        let dependencyStatus
                         console.log("serviceStatus", serviceStatus)
 
                         let index = scheme.findModelIndex(serviceId);
@@ -313,6 +314,22 @@ ViewBase {
                             topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus === "NotRunning");
                             topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === "Running");
                         }
+                        let dependencyStatusModel = dataModel.GetData("dependencyStatus")
+                        for (let i = 0; i < dependencyStatusModel.GetItemsCount(); i++){
+                            serviceId = dependencyStatusModel.GetData("id", i);
+                            dependencyStatus = dependencyStatusModel.GetData("dependencyStatus", i)
+                            index = scheme.findModelIndex(serviceId);
+                            if (dependencyStatus === "AllRunning"){
+                                scheme.objectModel.SetData("IconUrl_2", "", index);
+                            }
+                            else if (dependencyStatus === "NotAllRunning"){
+                                scheme.objectModel.SetData("IconUrl_2", "Icons/Error", index);
+                            }
+                            else {
+                                scheme.objectModel.SetData("IconUrl_2", "Icons/Warning", index);
+                            }
+                        }
+
                         scheme.requestPaint()
                     }
                 }

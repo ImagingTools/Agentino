@@ -32,7 +32,7 @@ bool CMessageCollectionControllerComp::SetupGqlItem(
 			const imtgql::CGqlRequest& gqlRequest,
 			imtbase::CTreeItemModel& model,
 			int itemIndex,
-			const QByteArray& collectionId,
+			const imtbase::IObjectCollectionIterator* objectCollectionIterator,
 			QString& errorMessage) const
 {
 	QByteArray agentId;
@@ -58,7 +58,7 @@ bool CMessageCollectionControllerComp::SetupGqlItem(
 	if (!informationIds.isEmpty() && messageCollectionPtr.IsValid()){
 		ilog::CMessage* messagePtr = nullptr;
 		imtbase::IObjectCollection::DataPtr massageDataPtr;
-		if (messageCollectionPtr->GetObjectData(collectionId, massageDataPtr)){
+		if (objectCollectionIterator->GetObjectData(massageDataPtr)){
 			messagePtr = dynamic_cast<ilog::CMessage*>(massageDataPtr.GetPtr());
 		}
 
@@ -68,10 +68,10 @@ bool CMessageCollectionControllerComp::SetupGqlItem(
 				QVariant elementInformation;
 
 				if(informationId == "TypeId"){
-					elementInformation = messageCollectionPtr->GetObjectTypeId(collectionId);
+					elementInformation = messageCollectionPtr->GetObjectTypeId(objectCollectionIterator->GetObjectId());
 				}
 				else if(informationId == "Id"){
-					serviceId = collectionId;
+					serviceId = objectCollectionIterator->GetObjectId();
 					elementInformation = serviceId;
 				}
 				else if(informationId == "Text"){
@@ -89,7 +89,7 @@ bool CMessageCollectionControllerComp::SetupGqlItem(
 				else if(informationId == "Source"){
 					elementInformation = messagePtr->GetInformationSource();
 				}
-				else if(informationId == "Timestamp"){
+				else if(informationId == "Timestamp" || informationId == "LastModified"){
 					elementInformation = messagePtr->GetInformationTimeStamp().toString("dd.MM.yyyy hh:mm:ss.zzz");
 				}
 
@@ -168,12 +168,12 @@ imtbase::CTreeItemModel *CMessageCollectionControllerComp::ListObjects(const imt
 		notificationModel->SetData("PagesCount", pagesCount);
 		notificationModel->SetData("TotalCount", elementsCount);
 
-		imtbase::ICollectionInfo::Ids ids = messageCollectionPtr->GetElementIds(offset, count, &filterParams);
+		istd::TDelPtr<imtbase::IObjectCollectionIterator> iterator = messageCollectionPtr->CreateObjectCollectionIterator(offset, count, &filterParams);
 
-		for (QByteArray id: ids){
+		while (iterator.IsValid() && iterator->Next()){
 			int itemIndex = itemsModel->InsertNewItem();
 			if (itemIndex >= 0){
-				if (!SetupGqlItem(gqlRequest, *itemsModel, itemIndex, id, errorMessage)){
+				if (!SetupGqlItem(gqlRequest, *itemsModel, itemIndex, iterator.GetPtr(), errorMessage)){
 					SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
 
 					return nullptr;

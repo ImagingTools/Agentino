@@ -6,7 +6,6 @@
 
 // Agentino includes
 #include <agentinodata/IServiceController.h>
-#include <agentinodata/CServiceStatusInfo.h>
 #include <agentinodata/CServiceInfo.h>
 
 

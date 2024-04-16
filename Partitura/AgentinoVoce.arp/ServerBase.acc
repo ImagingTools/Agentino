@@ -55,11 +55,17 @@
                     <AttributeInfo Id="LogPath" Type="Reference" ExportId="LogPath">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="MessageConsumer" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="HttpServerFramework/BroadcastMessageConsumerSubscriber"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/RoleRepository"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServerSettings" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/ServiceCompositeInfo"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
@@ -136,7 +142,6 @@
                     <AttributeInfo Id="GqlSubscriberControllers" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>ServiceStatusSubscriberController</Value>
                                 <Value>Subscribers/AgentsSubscriberProxyController</Value>
                                 <Value>Subscribers/ServiceCollectionSubscriberController</Value>
                                 <Value>Subscribers/UserGroupsSubscriberController</Value>
@@ -146,6 +151,7 @@
                                 <Value>Subscribers/AgentStatusCollectionSubscriber</Value>
                                 <Value>Subscribers/AgentsSubscriberController</Value>
                                 <Value>Subscribers/TopologySubscriber</Value>
+                                <Value>ServiceStatusSubscriberController</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -258,6 +264,9 @@
                     <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/RoleRepository"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/ServiceCompositeInfo"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ServiceStatusRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
                     </AttributeInfo>
@@ -324,11 +333,17 @@
                     <AttributeInfo Id="LogPath" Type="Reference" ExportId="LogPath">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="MessageConsumer" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="HttpServerFramework/BroadcastMessageConsumerSubscriber"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/RoleRepository"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServerSettings" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/ServiceCompositeInfo"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
@@ -513,6 +528,9 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="ServiceCompositeInfo">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">

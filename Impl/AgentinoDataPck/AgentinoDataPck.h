@@ -5,8 +5,9 @@
 #include <icomp/TModelCompWrap.h>
 #include <icomp/TMakeComponentWrap.h>
 
-// Acula includes
+// Agentino includes
 #include <agentinodata/CServiceInfo.h>
+#include <agentinodata/CServiceCompositeInfoComp.h>
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/CServiceControllerComp.h>
 #include <agentinodata/CAgentCollectionComp.h>
@@ -26,6 +27,7 @@ typedef icomp::TMakeComponentWrap<
 					agentinodata::IServiceInfo,
 					iser::ISerializable,
 					istd::IChangeable> ServiceInfo;
+typedef icomp::TModelCompWrap<agentinodata::CServiceCompositeInfoComp> ServiceCompositeInfo;
 typedef icomp::TMakeComponentWrap<
 					agentinodata::CIdentifiableAgentInfo,
 					agentinodata::IAgentInfo,

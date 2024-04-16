@@ -1,10 +1,6 @@
 #include <agentinogql/CServiceStatusCollectionSubscriberControllerComp.h>
 
 
-// Agentino includes
-#include <agentinodata/CServiceStatusInfo.h>
-
-
 namespace agentinogql
 {
 
@@ -13,7 +9,7 @@ namespace agentinogql
 
 void CServiceStatusCollectionSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& changeSet)
 {
-	if (!m_objectCollectionCompPtr.IsValid()){
+	if (!m_objectCollectionCompPtr.IsValid() || !m_serviceCompositeInfoCompPtr.IsValid()){
 		return;
 	}
 
@@ -32,18 +28,22 @@ void CServiceStatusCollectionSubscriberControllerComp::OnUpdate(const istd::ICha
 		serviceId = changeSet.GetChangeInfo(imtbase::IObjectCollection::CN_ELEMENT_REMOVED).toByteArray();
 	}
 
-	agentinodata::CServiceStatusInfo::ServiceStatus serviceStatus = agentinodata::CServiceStatusInfo::SS_UNDEFINED;
-	imtbase::IObjectCollection::DataPtr dataPtr;
-	if (m_objectCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
-		agentinodata::CServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::CServiceStatusInfo*>(dataPtr.GetPtr());
-		if (serviceStatusInfoPtr != nullptr){
-			serviceStatus = serviceStatusInfoPtr->GetServiceStatus();
+	QString dependencyData = "[";
+	QByteArrayList dependencyServices = m_serviceCompositeInfoCompPtr->GetDependencyServices(serviceId);
+	for (int index = 0; index < dependencyServices.count(); index++){
+		dependencyData += "{\"id\":\"";
+		dependencyData += dependencyServices[index] + "\",";
+		dependencyData += "\"dependencyStatus\":\"";
+		dependencyData += m_serviceCompositeInfoCompPtr->GetDependantServiceStatus(dependencyServices[index]) + "\"}";
+		if (index < dependencyServices.count() - 1){
+			dependencyData += ",";
 		}
 	}
+	dependencyData += "]";
 
-	agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(serviceStatus);
-
-	QString data = QString("{ \"serviceId\": \"%1\", \"serviceStatus\": \"%2\" }").arg(qPrintable(serviceId)).arg(qPrintable(processStateEnum.id));
+	QString status = m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceId);
+	QString data = QString("{ \"serviceId\": \"%1\", \"serviceStatus\": \"%2\", \"dependencyStatus\": %3}")
+					   .arg(qPrintable(serviceId)).arg(status).arg(qPrintable(dependencyData));
 
 	SetAllSubscriptions("OnServiceStatusChanged", data.toUtf8());
 }

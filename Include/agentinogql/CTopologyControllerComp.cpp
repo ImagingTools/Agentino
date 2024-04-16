@@ -12,10 +12,10 @@
 #include <imtservice/CUrlConnectionLinkParam.h>
 
 // Agentino includes
-#include <agentinodata/agentinodata.h>
+// #include <agentinodata/agentinodata.h>
 #include <agentinodata/IAgentInfo.h>
 #include <agentinodata/IServiceInfo.h>
-#include <agentinodata/IServiceStatusInfo.h>
+// #include <agentinodata/IServiceStatusInfo.h>
 
 
 
@@ -54,7 +54,7 @@ imtbase::CTreeItemModel* CTopologyControllerComp::CreateInternalResponse(const i
 
 imtbase::CTreeItemModel* CTopologyControllerComp::CreateTopologyModel() const
 {
-	if (!m_agentCollectionCompPtr.IsValid()){
+	if (!m_agentCollectionCompPtr.IsValid() || !m_serviceCompositeInfoCompPtr.IsValid()){
 		return nullptr;
 	}
 
@@ -95,7 +95,7 @@ imtbase::CTreeItemModel* CTopologyControllerComp::CreateTopologyModel() const
 						itemsModel->SetData("MainText", name + "@" + agentName, index);
 						itemsModel->SetData("SecondText", description, index);
 						itemsModel->SetData("ThirdText", typeName, index);
-						QString serviceStatus = GetServiceStatus(serviceElementId);
+						QString serviceStatus = m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceElementId);
 						itemsModel->SetData("Status", serviceStatus, index);
 						if (serviceStatus == "Running"){
 							itemsModel->SetData("IconUrl_1", "Icons/Running", index);
@@ -107,6 +107,18 @@ imtbase::CTreeItemModel* CTopologyControllerComp::CreateTopologyModel() const
 							itemsModel->SetData("IconUrl_1", "Icons/Alert", index);
 						}
 
+						QString dependantServiceStatus = m_serviceCompositeInfoCompPtr->GetDependantServiceStatus(serviceElementId);
+						itemsModel->SetData("DependantStatus", dependantServiceStatus, index);
+						if (dependantServiceStatus == "AllRunning"){
+							itemsModel->SetData("IconUrl_2", "", index);
+						}
+						else if (dependantServiceStatus == "NotAllRunning"){
+							itemsModel->SetData("IconUrl_2", "Icons/Error", index);
+						}
+						else {
+							itemsModel->SetData("IconUrl_2", "Icons/Warning", index);
+						}
+
 						// Get Connections
 						imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
 						if (connectionCollectionPtr != nullptr){
@@ -116,7 +128,7 @@ imtbase::CTreeItemModel* CTopologyControllerComp::CreateTopologyModel() const
 								if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
 									imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
 									if (connectionLinkParamPtr != nullptr){
-										QByteArray serviceId =  GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
+										QByteArray serviceId =  m_serviceCompositeInfoCompPtr->GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
 										// itemsModel->SetData("SecondText", description, index);
 										imtbase::CTreeItemModel* linkModel = itemsModel->GetTreeItemModel("Links", index);
 										if (linkModel == nullptr){
@@ -171,117 +183,6 @@ imtbase::CTreeItemModel* CTopologyControllerComp::SaveTopologyModel(const imtgql
 }
 
 
-QByteArray CTopologyControllerComp::GetServiceId(const QUrl& url, const QString& connectionServiceTypeName) const
-{
-	if (!m_agentCollectionCompPtr.IsValid()){
-		return QByteArray();
-	}
-
-	imtbase::ICollectionInfo::Ids elementIds = m_agentCollectionCompPtr->GetElementIds();
-	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
-		imtbase::IObjectCollection::DataPtr agentDataPtr;
-		if (m_agentCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
-			agentinodata::IAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::IAgentInfo*>(agentDataPtr.GetPtr());
-			if (agentInfoPtr == nullptr){
-				continue;
-			}
-			// Get Services
-			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-			if (serviceCollectionPtr == nullptr){
-				continue;
-			}
-			imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
-			for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
-				imtbase::IObjectCollection::DataPtr serviceDataPtr;
-				if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
-					agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
-					if (serviceInfoPtr == nullptr){
-						continue;
-					}
-					// Get Connections
-					imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
-					if (connectionCollectionPtr == nullptr){
-						continue;
-					}
-					imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
-					for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-						qDebug() << "connectionElementId" << connectionElementId;
-						imtbase::IObjectCollection::DataPtr connectionDataPtr;
-						if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
-							imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
-							if (connectionParamPtr != nullptr){
-								if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionParam::CT_INPUT){
-									if (connectionParamPtr->GetUrl() == url/* && connectionServiceName == serviceName*/){
-										return serviceElementId;
-									}
-
-									QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
-									for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-										if (incomingConnection.url == url/* && connectionServiceName == serviceName*/){
-											return serviceElementId;
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return QByteArray();
-}
-
-
-QByteArray CTopologyControllerComp::GetServiceId(const QByteArray& dependantServiceConnectionId) const
-{
-	if (!m_agentCollectionCompPtr.IsValid()){
-		return QByteArray();
-	}
-
-	imtbase::ICollectionInfo::Ids elementIds = m_agentCollectionCompPtr->GetElementIds();
-	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
-		imtbase::IObjectCollection::DataPtr agentDataPtr;
-		if (m_agentCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
-			agentinodata::IAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::IAgentInfo*>(agentDataPtr.GetPtr());
-			if (agentInfoPtr == nullptr){
-				continue;
-			}
-			// Get Services
-			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-			if (serviceCollectionPtr == nullptr){
-				continue;
-			}
-			imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
-			for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
-				imtbase::IObjectCollection::DataPtr serviceDataPtr;
-				if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
-					agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
-					if (serviceInfoPtr == nullptr){
-						continue;
-					}
-					// Get Connections
-					imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
-					if (connectionCollectionPtr == nullptr){
-						continue;
-					}
-					imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
-					for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-						qDebug() << "connectionElementId" << connectionElementId;
-						if (connectionElementId == dependantServiceConnectionId){
-							return serviceElementId;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return QByteArray();
-}
-
-
 QPoint CTopologyControllerComp::GetServiceCoordinate(const QByteArray& serviceId) const
 {
 	QPoint retVal;
@@ -320,25 +221,6 @@ bool CTopologyControllerComp::SetServiceCoordinate(const QByteArray& serviceId, 
 	m_topologyCollectionCompPtr->InsertNewObject("Topology", "", "", &position2d, serviceId);
 
 	return true;
-}
-
-
-QString CTopologyControllerComp::GetServiceStatus(const QByteArray& serviceId) const
-{
-	QString retVal = "Undefined";
-	if (m_serviceStatusCollectionCompPtr.IsValid()){
-		imtbase::IObjectCollection::DataPtr serviceStatusDataPtr;
-		if (m_serviceStatusCollectionCompPtr->GetObjectData(serviceId, serviceStatusDataPtr)){
-			agentinodata::IServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::IServiceStatusInfo*>(serviceStatusDataPtr.GetPtr());
-			if (serviceStatusInfoPtr != nullptr){
-				agentinodata::IServiceStatusInfo::ServiceStatus status = serviceStatusInfoPtr->GetServiceStatus();
-				agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(status);
-				retVal = processStateEnum.id;
-			}
-		}
-	}
-
-	return retVal;
 }
 
 
