@@ -20,7 +20,6 @@ public:
 	I_BEGIN_COMPONENT(CTopologyControllerComp);
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", true, "AgentCollection");
 		I_ASSIGN(m_topologyCollectionCompPtr, "TopologyCollection", "Topology collection", true, "TopologyCollection");
-		// I_ASSIGN(m_serviceStatusCollectionCompPtr, "ServiceStatusCollection", "Service status collection", true, "ServiceStatusCollection");
 		I_ASSIGN(m_serviceCompositeInfoCompPtr, "ServiceCompositeInfo", "Service composite info", true, "ServiceCompositeInfo");
 	I_END_COMPONENT;
 
@@ -32,11 +31,6 @@ private:
 	imtbase::CTreeItemModel* SaveTopologyModel(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const;
 	QPoint GetServiceCoordinate(const QByteArray& serviceId) const;
 	bool SetServiceCoordinate(const QByteArray& serviceId, const QPoint& point) const;
-
-	// QByteArray GetServiceId(const QUrl& url, const QString& connectionServiceTypeName) const;
-	// QByteArray GetServiceId(const QByteArray& dependantServiceConnectionId) const;
-	// QString GetServiceStatus(const QByteArray& serviceId) const;
-	// QString GetDependantServiceStatus(const QByteArray& serviceId) const;
 
 protected:
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);

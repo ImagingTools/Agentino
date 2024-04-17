@@ -21,7 +21,7 @@
 #include <agentinogql/CGqlRepresentationAgentDataComp.h>
 #include <agentinogql/CTopologyControllerComp.h>
 #include <agentinogql/CServiceCollectionSubscriberControllerComp.h>
-#include <agentinogql/CServiceCollectionControllerComp.h>
+#include <agentinogql/CServerServiceCollectionControllerComp.h>
 #include <agentinogql/CRemoveServiceControllerProxyComp.h>
 #include <agentinogql/CServiceStatusCollectionSubscriberControllerComp.h>
 #include <agentinogql/CServiceStatusControllerProxyComp.h>
@@ -51,7 +51,7 @@ typedef icomp::TModelCompWrap<agentinogql::CSubscriptionControllerComp> Subscrip
 typedef agentinogql::CGqlRepresentationAgentDataComp GqlRepresentationAgentData;
 typedef agentinogql::CTopologyControllerComp TopologyController;
 typedef agentinogql::CServiceCollectionSubscriberControllerComp ServiceCollectionSubscriberController;
-typedef agentinogql::CServiceCollectionControllerComp ServerServiceCollectionController;
+typedef agentinogql::CServerServiceCollectionControllerComp ServerServiceCollectionController;
 typedef agentinogql::CRemoveServiceControllerProxyComp RemoveServiceControllerProxy;
 typedef agentinogql::CServiceStatusCollectionSubscriberControllerComp ServiceStatusCollectionSubscriberController;
 typedef agentinogql::CServiceStatusControllerProxyComp ServiceStatusControllerProxy;

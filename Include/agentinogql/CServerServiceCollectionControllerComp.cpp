@@ -1,4 +1,4 @@
-#include <agentinogql/CServiceCollectionControllerComp.h>
+#include <agentinogql/CServerServiceCollectionControllerComp.h>
 
 
 // ImtCore includes
@@ -19,7 +19,7 @@ namespace agentinogql
 
 // protected methods
 
-QUrl CServiceCollectionControllerComp::GetUrlByDependantId(const QByteArray& dependantId) const
+QUrl CServerServiceCollectionControllerComp::GetUrlByDependantId(const QByteArray& dependantId) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		return QUrl();
@@ -86,7 +86,7 @@ QUrl CServiceCollectionControllerComp::GetUrlByDependantId(const QByteArray& dep
 }
 
 
-QStringList CServiceCollectionControllerComp::GetConnectionInfoAboutDependOnService(
+QStringList CServerServiceCollectionControllerComp::GetConnectionInfoAboutDependOnService(
 			const QUrl& url,
 			const QByteArray& connectionId) const
 {
@@ -155,7 +155,7 @@ QStringList CServiceCollectionControllerComp::GetConnectionInfoAboutDependOnServ
 }
 
 
-QStringList CServiceCollectionControllerComp::GetConnectionInfoAboutServiceDepends(const QByteArray& connectionId) const
+QStringList CServerServiceCollectionControllerComp::GetConnectionInfoAboutServiceDepends(const QByteArray& connectionId) const
 {
 	return QStringList();
 }
@@ -163,7 +163,7 @@ QStringList CServiceCollectionControllerComp::GetConnectionInfoAboutServiceDepen
 
 // reimplemented (imtgql::CObjectCollectionControllerCompBase)
 
-bool CServiceCollectionControllerComp::SetupGqlItem(
+bool CServerServiceCollectionControllerComp::SetupGqlItem(
 			const imtgql::CGqlRequest& gqlRequest,
 			imtbase::CTreeItemModel& model,
 			int itemIndex,
@@ -289,7 +289,7 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 }
 
 
-imtbase::CTreeItemModel* CServiceCollectionControllerComp::ListObjects(
+imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::ListObjects(
 			const imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
@@ -380,8 +380,14 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::ListObjects(
 }
 
 
-imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetMetaInfo(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
 {
+	if (!m_objectCollectionCompPtr.IsValid() || !m_serviceCompositeInfoCompPtr.IsValid()){
+		Q_ASSERT(0);
+
+		return nullptr;
+	}
+
 	QByteArray agentId;
 	QByteArray serviceId;
 	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParam("input");
@@ -440,7 +446,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetMetaInfo(const imt
 						m_translationManagerCompPtr.GetPtr(),
 						incomingConnectionStr.toUtf8(),
 						languageId,
-						"agentinogql::CServiceCollectionControllerComp"
+						"agentinogql::CServerServiceCollectionControllerComp"
 					);
 			}
 
@@ -480,7 +486,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetMetaInfo(const imt
 							m_translationManagerCompPtr.GetPtr(),
 							dependantServicesStr.toUtf8(),
 							languageId,
-							"agentinogql::CServiceCollectionControllerComp"
+							"agentinogql::CServerServiceCollectionControllerComp"
 						);
 				}
 				dataModelPtr->SetData("Name", dependantServicesStr, index);
@@ -508,7 +514,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetMetaInfo(const imt
 						m_translationManagerCompPtr.GetPtr(),
 						serviceDependsOnStr.toUtf8(),
 						languageId,
-						"agentinogql::CServiceCollectionControllerComp"
+						"agentinogql::CServerServiceCollectionControllerComp"
 					);
 			}
 			dataModelPtr->SetData(	"Name", serviceDependsOnStr, index);
@@ -532,7 +538,110 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetMetaInfo(const imt
 		}
 	}
 
+	QString dependantStatus = m_serviceCompositeInfoCompPtr->GetDependantServiceStatus(serviceId);
+	if (!dependantStatus.isEmpty() && dependantStatus != "AllRunning"){
+		int index = dataModelPtr->InsertNewItem();
+
+		QString serviceDependsOnStr = QT_TR_NOOP("Information");
+
+		if (m_translationManagerCompPtr.IsValid()){
+			serviceDependsOnStr = imtbase::GetTranslation(
+				m_translationManagerCompPtr.GetPtr(),
+				serviceDependsOnStr.toUtf8(),
+				languageId,
+				"agentinogql::CServerServiceCollectionControllerComp"
+				);
+		}
+		dataModelPtr->SetData(	"Name", serviceDependsOnStr, index);
+
+		imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
+		int childIndex = contentModelPtr->InsertNewItem();
+		QString dependantStatusInfo = GetDependantStatusInfo(serviceId);
+
+		contentModelPtr->SetData("Value", dependantStatusInfo, childIndex);
+
+		if (dependantStatus == "NotAllRunning"){
+			contentModelPtr->SetData("Icon", "Icons/Error", childIndex);
+		}
+		else {
+			contentModelPtr->SetData("Icon", "Icons/Warning", childIndex);
+		}
+	}
+
 	return rootModelPtr.PopPtr();
+}
+
+
+//private methods implemented
+QString CServerServiceCollectionControllerComp::GetDependantStatusInfo(const QByteArray& serviceId) const
+{
+	if (!m_agentCollectionCompPtr.IsValid() || !m_serviceCompositeInfoCompPtr.IsValid()){
+		Q_ASSERT(0);
+
+		return QString();
+	}
+
+	QString retVal;
+	imtbase::ICollectionInfo::Ids elementIds = m_agentCollectionCompPtr->GetElementIds();
+	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
+		imtbase::IObjectCollection::DataPtr agentDataPtr;
+		if (m_agentCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
+			agentinodata::IAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::IAgentInfo*>(agentDataPtr.GetPtr());
+			if (agentInfoPtr != nullptr){
+				// Get Services
+				imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+				if (serviceCollectionPtr != nullptr){
+					imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
+					if (serviceElementIds.contains(serviceId)){
+						imtbase::IObjectCollection::DataPtr serviceDataPtr;
+						if (serviceCollectionPtr->GetObjectData(serviceId, serviceDataPtr)){
+							agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+							if (serviceInfoPtr == nullptr){
+								continue;
+							}
+
+							// Get Connections
+							imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
+							if (connectionCollectionPtr != nullptr){
+								imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
+								for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
+									imtbase::IObjectCollection::DataPtr connectionDataPtr;
+									if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
+										imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
+										if (connectionLinkParamPtr != nullptr){
+											QByteArray dependantServiceId =  m_serviceCompositeInfoCompPtr->GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
+											QString serviceStatus = m_serviceCompositeInfoCompPtr->GetServiceStatus(dependantServiceId);
+											QString serviceName = m_serviceCompositeInfoCompPtr->GetServiceName(dependantServiceId)
+																  + "@"
+																  + m_serviceCompositeInfoCompPtr->GetServiceAgentName(dependantServiceId);
+											if (serviceStatus == "Undefined"){
+												if (!retVal.isEmpty()){
+													retVal += "; ";
+												}
+												QString info = QT_TR_NOOP("Service status of %1 undefined");
+												retVal += info.arg(serviceName);
+											}
+											else if (serviceStatus == "NotRunning"){
+												if (!retVal.isEmpty()){
+													retVal += "; ";
+												}
+												QString info = QT_TR_NOOP("Service %1 not running");
+												retVal += info.arg(serviceName);
+											}
+										}
+									}
+								}
+							}
+						}
+
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	return retVal;
 }
 
 

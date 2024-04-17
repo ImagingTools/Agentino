@@ -19,6 +19,8 @@ public:
 	virtual QString GetServiceStatus(const QByteArray& serviceId) const = 0;
 	virtual QString GetDependantServiceStatus(const QByteArray& serviceId) const = 0;
 	virtual Ids GetDependencyServices(const QByteArray& serviceId) const = 0;
+	virtual QString GetServiceName(const QByteArray& serviceId) const = 0;
+	virtual QString GetServiceAgentName(const QByteArray& serviceId) const = 0;
 };
 
 

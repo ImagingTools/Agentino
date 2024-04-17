@@ -1,0 +1,29 @@
+{
+"$schema": "https://json-schema.org/draft/2020-12/schema",
+"name": "DependencyStatus",
+"type": "object",
+"properties": {
+	"Key": {
+		"type": "string",
+		"value": "dependencyStatus"
+	},
+	"Undefined": {
+		"type": "string",
+		"value": "Undefined"
+	},
+	"AllRunning": {
+		"type": "string",
+		"value": "AllRunning"
+	},
+	"NotAllRunning": {
+		"type": "string",
+		"value": "NotAllRunning"
+	},
+	"Selected": {
+		"type": "string",
+		"value": "Selected"
+	}
+},
+"required": [ "Undefined", "AllRunning", "NotAllRunning"]
+}
+

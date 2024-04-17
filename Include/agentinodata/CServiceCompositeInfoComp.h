@@ -34,6 +34,8 @@ public:
 	virtual QString GetServiceStatus(const QByteArray& serviceId) const override;
 	virtual QString GetDependantServiceStatus(const QByteArray& serviceId) const override;
 	virtual Ids GetDependencyServices(const QByteArray& serviceId) const override;
+	virtual QString GetServiceName(const QByteArray& serviceId) const override;
+	virtual QString GetServiceAgentName(const QByteArray& serviceId) const override;
 
 protected:
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);

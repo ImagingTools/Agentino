@@ -1,0 +1,29 @@
+{
+"$schema": "https://json-schema.org/draft/2020-12/schema",
+"name": "ServiceStatus",
+"type": "object",
+"properties": {
+	"Undefined": {
+		"type": "string",
+		"value": "Undefined"
+	},
+	"Running": {
+		"type": "string",
+		"value": "Running"
+	},
+	"NotRunning": {
+		"type": "string",
+		"value": "NotRunning"
+	},
+	"Starting": {
+		"type": "string",
+		"value": "Starting"
+	},
+	"Stopping": {
+		"type": "string",
+		"value": "Stopping"
+	}
+},
+"required": [ "Undefined", "Running", "NotRunning", "Starting", "Stopping"]
+}
+

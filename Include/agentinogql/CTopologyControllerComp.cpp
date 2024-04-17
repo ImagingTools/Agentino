@@ -12,10 +12,9 @@
 #include <imtservice/CUrlConnectionLinkParam.h>
 
 // Agentino includes
-// #include <agentinodata/agentinodata.h>
 #include <agentinodata/IAgentInfo.h>
 #include <agentinodata/IServiceInfo.h>
-// #include <agentinodata/IServiceStatusInfo.h>
+#include <GeneratedFiles/agentinodata/Ddl/Cpp/Globals.h>
 
 
 
@@ -109,14 +108,15 @@ imtbase::CTreeItemModel* CTopologyControllerComp::CreateTopologyModel() const
 
 						QString dependantServiceStatus = m_serviceCompositeInfoCompPtr->GetDependantServiceStatus(serviceElementId);
 						itemsModel->SetData("DependantStatus", dependantServiceStatus, index);
-						if (dependantServiceStatus == "AllRunning"){
-							itemsModel->SetData("IconUrl_2", "", index);
-						}
-						else if (dependantServiceStatus == "NotAllRunning"){
+						// if (dependantServiceStatus == "NotAllRunning"){
+						if (dependantServiceStatus == agentino::DependencyStatus::s_NotAllRunning){
 							itemsModel->SetData("IconUrl_2", "Icons/Error", index);
 						}
-						else {
+						else if (dependantServiceStatus == agentino::DependencyStatus::s_Undefined){
 							itemsModel->SetData("IconUrl_2", "Icons/Warning", index);
+						}
+						else {
+							itemsModel->SetData("IconUrl_2", "", index);
 						}
 
 						// Get Connections

@@ -6,6 +6,8 @@ import imtguigql 1.0
 import imtcolgui 1.0
 import imtdocgui 1.0
 
+import agentino 1.0
+
 ViewBase {
     id: topologyPage;
 
@@ -301,32 +303,33 @@ ViewBase {
 
                         let index = scheme.findModelIndex(serviceId);
                         scheme.objectModel.SetData("Status", serviceStatus, index);
-                        if (serviceStatus == "Running"){
+                        if (serviceStatus === ServiceStatus.running){
                             scheme.objectModel.SetData("IconUrl_1", "Icons/Running", index);
                         }
-                        else if (serviceStatus === "NotRunning" || serviceStatus === "Stopping" || serviceStatus === "Starting"){
+                        else if (serviceStatus === ServiceStatus.notRunning || serviceStatus === ServiceStatus.stopping || serviceStatus === ServiceStatus.starting){
                             scheme.objectModel.SetData("IconUrl_1", "Icons/Stopped", index);
                         }
                         else{
                             scheme.objectModel.SetData("IconUrl_1", "Icons/Alert", index);
                         }
                         if (index === scheme.selectedIndex){
-                            topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus === "NotRunning");
-                            topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === "Running");
+                            topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus === ServiceStatus.notRunning);
+                            topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === ServiceStatus.running);
                         }
-                        let dependencyStatusModel = dataModel.GetData("dependencyStatus")
+                        let dependencyStatusModel = dataModel.GetData(DependencyStatus.key)
                         for (let i = 0; i < dependencyStatusModel.GetItemsCount(); i++){
                             serviceId = dependencyStatusModel.GetData("id", i);
-                            dependencyStatus = dependencyStatusModel.GetData("dependencyStatus", i)
+                            dependencyStatus = dependencyStatusModel.GetData(DependencyStatus.key, i)
                             index = scheme.findModelIndex(serviceId);
-                            if (dependencyStatus === "AllRunning"){
-                                scheme.objectModel.SetData("IconUrl_2", "", index);
-                            }
-                            else if (dependencyStatus === "NotAllRunning"){
+
+                            if (dependencyStatus === DependencyStatus.notAllRunning){
                                 scheme.objectModel.SetData("IconUrl_2", "Icons/Error", index);
                             }
-                            else {
+                            else if (dependencyStatus === DependencyStatus.undefined) {
                                 scheme.objectModel.SetData("IconUrl_2", "Icons/Warning", index);
+                            }
+                            else {
+                                scheme.objectModel.SetData("IconUrl_2", "", index);
                             }
                         }
 
