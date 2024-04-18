@@ -37,7 +37,7 @@ protected:
 	virtual imtbase::CTreeItemModel* GetMetaInfo(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 
 private:
-	QString GetDependantStatusInfo(const QByteArray& serviceId) const;
+	QStringList GetDependantStatusInfo(const QByteArray& serviceId) const;
 
 protected:
 	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);

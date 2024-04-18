@@ -28,16 +28,18 @@ void CServiceStatusCollectionSubscriberControllerComp::OnUpdate(const istd::ICha
 		serviceId = changeSet.GetChangeInfo(imtbase::IObjectCollection::CN_ELEMENT_REMOVED).toByteArray();
 	}
 
-	QString dependencyData = "[";
+	QString dependencyData;
 	QByteArrayList dependencyServices = m_serviceCompositeInfoCompPtr->GetDependencyServices(serviceId);
+	dependencyData = "[{\"id\":\"";
+	dependencyData += serviceId + "\",";
+	dependencyData += "\"dependencyStatus\":\"";
+	dependencyData += m_serviceCompositeInfoCompPtr->GetDependantServiceStatus(serviceId) + "\"}";
 	for (int index = 0; index < dependencyServices.count(); index++){
+		dependencyData += ",";
 		dependencyData += "{\"id\":\"";
 		dependencyData += dependencyServices[index] + "\",";
 		dependencyData += "\"dependencyStatus\":\"";
 		dependencyData += m_serviceCompositeInfoCompPtr->GetDependantServiceStatus(dependencyServices[index]) + "\"}";
-		if (index < dependencyServices.count() - 1){
-			dependencyData += ",";
-		}
 	}
 	dependencyData += "]";
 

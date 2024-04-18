@@ -303,33 +303,37 @@ ViewBase {
 
                         let index = scheme.findModelIndex(serviceId);
                         scheme.objectModel.SetData("Status", serviceStatus, index);
-                        if (serviceStatus === ServiceStatus.running){
+                        if (serviceStatus === ServiceStatus.s_Running){
                             scheme.objectModel.SetData("IconUrl_1", "Icons/Running", index);
                         }
-                        else if (serviceStatus === ServiceStatus.notRunning || serviceStatus === ServiceStatus.stopping || serviceStatus === ServiceStatus.starting){
+                        else if (serviceStatus === ServiceStatus.s_NotRunning || serviceStatus === ServiceStatus.s_Stopping || serviceStatus === ServiceStatus.s_Starting){
                             scheme.objectModel.SetData("IconUrl_1", "Icons/Stopped", index);
                         }
                         else{
                             scheme.objectModel.SetData("IconUrl_1", "Icons/Alert", index);
                         }
                         if (index === scheme.selectedIndex){
-                            topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus === ServiceStatus.notRunning);
-                            topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === ServiceStatus.running);
+                            topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus === ServiceStatus.s_NotRunning);
+                            topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === ServiceStatus.s_Running);
                         }
-                        let dependencyStatusModel = dataModel.GetData(DependencyStatus.key)
+                        let dependencyStatusModel = dataModel.GetData(DependencyStatus.s_Key)
                         for (let i = 0; i < dependencyStatusModel.GetItemsCount(); i++){
                             serviceId = dependencyStatusModel.GetData("id", i);
-                            dependencyStatus = dependencyStatusModel.GetData(DependencyStatus.key, i)
+                            dependencyStatus = dependencyStatusModel.GetData(DependencyStatus.s_Key, i)
                             index = scheme.findModelIndex(serviceId);
 
-                            if (dependencyStatus === DependencyStatus.notAllRunning){
+                            if (dependencyStatus === DependencyStatus.s_NotAllRunning){
                                 scheme.objectModel.SetData("IconUrl_2", "Icons/Error", index);
                             }
-                            else if (dependencyStatus === DependencyStatus.undefined) {
+                            else if (dependencyStatus === DependencyStatus.s_Undefined) {
                                 scheme.objectModel.SetData("IconUrl_2", "Icons/Warning", index);
                             }
                             else {
                                 scheme.objectModel.SetData("IconUrl_2", "", index);
+                            }
+
+                            if (serviceId === scheme.selectedService){
+                                metaInfoProvider.getMetaInfo(scheme.selectedService);
                             }
                         }
 

@@ -556,9 +556,9 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 
 		imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
 		int childIndex = contentModelPtr->InsertNewItem();
-		QString dependantStatusInfo = GetDependantStatusInfo(serviceId);
+		QStringList dependantStatusInfo = GetDependantStatusInfo(serviceId);
 
-		contentModelPtr->SetData("Value", dependantStatusInfo, childIndex);
+		contentModelPtr->SetData("Value", dependantStatusInfo.join("; "), childIndex);
 
 		if (dependantStatus == "NotAllRunning"){
 			contentModelPtr->SetData("Icon", "Icons/Error", childIndex);
@@ -573,15 +573,15 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 
 
 //private methods implemented
-QString CServerServiceCollectionControllerComp::GetDependantStatusInfo(const QByteArray& serviceId) const
+QStringList CServerServiceCollectionControllerComp::GetDependantStatusInfo(const QByteArray& serviceId) const
 {
 	if (!m_agentCollectionCompPtr.IsValid() || !m_serviceCompositeInfoCompPtr.IsValid()){
 		Q_ASSERT(0);
 
-		return QString();
+		return QStringList();
 	}
 
-	QString retVal;
+	QStringList retVal;
 	imtbase::ICollectionInfo::Ids elementIds = m_agentCollectionCompPtr->GetElementIds();
 	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
 		imtbase::IObjectCollection::DataPtr agentDataPtr;
@@ -614,19 +614,19 @@ QString CServerServiceCollectionControllerComp::GetDependantStatusInfo(const QBy
 											QString serviceName = m_serviceCompositeInfoCompPtr->GetServiceName(dependantServiceId)
 																  + "@"
 																  + m_serviceCompositeInfoCompPtr->GetServiceAgentName(dependantServiceId);
+											QString info;
+
 											if (serviceStatus == "Undefined"){
-												if (!retVal.isEmpty()){
-													retVal += "; ";
-												}
-												QString info = QT_TR_NOOP("Service status of %1 undefined");
-												retVal += info.arg(serviceName);
+												info = QT_TR_NOOP("Service status of %1 undefined");
+												info = info.arg(serviceName);
 											}
 											else if (serviceStatus == "NotRunning"){
-												if (!retVal.isEmpty()){
-													retVal += "; ";
-												}
-												QString info = QT_TR_NOOP("Service %1 not running");
-												retVal += info.arg(serviceName);
+												info = QT_TR_NOOP("Service %1 not running");
+												info = info.arg(serviceName);
+											}
+
+											if (!info.isEmpty() && !retVal.contains(info)){
+												retVal << info;
 											}
 										}
 									}
