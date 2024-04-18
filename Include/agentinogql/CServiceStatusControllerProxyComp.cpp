@@ -53,8 +53,6 @@ imtbase::CTreeItemModel* CServiceStatusControllerProxyComp::CreateInternalRespon
 		imtbase::IObjectCollection::DataPtr dataPtr;
 		if (m_serviceStatusCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
 			agentinodata::CServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::CServiceStatusInfo*>(dataPtr.GetPtr());
-			serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_UNDEFINED);
-
 			m_serviceStatusCollectionCompPtr->SetObjectData(serviceId, *serviceStatusInfoPtr);
 		}
 

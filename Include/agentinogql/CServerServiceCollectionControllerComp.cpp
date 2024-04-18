@@ -170,6 +170,12 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 			const QByteArray& collectionId,
 			QString& errorMessage) const
 {
+	if (!m_agentCollectionCompPtr.IsValid() || !m_serviceCompositeInfoCompPtr.IsValid()){
+		Q_ASSERT(0);
+
+		return false;
+	}
+
 	QByteArray agentId;
 	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParam("input");
 	if (gqlInputParamPtr != nullptr){
@@ -270,6 +276,12 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 				}
 				else if(informationId == "Version"){
 					elementInformation = serviceInfoPtr->GetServiceVersion();
+				}
+				else if(informationId == "DependencyStatus"){
+					elementInformation = m_serviceCompositeInfoCompPtr->GetDependantServiceStatus(collectionId);
+				}
+				else if(informationId == "DependantStatusInfo"){
+					elementInformation = GetDependantStatusInfo(collectionId).join("; ");
 				}
 
 				if (elementInformation.isNull()){

@@ -6,6 +6,8 @@ import imtguigql 1.0
 import imtdocgui 1.0
 import imtgui 1.0
 
+import agentino 1.0
+
 RemoteCollectionView {
     id: root;
 
@@ -15,7 +17,7 @@ RemoteCollectionView {
     filterMenuVisible: false;
 
     collectionId: "Services";
-    additionalFieldIds: ["Description","Status","StatusName"]
+    additionalFieldIds: ["Description","Status","StatusName", "DependencyStatus", "DependantStatusInfo"]
 
     hasPagination: false
 
@@ -55,6 +57,8 @@ RemoteCollectionView {
         if (root.table.headers.GetItemsCount() > 0){
             let orderIndex = root.table.getHeaderIndex("StatusName");
             root.table.setColumnContentComponent(orderIndex, stateColumnContentComp);
+            let nameIndex = root.table.getHeaderIndex("Name");
+            root.table.setColumnContentComponent(nameIndex, nameColumnContentComp);
         }
     }
 
@@ -171,38 +175,8 @@ RemoteCollectionView {
 
     Component {
         id: stateColumnContentComp;
-        TableCellDelegateBase {
-            id: content
-
-            Image {
-                id: image;
-
-                anchors.verticalCenter: parent.verticalCenter;
-                anchors.left: parent.left;
-                anchors.leftMargin: 5;
-
-                width: 9;
-                height: width;
-
-                sourceSize.width: width;
-                sourceSize.height: height;
-            }
-
-            Text {
-                id: lable;
-
-                anchors.left: image.right;
-                anchors.leftMargin: Style.size_smallMargin
-                anchors.right: parent.right;
-                anchors.verticalCenter: parent.verticalCenter;
-
-                font.pixelSize: Style.fontSize_common;
-                font.family: Style.fontFamily;
-                color: Style.textColor;
-
-                elide: Text.ElideRight;
-            }
-
+        TableCellIconTextDelegate {
+            icon.width: icon.visible ? 9 : 0;
             onRowIndexChanged: {
                 if (rowIndex >= 0){
                     let status = root.table.elements.GetData("Status", rowIndex);
@@ -211,20 +185,51 @@ RemoteCollectionView {
                     if (status === "Running"){
                         console.log("Running" ,status);
 
-                        image.source = "../../../../" + Style.getIconPath("Icons/Running", Icon.State.On, Icon.Mode.Normal);
+                        icon.source = "../../../../" + Style.getIconPath("Icons/Running", Icon.State.On, Icon.Mode.Normal);
                     }
                     else if (status === "NotRunning" || status === "Stopping" || status === "Starting"){
                         console.log("Stopped" ,status);
 
-                        image.source = "../../../../" + Style.getIconPath("Icons/Stopped", Icon.State.On, Icon.Mode.Normal);
+                        icon.source = "../../../../" + Style.getIconPath("Icons/Stopped", Icon.State.On, Icon.Mode.Normal);
                     }
                     else{
-                        image.source = "../../../../" + Style.getIconPath("Icons/Alert", Icon.State.On, Icon.Mode.Normal);
+                        icon.source = "../../../../" + Style.getIconPath("Icons/Alert", Icon.State.On, Icon.Mode.Normal);
                     }
                 }
-                let value = getValue();
-                if (value !== undefined){
-                    lable.text = value;
+            }
+        }
+    }
+
+    Component {
+        id: nameColumnContentComp;
+        TableCellIconTextDelegate {
+            id: cellDelegate
+            icon.width: icon.visible ? 9 : 0;
+
+            ToolButton {
+                anchors.fill: cellDelegate.icon
+                tooltipText: width > 0 ? rowDelegate.tableItem.elements.GetData("DependantStatusInfo", rowIndex) : ""
+                decorator: Component {
+                    ToolButtonDecorator{
+                        color: "transparent"
+                    }
+                }
+            }
+
+            onRowIndexChanged: {
+                if (rowIndex >= 0){
+                    let dependencyStatus = rowDelegate.tableItem.elements.GetData("DependencyStatus", rowIndex);
+                    if (dependencyStatus === DependencyStatus.s_NotAllRunning){
+                        icon.source = "../../../../" + Style.getIconPath("Icons/Error", Icon.State.On, Icon.Mode.Normal);
+                        icon.visible = true
+                    }
+                    else if (dependencyStatus === DependencyStatus.s_Undefined) {
+                        icon.source = "../../../../" + Style.getIconPath("Icons/Warning", Icon.State.On, Icon.Mode.Normal);
+                        icon.visible = true
+                    }
+                    else {
+                        icon.visible =false;
+                    }
                 }
             }
         }

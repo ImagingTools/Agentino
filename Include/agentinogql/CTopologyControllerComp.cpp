@@ -108,7 +108,7 @@ imtbase::CTreeItemModel* CTopologyControllerComp::CreateTopologyModel() const
 
 						QString dependantServiceStatus = m_serviceCompositeInfoCompPtr->GetDependantServiceStatus(serviceElementId);
 						itemsModel->SetData("DependantStatus", dependantServiceStatus, index);
-						// if (dependantServiceStatus == "NotAllRunning"){
+
 						if (dependantServiceStatus == agentino::DependencyStatus::s_NotAllRunning){
 							itemsModel->SetData("IconUrl_2", "Icons/Error", index);
 						}
