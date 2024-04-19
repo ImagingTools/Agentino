@@ -250,7 +250,7 @@ RemoteCollectionView {
 
         onStateChanged: {
             if (state === "Ready"){
-                console.log("OnServiceStatusChanged Ready", subscriptionClient.toJSON());
+                console.log("OnServiceStatusChanged Ready", subscriptionClient.ToJson());
                 if (subscriptionClient.ContainsKey("data")){
 
                     let dataModel = subscriptionClient.GetData("data")

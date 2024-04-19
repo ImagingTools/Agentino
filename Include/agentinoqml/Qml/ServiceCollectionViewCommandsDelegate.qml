@@ -106,7 +106,7 @@ DocumentCollectionViewDelegate {
             console.log("State:", this.state);
             if (this.state === "Ready"){
 
-                console.log("servicesController: ", this.toJSON());
+                console.log("servicesController: ", this.ToJson());
                 var dataModelLocal;
 
                 if (this.ContainsKey("errors")){

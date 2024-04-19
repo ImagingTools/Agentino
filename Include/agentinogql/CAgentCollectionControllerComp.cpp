@@ -492,7 +492,7 @@ void CAgentCollectionControllerComp::UpdateAgentService(
 	imtgql::CGqlRequest request(imtgql::CGqlRequest::RT_MUTATION, "ServiceUpdate");
 	imtgql::CGqlObject inputObject("input");
 	inputObject.InsertField(QByteArray("Id"), QVariant(serviceId));
-	inputObject.InsertField(QByteArray("Item"), QVariant(serviceRepresentationModel.toJSON()));
+	inputObject.InsertField(QByteArray("Item"), QVariant(serviceRepresentationModel.ToJson()));
 
 	imtgql::CGqlObject additionObject("addition");
 	additionObject.InsertField("clientId", QVariant(agentId));

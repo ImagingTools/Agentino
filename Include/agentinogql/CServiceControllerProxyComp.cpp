@@ -42,7 +42,7 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 			if (resultModelPtr != nullptr && resultModelPtr->ContainsKey("item")){
 				imtbase::CTreeItemModel* dataModelPtr = resultModelPtr->GetTreeItemModel("item");
 				if (dataModelPtr != nullptr){
-					itemModel.CopyFrom(*dataModelPtr);
+					itemModel.Copy(dataModelPtr);
 
 					ok = true;
 				}

@@ -230,7 +230,7 @@ ViewBase {
 
         onStateChanged: {
             if (state === "Ready"){
-                console.log("OnAgentConnectionChanged Ready", subscriptionClient.toJSON());
+                console.log("OnAgentConnectionChanged Ready", subscriptionClient.ToJson());
                 if (subscriptionClient.ContainsKey("data")){
                     let dataModel = subscriptionClient.GetData("data");
                     if (dataModel.ContainsKey("OnAgentConnectionChanged")){
@@ -253,7 +253,7 @@ ViewBase {
             var query = Gql.GqlRequest("mutation", "SetAgentSettings");
 
             var inputParams = Gql.GqlObject("input");
-            inputParams.InsertField ("Item", agentSettingsContainer.model.toJSON());
+            inputParams.InsertField ("Item", agentSettingsContainer.model.ToJson());
             query.AddParam(inputParams);
 
             var queryFields = Gql.GqlObject("updatedNotification");
@@ -295,7 +295,7 @@ ViewBase {
 
         onStateChanged: {
             if (this.state === "Ready"){
-                console.log("GetAgentSettings Ready:", this.toJSON());
+                console.log("GetAgentSettings Ready:", this.ToJson());
 
                 var dataModelLocal;
                 if (this.ContainsKey("errors")){

@@ -267,7 +267,7 @@ ViewBase {
 
         onStateChanged: {
             if (state === "Ready"){
-                console.log("OnTopologyChanged Ready", topologySubscriptionClient.toJSON());
+                console.log("OnTopologyChanged Ready", topologySubscriptionClient.ToJson());
 
                 if (topologySubscriptionClient.ContainsKey("data")){
                     topologyPage.itemsTopologyModel.updateModel()
@@ -291,7 +291,7 @@ ViewBase {
 
         onStateChanged: {
             if (state === "Ready"){
-                console.log("TopologyPage OnServiceStatusChanged Ready", subscriptionClient.toJSON());
+                console.log("TopologyPage OnServiceStatusChanged Ready", subscriptionClient.ToJson());
                 if (subscriptionClient.ContainsKey("data")){
                     let dataModel = subscriptionClient.GetData("data")
                     if (dataModel.ContainsKey("OnServiceStatusChanged")){
@@ -351,7 +351,7 @@ ViewBase {
             var query = Gql.GqlRequest("mutation", "SaveTopology");
 
             var inputParams = Gql.GqlObject("input");
-            inputParams.InsertField ("Item", scheme.objectModel.toJSON());
+            inputParams.InsertField ("Item", scheme.objectModel.ToJson());
 
             query.AddParam(inputParams);
 
@@ -403,7 +403,7 @@ ViewBase {
                     return;
                 }
 
-                console.log("GetTopology ready:", topolodyModel.toJSON())
+                console.log("GetTopology ready:", topolodyModel.ToJson())
 
                 if (topolodyModel.ContainsKey("data")){
                     dataModelLocal = topolodyModel.GetData("data");
