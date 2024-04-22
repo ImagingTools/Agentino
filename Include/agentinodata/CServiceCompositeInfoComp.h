@@ -31,8 +31,8 @@ public:
 	// reimplemented (agentinodata::IServiceCompositeInfo)
 	virtual QByteArray GetServiceId(const QUrl& url, const QString& connectionServiceTypeName) const override;
 	virtual QByteArray GetServiceId(const QByteArray& dependantServiceConnectionId) const override;
-	virtual QString GetServiceStatus(const QByteArray& serviceId) const override;
-	virtual QString GetDependantServiceStatus(const QByteArray& serviceId) const override;
+	virtual IServiceStatusInfo::ServiceStatus GetServiceStatus(const QByteArray& serviceId) const override;
+	virtual StateOfRequiredServices GetStateOfRequiredServices(const QByteArray& serviceId) const override;
 	virtual Ids GetDependencyServices(const QByteArray& serviceId) const override;
 	virtual QString GetServiceName(const QByteArray& serviceId) const override;
 	virtual QString GetServiceAgentName(const QByteArray& serviceId) const override;

@@ -131,17 +131,15 @@ QByteArray CServiceCompositeInfoComp::GetServiceId(const QByteArray& dependantSe
 }
 
 
-QString CServiceCompositeInfoComp::GetServiceStatus(const QByteArray& serviceId) const
+IServiceStatusInfo::ServiceStatus CServiceCompositeInfoComp::GetServiceStatus(const QByteArray& serviceId) const
 {
-	QString retVal = "Undefined";
+	IServiceStatusInfo::ServiceStatus retVal = IServiceStatusInfo::SS_UNDEFINED;
 	if (m_serviceStatusCollectionCompPtr.IsValid()){
 		imtbase::IObjectCollection::DataPtr serviceStatusDataPtr;
 		if (m_serviceStatusCollectionCompPtr->GetObjectData(serviceId, serviceStatusDataPtr)){
-			agentinodata::IServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::IServiceStatusInfo*>(serviceStatusDataPtr.GetPtr());
+			IServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<IServiceStatusInfo*>(serviceStatusDataPtr.GetPtr());
 			if (serviceStatusInfoPtr != nullptr){
-				agentinodata::IServiceStatusInfo::ServiceStatus status = serviceStatusInfoPtr->GetServiceStatus();
-				agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(status);
-				retVal = processStateEnum.id;
+				retVal = serviceStatusInfoPtr->GetServiceStatus();
 			}
 		}
 	}
@@ -150,14 +148,14 @@ QString CServiceCompositeInfoComp::GetServiceStatus(const QByteArray& serviceId)
 }
 
 
-QString CServiceCompositeInfoComp::GetDependantServiceStatus(const QByteArray& serviceId) const
+IServiceCompositeInfo::StateOfRequiredServices CServiceCompositeInfoComp::GetStateOfRequiredServices(const QByteArray& serviceId) const
 {
-	QString serviceStatus = GetServiceStatus(serviceId);
-	if (serviceStatus == "Undefined" || serviceStatus == "NotRunning"){
-		return QString();
+	IServiceStatusInfo::ServiceStatus serviceStatus = GetServiceStatus(serviceId);
+	if (serviceStatus == IServiceStatusInfo::SS_UNDEFINED || serviceStatus == IServiceStatusInfo::SS_NOT_RUNNING){
+		return IServiceCompositeInfo::SORS_UNDEFINED;
 	}
 
-	QString retVal = "AllRunning";
+	IServiceCompositeInfo::StateOfRequiredServices retVal = IServiceCompositeInfo::SORS_UNDEFINED;
 
 	imtbase::ICollectionInfo::Ids elementIds = m_agentCollectionCompPtr->GetElementIds();
 	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
@@ -186,15 +184,15 @@ QString CServiceCompositeInfoComp::GetDependantServiceStatus(const QByteArray& s
 										imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
 										if (connectionLinkParamPtr != nullptr){
 											QByteArray dependantServiceId =  GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
-											QString serviceStatus = GetServiceStatus(dependantServiceId);
-											if (serviceStatus == "Undefined"){
-												return "Undefined";
+											IServiceStatusInfo::ServiceStatus serviceStatus = GetServiceStatus(dependantServiceId);
+											if (serviceStatus == IServiceStatusInfo::SS_UNDEFINED){
+												return IServiceCompositeInfo::SORS_UNDEFINED;
 											}
-											else if (serviceStatus == "NotRunning"){
-												retVal = "NotAllRunning";
+											else if (serviceStatus == IServiceStatusInfo::SS_NOT_RUNNING){
+												retVal = IServiceCompositeInfo::SORS_NOT_RUNNING;
 											}
-											else if (serviceStatus == "Running" && retVal != "NotAllRunning"){
-												retVal = "AllRunning";
+											else if (serviceStatus == IServiceStatusInfo::SS_RUNNING && retVal != IServiceCompositeInfo::SORS_NOT_RUNNING){
+												retVal = IServiceCompositeInfo::SORS_RUNNING;
 											}
 										}
 									}
