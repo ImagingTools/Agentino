@@ -33,19 +33,21 @@ void CServiceStatusCollectionSubscriberControllerComp::OnUpdate(const istd::ICha
 	dependencyData = "[{\"id\":\"";
 	dependencyData += serviceId + "\",";
 	dependencyData += "\"dependencyStatus\":\"";
-	dependencyData += m_serviceCompositeInfoCompPtr->GetDependantServiceStatus(serviceId) + "\"}";
+	agentinodata::IServiceCompositeInfo::StateOfRequiredServices state = m_serviceCompositeInfoCompPtr->GetStateOfRequiredServices(serviceId);
+	dependencyData += agentinodata::IServiceCompositeInfo::ToString(state) + "\"}";
 	for (int index = 0; index < dependencyServices.count(); index++){
 		dependencyData += ",";
 		dependencyData += "{\"id\":\"";
 		dependencyData += dependencyServices[index] + "\",";
 		dependencyData += "\"dependencyStatus\":\"";
-		dependencyData += m_serviceCompositeInfoCompPtr->GetDependantServiceStatus(dependencyServices[index]) + "\"}";
+		state = m_serviceCompositeInfoCompPtr->GetStateOfRequiredServices(dependencyServices[index]);
+		dependencyData += agentinodata::IServiceCompositeInfo::ToString(state) + "\"}";
 	}
 	dependencyData += "]";
 
-	QString status = m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceId);
+	agentinodata::IServiceStatusInfo::ServiceStatus status = m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceId);
 	QString data = QString("{ \"serviceId\": \"%1\", \"serviceStatus\": \"%2\", \"dependencyStatus\": %3}")
-					   .arg(qPrintable(serviceId)).arg(status).arg(qPrintable(dependencyData));
+					   .arg(qPrintable(serviceId)).arg(agentinodata::IServiceStatusInfo::ToString(status)).arg(qPrintable(dependencyData));
 
 	SetAllSubscriptions("OnServiceStatusChanged", data.toUtf8());
 }

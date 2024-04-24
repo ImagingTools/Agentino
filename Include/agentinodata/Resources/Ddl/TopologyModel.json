@@ -1,0 +1,55 @@
+{
+"$schema": "https://json-schema.org/draft/2020-12/schema",
+"name": "TopologyModel",
+"type": "object",
+"properties": {
+	"x": {
+		"type": "string",
+		"value": "x"
+	},
+	"y": {
+		"type": "string",
+		"value": "y"
+	},
+	"id": {
+		"type": "string",
+		"value": "id"
+	},
+	"agentId": {
+		"type": "string",
+		"value": "agentId"
+	},
+	"mainText": {
+		"type": "string",
+		"value": "mainText"
+	},
+	"secondText": {
+		"type": "string",
+		"value": "secondText"
+	},
+	"thirdText": {
+		"type": "string",
+		"value": "thirdText"
+	},
+	"iconUrl_1": {
+		"type": "string",
+		"value": "iconUrl_1"
+	},
+	"iconUrl_2": {
+		"type": "string",
+		"value": "iconUrl_2"
+	},
+	"links": {
+		"type": "string",
+		"value": "links"
+	},
+	"objectId": {
+		"type": "string",
+		"value": "objectId"
+	}
+
+
+},
+"required": [ "x", "y", "id", "agentId", "mainText", "secondText", "thirdText", "iconUrl_1", "iconUrl_2", "links", "objectId"]
+}
+

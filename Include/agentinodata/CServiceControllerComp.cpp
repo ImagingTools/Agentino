@@ -16,13 +16,26 @@ namespace agentinodata
 
 // reimplemented (agentinodata::IServiceController)
 
-QProcess::ProcessState  CServiceControllerComp::GetServiceStatus(const QByteArray& serviceId) const
+IServiceStatusInfo::ServiceStatus  CServiceControllerComp::GetServiceStatus(const QByteArray& serviceId) const
 {
+	IServiceStatusInfo::ServiceStatus retVal = IServiceStatusInfo::SS_NOT_RUNNING;
+
 	if (m_processMap.contains(serviceId)){
-		return m_processMap[serviceId]->state();
+		QProcess::ProcessState processState = m_processMap[serviceId]->state();
+		switch (processState) {
+		case QProcess::Running:
+				retVal = IServiceStatusInfo::SS_RUNNING;
+			break;
+		case QProcess::NotRunning:
+				retVal = IServiceStatusInfo::SS_NOT_RUNNING;
+			break;
+		case QProcess::Starting:
+				retVal = IServiceStatusInfo::SS_STARTING;
+			break;
+		}
 	}
 
-	return QProcess::NotRunning;
+	return retVal;
 }
 
 
@@ -143,6 +156,19 @@ void CServiceControllerComp::OnComponentCreated()
 
 void CServiceControllerComp::stateChanged(QProcess::ProcessState newState)
 {
+	IServiceStatusInfo::ServiceStatus serviceStatus = IServiceStatusInfo::SS_NOT_RUNNING;
+	switch (newState) {
+	case QProcess::Running:
+		serviceStatus = IServiceStatusInfo::SS_RUNNING;
+		break;
+	case QProcess::NotRunning:
+		serviceStatus = IServiceStatusInfo::SS_NOT_RUNNING;
+		break;
+	case QProcess::Starting:
+		serviceStatus = IServiceStatusInfo::SS_STARTING;
+		break;
+	}
+
 	QProcess* senderProcess = dynamic_cast<QProcess*>(sender());
 
 	QList<QByteArray> keys = m_processMap.keys();
@@ -154,7 +180,7 @@ void CServiceControllerComp::stateChanged(QProcess::ProcessState newState)
 				istd::IChangeable::ChangeSet changeSet(istd::IChangeable::CF_ANY);
 				IServiceController::NotifierStatusInfo notifierStatusInfo;
 				notifierStatusInfo.serviceId = serviceId;
-				notifierStatusInfo.serviceStatus = newState;
+				notifierStatusInfo.serviceStatus = serviceStatus;
 				changeSet.SetChangeInfo(IServiceController::CN_STATUS_CHANGED, QVariant::fromValue(notifierStatusInfo));
 				istd::CChangeNotifier notifier(this, &changeSet);
 			}

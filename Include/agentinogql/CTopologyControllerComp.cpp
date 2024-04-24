@@ -84,40 +84,43 @@ imtbase::CTreeItemModel* CTopologyControllerComp::CreateTopologyModel() const
 						}
 						int index = itemsModel->InsertNewItem();
 						QPoint point = GetServiceCoordinate(serviceElementId);
-						itemsModel->SetData("Id", serviceElementId, index);
-						itemsModel->SetData("AgentId", elementId, index);
-						itemsModel->SetData("X", point.x(), index);
-						itemsModel->SetData("Y", point.y(), index);
+						itemsModel->SetData(agentino::TopologyModel::s_Id, serviceElementId, index);
+						itemsModel->SetData(agentino::TopologyModel::s_AgentId, elementId, index);
+						itemsModel->SetData(agentino::TopologyModel::s_X, point.x(), index);
+						itemsModel->SetData(agentino::TopologyModel::s_Y, point.y(), index);
 						QString name = serviceCollectionPtr->GetElementInfo(serviceElementId, imtbase::ICollectionInfo::EIT_NAME).toString();
 						QString description = serviceCollectionPtr->GetElementInfo(serviceElementId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
 						QString typeName = serviceInfoPtr->GetServiceTypeName();
-						itemsModel->SetData("MainText", name + "@" + agentName, index);
-						itemsModel->SetData("SecondText", description, index);
-						itemsModel->SetData("ThirdText", typeName, index);
-						QString serviceStatus = m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceElementId);
-						itemsModel->SetData("Status", serviceStatus, index);
-						if (serviceStatus == "Running"){
-							itemsModel->SetData("IconUrl_1", "Icons/Running", index);
+						itemsModel->SetData(agentino::TopologyModel::s_MainText, name + "@" + agentName, index);
+						itemsModel->SetData(agentino::TopologyModel::s_SecondText, description, index);
+						itemsModel->SetData(agentino::TopologyModel::s_ThirdText, typeName, index);
+						agentinodata::IServiceStatusInfo::ServiceStatus serviceStatus = m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceElementId);
+						itemsModel->SetData(agentino::ServiceStatus::s_Key, agentinodata::IServiceStatusInfo::ToString(serviceStatus), index);
+						if (serviceStatus == agentinodata::IServiceStatusInfo::SS_RUNNING){
+							itemsModel->SetData(agentino::TopologyModel::s_IconUrl_1, "Icons/Running", index);
 						}
-						else if (serviceStatus == "NotRunning"){
-							itemsModel->SetData("IconUrl_1", "Icons/Stopped", index);
+						else if (serviceStatus == agentinodata::IServiceStatusInfo::SS_NOT_RUNNING){
+							itemsModel->SetData(agentino::TopologyModel::s_IconUrl_1, "Icons/Stopped", index);
 						}
 						else{
-							itemsModel->SetData("IconUrl_1", "Icons/Alert", index);
+							itemsModel->SetData(agentino::TopologyModel::s_IconUrl_1, "Icons/Alert", index);
 						}
 
-						QString dependantServiceStatus = m_serviceCompositeInfoCompPtr->GetDependantServiceStatus(serviceElementId);
-						itemsModel->SetData("DependantStatus", dependantServiceStatus, index);
+						agentinodata::IServiceCompositeInfo::StateOfRequiredServices stateOfRequiredServices = m_serviceCompositeInfoCompPtr->GetStateOfRequiredServices(serviceElementId);
+						itemsModel->SetData(agentino::StateOfRequiredServices::s_Key, agentinodata::IServiceCompositeInfo::ToString(stateOfRequiredServices), index);
+						
+						if (serviceStatus == agentinodata::IServiceStatusInfo::SS_NOT_RUNNING
+									|| serviceStatus == agentinodata::IServiceStatusInfo::SS_UNDEFINED
+									|| stateOfRequiredServices == agentinodata::IServiceCompositeInfo::SORS_RUNNING){
+							itemsModel->SetData(agentino::TopologyModel::s_IconUrl_2, "", index);
+						}
+						else if (stateOfRequiredServices == agentinodata::IServiceCompositeInfo::SORS_NOT_RUNNING){
+							itemsModel->SetData(agentino::TopologyModel::s_IconUrl_2, "Icons/Error", index);
+						}
+						else if (stateOfRequiredServices == agentinodata::IServiceCompositeInfo::SORS_UNDEFINED){
+							itemsModel->SetData(agentino::TopologyModel::s_IconUrl_2, "Icons/Warning", index);
+						}
 
-						if (dependantServiceStatus == agentino::DependencyStatus::s_NotAllRunning){
-							itemsModel->SetData("IconUrl_2", "Icons/Error", index);
-						}
-						else if (dependantServiceStatus == agentino::DependencyStatus::s_Undefined){
-							itemsModel->SetData("IconUrl_2", "Icons/Warning", index);
-						}
-						else {
-							itemsModel->SetData("IconUrl_2", "", index);
-						}
 
 						// Get Connections
 						imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
@@ -129,13 +132,12 @@ imtbase::CTreeItemModel* CTopologyControllerComp::CreateTopologyModel() const
 									imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
 									if (connectionLinkParamPtr != nullptr){
 										QByteArray serviceId =  m_serviceCompositeInfoCompPtr->GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
-										// itemsModel->SetData("SecondText", description, index);
-										imtbase::CTreeItemModel* linkModel = itemsModel->GetTreeItemModel("Links", index);
+										imtbase::CTreeItemModel* linkModel = itemsModel->GetTreeItemModel(agentino::TopologyModel::s_Links, index);
 										if (linkModel == nullptr){
-											linkModel = itemsModel->AddTreeModel("Links", index);
+											linkModel = itemsModel->AddTreeModel(agentino::TopologyModel::s_Links, index);
 										}
 										int linkIndex = linkModel->InsertNewItem();
-										linkModel->SetData("ObjectId", serviceId, linkIndex);
+										linkModel->SetData(agentino::TopologyModel::s_ObjectId, serviceId, linkIndex);
 									}
 								}
 							}
@@ -164,9 +166,9 @@ imtbase::CTreeItemModel* CTopologyControllerComp::SaveTopologyModel(const imtgql
 
 		m_topologyCollectionCompPtr->ResetData();
 		for (int index = 0; index < itemModel.GetItemsCount(); index++){
-			int x = itemModel.GetData("X", index).toInt();
-			int y = itemModel.GetData("Y", index).toInt();
-			QByteArray id = itemModel.GetData("Id", index).toByteArray();
+			int x = itemModel.GetData(agentino::TopologyModel::s_X, index).toInt();
+			int y = itemModel.GetData(agentino::TopologyModel::s_Y, index).toInt();
+			QByteArray id = itemModel.GetData(agentino::TopologyModel::s_Id, index).toByteArray();
 			QPoint point(x,y);
 			SetServiceCoordinate(id, point);
 		}

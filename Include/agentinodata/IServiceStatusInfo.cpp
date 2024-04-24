@@ -11,30 +11,30 @@ ProcessStateEnum GetProcceStateRepresentation(IServiceStatusInfo::ServiceStatus 
 
 	switch (processState) {
 	case IServiceStatusInfo::SS_STARTING:
-		processStateEnum.id = "Starting";
+		processStateEnum.id = "starting";
 		processStateEnum.name = QString("Starting");
 
 		break;
 	case IServiceStatusInfo::SS_STOPPING:
-		processStateEnum.id = "Stopping";
+		processStateEnum.id = "stopping";
 		processStateEnum.name = QString("Stopping");
 
 		break;
 
 	case IServiceStatusInfo::SS_RUNNING:
-		processStateEnum.id = "Running";
+		processStateEnum.id = "running";
 		processStateEnum.name = QString("Running");
 
 		break;
 
 	case IServiceStatusInfo::SS_NOT_RUNNING:
-		processStateEnum.id = "NotRunning";
+		processStateEnum.id = "notRunning";
 		processStateEnum.name = QString("Not running");
 
 		break;
 
 	default:
-		processStateEnum.id = "Undefined";
+		processStateEnum.id = "undefined";
 		processStateEnum.name = QString("Undefined");
 
 		break;

@@ -105,8 +105,6 @@ RemoteCollectionView {
             let index = selection[0];
 
             let serviceId = root.table.elements.GetData("Id", index);
-
-//            serviceLogProvider.updateServiceLog(serviceId);
         }
     }
 
@@ -182,14 +180,13 @@ RemoteCollectionView {
                     let status = root.table.elements.GetData("Status", rowIndex);
                     console.log("status" ,status);
 
-                    if (status === "Running"){
-                        console.log("Running" ,status);
+                    if (status === ServiceStatus.s_Running){
+                        console.log(ServiceStatus.s_Running ,status);
 
                         icon.source = "../../../../" + Style.getIconPath("Icons/Running", Icon.State.On, Icon.Mode.Normal);
                     }
-                    else if (status === "NotRunning" || status === "Stopping" || status === "Starting"){
+                    else if (status === ServiceStatus.s_NotRunning  || status === ServiceStatus.s_Stopping || status === ServiceStatus.s_Starting){
                         console.log("Stopped" ,status);
-
                         icon.source = "../../../../" + Style.getIconPath("Icons/Stopped", Icon.State.On, Icon.Mode.Normal);
                     }
                     else{
@@ -219,7 +216,7 @@ RemoteCollectionView {
             onRowIndexChanged: {
                 if (rowIndex >= 0){
                     let dependencyStatus = rowDelegate.tableItem.elements.GetData("DependencyStatus", rowIndex);
-                    if (dependencyStatus === DependencyStatus.s_NotAllRunning){
+                    if (dependencyStatus === DependencyStatus.s_NotRunning){
                         icon.source = "../../../../" + Style.getIconPath("Icons/Error", Icon.State.On, Icon.Mode.Normal);
                         icon.visible = true
                     }

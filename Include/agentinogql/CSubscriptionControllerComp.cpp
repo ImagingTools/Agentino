@@ -9,6 +9,7 @@
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/IServiceController.h>
+#include <GeneratedFiles/agentinodata/Ddl/Cpp/Globals.h>
 
 
 namespace agentinogql
@@ -28,16 +29,10 @@ void CSubscriptionControllerComp::OnResponseReceived(const QByteArray & subscrip
 	QList<QByteArray> subscriptionIds = m_registeredAgents.values();
 	if (subscriptionIds.contains(subscriptionId)){
 		notifierInfo.serviceId = subscriptionObject.value("serviceId").toString().toUtf8();
-		QString status = subscriptionObject.value("serviceStatus").toString();
-		if (status == "Starting"){
-			notifierInfo.serviceStatus = QProcess::Starting;
-		}
-		if (status == "Running"){
-			notifierInfo.serviceStatus = QProcess::Running;
-		}
-		if (status == "NotRunning"){
-			notifierInfo.serviceStatus = QProcess::NotRunning;
-		}
+
+		QString status = subscriptionObject.value(agentino::ServiceStatus::s_Key).toString();
+		
+		agentinodata::IServiceStatusInfo::FromString(status.toUtf8(), notifierInfo.serviceStatus);
 		changeSet.SetChangeInfo(agentinodata::IServiceController::CN_STATUS_CHANGED, QVariant::fromValue(notifierInfo));
 		istd::CChangeNotifier notifier(this, &changeSet);
 	}

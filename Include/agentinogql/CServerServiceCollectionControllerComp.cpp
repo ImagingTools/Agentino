@@ -278,7 +278,8 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 					elementInformation = serviceInfoPtr->GetServiceVersion();
 				}
 				else if(informationId == "DependencyStatus"){
-					elementInformation = m_serviceCompositeInfoCompPtr->GetDependantServiceStatus(collectionId);
+					agentinodata::IServiceCompositeInfo::StateOfRequiredServices state = m_serviceCompositeInfoCompPtr->GetStateOfRequiredServices(collectionId);
+					elementInformation = agentinodata::IServiceCompositeInfo::ToString(state);
 				}
 				else if(informationId == "DependantStatusInfo"){
 					elementInformation = GetDependantStatusInfo(collectionId).join("; ");
@@ -550,8 +551,10 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 		}
 	}
 
-	QString dependantStatus = m_serviceCompositeInfoCompPtr->GetDependantServiceStatus(serviceId);
-	if (!dependantStatus.isEmpty() && dependantStatus != "AllRunning"){
+	agentinodata::IServiceStatusInfo::ServiceStatus serviceStatus =  m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceId);
+	agentinodata::IServiceCompositeInfo::StateOfRequiredServices stateOfRequiredServices = m_serviceCompositeInfoCompPtr->GetStateOfRequiredServices(serviceId);
+	QString dependantStatus = agentinodata::IServiceCompositeInfo::ToString(stateOfRequiredServices);
+	if (serviceStatus == agentinodata::IServiceStatusInfo::SS_RUNNING && stateOfRequiredServices != agentinodata::IServiceCompositeInfo::SORS_RUNNING){
 		int index = dataModelPtr->InsertNewItem();
 
 		QString serviceDependsOnStr = QT_TR_NOOP("Information");
@@ -622,17 +625,17 @@ QStringList CServerServiceCollectionControllerComp::GetDependantStatusInfo(const
 										imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
 										if (connectionLinkParamPtr != nullptr){
 											QByteArray dependantServiceId =  m_serviceCompositeInfoCompPtr->GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
-											QString serviceStatus = m_serviceCompositeInfoCompPtr->GetServiceStatus(dependantServiceId);
+											agentinodata::IServiceStatusInfo::ServiceStatus serviceStatus = m_serviceCompositeInfoCompPtr->GetServiceStatus(dependantServiceId);
 											QString serviceName = m_serviceCompositeInfoCompPtr->GetServiceName(dependantServiceId)
 																  + "@"
 																  + m_serviceCompositeInfoCompPtr->GetServiceAgentName(dependantServiceId);
 											QString info;
 
-											if (serviceStatus == "Undefined"){
+											if (serviceStatus == agentinodata::IServiceStatusInfo::SS_UNDEFINED){
 												info = QT_TR_NOOP("Service status of %1 undefined");
 												info = info.arg(serviceName);
 											}
-											else if (serviceStatus == "NotRunning"){
+											else if (serviceStatus == agentinodata::IServiceStatusInfo::SS_NOT_RUNNING){
 												info = QT_TR_NOOP("Service %1 not running");
 												info = info.arg(serviceName);
 											}

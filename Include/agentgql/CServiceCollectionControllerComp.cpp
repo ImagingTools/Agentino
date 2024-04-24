@@ -104,14 +104,14 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 				}
 				else if(informationId == "Status"){
 					if (m_serviceControllerCompPtr.IsValid()){
-						QProcess::ProcessState state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
+						agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
 						agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
 						elementInformation = processStateEnum.id;
 					}
 				}
 				else if(informationId == "StatusName"){
 					if (m_serviceControllerCompPtr.IsValid()){
-						QProcess::ProcessState state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
+						agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
 						agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
 						elementInformation = processStateEnum.name;
 					}
@@ -258,7 +258,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 			dataModel->SetData("Version", serviceVersion);
 
 			if (m_serviceControllerCompPtr.IsValid()){
-				QProcess::ProcessState state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
+				agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
 				agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
 				dataModel->SetData("Status", processStateEnum.id);
 			}
@@ -551,8 +551,8 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 
 	if (needToUpdate){
 		bool wasRunning = false;
-		QProcess::ProcessState serviceStatus = m_serviceControllerCompPtr->GetServiceStatus(objectId);
-		if (serviceStatus == QProcess::ProcessState::Running){
+		agentinodata::IServiceStatusInfo::ServiceStatus serviceStatus = m_serviceControllerCompPtr->GetServiceStatus(objectId);
+		if (serviceStatus == agentinodata::IServiceStatusInfo::SS_RUNNING){
 			wasRunning = true;
 
 			bool wasStopped = m_serviceControllerCompPtr->StopService(objectId);

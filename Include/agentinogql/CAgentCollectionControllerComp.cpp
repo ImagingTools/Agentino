@@ -568,10 +568,10 @@ void CAgentCollectionControllerComp::OnTimeout()
 										if (dataModelPtr->ContainsKey("Status")){
 											QByteArray statusId = dataModelPtr->GetData("Status").toByteArray();
 
-											if (statusId == "Running"){
+											if (statusId == "running"){
 												serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_RUNNING);
 											}
-											else if (statusId == "NotRunning"){
+											else if (statusId == "notRunning"){
 												serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);
 											}
 

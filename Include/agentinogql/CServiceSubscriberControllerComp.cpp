@@ -7,6 +7,7 @@
 // Agentino includes
 #include <agentinodata/IServiceController.h>
 #include <agentinodata/CServiceStatusInfo.h>
+#include <GeneratedFiles/agentinodata/Ddl/Cpp/Globals.h>
 
 
 namespace agentinogql
@@ -53,7 +54,7 @@ void CServiceSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeS
 	agentinodata::IServiceController::NotifierStatusInfo notifierStatusInfo = changeSet.GetChangeInfo(
 				agentinodata::IServiceController::CN_STATUS_CHANGED).value<agentinodata::IServiceController::NotifierStatusInfo>();
 	QString status;
-	status = QVariant::fromValue(notifierStatusInfo.serviceStatus).toString();
+	status = agentinodata::IServiceStatusInfo::ToString(notifierStatusInfo.serviceStatus);
 
 	QByteArray serviceId = notifierStatusInfo.serviceId;
 	QString data = QString("{ \"serviceId\": \"%1\", \"serviceStatus\": \"%2\" }").arg(qPrintable(notifierStatusInfo.serviceId)).arg(status);
@@ -64,19 +65,7 @@ void CServiceSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeS
 		if (m_serviceStatusCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
 			agentinodata::CServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::CServiceStatusInfo*>(dataPtr.GetPtr());
 			if (serviceStatusInfoPtr != nullptr){
-				if (status == "Running"){
-					serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_RUNNING);
-				}
-				else if (status == "Starting"){
-					serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_STARTING);
-				}
-				else if (status == "NotRunning"){
-					serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);
-				}
-				else{
-					serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_UNDEFINED);
-				}
-
+				serviceStatusInfoPtr->SetServiceStatus(notifierStatusInfo.serviceStatus);
 				m_serviceStatusCollectionCompPtr->SetObjectData(serviceId, *serviceStatusInfoPtr);
 			}
 		}

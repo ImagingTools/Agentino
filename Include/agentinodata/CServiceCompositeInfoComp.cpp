@@ -16,7 +16,7 @@
 namespace agentinodata
 {
 
-//public implemented
+// public implemented
 // reimplemented (agentinodata::IServiceCompositeInfo)
 
 
@@ -155,7 +155,7 @@ IServiceCompositeInfo::StateOfRequiredServices CServiceCompositeInfoComp::GetSta
 		return IServiceCompositeInfo::SORS_UNDEFINED;
 	}
 
-	IServiceCompositeInfo::StateOfRequiredServices retVal = IServiceCompositeInfo::SORS_UNDEFINED;
+	IServiceCompositeInfo::StateOfRequiredServices retVal = IServiceCompositeInfo::SORS_RUNNING;
 
 	imtbase::ICollectionInfo::Ids elementIds = m_agentCollectionCompPtr->GetElementIds();
 	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){

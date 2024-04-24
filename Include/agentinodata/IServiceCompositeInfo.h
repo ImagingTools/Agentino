@@ -20,7 +20,7 @@ public:
 		SORS_NOT_RUNNING
 	};
 
-	I_DECLARE_ENUM(StateOfRequiredServices, SORS_RUNNING, SORS_NOT_RUNNING);
+	I_DECLARE_ENUM(StateOfRequiredServices, SORS_UNDEFINED, SORS_RUNNING, SORS_NOT_RUNNING);
 
 	virtual QByteArray GetServiceId(const QUrl& url, const QString& connectionServiceTypeName) const = 0;
 	virtual QByteArray GetServiceId(const QByteArray& dependantServiceConnectionId) const = 0;

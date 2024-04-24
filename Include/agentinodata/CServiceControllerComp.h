@@ -35,7 +35,7 @@ public:
 	I_END_COMPONENT;
 
 	// reimplemented (agentinodata::IServiceController)
-	virtual QProcess::ProcessState GetServiceStatus(const QByteArray& serviceId) const override;
+	virtual IServiceStatusInfo::ServiceStatus GetServiceStatus(const QByteArray& serviceId) const override;
 	virtual bool StartService(const QByteArray& serviceId) override;
 	virtual bool StopService(const QByteArray& serviceId) override;
 

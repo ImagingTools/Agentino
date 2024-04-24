@@ -7,6 +7,9 @@
 // ACF includes
 #include <istd/IChangeable.h>
 
+// Agentino includes
+#include <agentinodata/IServiceStatusInfo.h>
+
 
 namespace agentinodata
 {
@@ -21,12 +24,12 @@ public:
 	struct NotifierStatusInfo
 	{
 		QByteArray serviceId;
-		QProcess::ProcessState serviceStatus;
+		IServiceStatusInfo::ServiceStatus serviceStatus;
 	};
 
 	static const QByteArray CN_STATUS_CHANGED;
 
-	virtual QProcess::ProcessState GetServiceStatus(const QByteArray& serviceId) const = 0;
+	virtual IServiceStatusInfo::ServiceStatus GetServiceStatus(const QByteArray& serviceId) const = 0;
 };
 
 

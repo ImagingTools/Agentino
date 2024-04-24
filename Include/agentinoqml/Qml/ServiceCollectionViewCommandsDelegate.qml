@@ -5,6 +5,7 @@ import imtcolgui 1.0
 import imtcontrols 1.0
 import imtdocgui 1.0
 import imtguigql 1.0
+import agentino 1.0
 
 DocumentCollectionViewDelegate {
     id: container;
@@ -29,8 +30,8 @@ DocumentCollectionViewDelegate {
 
                     let status = elements.GetData("Status", selectedItems[0]);
 
-                    commandsController.setCommandIsEnabled("Start", String(status) === "NotRunning");
-                    commandsController.setCommandIsEnabled("Stop", String(status) === "Running");
+                    commandsController.setCommandIsEnabled("Start", String(status) === ServiceStatus.s_NotRunning);
+                    commandsController.setCommandIsEnabled("Stop", String(status) === ServiceStatus.s_Running);
                 }
             }
         }

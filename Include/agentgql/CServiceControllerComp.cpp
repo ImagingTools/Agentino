@@ -3,6 +3,7 @@
 
 // Agentino includes
 #include <agentinodata/agentinodata.h>
+#include <GeneratedFiles/agentinodata/Ddl/Cpp/Globals.h>
 
 
 namespace agentgql
@@ -54,13 +55,13 @@ imtbase::CTreeItemModel* CServiceControllerComp::CreateInternalResponse(const im
 		}
 
 		for (int i = 0; i < count; i++){
-			if (fieldList.at(i).GetId() == "serviceStatus"){
+			if (fieldList.at(i).GetId() == agentino::ServiceStatus::s_Key){
 
-				QProcess::ProcessState state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
+				agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
 				agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
 
 				dataModel = new imtbase::CTreeItemModel();
-				imtbase::CTreeItemModel* statusModel = dataModel->AddTreeModel("serviceStatus");
+				imtbase::CTreeItemModel* statusModel = dataModel->AddTreeModel(agentino::ServiceStatus::s_Key);
 
 				statusModel->SetData("serviceId", serviceId);
 				statusModel->SetData("status", processStateEnum.id);

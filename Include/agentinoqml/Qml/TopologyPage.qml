@@ -81,7 +81,7 @@ ViewBase {
 
         function onStart(){
             if(scheme.objectModel.GetItemsCount() > scheme.selectedIndex && scheme.selectedIndex >= 0){
-                let serviceId = scheme.objectModel.GetData("Id", scheme.selectedIndex);
+                let serviceId = scheme.objectModel.GetData("id", scheme.selectedIndex);
 
                 serviceCommandsDelegate.setServiceCommand("Start", serviceId);
             }
@@ -89,7 +89,7 @@ ViewBase {
 
         function onStop(){
             if(scheme.objectModel.GetItemsCount() > scheme.selectedIndex && scheme.selectedIndex >= 0){
-                let serviceId = scheme.objectModel.GetData("Id", scheme.selectedIndex);
+                let serviceId = scheme.objectModel.GetData("id", scheme.selectedIndex);
 
                 serviceCommandsDelegate.setServiceCommand("Stop", serviceId);
             }
@@ -122,10 +122,10 @@ ViewBase {
 
         onSelectedIndexChanged: {
             if(objectModel.GetItemsCount() > selectedIndex && selectedIndex >= 0){
-                selectedService = objectModel.GetData("Id", selectedIndex);
-                let status = objectModel.GetData("Status", selectedIndex);
-                topologyPage.commandsController.setCommandIsEnabled("Start", status === "NotRunning")
-                topologyPage.commandsController.setCommandIsEnabled("Stop", status === "Running")
+                selectedService = objectModel.GetData("id", selectedIndex);
+                let status = objectModel.GetData(ServiceStatus.s_Key, selectedIndex);
+                topologyPage.commandsController.setCommandIsEnabled("Start", status === ServiceStatus.s_NotRunning)
+                topologyPage.commandsController.setCommandIsEnabled("Stop", status === ServiceStatus.s_Running)
                 topologyPage.commandsController.setCommandIsEnabled("Edit", true)
 
                 metaInfo.contentVisible = true;
@@ -145,7 +145,7 @@ ViewBase {
             let documentManager = MainDocumentManager.getDocumentManager("Topology");
             if (documentManager){
                 if(objectModel.GetItemsCount() > selectedIndex && selectedIndex >= 0){
-                    let serviceId = objectModel.GetData("Id", selectedIndex);
+                    let serviceId = objectModel.GetData("id", selectedIndex);
                     documentManager.openDocument(serviceId, "Service", "ServiceView");
                 }
             }
@@ -180,7 +180,7 @@ ViewBase {
         let additionInputParams = {}
 
         if(scheme.selectedIndex >= 0){
-            let agentId = scheme.objectModel.GetData("AgentId", scheme.selectedIndex);
+            let agentId = scheme.objectModel.GetData("agentId", scheme.selectedIndex);
             additionInputParams["clientId"] = agentId;
         }
 
@@ -230,7 +230,7 @@ ViewBase {
 
             function getDocumentName(){
                 for (let i = 0; i < scheme.objectModel.GetItemsCount(); i++){
-                    let id = scheme.objectModel.GetData("Id", i);
+                    let id = scheme.objectModel.GetData("id", i);
                     if (id == documentId){
                         let name = scheme.objectModel.GetData("MainText", i);
 
@@ -259,7 +259,7 @@ ViewBase {
             let subscriptionRequestId = "OnTopologyChanged"
             var query = Gql.GqlRequest("subscription", subscriptionRequestId);
             var queryFields = Gql.GqlObject("notification");
-            queryFields.InsertField("Id");
+            queryFields.InsertField("id");
             query.AddField(queryFields);
 
             Events.sendEvent("RegisterSubscription", {"Query": query, "Client": topologySubscriptionClient});
@@ -283,7 +283,7 @@ ViewBase {
             let subscriptionRequestId = "OnServiceStatusChanged"
             var query = Gql.GqlRequest("subscription", subscriptionRequestId);
             var queryFields = Gql.GqlObject("notification");
-            queryFields.InsertField("Id");
+            queryFields.InsertField("id");
             query.AddField(queryFields);
 
             Events.sendEvent("RegisterSubscription", {"Query": query, "Client": subscriptionClient});
@@ -297,20 +297,20 @@ ViewBase {
                     if (dataModel.ContainsKey("OnServiceStatusChanged")){
                         dataModel = dataModel.GetData("OnServiceStatusChanged")
                         let serviceId = dataModel.GetData("serviceId")
-                        let serviceStatus = dataModel.GetData("serviceStatus")
+                        let serviceStatus = dataModel.GetData(ServiceStatus.s_Key)
                         let dependencyStatus
-                        console.log("serviceStatus", serviceStatus)
+                        console.log(ServiceStatus.s_Key, serviceStatus)
 
                         let index = scheme.findModelIndex(serviceId);
-                        scheme.objectModel.SetData("Status", serviceStatus, index);
+                        scheme.objectModel.SetData(ServiceStatus.s_Key, serviceStatus, index);
                         if (serviceStatus === ServiceStatus.s_Running){
-                            scheme.objectModel.SetData("IconUrl_1", "Icons/Running", index);
+                            scheme.objectModel.SetData(TopologyModel.s_IconUrl_1, "Icons/Running", index);
                         }
                         else if (serviceStatus === ServiceStatus.s_NotRunning || serviceStatus === ServiceStatus.s_Stopping || serviceStatus === ServiceStatus.s_Starting){
-                            scheme.objectModel.SetData("IconUrl_1", "Icons/Stopped", index);
+                            scheme.objectModel.SetData(TopologyModel.s_IconUrl_1, "Icons/Stopped", index);
                         }
                         else{
-                            scheme.objectModel.SetData("IconUrl_1", "Icons/Alert", index);
+                            scheme.objectModel.SetData(TopologyModel.s_IconUrl_1, "Icons/Alert", index);
                         }
                         if (index === scheme.selectedIndex){
                             topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus === ServiceStatus.s_NotRunning);
@@ -319,17 +319,23 @@ ViewBase {
                         let dependencyStatusModel = dataModel.GetData(DependencyStatus.s_Key)
                         for (let i = 0; i < dependencyStatusModel.GetItemsCount(); i++){
                             serviceId = dependencyStatusModel.GetData("id", i);
+                            index = scheme.findModelIndex(serviceId);
+                            serviceStatus = scheme.objectModel.GetData(ServiceStatus.s_Key, index);
                             dependencyStatus = dependencyStatusModel.GetData(DependencyStatus.s_Key, i)
                             index = scheme.findModelIndex(serviceId);
 
-                            if (dependencyStatus === DependencyStatus.s_NotAllRunning){
-                                scheme.objectModel.SetData("IconUrl_2", "Icons/Error", index);
+                            if (dependencyStatus === DependencyStatus.s_NotRunning){
+                                scheme.objectModel.SetData(TopologyModel.s_IconUrl_2, "Icons/Error", index);
                             }
                             else if (dependencyStatus === DependencyStatus.s_Undefined) {
-                                scheme.objectModel.SetData("IconUrl_2", "Icons/Warning", index);
+                                scheme.objectModel.SetData(TopologyModel.s_IconUrl_2, "Icons/Warning", index);
                             }
                             else {
-                                scheme.objectModel.SetData("IconUrl_2", "", index);
+                                scheme.objectModel.SetData(TopologyModel.s_IconUrl_2, "", index);
+                            }
+
+                            if (serviceStatus !== ServiceStatus.s_Running){
+                                scheme.objectModel.SetData(TopologyModel.s_IconUrl_2, "", index);
                             }
 
                             if (serviceId === scheme.selectedService){
@@ -356,7 +362,7 @@ ViewBase {
             query.AddParam(inputParams);
 
             var queryFields = Gql.GqlObject("updatedNotification");
-            queryFields.InsertField("Id");
+            queryFields.InsertField("id");
             query.AddField(queryFields);
 
             var gqlData = query.GetQuery();
