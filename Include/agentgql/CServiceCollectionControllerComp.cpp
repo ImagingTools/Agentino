@@ -119,6 +119,9 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 				else if(informationId == "IsAutoStart"){
 					elementInformation = serviceInfoPtr->IsAutoStart();
 				}
+				else if(informationId == "EnableVerbose"){
+					elementInformation = serviceInfoPtr->IsEnableVerboseMessages();
+				}
 				else if(informationId == "Version"){
 					elementInformation = serviceInfoPtr->GetServiceVersion();
 				}
@@ -245,6 +248,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 			QByteArray serviceTypeName = serviceInfoPtr->GetServiceTypeName().toUtf8();
 			QString arguments = serviceInfoPtr->GetServiceArguments().join(' ');
 			bool isAutoStart = serviceInfoPtr->IsAutoStart();
+			bool enableVerbose = serviceInfoPtr->IsEnableVerboseMessages();
 			QString serviceVersion = serviceInfoPtr->GetServiceVersion();
 
 			dataModel->SetData("Id", serviceId);
@@ -256,6 +260,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 			dataModel->SetData("IsAutoStart", isAutoStart);
 			dataModel->SetData("ServiceTypeName", serviceTypeName);
 			dataModel->SetData("Version", serviceVersion);
+			dataModel->SetData("EnableVerbose", enableVerbose);
 
 			if (m_serviceControllerCompPtr.IsValid()){
 				agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
@@ -294,6 +299,8 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 				if (connectionCollection != nullptr){
 					serviceVersion = connectionCollection->GetServiceVersion();
 					dataModel->SetData("Version", serviceVersion);
+					enableVerbose = connectionCollection->GetTracingLevel() > -1;
+					dataModel->SetData("EnableVerbose", enableVerbose);
 					const imtbase::ICollectionInfo* collectionInfo = connectionCollection->GetUrlList();
 					const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
 					if (objectCollection != nullptr){
@@ -441,6 +448,11 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 		serviceTypeName = itemModel.GetData("ServiceTypeName").toByteArray();
 	}
 
+	bool enableVerbose = false;
+	if (itemModel.ContainsKey("EnableVerbose")){
+		enableVerbose = itemModel.GetData("EnableVerbose").toBool();
+	}
+
 	QFileInfo fileInfo(servicePath);
 	QString pluginPath = fileInfo.path() + "/Plugins";
 
@@ -548,6 +560,9 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 			}
 		}
 	}
+	if (!needToUpdate && enableVerbose != connectionCollectionPtr->GetTracingLevel() > -1){
+		needToUpdate = true;
+	}
 
 	if (needToUpdate){
 		bool wasRunning = false;
@@ -561,6 +576,15 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 				SendErrorMessage(0, errorMessage);
 
 				return nullptr;
+			}
+		}
+
+		if (itemModel.ContainsKey("EnableVerbose")){
+			if (enableVerbose){
+				connectionCollectionPtr->SetTracingLevel(0);
+			}
+			else{
+				connectionCollectionPtr->SetTracingLevel(-1);
 			}
 		}
 
@@ -704,6 +728,11 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObject(
 		if (itemModel.ContainsKey("IsAutoStart")){
 			bool isAutoStart = itemModel.GetData("IsAutoStart").toBool();
 			serviceInfoPtr->SetIsAutoStart(isAutoStart);
+		}
+
+		if (itemModel.ContainsKey("EnableVerbose")){
+			bool isEnableVerbose = itemModel.GetData("EnableVerbose").toBool();
+			serviceInfoPtr->SetIsEnableVerboseMessages(isEnableVerbose);
 		}
 
 		return serviceInfoPtr;

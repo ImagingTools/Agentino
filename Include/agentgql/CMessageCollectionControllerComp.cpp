@@ -215,7 +215,7 @@ void CMessageCollectionControllerComp::SetObjectFilter(
 	iprm::CParamsSet& filterParams) const
 {
 	QByteArrayList keys;
-	keys << "InfoFilter" << "WarningFilter" << "ErrorFilter" << "CriticalFilter";
+	keys << "VerboseFilter" << "InfoFilter" << "WarningFilter" << "ErrorFilter" << "CriticalFilter";
 	for (QByteArray key: keys){
 		if (objectFilterModel.ContainsKey(key)){
 			QByteArray filterValue = objectFilterModel.GetData(key).toByteArray();

@@ -26,7 +26,8 @@ namespace agentinodata
 CServiceInfo::CServiceInfo(const QString &typeName, SettingsType settingsType):
 	m_settingsType(settingsType),
 	m_serviceTypeName(typeName),
-	m_isAutoStart(true)
+	m_isAutoStart(true),
+	m_isEnableVerboseMessages(false)
 {
 	typedef istd::TSingleFactory<istd::IChangeable, imtservice::CUrlConnectionParam> FactoryConnectionImpl;
 	m_inputConnections.RegisterFactory<FactoryConnectionImpl>("ConnectionInfo");
@@ -112,6 +113,16 @@ void CServiceInfo::SetIsAutoStart(bool isAutoStart)
 }
 
 
+void CServiceInfo::SetIsEnableVerboseMessages(bool isEnableVerboseMessages)
+{
+	if (m_isEnableVerboseMessages != isEnableVerboseMessages){
+		istd::CChangeNotifier changeNotifier(this);
+
+		m_isEnableVerboseMessages = isEnableVerboseMessages;
+	}
+}
+
+
 void CServiceInfo::SetServiceTypeName(const QByteArray& serviceTypeName)
 {
 	if (m_serviceTypeName != serviceTypeName){
@@ -138,6 +149,12 @@ bool CServiceInfo::IsAutoStart() const
 }
 
 
+bool CServiceInfo::IsEnableVerboseMessages() const
+{
+	return m_isEnableVerboseMessages;
+}
+
+
 imtbase::IObjectCollection* CServiceInfo::GetInputConnections()
 {
 	return &m_inputConnections;
@@ -155,6 +172,12 @@ bool CServiceInfo::Serialize(iser::IArchive &archive)
 	bool retVal = true;
 
 	int settingsType = m_settingsType;
+
+	const iser::IVersionInfo& versionInfo = archive.GetVersionInfo();
+	quint32 identifiableVersion;
+	if (!versionInfo.GetVersionNumber(imtcore::VI_IMTCORE, identifiableVersion)){
+		identifiableVersion = 0;
+	}
 
 	iser::CArchiveTag idType("Type", "Type", iser::CArchiveTag::TT_LEAF);
 	retVal = retVal && archive.BeginTag(idType);
@@ -211,6 +234,13 @@ bool CServiceInfo::Serialize(iser::IArchive &archive)
 	retVal = retVal && archive.Process(m_serviceVersion);
 	retVal = retVal && archive.EndTag(versionTag);
 
+	if (identifiableVersion > 9681){
+		iser::CArchiveTag enableVerboseTag("EnableVerbose", "EnableVerbose", iser::CArchiveTag::TT_LEAF);
+		retVal = retVal && archive.BeginTag(enableVerboseTag);
+		retVal = retVal && archive.Process(m_isEnableVerboseMessages);
+		retVal = retVal && archive.EndTag(enableVerboseTag);
+	}
+
 	return retVal;
 }
 
@@ -233,6 +263,7 @@ bool CServiceInfo::CopyFrom(const IChangeable &object, CompatibilityMode /*mode*
 		m_settingsPath = sourcePtr->m_settingsPath;
 		m_arguments = sourcePtr->m_arguments;
 		m_isAutoStart = sourcePtr->m_isAutoStart;
+		m_isEnableVerboseMessages =sourcePtr->m_isEnableVerboseMessages;
 		m_serviceVersion = sourcePtr->m_serviceVersion;
 
 		m_inputConnections.ResetData();

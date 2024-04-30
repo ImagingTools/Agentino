@@ -72,6 +72,12 @@ public:
 	virtual bool IsAutoStart() const = 0;
 
 	/**
+		Get enable verbose messages flag.
+	*/
+	virtual bool IsEnableVerboseMessages() const = 0;
+
+
+	/**
 		Get input connection collection.
 	*/
 	virtual imtbase::IObjectCollection* GetInputConnections() = 0;

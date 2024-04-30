@@ -47,6 +47,7 @@ bool CServiceInfoRepresentationController::GetRepresentationFromDataModel(
 	QString settingsPath = serviceInfoPtr->GetServiceSettingsPath();
 	QString arguments = serviceInfoPtr->GetServiceArguments().join(' ');
 	bool isAutoStart = serviceInfoPtr->IsAutoStart();
+	bool isEnableVerbose = serviceInfoPtr->IsEnableVerboseMessages();
 	QString serviceTypeName = serviceInfoPtr->GetServiceTypeName();
 	QString serviceVersion = serviceInfoPtr->GetServiceVersion();
 
@@ -54,6 +55,7 @@ bool CServiceInfoRepresentationController::GetRepresentationFromDataModel(
 	representation.SetData("SettingsPath", settingsPath);
 	representation.SetData("Arguments", arguments);
 	representation.SetData("IsAutoStart", isAutoStart);
+	representation.SetData("EnableVerbose", isEnableVerbose);
 	representation.SetData("ServiceTypeName", serviceTypeName);
 	representation.SetData("Version", serviceVersion);
 
@@ -139,6 +141,12 @@ bool CServiceInfoRepresentationController::GetDataModelFromRepresentation(
 		bool isAutoStart = representation.GetData("IsAutoStart").toBool();
 
 		serviceInfoPtr->SetIsAutoStart(isAutoStart);
+	}
+
+	if (representation.ContainsKey("EnableVerbose")){
+		bool isEnableVerbose = representation.GetData("EnableVerbose").toBool();
+
+		serviceInfoPtr->SetIsEnableVerboseMessages(isEnableVerbose);
 	}
 
 	if (representation.ContainsKey("ServiceTypeName")){

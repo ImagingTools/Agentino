@@ -109,6 +109,7 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelF
 			QString settingsPath = serviceInfoPtr->GetServiceSettingsPath();
 			QString arguments = serviceInfoPtr->GetServiceArguments().join(' ');
 			bool isAutoStart = serviceInfoPtr->IsAutoStart();
+			bool isEnableVerbose = serviceInfoPtr->IsEnableVerboseMessages();
 
 			serviceRepresentationModelPtr->SetData("Id", serviceId);
 			serviceRepresentationModelPtr->SetData("Name", serviceName);
@@ -117,6 +118,7 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelF
 			serviceRepresentationModelPtr->SetData("SettingsPath", settingsPath);
 			serviceRepresentationModelPtr->SetData("Arguments", arguments);
 			serviceRepresentationModelPtr->SetData("IsAutoStart", isAutoStart);
+			serviceRepresentationModelPtr->SetData("EnableVerbose", isEnableVerbose);
 
 			imtbase::CTreeItemModel* inputConnectionsModelPtr = serviceRepresentationModelPtr->AddTreeModel("InputConnections");
 			imtbase::CTreeItemModel* outputConnectionsModelPtr = serviceRepresentationModelPtr->AddTreeModel("OutputConnections");

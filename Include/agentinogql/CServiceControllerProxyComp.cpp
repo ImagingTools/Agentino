@@ -137,6 +137,12 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 		serviceInfoPtr->SetIsAutoStart(isAutoStart);
 	}
 
+	if (representationModel.ContainsKey("EnableVerbose")){
+		bool isEnableVerbose = representationModel.GetData("EnableVerbose").toBool();
+
+		serviceInfoPtr->SetIsEnableVerboseMessages(isEnableVerbose);
+	}
+
 	imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
 
 	if (representationModel.ContainsKey("InputConnections")){

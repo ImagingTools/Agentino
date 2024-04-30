@@ -274,6 +274,9 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 				else if(informationId == "IsAutoStart"){
 					elementInformation = serviceInfoPtr->IsAutoStart();
 				}
+				else if(informationId == "EnableVerbose"){
+					elementInformation = serviceInfoPtr->IsEnableVerboseMessages();
+				}
 				else if(informationId == "Version"){
 					elementInformation = serviceInfoPtr->GetServiceVersion();
 				}
@@ -575,7 +578,7 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 
 		contentModelPtr->SetData("Value", dependantStatusInfo.join("; "), childIndex);
 
-		if (dependantStatus == "NotAllRunning"){
+		if (stateOfRequiredServices == agentinodata::IServiceCompositeInfo::SORS_NOT_RUNNING){
 			contentModelPtr->SetData("Icon", "Icons/Error", childIndex);
 		}
 		else {

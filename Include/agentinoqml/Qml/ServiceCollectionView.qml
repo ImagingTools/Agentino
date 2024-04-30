@@ -83,7 +83,7 @@ SplitView {
         onHeadersChanged: {
             if (log.table.headers.GetItemsCount() > 0){
                 log.table.tableDecorator = logTableDecoratorModel
-                log.table.setColumnContentComponent(0, stateColumnContentComp);
+                log.table.setColumnContentComponent(0, messageColumnContentComp);
             }
         }
 
@@ -178,12 +178,16 @@ SplitView {
         }
 
         Component {
-            id: stateColumnContentComp;
+            id: messageColumnContentComp;
             TableCellIconTextDelegate {
+                id: cellDelegate
                 onRowIndexChanged: {
                     if (rowIndex >= 0){
                         let category = rowDelegate.tableItem.elements.GetData("Category", rowIndex);
-                        if (category === 1){
+                        if (category === 0){
+                            icon.source = "../../../../" + Style.getIconPath("Icons/Diagnostics", Icon.State.On, Icon.Mode.Normal);
+                        }
+                        else if (category === 1){
                             icon.source = "../../../../" + Style.getIconPath("Icons/Info", Icon.State.On, Icon.Mode.Normal);
                         }
                         else if (category === 2){
@@ -196,6 +200,32 @@ SplitView {
                             icon.source = "../../../../" + Style.getIconPath("Icons/Critical", Icon.State.On, Icon.Mode.Normal);
                         }
                     }
+                }
+
+                ToolButton {
+                    anchors.fill: parent
+                    tooltipText: cellDelegate.getValue()
+                    decorator: Component {
+                        ToolButtonDecorator{
+                            color: "transparent"
+                        }
+                    }
+                    onDoubleClicked: {
+                        var parameters = {"centered": true, "message": tooltipText};
+                        modalDialogManager.openDialog(messageDialogComp, parameters);
+                    }
+                }
+            }
+        }
+
+        Component {
+            id: messageDialogComp;
+            MessageDialog {
+                title: "Message";
+
+                Component.onCompleted: {
+                    buttonsModel.clear()
+                    buttonsModel.append({Id: Enums.cancel, Name:qsTr("Cancel"), Enabled: true})
                 }
             }
         }

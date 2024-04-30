@@ -215,8 +215,12 @@ RemoteCollectionView {
 
             onRowIndexChanged: {
                 if (rowIndex >= 0){
+                    let status = root.table.elements.GetData("Status", rowIndex);
                     let dependencyStatus = rowDelegate.tableItem.elements.GetData("DependencyStatus", rowIndex);
-                    if (dependencyStatus === DependencyStatus.s_NotRunning){
+                    if (status !== ServiceStatus.s_Running){
+                        icon.visible =false;
+                    }
+                    else if (dependencyStatus === DependencyStatus.s_NotRunning){
                         icon.source = "../../../../" + Style.getIconPath("Icons/Error", Icon.State.On, Icon.Mode.Normal);
                         icon.visible = true
                     }

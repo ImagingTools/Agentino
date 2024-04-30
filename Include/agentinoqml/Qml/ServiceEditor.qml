@@ -36,6 +36,7 @@ ViewBase {
         ouputConnTable.readOnly = readOnly;
 
         switchAutoStart.enabled = !readOnly;
+        switchVerboseMessage.enabled = !readOnly
     }
 
     function updateGui(){
@@ -74,6 +75,13 @@ ViewBase {
             switchAutoStart.setChecked(false)
         }
 
+        if (serviceEditorContainer.model.ContainsKey("EnableVerbose")){
+            switchVerboseMessage.setChecked(serviceEditorContainer.model.GetData("EnableVerbose"));
+        }
+        else{
+            switchVerboseMessage.setChecked(false)
+        }
+
         if (serviceEditorContainer.model.ContainsKey("InputConnections")){
             inputConnTable.elements = serviceEditorContainer.model.GetData("InputConnections")
         }
@@ -89,6 +97,7 @@ ViewBase {
         serviceEditorContainer.model.SetData("Path", pathInput.text);
         serviceEditorContainer.model.SetData("Arguments", argumentsInput.text);
         serviceEditorContainer.model.SetData("IsAutoStart", switchAutoStart.checked);
+        serviceEditorContainer.model.SetData("EnableVerbose", switchVerboseMessage.checked);
     }
 
     MouseArea {
@@ -260,6 +269,29 @@ ViewBase {
 
             SwitchCustom {
                 id: switchAutoStart
+
+                backgroundColor: "#D4D4D4"
+                onCheckedChanged: {
+                    serviceEditorContainer.doUpdateModel();
+                }
+            }
+
+            Text {
+                id: titleVerboseMessage;
+
+                anchors.left: parent.left;
+
+                width: parent.width;
+
+                color: Style.textColor;
+                font.family: Style.fontFamily;
+                font.pixelSize: Style.fontSize_common;
+
+                text: qsTr("Verbose message (") + (switchVerboseMessage.checked ? qsTr("on") : qsTr("off")) + ")";
+            }
+
+            SwitchCustom {
+                id: switchVerboseMessage
 
                 backgroundColor: "#D4D4D4"
                 onCheckedChanged: {
