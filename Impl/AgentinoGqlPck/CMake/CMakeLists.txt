@@ -5,5 +5,5 @@ include(${IMTCOREDIR}/Config/CMake/ImtCore.cmake)
 include(${ACFDIR}/Config/CMake/AcfQt.cmake)
 include(${ACFDIR}/Config/CMake/AcfStdGui.cmake)
 
-target_link_libraries(${PROJECT_NAME} agentinogql agentgql agentinodata imtguigql imtbase imtgql imtgui imtwidgets imtlic imtdb)
+target_link_libraries(${PROJECT_NAME} agentinogql agentgql agentinodata imtguigql imtbase imtgql imtgui imtwidgets imtlic imtdb imtrest)
 

@@ -1,7 +1,5 @@
 project(agentgql LANGUAGES CXX)
 
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS WebSockets)
-
 include(${ACFDIR}/Config/CMake/StaticConfig.cmake)
 include(${IMTCOREDIR}/Config/CMake/ImtCore.cmake)
 

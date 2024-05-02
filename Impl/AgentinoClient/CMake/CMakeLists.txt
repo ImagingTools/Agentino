@@ -21,13 +21,8 @@ if(APPLE)
 	set(CMAKE_MACOSX_BUNDLE "on")
 endif()
 
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS WebSockets)
-find_package("Qt${QT_VERSION_MAJOR}" COMPONENTS Quick Qml REQUIRED)
-
 include(${IMTCOREDIR}/Config/CMake/WebCompiler.cmake)
-
 include(${ACFDIR}/Config/CMake/CustomBuild.cmake)
-
 include(${ACFDIR}/Config/CMake/ApplicationConfig.cmake)
 include(${ACFDIR}/Config/CMake/AcfQt.cmake)
 include(${ACFDIR}/Config/CMake/AcfStd.cmake)
@@ -37,11 +32,12 @@ include(${ACFDIR}/Config/CMake/WindeployQt.cmake)
 message("PROJECT_BINARY_DIR ${IMTCOREDIR}/Bin/web")
 
 target_link_libraries(${PROJECT_NAME} imtqml  imtstyle imtauthgui imtauthgql imtstylecontrolsqml imtgui imtguigql imtlic imtauth)
-target_link_libraries(${PROJECT_NAME} imtrest imtlicgui imtlicgql imtclientgql imtgql imtauthdb imtdb imtbase imtapp imtfile)
+target_link_libraries(${PROJECT_NAME} imtrest imtlicgui imtlicgql imtclientgql imtgql imtauthdb imtdb imtbase imtapp imtfile imtcom)
 target_link_libraries(${PROJECT_NAME} ImtCoreLoc AgentinoLoc)
 target_link_libraries(${PROJECT_NAME} agentinoqml agentinodata agentinogql agentgql)
 target_link_libraries(${PROJECT_NAME} imtcontrolsqml imtdocguiqml imtcolguiqml imtguiqml imtguigqlqml imtauthguiqml imtlicguiqml)
-target_link_libraries(${PROJECT_NAME}  Qt${QT_VERSION_MAJOR}::Quick  Qt${QT_VERSION_MAJOR}::WebSockets)
+target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Quick Qt${QT_VERSION_MAJOR}::WebSockets)
+target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Widgets)
 
 if(WIN32)
 	list(APPEND listOptions "--qmldir=${IMTCOREDIR}/Qml")

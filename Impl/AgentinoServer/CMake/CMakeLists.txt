@@ -16,12 +16,7 @@ if(APPLE)
 	set(CMAKE_MACOSX_BUNDLE "on")
 endif()
 
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS WebSockets)
-find_package("Qt${QT_VERSION_MAJOR}" COMPONENTS Sql REQUIRED)
-find_package("Qt${QT_VERSION_MAJOR}" COMPONENTS Quick Qml REQUIRED)
-
 include(${ACFDIR}/Config/CMake/CustomBuild.cmake)
-
 include(${ACFDIR}/Config/CMake/ApplicationConfig.cmake)
 include(${ACFDIR}/Config/CMake/AcfQt.cmake)
 include(${ACFDIR}/Config/CMake/AcfStdGui.cmake)
@@ -44,6 +39,7 @@ target_link_libraries(${PROJECT_NAME} imtstylecontrolsqml imtcontrolsqml imtdocg
 target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::WebSockets)
 target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Sql)
 target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Quick)
+target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Widgets)
 
 if(WIN32)
 	list(APPEND listOptions "--qmldir=${IMTCOREDIR}/Qml")
