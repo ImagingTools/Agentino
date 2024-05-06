@@ -232,7 +232,7 @@ ViewBase {
                 for (let i = 0; i < scheme.objectModel.GetItemsCount(); i++){
                     let id = scheme.objectModel.GetData("id", i);
                     if (id == documentId){
-                        let name = scheme.objectModel.GetData("MainText", i);
+                        let name = scheme.objectModel.GetData("mainText", i);
 
                         return name;
                     }
