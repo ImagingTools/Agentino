@@ -202,18 +202,23 @@ SplitView {
                     }
                 }
 
-                ToolButton {
+                MouseArea {
+                    id: ma;
+
                     anchors.fill: parent
-                    tooltipText: cellDelegate.getValue()
-                    decorator: Component {
-                        ToolButtonDecorator{
-                            color: "transparent"
-                        }
-                    }
+                    propagateComposedEvents: true;
                     onDoubleClicked: {
-                        var parameters = {"centered": true, "message": tooltipText};
+                        var parameters = {"centered": true, "message": tooltipArea.text};
                         modalDialogManager.openDialog(messageDialogComp, parameters);
                     }
+                }
+
+                TooltipArea {
+                    id: tooltipArea;
+
+                    mouseArea: ma;
+
+                    text: cellDelegate.getValue()
                 }
             }
         }
