@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "AgentinoAgent"
-#define MyAppVersion "1.0"
+#define MyAppVersion GetEnv('APP_VERSION')
 #define MyAppPublisher "ImagingTools GmbH"
 #define MyAppURL "http://www.imagingtools.de"
 #define MyAppExeName "AgentinoAgent.exe"
@@ -19,7 +19,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf64}\ImagingTools\{#MyAppName}
 DisableProgramGroupPage=yes
 PrivilegesRequired=admin
-OutputBaseFilename=AgentinoAgentInstall
+OutputBaseFilename=AgentinoAgentInstall_{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
