@@ -347,7 +347,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 			}
 
 			if (!m_objectCollectionCompPtr->SetObjectData(agentId, *agentInfoPtr)){
-				qDebug() << QString("Unable to set data to the collection object with ID: %1.").arg(qPrintable(agentId));
+				qDebug() << QString("Unable to set data to the collection object with ID: '%1'.").arg(qPrintable(agentId));
 			}
 		}
 	}
@@ -415,7 +415,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtg
 			}
 
 			if (!m_objectCollectionCompPtr->SetObjectData(objectId, *agentInfoPtr)){
-				qDebug() << QString("Unable to set data to the collection object with ID: %1.").arg(qPrintable(objectId));
+				qDebug() << QString("Unable to set data to the collection object with ID: '%1'.").arg(qPrintable(objectId));
 			}
 			else{
 				retVal = new imtbase::CTreeItemModel();

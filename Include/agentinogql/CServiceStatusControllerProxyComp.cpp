@@ -40,7 +40,9 @@ imtbase::CTreeItemModel* CServiceStatusControllerProxyComp::CreateInternalRespon
 			}
 		}
 		else{
-			istd::TDelPtr<agentinodata::CServiceStatusInfo> serviceStatusInfoPtr = new agentinodata::CServiceStatusInfo;
+			istd::TDelPtr<agentinodata::CServiceStatusInfo> serviceStatusInfoPtr;
+			serviceStatusInfoPtr.SetPtr(new agentinodata::CServiceStatusInfo);
+
 			serviceStatusInfoPtr->SetServiceStatus(status);
 			serviceStatusInfoPtr->SetServiceId(serviceId);
 

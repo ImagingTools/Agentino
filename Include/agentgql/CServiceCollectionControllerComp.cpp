@@ -135,7 +135,6 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 
 			return retVal;
 		}
-
 	}
 	errorMessage = "Unable to get object data from object collection";
 
@@ -280,8 +279,6 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 			if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")) {
 				SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(serviceName), "CServiceCollectionControllerComp");
 				m_pluginMap.remove(serviceName);
-
-				return nullptr;
 			}
 
 			if (m_pluginMap.contains(serviceName)){
