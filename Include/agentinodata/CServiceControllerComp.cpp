@@ -212,6 +212,32 @@ void CServiceControllerComp::stateChanged(QProcess::ProcessState newState)
 }
 
 
+void CServiceControllerComp::OnReadyReadStandardError()
+{
+	QProcess* processPtr = dynamic_cast<QProcess*>(sender());
+	if (processPtr != nullptr){
+		QString errorOutput = processPtr->readAllStandardError();
+
+		errorOutput = errorOutput.simplified();
+
+		SendErrorMessage(0, errorOutput);
+	}
+}
+
+
+void CServiceControllerComp::OnReadyReadStandardOutput()
+{
+	QProcess* processPtr = dynamic_cast<QProcess*>(sender());
+	if (processPtr != nullptr){
+		QString standardOutput = processPtr->readAllStandardOutput();
+
+		standardOutput = standardOutput.simplified();
+
+		SendInfoMessage(0, standardOutput);
+	}
+}
+
+
 void CServiceControllerComp::updateServiceVersion(const QByteArray& serviceId)
 {
 	if (!m_serviceCollectionCompPtr.IsValid()){

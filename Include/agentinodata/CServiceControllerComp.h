@@ -44,6 +44,8 @@ public:
 
 public	Q_SLOTS:
 	void stateChanged(QProcess::ProcessState newState);
+	void OnReadyReadStandardError();
+	void OnReadyReadStandardOutput();
 
 private:
 	void updateServiceVersion(const QByteArray& serviceId);
