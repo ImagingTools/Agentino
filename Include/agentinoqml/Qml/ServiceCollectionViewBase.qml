@@ -87,12 +87,6 @@ RemoteCollectionView {
     }
     }
 
-    commandsControllerComp: Component {CommandsRepresentationProvider {
-        id: commandsRepresentationProvider
-        uuid: root.viewId;
-    }
-    }
-
     function getAdditionalInputParams(){
         let additionInputParams = {}
         additionInputParams["clientId"] = root.clientId;
@@ -149,7 +143,6 @@ RemoteCollectionView {
             subscriptionCommandId: "OnServicesCollectionChanged";
 
             onHasRemoteChangesChanged: {
-                console.log("onHasRemoteChangesChanged", hasRemoteChanges);
                 if (hasRemoteChanges){
                     updateDocumentModel();
                 }

@@ -2,13 +2,14 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5191" Description="ACF"/>
-            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5222" Description="ACF"/>
+            <Version Id="1" Number="2207" Description="ACF-Solutions"/>
             <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
-        <Element ComponentName="AuthorizableClientFramework" X="550" Y="425" Note=""/>
+        <Element ComponentName="AuthorizableClientFramework" X="550" Y="400" Note=""/>
+        <Element ComponentName="LocalSettings" X="550" Y="600" Note=""/>
         <Element ComponentName="VersionInfo" X="550" Y="150" Note=""/>
     </PositionMap>
     <EmbeddedRegistries/>

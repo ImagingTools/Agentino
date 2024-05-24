@@ -2,31 +2,61 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5191" Description="ACF"/>
-            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5222" Description="ACF"/>
+            <Version Id="1" Number="2207" Description="ACF-Solutions"/>
             <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
     <Keywords></Keywords>
     <ElementsList>
-        <Element Id="AuthorizableClientFramework" PackageId="ImtQmlVoce" ComponentId="AuthorizableClientFramework">
+        <Element Id="AuthorizableClientFramework" PackageId="ImtQmlVoce" ComponentId="QmlClientFramework">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ApplicationName" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="Agentino"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="AuthorizableServerName" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Puma"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="CheckAuthorizableServerDatabaseStatus" Type="Boolean" ExportId="">
-                        <Data IsEnabled="true" Value="true"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="CheckServerDatabaseStatus" Type="Boolean" ExportId="">
-                        <Data IsEnabled="true" Value="false"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="CompanyName" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="ImagingTools GmbH"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="LogDefaultPath" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoLog.txt"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="MainQmlPath" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value=":/qml/AgentinoMain.qml"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ProductName" Type="Text" ExportId="">
+                        <Data IsEnabled="true" Value="Agentino"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServerPrefix" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="/Agentino"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Settings" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="LocalSettings"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="SettingsRepresentationController" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="LocalSettings"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationFilePath" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value=":/Translations"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationFilePrefix" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="Agentino"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UrlParam" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="LocalSettings/ServerUrl"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="VersionInfo"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="LocalSettings" PackageId="ImtQmlVoce" ComponentId="LocalSettings">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AuthorizableClientFramework/ApplicationInfo"/>
                     </AttributeInfo>
                     <AttributeInfo Id="DefaultServerHost" Type="String" ExportId="">
                         <Data IsEnabled="true" Value="localhost"/>
@@ -38,46 +68,28 @@
                         <Data IsEnabled="true" Value="localhost"/>
                     </AttributeInfo>
                     <AttributeInfo Id="DefaultWebSocketServerPort" Type="Integer" ExportId="">
-                        <Data IsEnabled="true" Value="7112"/>
+                        <Data IsEnabled="true" Value="7222"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="GetAuthorizableDatabaseStatusCommandId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="PumaGetDatabaseStatus"/>
+                    <AttributeInfo Id="LanguageConstraints" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AuthorizableClientFramework/ApplicationLocalization"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="GetAuthorizableServerStatusCommandId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="PumaTestConnection"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="GetDatabaseStatusCommandId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="AgentinoGetDatabaseStatus"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="GetServerStatusCommandId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="AgentinoTestConnection"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="LogDefaultPath" Type="String" ExportId="">
-                        <Data IsEnabled="true" Value="AgentinoLog.txt"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="MainQmlPath" Type="String" ExportId="">
-                        <Data IsEnabled="true" Value=":/qml/AgentinoMain.qml"/>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AuthorizableClientFramework/TextFileLog"/>
                     </AttributeInfo>
                     <AttributeInfo Id="PreferenceDefaultPath" Type="String" ExportId="">
-                        <Data IsEnabled="true" Value="AgentinoPreferences.xml"/>
+                        <Data IsEnabled="true" Value="AgentinoClientPreferences.xml"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="ProductName" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="Agentino"/>
+                    <AttributeInfo Id="PreferenceLocationType" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="9"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="ServerName" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Agentino"/>
+                    <AttributeInfo Id="RuntimeStatus" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AuthorizableClientFramework/RuntimeStatus"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="ServerPrefix" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="/Agentino"/>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AuthorizableClientFramework/ApplicationLocalization"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="TranslationFilePath" Type="String" ExportId="">
-                        <Data IsEnabled="true" Value=":/Translations"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TranslationFilePrefix" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Agentino"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="VersionInfo"/>
+                    <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
+                        <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
