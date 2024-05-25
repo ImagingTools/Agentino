@@ -2,7 +2,7 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5210" Description="ACF"/>
+            <Version Id="0" Number="5221" Description="ACF"/>
             <Version Id="1" Number="2205" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
@@ -142,7 +142,8 @@
                     <AttributeInfo Id="GqlSubscriberControllers" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>Subscribers/AgentsSubscriberProxyController</Value>
+                                <Value>Subscribers/AgentsLogSubscriberProxyController</Value>
+                                <Value>Subscribers/AgentServicesLogSubscriberProxyController</Value>
                                 <Value>Subscribers/ServiceCollectionSubscriberController</Value>
                                 <Value>Subscribers/UserGroupsSubscriberController</Value>
                                 <Value>Subscribers/UsersSubscriberController</Value>
@@ -402,6 +403,40 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
+                    <Element Id="AgentServicesLogSubscriberProxyController" PackageId="AgentinoGqlPck" ComponentId="AgentsSubscriberProxyController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>OnServiceLogCollectionChanged</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="GqlRequestHandler" Type="Reference" ExportId="GqlRequestHandler">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Model" Type="Reference" ExportId="AgentRepository">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="SubscriptionManager" Type="Reference" ExportId="SubscriptionManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
                     <Element Id="AgentStatusCollectionSubscriber" PackageId="ImtGqlPck" ComponentId="ModelSubscriberController">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
@@ -427,7 +462,7 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="AgentsSubscriberProxyController" PackageId="AgentinoGqlPck" ComponentId="AgentsSubscriberProxyController">
+                    <Element Id="AgentsLogSubscriberProxyController" PackageId="AgentinoGqlPck" ComponentId="AgentsSubscriberProxyController">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
@@ -436,7 +471,7 @@
                                 <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>OnServiceLogCollectionChanged</Value>
+                                            <Value>OnAgentLogCollectionChanged</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -618,9 +653,10 @@
                 <EmbeddedRegistriesList/>
                 <ExportedInterfaces/>
                 <ExportedComponents>
+                    <Component ExportedId="AgentServicesLogSubscriberProxyController" ComponentId="AgentServicesLogSubscriberProxyController"/>
                     <Component ExportedId="AgentStatusCollectionSubscriber" ComponentId="AgentStatusCollectionSubscriber"/>
+                    <Component ExportedId="AgentsLogSubscriberProxyController" ComponentId="AgentsLogSubscriberProxyController"/>
                     <Component ExportedId="AgentsSubscriberController" ComponentId="AgentCollectionSubscriber"/>
-                    <Component ExportedId="AgentsSubscriberProxyController" ComponentId="AgentsSubscriberProxyController"/>
                     <Component ExportedId="RolesSubscriberController" ComponentId="RolesSubscriberController"/>
                     <Component ExportedId="ServiceCollectionSubscriberController" ComponentId="ServiceCollectionSubscriberController"/>
                     <Component ExportedId="ServiceStatusCollectionSubscriberController" ComponentId="ServiceStatusCollectionSubscriberController"/>

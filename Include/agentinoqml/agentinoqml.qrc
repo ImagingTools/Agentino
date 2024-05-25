@@ -12,6 +12,7 @@
 	<file alias="ServiceCollectionViewBase.qml">Qml/ServiceCollectionViewBase.qml</file>
 	<file alias="ServiceCollectionView.qml">Qml/ServiceCollectionView.qml</file>
 	<file alias="AgentCollectionView.qml">Qml/AgentCollectionView.qml</file>
+	<file alias="AgentCollectionViewBase.qml">Qml/AgentCollectionViewBase.qml</file>
 	<file alias="ServiceEditor.qml">Qml/ServiceEditor.qml</file>
 	<file alias="ServiceValidator.qml">Qml/ServiceValidator.qml</file>
 	<file alias="AgentEditor.qml">Qml/AgentEditor.qml</file>

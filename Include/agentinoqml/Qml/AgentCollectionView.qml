@@ -1,166 +1,148 @@
 import QtQuick 2.12
 import Acf 1.0
 import imtcontrols 1.0
-import imtgui 1.0
 import imtcolgui 1.0
 import imtguigql 1.0
 import imtdocgui 1.0
+import imtgui 1.0
 
-RemoteCollectionView {
-    id: root;
+SplitView {
+    id: container
 
-    visibleMetaInfo: false;
+    anchors.fill: parent
+    hasAnimation: true;
 
-    collectionId: "Agents";
+    orientation: Qt.Vertical
 
-    filterMenuVisible: false;
+    AgentCollectionViewBase {
+        id: agentCollectionView;
 
-    commandsDelegateComp: Component {AgentCollectionViewCommandsDelegate {
-        collectionView: root
-    }
-    }
+        width: parent.width
+        height: 200 //container.height - log.height
+        property string selectedServices
 
-    Component.onCompleted: {
-        let documentManagerPtr = MainDocumentManager.getDocumentManager(root.collectionId)
-        if (documentManagerPtr){
-            root.commandsDelegate.documentManager = documentManagerPtr
-
-            documentManagerPtr.registerDocumentView("Agent", "AgentView", singleDocumentWorkspaceView);
-            documentManagerPtr.registerDocumentDataController("Agent", agentDataControllerComp);
-        }
-    }
-
-    onHeadersChanged: {
-        if (root.table.headers.GetItemsCount() > 0){
-            let orderIndex = root.table.getHeaderIndex("Status");
-            root.table.setColumnContentComponent(orderIndex, stateColumnContentComp);
-        }
-    }
-
-    function onEdit() {
-        if (root.commandsDelegate){
-            root.commandsDelegate.commandHandle("Services");
-        }
-    }
-
-    Component {
-        id: singleDocumentWorkspaceView
-
-        SingleDocumentWorkspaceView {
-            id: singleDocumentManager
-
-            anchors.fill: parent;
-
-            Component.onCompleted: {
-                MainDocumentManager.registerDocumentManager("Services", singleDocumentManager);
-
-                var clientId = root.table.getSelectedIds()[0];
-                var clientName = root.table.getSelectedNames()[0];
-
-                addInitialItem(serviceCollectionViewComp, clientName);
+        onSelectionChanged: {
+            if (selection.length > 0){
+                let index = selection[0];
+                log.agentId = agentCollectionView.table.elements.GetData("Id", index);
+                selectedServices = agentCollectionView.table.elements.GetData("Services", index)
+            }
+            else{
+                log.agentId = ""
             }
         }
     }
 
-    Component {
-        id: serviceCollectionViewComp;
+    MessageCollectionView {
+        id: log
 
-        ServiceCollectionView {
-            Component.onCompleted: {
-                clientId = root.table.getSelectedIds()[0];
-                clientName = root.table.getSelectedNames()[0];
-            }
+        property string agentId
+
+        collectionId: "AgentLog";
+
+        collectionFilter: MessageCollectionFilter {
+
         }
-    }
-
-    Component {
-        id: agentDataControllerComp
-
-        DocumentDataController {
-            function getDocumentName() {
-                return root.table.getSelectedNames()[0];
-            }
-        }
-    }
-
-    Component {
-        id: stateColumnContentComp;
-        TableCellDelegateBase {
-            id: content
-
-            Image {
-                id: image;
-
-                anchors.verticalCenter: parent.verticalCenter;
-                anchors.left: parent.left;
-                anchors.leftMargin: 5;
-
-                width: 9;
-                height: width;
-
-                sourceSize.width: width;
-                sourceSize.height: height;
-            }
-
-            Text {
-                id: lable;
-
-                anchors.left: image.right;
-                anchors.leftMargin: Style.size_smallMargin
-                anchors.right: parent.right;
-                anchors.verticalCenter: parent.verticalCenter;
-
-                font.pixelSize: Style.fontSize_common;
-                font.family: Style.fontFamily;
-                color: Style.textColor;
-
-                elide: Text.ElideRight;
-            }
-
-            onRowIndexChanged: {
-                if (rowIndex >= 0){
-                    let status = root.table.elements.GetData("Status", rowIndex);
-
-                    if (status === "Connected"){
-                        image.source = "../../../../" + Style.getIconPath("Icons/Running", Icon.State.On, Icon.Mode.Normal);
-                    }
-                    else if (status === "Disconnected"){
-                        image.source = "../../../../" + Style.getIconPath("Icons/Stopped", Icon.State.On, Icon.Mode.Normal);
-                    }
-                    else{
-                        image.source = "../../../../" + Style.getIconPath("Icons/Alert", Icon.State.On, Icon.Mode.Normal);
-                    }
-                }
-
-                let value = getValue();
-                if (value !== undefined){
-                    lable.text = value;
-                }
-            }
-        }
-    }
-
-    SubscriptionClient {
-        id: subscriptionClient;
 
         Component.onCompleted: {
-            let subscriptionRequestId = "OnAgentStatusChanged"
-            var query = Gql.GqlRequest("subscription", subscriptionRequestId);
-            var queryFields = Gql.GqlObject("notification");
-            queryFields.InsertField("Id");
-            query.AddField(queryFields);
-
-            Events.sendEvent("RegisterSubscription", {"Query": query, "Client": subscriptionClient});
+            filterMenu.decorator = messageCollectionFilterComp;
         }
 
-        onStateChanged: {
-            console.log("OnAgentStatusChanged", state);
+        onAgentIdChanged: {
+            dataController.elementsModel.Clear()
+            if (dataController.collectionId !== log.collectionId){
+                dataController.collectionId = log.collectionId
+            }
+            unRegisterSubscription()
+            registerSubscription()
+        }
 
-            if (state === "Ready"){
-                if (subscriptionClient.ContainsKey("data")){
-                    root.doUpdateGui();
+        function getAdditionalInputParams(){
+            let additionInputParams = {}
+            additionInputParams["clientId"] = log.agentId;
+
+            return additionInputParams
+        }
+
+        function handleSubscription(dataModel){
+            if (!dataModel){
+                return;
+            }
+            dataController.elementsModel.Clear()
+            dataController.updateModel()
+
+            // if (dataModel.ContainsKey("typeOperation")){
+            //     let body = dataModel.GetData("typeOperation");
+            //     if (body === "inserted"){
+            //         dataController.elementsModel.Clear()
+            //         dataController.updateModel()
+            //     }
+            // }
+        }
+
+        Component {
+            id: messageCollectionFilterComp;
+
+            MessageCollectionFilterDecorator {
+                id: filterDecorator
+                property string services: agentCollectionView.selectedServices
+
+                onServicesChanged: {
+                    checkMenu.dataModel.Clear()
+                    var servicesModel = services.split(';')
+                    for (let i = 0; i < servicesModel.length; i++){
+                        checkMenu.dataModel.InsertNewItem()
+                        checkMenu.dataModel.SetData("Name", servicesModel[i], i)
+                    }
+                    console.log("checkBoxMenu",checkMenu.dataModel)
+                    filterDecorator.updateObjectFilter();
+                }
+
+                CheckBoxMenu{
+                    id: checkMenu;
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: filterDecorator.segmentedButton.right
+                    anchors.leftMargin: Style.size_smallMargin
+                    width: 200
+                    height: 30
+                    visible: filterDecorator.filtermenu.x - x < width ? false : true
+                    placeHolderText: qsTr("Services");
+                    menuHeight: delegateHeight  * (dataModel.GetItemsCount() + 1) ;
+                    delegateHeight: 40;
+                    hasSearch: false;
+                    canOpenMenu: true;
+                    nameId: "Name";
+                    onMenuCreated: {
+                    }
+                    onChangedSignal: {
+                        filterDecorator.updateObjectFilter();
+                    }
+                }
+
+                function updateObjectFilter(){
+                    let objectFilter = log.collectionFilter.filterModel.GetData("ObjectFilter");
+                    if (!objectFilter){
+                        objectFilter = log.collectionFilter.filterModel.AddTreeModel("ObjectFilter")
+                    }
+                    let sourceFilter = objectFilter.GetData("Source");
+                    if (!sourceFilter){
+                        sourceFilter = objectFilter.AddTreeModel("Source")
+                    }
+                    for (let i = 0; i < checkMenu.dataModel.GetItemsCount(); i++){
+                        let service = checkMenu.dataModel.GetData("Name", i)
+                        let status = checkMenu.dataModel.GetData("checkState", i)
+                        console.log("status", status)
+                        sourceFilter.SetData(service, status === 0 || status === undefined ? false : true);
+                    }
+
+                    console.log("checkMenu objectFilter", objectFilter.ToJson())
+
+                    log.dataController.updateModel()
                 }
             }
         }
     }
+
 }
+

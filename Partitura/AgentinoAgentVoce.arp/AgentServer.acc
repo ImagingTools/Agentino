@@ -2,7 +2,7 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5210" Description="ACF"/>
+            <Version Id="0" Number="5221" Description="ACF"/>
             <Version Id="1" Number="2205" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
@@ -13,6 +13,9 @@
         <Element Id="AgentHandlers" PackageId="AgentinoAgentVoce" ComponentId="Handlers">
             <Data IsEnabled="true" Flags="2">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="AgentMessageObjectCollection" Type="Reference" ExportId="AgentMessageObjectCollection">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="AgentinoUrl" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/WebSocketAgentinoServerUrl"/>
                     </AttributeInfo>
@@ -67,6 +70,12 @@
         <Element Id="AgentSubscribers" PackageId="AgentinoAgentVoce" ComponentId="AgentSubscribers">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="MessageSqlRepository" Type="Reference" ExportId="MessageSqlRepository">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ServiceCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
                     </AttributeInfo>
@@ -113,6 +122,9 @@
                     <AttributeInfo Id="DefaultModel" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketClient"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="RequestManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="HttpServerFramework/WebSocketServer"/>
                     </AttributeInfo>
@@ -152,6 +164,7 @@
                                 <Value>AgentSubscribers/ServiceStatusSubscriberController</Value>
                                 <Value>AgentSubscribers/AgentConnectionSubscriberController</Value>
                                 <Value>AgentSubscribers/ServiceLogSubscriberController</Value>
+                                <Value>AgentSubscribers/AgentLogCollectionSubscriberController</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -245,6 +258,9 @@
         <Element Id="WebSocketAgentHandlers" PackageId="AgentinoAgentVoce" ComponentId="Handlers">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="AgentMessageObjectCollection" Type="Reference" ExportId="AgentMessageObjectCollection">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="AgentinoUrl" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/WebSocketAgentinoServerUrl"/>
                     </AttributeInfo>

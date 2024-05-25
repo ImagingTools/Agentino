@@ -44,6 +44,9 @@ bool CAgentCollectionControllerComp::SetupGqlItem(
 			const QByteArray& collectionId,
 			QString& errorMessage) const
 {
+	qDebug("Test log qDebug()");
+	SendErrorMessage(0, "Test log", "CObjectCollectionControllerCompBase");
+
 	if (!m_objectCollectionCompPtr.IsValid()){
 		errorMessage = QString("Unable to get list objects. Internal error.");
 		SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");

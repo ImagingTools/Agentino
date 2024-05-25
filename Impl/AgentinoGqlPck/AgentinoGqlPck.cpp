@@ -40,6 +40,12 @@ I_EXPORT_COMPONENT(
 			"Message Collection Controller");
 
 I_EXPORT_COMPONENT(
+			AgentMessageCollectionController,
+			"Agent message collection controller",
+			"Agent Message Collection Controller");
+
+
+I_EXPORT_COMPONENT(
 			AgentSettingsController,
 			"Agent settings controller",
 			"Agent Settings Controller");
@@ -123,6 +129,7 @@ I_EXPORT_COMPONENT(
 			AgentsSubscriberProxyController,
 			"Agent subscriber proxy controller",
 			"Agent Subscriber Proxy Controller");
+
 
 
 } // namespace AgentinoGqlPck

@@ -82,6 +82,8 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 		process = new QProcess(this);
 		m_processMap.insert(serviceId, process);
 		connect(process, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(stateChanged(QProcess::ProcessState)));
+		connect(process, SIGNAL(readyReadStandardError()), this, SLOT(OnReadyReadStandardError()));
+		connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(OnReadyReadStandardOutput()));
 
 		process->setProgram(servicePath);
 		QStringList arguments;
@@ -92,6 +94,10 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 	}
 
 	process->start();
+
+	QString serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::ICollectionInfo::EIT_NAME).toString();
+
+	SendInfoMessage(0, QString("Start service: %1").arg(serviceName), serviceName);
 
 	return true;
 }
@@ -115,7 +121,27 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 		}
 	}
 
+	QString serviceName;
+
+	if (m_serviceCollectionCompPtr.IsValid()){
+		serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::ICollectionInfo::EIT_NAME).toString();
+	}
+
+	SendInfoMessage(0, QString("Stop service: %1, %2").arg(serviceName).arg(retVal), serviceName);
+
 	return retVal;
+}
+
+
+// reimplemented (istd::ILogger)
+void CServiceControllerComp::DecorateMessage(
+			istd::IInformationProvider::InformationCategory category,
+			int id,
+			int flags,
+			QString& message,
+			QString& messageSource) const
+{
+	BaseClass2::DecorateMessage(category, id, flags, message, messageSource);
 }
 
 
@@ -123,6 +149,8 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 
 void CServiceControllerComp::OnComponentCreated()
 {
+	BaseClass::OnComponentCreated();
+
 	if (!m_serviceCollectionCompPtr.IsValid()){
 		Q_ASSERT(0);
 
@@ -215,12 +243,25 @@ void CServiceControllerComp::stateChanged(QProcess::ProcessState newState)
 void CServiceControllerComp::OnReadyReadStandardError()
 {
 	QProcess* processPtr = dynamic_cast<QProcess*>(sender());
+	QByteArray serviceId = "Unknown service";
+	for (QByteArray id: m_processMap.keys()){
+		if (m_processMap[id] == processPtr){
+			serviceId = id;
+		}
+	}
+
 	if (processPtr != nullptr){
+		QString serviceName;
+
+		if (m_serviceCollectionCompPtr.IsValid()){
+			serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::ICollectionInfo::EIT_NAME).toString();
+		}
+
 		QString errorOutput = processPtr->readAllStandardError();
 
 		errorOutput = errorOutput.simplified();
 
-		SendErrorMessage(0, errorOutput);
+		SendErrorMessage(0, errorOutput, serviceName);
 	}
 }
 
@@ -228,12 +269,25 @@ void CServiceControllerComp::OnReadyReadStandardError()
 void CServiceControllerComp::OnReadyReadStandardOutput()
 {
 	QProcess* processPtr = dynamic_cast<QProcess*>(sender());
+	QByteArray serviceId = "Unknown service";
+	for (QByteArray id: m_processMap.keys()){
+		if (m_processMap[id] == processPtr){
+			serviceId = id;
+		}
+	}
+
 	if (processPtr != nullptr){
+		QString serviceName;
+
+		if (m_serviceCollectionCompPtr.IsValid()){
+			serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::ICollectionInfo::EIT_NAME).toString();
+		}
+
 		QString standardOutput = processPtr->readAllStandardOutput();
 
 		standardOutput = standardOutput.simplified();
 
-		SendInfoMessage(0, standardOutput);
+		SendInfoMessage(0, standardOutput, serviceName);
 	}
 }
 

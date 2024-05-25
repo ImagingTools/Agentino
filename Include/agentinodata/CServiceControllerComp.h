@@ -39,6 +39,14 @@ public:
 	virtual bool StartService(const QByteArray& serviceId) override;
 	virtual bool StopService(const QByteArray& serviceId) override;
 
+	// reimplemented (istd::ILogger)
+	virtual void DecorateMessage(
+				istd::IInformationProvider::InformationCategory category,
+				int id,
+				int flags,
+				QString& message,
+				QString& messageSource) const override;
+
 	// reimplemented (icomp::CComponentBase)
 	virtual void OnComponentCreated() override;
 

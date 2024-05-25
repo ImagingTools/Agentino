@@ -2,7 +2,7 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5210" Description="ACF"/>
+            <Version Id="0" Number="5221" Description="ACF"/>
             <Version Id="1" Number="2205" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
@@ -35,20 +35,17 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ObjectCollectionSubscriberController" PackageId="ImtGqlPck" ComponentId="ObjectCollectionSubscriberController">
+        <Element Id="AgentLogCollectionSubscriberController" PackageId="ImtGqlPck" ComponentId="ObjectCollectionSubscriberController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>OnServiceChanged</Value>
+                                <Value>OnAgentLogCollectionChanged</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="ServiceCollection">
+                    <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="MessageSqlRepository">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="RequestManager" Type="Reference" ExportId="WebSocketClient">
@@ -107,11 +104,37 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="ServicetCollectionSubscriberController" PackageId="ImtGqlPck" ComponentId="ObjectCollectionSubscriberController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>OnServiceChanged</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="ServiceCollection">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RequestManager" Type="Reference" ExportId="WebSocketClient">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
     </ElementsList>
     <EmbeddedRegistriesList/>
     <ExportedInterfaces/>
     <ExportedComponents>
         <Component ExportedId="AgentConnectionSubscriberController" ComponentId="AgentConnectionSubscriberController"/>
+        <Component ExportedId="AgentLogCollectionSubscriberController" ComponentId="AgentLogCollectionSubscriberController"/>
         <Component ExportedId="ServiceLogSubscriberController" ComponentId="ServiceLogSubscriberController"/>
         <Component ExportedId="ServiceStatusSubscriberController" ComponentId="ServiceStatusSubscriberController"/>
     </ExportedComponents>

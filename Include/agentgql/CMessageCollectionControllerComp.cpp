@@ -117,75 +117,62 @@ imtbase::CTreeItemModel *CMessageCollectionControllerComp::ListObjects(const imt
 
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
 
-	imtbase::CTreeItemModel* dataModel = nullptr;
-	imtbase::CTreeItemModel* itemsModel = nullptr;
-	imtbase::CTreeItemModel* notificationModel = nullptr;
-
-	if (!errorMessage.isEmpty()){
-		imtbase::CTreeItemModel* errorsItemModel = rootModelPtr->AddTreeModel("errors");
-		errorsItemModel->SetData("message", errorMessage);
-	}
-	else{
-		dataModel = new imtbase::CTreeItemModel();
-		itemsModel = new imtbase::CTreeItemModel();
-		notificationModel = new imtbase::CTreeItemModel();
-
-		QByteArray agentId;
-		const imtgql::CGqlObject* viewParamsGql = nullptr;
-		if (inputParams.size() > 0){
-			viewParamsGql = inputParams.at(0).GetFieldArgumentObjectPtr("viewParams");
-
-			const imtgql::CGqlObject* addition = inputParams.at(0).GetFieldArgumentObjectPtr("addition");
-			if (addition != nullptr) {
-				agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
-			}
-		}
-
-		istd::TDelPtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(gqlRequest, errorMessage);
-		if (!messageCollectionPtr.IsValid()){
-			SendErrorMessage(0, errorMessage, "CMessageCollectionControllerComp");
-
-			return nullptr;
-		}
-
-		iprm::CParamsSet filterParams;
-
-		int offset = 0, count = -1;
-
-		if (viewParamsGql != nullptr){
-			offset = viewParamsGql->GetFieldArgumentValue("Offset").toInt();
-			count = viewParamsGql->GetFieldArgumentValue("Count").toInt();
-			PrepareFilters(gqlRequest, *viewParamsGql, filterParams);
-		}
-
-		int elementsCount = messageCollectionPtr->GetElementsCount(&filterParams);
-
-		int pagesCount = std::ceil(elementsCount / (double)count);
-		if (pagesCount <= 0){
-			pagesCount = 1;
-		}
-
-		notificationModel->SetData("PagesCount", pagesCount);
-		notificationModel->SetData("TotalCount", elementsCount);
-
-		istd::TDelPtr<imtbase::IObjectCollectionIterator> iterator = messageCollectionPtr->CreateObjectCollectionIterator(offset, count, &filterParams);
-
-		while (iterator.IsValid() && iterator->Next()){
-			int itemIndex = itemsModel->InsertNewItem();
-			if (itemIndex >= 0){
-				if (!SetupGqlItem(gqlRequest, *itemsModel, itemIndex, iterator.GetPtr(), errorMessage)){
-					SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
-
-					return nullptr;
-				}
-			}
-		}
-		itemsModel->SetIsArray(true);
-		dataModel->SetExternTreeModel("items", itemsModel);
-		dataModel->SetExternTreeModel("notification", notificationModel);
-	}
-
+	imtbase::CTreeItemModel* dataModel = new imtbase::CTreeItemModel();
+	imtbase::CTreeItemModel* itemsModel = new imtbase::CTreeItemModel();
+	imtbase::CTreeItemModel* notificationModel = new imtbase::CTreeItemModel();
+	dataModel->SetExternTreeModel("items", itemsModel);
+	dataModel->SetExternTreeModel("notification", notificationModel);
 	rootModelPtr->SetExternTreeModel("data", dataModel);
+	itemsModel->SetIsArray(true);
+
+	QByteArray agentId;
+	const imtgql::CGqlObject* viewParamsGql = nullptr;
+	if (inputParams.size() > 0){
+		viewParamsGql = inputParams.at(0).GetFieldArgumentObjectPtr("viewParams");
+
+		const imtgql::CGqlObject* addition = inputParams.at(0).GetFieldArgumentObjectPtr("addition");
+		if (addition != nullptr) {
+			agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
+		}
+	}
+
+	istd::TDelPtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(gqlRequest, errorMessage);
+	if (!messageCollectionPtr.IsValid()){
+		SendErrorMessage(0, errorMessage, "CMessageCollectionControllerComp");
+
+		return rootModelPtr.PopPtr();
+	}
+
+	iprm::CParamsSet filterParams;
+
+	int offset = 0, count = -1;
+
+	if (viewParamsGql != nullptr){
+		offset = viewParamsGql->GetFieldArgumentValue("Offset").toInt();
+		count = viewParamsGql->GetFieldArgumentValue("Count").toInt();
+		PrepareFilters(gqlRequest, *viewParamsGql, filterParams);
+	}
+
+	int elementsCount = messageCollectionPtr->GetElementsCount(&filterParams);
+
+	int pagesCount = std::ceil(elementsCount / (double)count);
+	if (pagesCount <= 0){
+		pagesCount = 1;
+	}
+
+	notificationModel->SetData("PagesCount", pagesCount);
+	notificationModel->SetData("TotalCount", elementsCount);
+
+	istd::TDelPtr<imtbase::IObjectCollectionIterator> iterator = messageCollectionPtr->CreateObjectCollectionIterator(offset, count, &filterParams);
+
+	while (iterator.IsValid() && iterator->Next()){
+		int itemIndex = itemsModel->InsertNewItem();
+		if (itemIndex >= 0){
+			if (!SetupGqlItem(gqlRequest, *itemsModel, itemIndex, iterator.GetPtr(), errorMessage)){
+				SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
+			}
+		}
+	}
 
 	return rootModelPtr.PopPtr();
 }
@@ -216,16 +203,24 @@ void CMessageCollectionControllerComp::SetObjectFilter(
 {
 	QByteArrayList keys;
 	keys << "VerboseFilter" << "InfoFilter" << "WarningFilter" << "ErrorFilter" << "CriticalFilter";
+	istd::TDelPtr<iprm::CParamsSet> categoryFilterPtr(new iprm::CParamsSet());
+
+	imtbase::CTreeItemModel *categoryModel = objectFilterModel.GetTreeItemModel("Category");
+	if (categoryModel == nullptr){
+		return;
+	}
+
 	for (QByteArray key: keys){
-		if (objectFilterModel.ContainsKey(key)){
-			QByteArray filterValue = objectFilterModel.GetData(key).toByteArray();
+		if (categoryModel->ContainsKey(key)){
+			QByteArray filterValue = categoryModel->GetData(key).toByteArray();
 			if (!filterValue.isEmpty()){
 				istd::TDelPtr<iprm::CTextParam> textParamPtr(new iprm::CTextParam());
 				textParamPtr->SetText(filterValue);
-				filterParams.SetEditableParameter(key, textParamPtr.PopPtr());
+				categoryFilterPtr->SetEditableParameter(key, textParamPtr.PopPtr());
 			}
 		}
 	}
+	filterParams.SetEditableParameter("Category", categoryFilterPtr.PopPtr());
 }
 
 
