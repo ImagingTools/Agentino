@@ -25,8 +25,6 @@ public:
 	typedef imtgql::CObjectCollectionControllerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CAgentMessageCollectionControllerComp);
-		// I_ASSIGN(m_serviceInfoFactCompPtr, "ServiceFactory", "Factory used for creation of the new service instance", false, "ServiceFactory");
-		// I_ASSIGN(m_serviceControllerCompPtr, "ServiceController", "Service controller used to manage services", false, "ServiceController");
 	I_END_COMPONENT;
 
 protected:
@@ -43,9 +41,6 @@ protected:
 	virtual void SetObjectFilter(const imtgql::CGqlRequest& gqlRequest,
 								 const imtbase::CTreeItemModel& objectFilterModel,
 								 iprm::CParamsSet& filterParams) const override;
-protected:
-	// I_FACT(agentinodata::IServiceInfo, m_serviceInfoFactCompPtr);
-	// I_REF(agentinodata::IServiceController, m_serviceControllerCompPtr);
 };
 
 

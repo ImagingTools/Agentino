@@ -141,7 +141,7 @@ void CAgentMessageCollectionControllerComp::SetObjectFilter(
 	}
 
 	for (QByteArray key: keys){
-		if (objectFilterModel.ContainsKey(key)){
+		if (categoryModel->ContainsKey(key)){
 			QByteArray filterValue = categoryModel->GetData(key).toByteArray();
 			if (!filterValue.isEmpty()){
 				istd::TDelPtr<iprm::CTextParam> textParamPtr(new iprm::CTextParam());

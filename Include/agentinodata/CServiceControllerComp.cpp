@@ -86,18 +86,25 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 		connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(OnReadyReadStandardOutput()));
 
 		process->setProgram(servicePath);
+		QFileInfo fileInfo(servicePath);
+		process->setWorkingDirectory(fileInfo.absolutePath());
 		QStringList arguments;
 		for (const QByteArray& argument: serviceArguments){
-			arguments << QString(argument);
+			if (!argument.isEmpty()) {
+				arguments << QString(argument);
+			}
 		}
-		process->setArguments(arguments);
+		if (!arguments.isEmpty()) {
+			process->setArguments(arguments);
+		}
 	}
-
-	process->start();
 
 	QString serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::ICollectionInfo::EIT_NAME).toString();
 
 	SendInfoMessage(0, QString("Start service: %1").arg(serviceName), serviceName);
+
+	process->start();
+
 
 	return true;
 }
@@ -106,6 +113,14 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 {
 	bool retVal = false;
+
+	QString serviceName;
+
+	if (m_serviceCollectionCompPtr.IsValid()){
+		serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::ICollectionInfo::EIT_NAME).toString();
+	}
+
+	SendInfoMessage(0, QString("Stop service: %1").arg(serviceName), serviceName);
 
 	if (m_processMap.contains(serviceId)){
 		QProcess *process = m_processMap[serviceId];
@@ -120,14 +135,6 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 			retVal = true;
 		}
 	}
-
-	QString serviceName;
-
-	if (m_serviceCollectionCompPtr.IsValid()){
-		serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::ICollectionInfo::EIT_NAME).toString();
-	}
-
-	SendInfoMessage(0, QString("Stop service: %1, %2").arg(serviceName).arg(retVal), serviceName);
 
 	return retVal;
 }
@@ -211,6 +218,11 @@ void CServiceControllerComp::stateChanged(QProcess::ProcessState newState)
 				notifierStatusInfo.serviceStatus = serviceStatus;
 				changeSet.SetChangeInfo(IServiceController::CN_STATUS_CHANGED, QVariant::fromValue(notifierStatusInfo));
 				istd::CChangeNotifier notifier(this, &changeSet);
+				QString serviceName;
+				if (m_serviceCollectionCompPtr.IsValid()){
+					serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::ICollectionInfo::EIT_NAME).toString();
+				}
+				SendInfoMessage(0, "Service state changed: " + IServiceStatusInfo::ToString(serviceStatus), serviceName);
 			}
 
 			if (newState == QProcess::NotRunning){
