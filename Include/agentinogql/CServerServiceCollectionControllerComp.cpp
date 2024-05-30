@@ -233,6 +233,12 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 				else if(informationId == "Path"){
 					elementInformation = serviceInfoPtr->GetServicePath();
 				}
+				else if(informationId == "StartScript"){
+					elementInformation = serviceInfoPtr->GetStartScriptPath();
+				}
+				else if(informationId == "StopScript"){
+					elementInformation = serviceInfoPtr->GetStopScriptPath();
+				}
 				else if(informationId == "SettingsPath"){
 					elementInformation = serviceInfoPtr->GetServiceSettingsPath();
 				}
@@ -274,8 +280,8 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 				else if(informationId == "IsAutoStart"){
 					elementInformation = serviceInfoPtr->IsAutoStart();
 				}
-				else if(informationId == "EnableVerbose"){
-					elementInformation = serviceInfoPtr->IsEnableVerboseMessages();
+				else if(informationId == "TracingLevel"){
+					elementInformation = serviceInfoPtr->GetTracingLevel();
 				}
 				else if(informationId == "Version"){
 					elementInformation = serviceInfoPtr->GetServiceVersion();

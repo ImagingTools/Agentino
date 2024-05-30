@@ -3,6 +3,7 @@
 
 // ACF includes
 #include <iser/IObject.h>
+#include <ilog/ITracingConfiguration.h>
 
 // Agentino includes
 #include <agentinodata/IServiceMetaInfo.h>
@@ -20,7 +21,7 @@ namespace agentinodata
 	\ingroup Service
 */
 class IServiceInfo:
-		virtual public iser::IObject
+			virtual public iser::IObject, virtual public ilog::ITracingConfiguration
 {
 public:
 
@@ -58,6 +59,14 @@ public:
 	*/
 	virtual QByteArray GetServicePath() const = 0;
 	/**
+		Get path of the start script.
+	*/
+	virtual QByteArray GetStartScriptPath() const = 0;
+	/**
+		Get path of the stop script.
+	*/
+	virtual QByteArray GetStopScriptPath() const = 0;
+	/**
 		Get settings path of the service.
 	*/
 	virtual QByteArray GetServiceSettingsPath() const = 0;
@@ -70,12 +79,6 @@ public:
 		Get autostart flag.
 	*/
 	virtual bool IsAutoStart() const = 0;
-
-	/**
-		Get enable verbose messages flag.
-	*/
-	virtual bool IsEnableVerboseMessages() const = 0;
-
 
 	/**
 		Get input connection collection.

@@ -106,19 +106,23 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelF
 			QString serviceName = serviceCollection.GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_NAME).toString();
 			QString description = serviceCollection.GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
 			QString servicePath = serviceInfoPtr->GetServicePath();
+			QString startScript = serviceInfoPtr->GetStartScriptPath();
+			QString stopScript = serviceInfoPtr->GetStopScriptPath();
 			QString settingsPath = serviceInfoPtr->GetServiceSettingsPath();
 			QString arguments = serviceInfoPtr->GetServiceArguments().join(' ');
 			bool isAutoStart = serviceInfoPtr->IsAutoStart();
-			bool isEnableVerbose = serviceInfoPtr->IsEnableVerboseMessages();
+			int tracingLevel = serviceInfoPtr->GetTracingLevel();
 
 			serviceRepresentationModelPtr->SetData("Id", serviceId);
 			serviceRepresentationModelPtr->SetData("Name", serviceName);
 			serviceRepresentationModelPtr->SetData("Description", description);
 			serviceRepresentationModelPtr->SetData("Path", servicePath);
+			serviceRepresentationModelPtr->SetData("StartScript", startScript);
+			serviceRepresentationModelPtr->SetData("StopScript", stopScript);
 			serviceRepresentationModelPtr->SetData("SettingsPath", settingsPath);
 			serviceRepresentationModelPtr->SetData("Arguments", arguments);
 			serviceRepresentationModelPtr->SetData("IsAutoStart", isAutoStart);
-			serviceRepresentationModelPtr->SetData("EnableVerbose", isEnableVerbose);
+			serviceRepresentationModelPtr->SetData("TracingLevel", tracingLevel);
 
 			imtbase::CTreeItemModel* inputConnectionsModelPtr = serviceRepresentationModelPtr->AddTreeModel("InputConnections");
 			imtbase::CTreeItemModel* outputConnectionsModelPtr = serviceRepresentationModelPtr->AddTreeModel("OutputConnections");

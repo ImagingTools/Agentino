@@ -20,9 +20,10 @@ public:
 	CServiceInfo(const QString& typeName = QString(), SettingsType settingsType = ST_PLUGIN);
 	virtual void SetServicePath(const QByteArray& servicePath);
 	virtual void SetServiceSettingsPath(const QByteArray& serviceSettingsPath);
+	virtual void SetStartScriptPath(const QByteArray& startScriptPath);
+	virtual void SetStopScriptPath(const QByteArray& stopScriptPath);
 	virtual void SetServiceArguments(const QByteArrayList& serviceArguments);
 	virtual void SetIsAutoStart(bool isAutoStart);
-	virtual void SetIsEnableVerboseMessages(bool isEnableVerboseMessages);
 	virtual void SetServiceTypeName(const QByteArray& serviceTypeName);
 	virtual void SetServiceVersion(const QString& serviceVersion);
 
@@ -34,9 +35,14 @@ public:
 	virtual QByteArray GetServiceSettingsPath() const override;
 	virtual QByteArrayList GetServiceArguments() const override;
 	virtual bool IsAutoStart() const override;
-	virtual bool IsEnableVerboseMessages() const override;
+	virtual QByteArray GetStartScriptPath() const override;
+	virtual QByteArray GetStopScriptPath() const override;
 	virtual imtbase::IObjectCollection* GetInputConnections() override;
 	virtual imtbase::IObjectCollection* GetDependantServiceConnections() override;
+
+	// reimplemented (ilog::ITracingConfiguration)
+	virtual int GetTracingLevel() const override;
+	virtual void SetTracingLevel(int tracingLevel) override;
 
 	// reimplemented (iser::ISerializable)
 	virtual bool Serialize(iser::IArchive &archive) override;
@@ -53,12 +59,14 @@ protected:
 	QString m_serviceTypeName;
 	QByteArray m_path;
 	QByteArray m_settingsPath;
+	QByteArray m_startScriptPath;
+	QByteArray m_stopScriptPath;
 	QByteArrayList m_arguments;
+	int m_tracingLevel;
 
 	imtbase::CObjectCollection m_inputConnections;
 	imtbase::CObjectCollection m_dependantServiceConnections;
 	bool m_isAutoStart;
-	bool m_isEnableVerboseMessages;
 };
 
 

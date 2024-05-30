@@ -126,7 +126,7 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 		QProcess *process = m_processMap[serviceId];
 		if (process != nullptr){
 			process->setProperty("isStopped", true);
-			process->terminate();
+			process->close();
 			process->waitForFinished(2000);
 			if (process->isOpen()){
 				process->kill();

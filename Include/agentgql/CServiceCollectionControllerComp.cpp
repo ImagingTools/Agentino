@@ -85,6 +85,12 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 				else if(informationId == "Path"){
 					elementInformation = serviceInfoPtr->GetServicePath();
 				}
+				else if(informationId == "StartScript"){
+					elementInformation = serviceInfoPtr->GetStartScriptPath();
+				}
+				else if(informationId == "StopScript"){
+					elementInformation = serviceInfoPtr->GetStopScriptPath();
+				}
 				else if(informationId == "SettingsPath"){
 					elementInformation = serviceInfoPtr->GetServiceSettingsPath();
 				}
@@ -119,8 +125,8 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 				else if(informationId == "IsAutoStart"){
 					elementInformation = serviceInfoPtr->IsAutoStart();
 				}
-				else if(informationId == "EnableVerbose"){
-					elementInformation = serviceInfoPtr->IsEnableVerboseMessages();
+				else if(informationId == "TracingLevel"){
+					elementInformation = serviceInfoPtr->GetTracingLevel();
 				}
 				else if(informationId == "Version"){
 					elementInformation = serviceInfoPtr->GetServiceVersion();
@@ -243,23 +249,27 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 			QByteArray serviceName = m_objectCollectionCompPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_NAME).toByteArray();
 			QString description = m_objectCollectionCompPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
 			QString servicePath = serviceInfoPtr->GetServicePath();
+			QString startScriptPath = serviceInfoPtr->GetStartScriptPath();
+			QString stopScriptPath = serviceInfoPtr->GetStopScriptPath();
 			QString settingsPath = serviceInfoPtr->GetServiceSettingsPath();
 			QByteArray serviceTypeName = serviceInfoPtr->GetServiceTypeName().toUtf8();
 			QString arguments = serviceInfoPtr->GetServiceArguments().join(' ');
 			bool isAutoStart = serviceInfoPtr->IsAutoStart();
-			bool enableVerbose = serviceInfoPtr->IsEnableVerboseMessages();
+			int tracingLevel = serviceInfoPtr->GetTracingLevel();
 			QString serviceVersion = serviceInfoPtr->GetServiceVersion();
 
 			dataModel->SetData("Id", serviceId);
 			dataModel->SetData("Name", serviceName);
 			dataModel->SetData("Description", description);
 			dataModel->SetData("Path", servicePath);
+			dataModel->SetData("StartScript", startScriptPath);
+			dataModel->SetData("StopScript", stopScriptPath);
 			dataModel->SetData("SettingsPath", settingsPath);
 			dataModel->SetData("Arguments", arguments);
 			dataModel->SetData("IsAutoStart", isAutoStart);
 			dataModel->SetData("ServiceTypeName", serviceTypeName);
 			dataModel->SetData("Version", serviceVersion);
-			dataModel->SetData("EnableVerbose", enableVerbose);
+			dataModel->SetData("TracingLevel", tracingLevel);
 
 			if (m_serviceControllerCompPtr.IsValid()){
 				agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
@@ -296,8 +306,8 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 				if (connectionCollection != nullptr){
 					serviceVersion = connectionCollection->GetServiceVersion();
 					dataModel->SetData("Version", serviceVersion);
-					enableVerbose = connectionCollection->GetTracingLevel() > -1;
-					dataModel->SetData("EnableVerbose", enableVerbose);
+					tracingLevel = connectionCollection->GetTracingLevel();
+					dataModel->SetData("TracingLevel", tracingLevel);
 					const imtbase::ICollectionInfo* collectionInfo = connectionCollection->GetUrlList();
 					const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
 					if (objectCollection != nullptr){
@@ -712,6 +722,16 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObject(
 			serviceInfoPtr->SetServicePath(path);
 		}
 
+		if (itemModel.ContainsKey("StartScript")){
+			QByteArray path = itemModel.GetData("StartScript").toByteArray();
+			serviceInfoPtr->SetStartScriptPath(path);
+		}
+
+		if (itemModel.ContainsKey("StopScript")){
+			QByteArray path = itemModel.GetData("StopScript").toByteArray();
+			serviceInfoPtr->SetStopScriptPath(path);
+		}
+
 		if (itemModel.ContainsKey("SettingsPath")){
 			QByteArray settingsPath = itemModel.GetData("SettingsPath").toByteArray();
 			serviceInfoPtr->SetServiceSettingsPath(settingsPath);
@@ -727,9 +747,9 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObject(
 			serviceInfoPtr->SetIsAutoStart(isAutoStart);
 		}
 
-		if (itemModel.ContainsKey("EnableVerbose")){
-			bool isEnableVerbose = itemModel.GetData("EnableVerbose").toBool();
-			serviceInfoPtr->SetIsEnableVerboseMessages(isEnableVerbose);
+		if (itemModel.ContainsKey("TracingLevel")){
+			int tracingLevel = itemModel.GetData("TracingLevel").toInt();
+			serviceInfoPtr->SetTracingLevel(tracingLevel);
 		}
 
 		return serviceInfoPtr;

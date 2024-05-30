@@ -122,6 +122,16 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 		serviceInfoPtr->SetServicePath(path);
 	}
 
+	if (representationModel.ContainsKey("StartScript")){
+		QByteArray path = representationModel.GetData("StartScript").toByteArray();
+		serviceInfoPtr->SetStartScriptPath(path);
+	}
+
+	if (representationModel.ContainsKey("StopScript")){
+		QByteArray path = representationModel.GetData("StopScript").toByteArray();
+		serviceInfoPtr->SetStopScriptPath(path);
+	}
+
 	if (representationModel.ContainsKey("SettingsPath")){
 		QByteArray settingsPath = representationModel.GetData("SettingsPath").toByteArray();
 		serviceInfoPtr->SetServiceSettingsPath(settingsPath);
@@ -137,10 +147,10 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 		serviceInfoPtr->SetIsAutoStart(isAutoStart);
 	}
 
-	if (representationModel.ContainsKey("EnableVerbose")){
-		bool isEnableVerbose = representationModel.GetData("EnableVerbose").toBool();
+	if (representationModel.ContainsKey("TracingLevel")){
+		int tracingLevel = representationModel.GetData("TracingLevel").toBool();
 
-		serviceInfoPtr->SetIsEnableVerboseMessages(isEnableVerbose);
+		serviceInfoPtr->SetTracingLevel(tracingLevel);
 	}
 
 	imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();

@@ -44,18 +44,22 @@ bool CServiceInfoRepresentationController::GetRepresentationFromDataModel(
 	}
 
 	QString servicePath = serviceInfoPtr->GetServicePath();
+	QString startScriptPath = serviceInfoPtr->GetStartScriptPath();
+	QString stopScriptPath = serviceInfoPtr->GetStopScriptPath();
 	QString settingsPath = serviceInfoPtr->GetServiceSettingsPath();
 	QString arguments = serviceInfoPtr->GetServiceArguments().join(' ');
 	bool isAutoStart = serviceInfoPtr->IsAutoStart();
-	bool isEnableVerbose = serviceInfoPtr->IsEnableVerboseMessages();
+	int tracingLevel = serviceInfoPtr->GetTracingLevel();
 	QString serviceTypeName = serviceInfoPtr->GetServiceTypeName();
 	QString serviceVersion = serviceInfoPtr->GetServiceVersion();
 
 	representation.SetData("Path", servicePath);
+	representation.SetData("StartScript", servicePath);
+	representation.SetData("StopScript", servicePath);
 	representation.SetData("SettingsPath", settingsPath);
 	representation.SetData("Arguments", arguments);
 	representation.SetData("IsAutoStart", isAutoStart);
-	representation.SetData("EnableVerbose", isEnableVerbose);
+	representation.SetData("TracingLevel", tracingLevel);
 	representation.SetData("ServiceTypeName", serviceTypeName);
 	representation.SetData("Version", serviceVersion);
 
@@ -125,6 +129,18 @@ bool CServiceInfoRepresentationController::GetDataModelFromRepresentation(
 		serviceInfoPtr->SetServicePath(path);
 	}
 
+	if (representation.ContainsKey("StartScript")){
+		QByteArray path = representation.GetData("StartScript").toByteArray();
+
+		serviceInfoPtr->SetStartScriptPath(path);
+	}
+
+	if (representation.ContainsKey("StopScript")){
+		QByteArray path = representation.GetData("StopScript").toByteArray();
+
+		serviceInfoPtr->SetStopScriptPath(path);
+	}
+
 	if (representation.ContainsKey("SettingsPath")){
 		QByteArray settingsPath = representation.GetData("SettingsPath").toByteArray();
 
@@ -143,10 +159,10 @@ bool CServiceInfoRepresentationController::GetDataModelFromRepresentation(
 		serviceInfoPtr->SetIsAutoStart(isAutoStart);
 	}
 
-	if (representation.ContainsKey("EnableVerbose")){
-		bool isEnableVerbose = representation.GetData("EnableVerbose").toBool();
+	if (representation.ContainsKey("TracingLevel")){
+		int tracingLevel = representation.GetData("TracingLevel").toInt();
 
-		serviceInfoPtr->SetIsEnableVerboseMessages(isEnableVerbose);
+		serviceInfoPtr->SetTracingLevel(tracingLevel);
 	}
 
 	if (representation.ContainsKey("ServiceTypeName")){

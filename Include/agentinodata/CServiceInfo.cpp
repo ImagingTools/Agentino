@@ -26,14 +26,86 @@ namespace agentinodata
 CServiceInfo::CServiceInfo(const QString &typeName, SettingsType settingsType):
 	m_settingsType(settingsType),
 	m_serviceTypeName(typeName),
-	m_isAutoStart(true),
-	m_isEnableVerboseMessages(false)
+	m_tracingLevel(-1),
+	m_isAutoStart(true)
 {
 	typedef istd::TSingleFactory<istd::IChangeable, imtservice::CUrlConnectionParam> FactoryConnectionImpl;
 	m_inputConnections.RegisterFactory<FactoryConnectionImpl>("ConnectionInfo");
 
 	typedef istd::TSingleFactory<istd::IChangeable, imtservice::CUrlConnectionLinkParam> FactoryConnectionLinkImpl;
 	m_dependantServiceConnections.RegisterFactory<FactoryConnectionLinkImpl>("ConnectionLink");
+}
+
+
+void CServiceInfo::SetServicePath(const QByteArray& servicePath)
+{
+	if (m_path != servicePath){
+		istd::CChangeNotifier changeNotifier(this);
+
+		m_path = servicePath;
+	}
+}
+
+
+void CServiceInfo::SetServiceSettingsPath(const QByteArray& serviceSettingsPath)
+{
+	if (m_settingsPath != serviceSettingsPath){
+		istd::CChangeNotifier changeNotifier(this);
+
+		m_settingsPath = serviceSettingsPath;
+	}
+}
+
+
+void CServiceInfo::SetStartScriptPath(const QByteArray& startScriptPath)
+{
+	m_startScriptPath = startScriptPath;
+}
+
+
+void CServiceInfo::SetStopScriptPath(const QByteArray& stopScriptPath)
+{
+	m_stopScriptPath = stopScriptPath;
+}
+
+
+void CServiceInfo::SetServiceArguments(const QByteArrayList& serviceArguments)
+{
+	if (m_arguments != serviceArguments){
+		istd::CChangeNotifier changeNotifier(this);
+
+		m_arguments = serviceArguments;
+	}
+}
+
+
+void CServiceInfo::SetIsAutoStart(bool isAutoStart)
+{
+	if (m_isAutoStart != isAutoStart){
+		istd::CChangeNotifier changeNotifier(this);
+
+		m_isAutoStart = isAutoStart;
+	}
+}
+
+
+void CServiceInfo::SetServiceTypeName(const QByteArray& serviceTypeName)
+{
+	if (m_serviceTypeName != serviceTypeName){
+		istd::CChangeNotifier changeNotifier(this);
+
+		m_serviceTypeName = serviceTypeName;
+	}
+}
+
+
+void CServiceInfo::SetServiceVersion(const QString& serviceVersion)
+{
+	if (m_serviceVersion != serviceVersion){
+		istd::CChangeNotifier changeNotifier(this);
+
+		m_serviceVersion = serviceVersion;
+	}
 }
 
 
@@ -61,29 +133,9 @@ QByteArray CServiceInfo::GetServicePath() const
 }
 
 
-void CServiceInfo::SetServicePath(const QByteArray& servicePath)
-{
-	if (m_path != servicePath){
-		istd::CChangeNotifier changeNotifier(this);
-
-		m_path = servicePath;
-	}
-}
-
-
 QByteArray CServiceInfo::GetServiceSettingsPath() const
 {
 	return m_settingsPath;
-}
-
-
-void CServiceInfo::SetServiceSettingsPath(const QByteArray& serviceSettingsPath)
-{
-	if (m_settingsPath != serviceSettingsPath){
-		istd::CChangeNotifier changeNotifier(this);
-
-		m_settingsPath = serviceSettingsPath;
-	}
 }
 
 
@@ -93,65 +145,21 @@ QByteArrayList CServiceInfo::GetServiceArguments() const
 }
 
 
-void CServiceInfo::SetServiceArguments(const QByteArrayList& serviceArguments)
-{
-	if (m_arguments != serviceArguments){
-		istd::CChangeNotifier changeNotifier(this);
-
-		m_arguments = serviceArguments;
-	}
-}
-
-
-void CServiceInfo::SetIsAutoStart(bool isAutoStart)
-{
-	if (m_isAutoStart != isAutoStart){
-		istd::CChangeNotifier changeNotifier(this);
-
-		m_isAutoStart = isAutoStart;
-	}
-}
-
-
-void CServiceInfo::SetIsEnableVerboseMessages(bool isEnableVerboseMessages)
-{
-	if (m_isEnableVerboseMessages != isEnableVerboseMessages){
-		istd::CChangeNotifier changeNotifier(this);
-
-		m_isEnableVerboseMessages = isEnableVerboseMessages;
-	}
-}
-
-
-void CServiceInfo::SetServiceTypeName(const QByteArray& serviceTypeName)
-{
-	if (m_serviceTypeName != serviceTypeName){
-		istd::CChangeNotifier changeNotifier(this);
-
-		m_serviceTypeName = serviceTypeName;
-	}
-}
-
-
-void CServiceInfo::SetServiceVersion(const QString& serviceVersion)
-{
-	if (m_serviceVersion != serviceVersion){
-		istd::CChangeNotifier changeNotifier(this);
-
-		m_serviceVersion = serviceVersion;
-	}
-}
-
-
 bool CServiceInfo::IsAutoStart() const
 {
 	return m_isAutoStart;
 }
 
 
-bool CServiceInfo::IsEnableVerboseMessages() const
+QByteArray CServiceInfo::GetStartScriptPath() const
 {
-	return m_isEnableVerboseMessages;
+	return m_startScriptPath;
+}
+
+
+QByteArray CServiceInfo::GetStopScriptPath() const
+{
+	return m_stopScriptPath;
 }
 
 
@@ -166,7 +174,20 @@ imtbase::IObjectCollection* CServiceInfo::GetDependantServiceConnections()
 	return &m_dependantServiceConnections;
 }
 
+// reimplemented (ilog::ITracingConfiguration)
+int CServiceInfo::GetTracingLevel() const
+{
+	return m_tracingLevel;
+}
 
+
+void CServiceInfo::SetTracingLevel(int tracingLevel)
+{
+	m_tracingLevel = tracingLevel;
+}
+
+
+// reimplemented (iser::ISerializable)
 bool CServiceInfo::Serialize(iser::IArchive &archive)
 {
 	bool retVal = true;
@@ -234,17 +255,35 @@ bool CServiceInfo::Serialize(iser::IArchive &archive)
 	retVal = retVal && archive.Process(m_serviceVersion);
 	retVal = retVal && archive.EndTag(versionTag);
 
-	if (identifiableVersion > 9681){
+	if (identifiableVersion < 9897){
 		iser::CArchiveTag enableVerboseTag("EnableVerbose", "EnableVerbose", iser::CArchiveTag::TT_LEAF);
 		retVal = retVal && archive.BeginTag(enableVerboseTag);
-		retVal = retVal && archive.Process(m_isEnableVerboseMessages);
+		int isEnableVerboseMessages = 0;
+		retVal = retVal && archive.Process(isEnableVerboseMessages);
 		retVal = retVal && archive.EndTag(enableVerboseTag);
+	}
+	if (identifiableVersion >= 9897){
+		iser::CArchiveTag startScriptPathTag("StartScriptPath", "StartScriptPath", iser::CArchiveTag::TT_LEAF);
+		retVal = retVal && archive.BeginTag(startScriptPathTag);
+		retVal = retVal && archive.Process(m_startScriptPath);
+		retVal = retVal && archive.EndTag(startScriptPathTag);
+
+		iser::CArchiveTag stopScriptPathTag("StopScriptPath", "StopScriptPath", iser::CArchiveTag::TT_LEAF);
+		retVal = retVal && archive.BeginTag(stopScriptPathTag);
+		retVal = retVal && archive.Process(m_stopScriptPath);
+		retVal = retVal && archive.EndTag(stopScriptPathTag);
+
+		iser::CArchiveTag tracingLevelTag("TracingLevel", "TracingLevel", iser::CArchiveTag::TT_LEAF);
+		retVal = retVal && archive.BeginTag(tracingLevelTag);
+		retVal = retVal && archive.Process(m_tracingLevel);
+		retVal = retVal && archive.EndTag(tracingLevelTag);
 	}
 
 	return retVal;
 }
 
 
+// reimplemented (iser::IChangeable)
 int CServiceInfo::GetSupportedOperations() const
 {
 	return SO_COPY | SO_COMPARE | SO_RESET;
@@ -260,10 +299,12 @@ bool CServiceInfo::CopyFrom(const IChangeable &object, CompatibilityMode /*mode*
 		m_settingsType = sourcePtr->m_settingsType;
 		m_serviceTypeName = sourcePtr->m_serviceTypeName;
 		m_path = sourcePtr->m_path;
+		m_startScriptPath =sourcePtr->m_startScriptPath;
+		m_stopScriptPath =sourcePtr->m_stopScriptPath;
 		m_settingsPath = sourcePtr->m_settingsPath;
 		m_arguments = sourcePtr->m_arguments;
 		m_isAutoStart = sourcePtr->m_isAutoStart;
-		m_isEnableVerboseMessages =sourcePtr->m_isEnableVerboseMessages;
+		m_tracingLevel =sourcePtr->m_tracingLevel;
 		m_serviceVersion = sourcePtr->m_serviceVersion;
 
 		m_inputConnections.ResetData();

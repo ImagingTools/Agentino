@@ -82,6 +82,53 @@ ViewBase {
             switchVerboseMessage.setChecked(false)
         }
 
+        if (serviceEditorContainer.model.ContainsKey("TracingLevel")){
+            let tracingLevel = serviceEditorContainer.model.GetData("TracingLevel")
+            if (tracingLevelInput.currentIndex !== tracingLevel){
+                tracingLevelInput.currentIndex = tracingLevel
+            }
+            console.log("*DEBUG* tracingLevel", tracingLevel)
+            if (tracingLevel > -1){
+                switchVerboseMessage.setChecked(true);
+            }
+            else{
+                switchVerboseMessage.setChecked(false);
+            }
+        }
+        else{
+            switchVerboseMessage.setChecked(false)
+        }
+
+        if (serviceEditorContainer.model.ContainsKey("StartScript")){
+            let startScript = serviceEditorContainer.model.GetData("StartScript")
+            if (startScript !== ""){
+                startScriptChecked.checkState = Qt.Checked
+                startScriptInput.text = startScript
+            }
+            else{
+                startScriptChecked.checkState = Qt.Unchecked
+                startScriptInput.text = ""
+            }
+        }
+        else{
+            startScriptChecked.checkState = Qt.Unchecked
+            startScriptInput.text = ""
+        }
+
+        if (serviceEditorContainer.model.ContainsKey("StopScript")){
+            let stopScript = serviceEditorContainer.model.GetData("StopScript")
+            if (stopScript !== ""){
+                stopScriptChecked.checkState = Qt.Checked
+                stopScriptInput.text = stopScript
+            }
+            else{
+                stopScriptChecked.checkState = Qt.Unchecked
+            }
+        }
+        else{
+            stopScriptChecked.checkState = Qt.Unchecked
+        }
+
         if (serviceEditorContainer.model.ContainsKey("InputConnections")){
             inputConnTable.elements = serviceEditorContainer.model.GetData("InputConnections")
         }
@@ -97,7 +144,9 @@ ViewBase {
         serviceEditorContainer.model.SetData("Path", pathInput.text);
         serviceEditorContainer.model.SetData("Arguments", argumentsInput.text);
         serviceEditorContainer.model.SetData("IsAutoStart", switchAutoStart.checked);
-        serviceEditorContainer.model.SetData("EnableVerbose", switchVerboseMessage.checked);
+        serviceEditorContainer.model.SetData("TracingLevel", tracingLevelInput.currentIndex);
+        serviceEditorContainer.model.SetData("StartScript", startScriptInput.text);
+        serviceEditorContainer.model.SetData("StopScript", stopScriptInput.text);
     }
 
     MouseArea {
@@ -143,7 +192,7 @@ ViewBase {
 
             width: flickable.width;
 
-            spacing: 10;
+            spacing: Style.size_mainMargin;
 
             Text {
                 id: titleName;
@@ -290,13 +339,127 @@ ViewBase {
                 text: qsTr("Verbose message (") + (switchVerboseMessage.checked ? qsTr("on") : qsTr("off")) + ")";
             }
 
-            SwitchCustom {
-                id: switchVerboseMessage
+            Row {
+                height:  Style.itemSizeMedium;
+                spacing: Style.size_mainMargin;
 
-                backgroundColor: "#D4D4D4"
-                onCheckedChanged: {
+                SwitchCustom {
+                    id: switchVerboseMessage
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    backgroundColor: "#D4D4D4"
+                    onCheckedChanged: {
+                        if (checked && tracingLevelInput.currentIndex < 0){
+                            tracingLevelInput.currentIndex = 0
+                        }
+                        else {
+                            tracingLevelInput.currentIndex = -1
+                        }
+                        serviceEditorContainer.doUpdateModel();
+                    }
+                }
+
+                Item {
+                    width: Style.size_mainMargin;
+                    height: Style.itemSizeMedium
+                }
+
+                Text {
+                    id: titleTracingLevel;
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    visible: switchVerboseMessage.checked
+                    color: Style.textColor;
+                    font.family: Style.fontFamily;
+                    font.pixelSize: Style.fontSize_common;
+
+                    text: qsTr("Tracing level");
+                }
+
+                ComboBox {
+                    id: tracingLevelInput
+                    anchors.verticalCenter: parent.verticalCenter
+                    height: Style.itemSizeMedium * 0.75;
+                    width: Style.itemSizeLarge;
+                    visible: switchVerboseMessage.checked
+                    model: TreeItemModel {
+
+                    }
+                    Component.onCompleted: {
+                        model.SetData("Name", "0")
+                        let index = model.InsertNewItem()
+                        model.SetData("Name", "1", index)
+                        index = model.InsertNewItem()
+                        model.SetData("Name", "2", index)
+                        index = model.InsertNewItem()
+                        model.SetData("Name", "3", index)
+                        index = model.InsertNewItem()
+                        model.SetData("Name", "4", index)
+                        index = model.InsertNewItem()
+                        model.SetData("Name", "5", index)
+                    }
+                    onCurrentIndexChanged: {
+                        serviceEditorContainer.doUpdateModel();
+                    }
+                }
+            }
+
+            CheckBox {
+                id: startScriptChecked
+                text: qsTr("Start script")
+                onClicked: {
+                    if(startScriptChecked.checkState !== Qt.Checked){
+                        startScriptChecked.checkState = Qt.Checked;
+                    }
+                    else {
+                        startScriptChecked.checkState = Qt.Unchecked;
+                    }
+                }
+            }
+
+            CustomTextField {
+                id: startScriptInput;
+
+                width: parent.width;
+                height: Style.itemSizeMedium;
+                visible: startScriptChecked.checkState === Qt.Checked
+
+                placeHolderText: qsTr("Enter the start script path");
+
+                onEditingFinished: {
                     serviceEditorContainer.doUpdateModel();
                 }
+
+                KeyNavigation.tab: nameInput;
+            }
+
+            CheckBox {
+                id: stopScriptChecked
+                text: qsTr("Stop script")
+                onClicked: {
+                    if(stopScriptChecked.checkState !== Qt.Checked){
+                        stopScriptChecked.checkState = Qt.Checked;
+                    }
+                    else {
+                        stopScriptChecked.checkState = Qt.Unchecked;
+                    }
+                }
+            }
+
+            CustomTextField {
+                id: stopScriptInput;
+
+                width: parent.width;
+                height: Style.itemSizeMedium;
+                visible: stopScriptChecked.checkState === Qt.Checked
+
+                placeHolderText: qsTr("Enter the stop script path");
+
+                onEditingFinished: {
+                    serviceEditorContainer.doUpdateModel();
+                }
+
+                KeyNavigation.tab: nameInput;
             }
 
             Text {
