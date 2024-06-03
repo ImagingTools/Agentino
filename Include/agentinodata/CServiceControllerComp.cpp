@@ -20,17 +20,22 @@ IServiceStatusInfo::ServiceStatus  CServiceControllerComp::GetServiceStatus(cons
 {
 	IServiceStatusInfo::ServiceStatus retVal = IServiceStatusInfo::SS_NOT_RUNNING;
 
-	if (m_processMap.contains(serviceId)){
-		QProcess::ProcessState processState = m_processMap[serviceId]->state();
+	if (m_processMap.contains(serviceId)){\
+		QProcess* processPtr = m_processMap[serviceId].m_processPtr;
+		if (processPtr == nullptr){
+			return IServiceStatusInfo::SS_UNDEFINED;
+		}
+
+		QProcess::ProcessState processState = processPtr->state();
 		switch (processState) {
 		case QProcess::Running:
-				retVal = IServiceStatusInfo::SS_RUNNING;
+			retVal = IServiceStatusInfo::SS_RUNNING;
 			break;
 		case QProcess::NotRunning:
-				retVal = IServiceStatusInfo::SS_NOT_RUNNING;
+			retVal = IServiceStatusInfo::SS_NOT_RUNNING;
 			break;
 		case QProcess::Starting:
-				retVal = IServiceStatusInfo::SS_STARTING;
+			retVal = IServiceStatusInfo::SS_STARTING;
 			break;
 		}
 	}
@@ -66,45 +71,60 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 	QByteArray servicePath = serviceInfoPtr->GetServicePath();
 	QByteArrayList serviceArguments = serviceInfoPtr->GetServiceArguments();
 
-	QProcess* process = nullptr;
-
-	if (m_processMap.contains(serviceId)){
-		process = m_processMap.value(serviceId);
-
-		bool isStopped = process->property("isStopped").toBool();
-		if (isStopped){
-			m_restartProcessing.append(serviceId);
-
-			return true;
+	QStringList arguments;
+	for (const QByteArray& argument: serviceArguments){
+		if (!argument.isEmpty()) {
+			arguments << QString(argument);
 		}
 	}
-	else{
-		process = new QProcess(this);
-		m_processMap.insert(serviceId, process);
-		connect(process, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(stateChanged(QProcess::ProcessState)));
-		connect(process, SIGNAL(readyReadStandardError()), this, SLOT(OnReadyReadStandardError()));
-		connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(OnReadyReadStandardOutput()));
 
-		process->setProgram(servicePath);
-		QFileInfo fileInfo(servicePath);
-		process->setWorkingDirectory(fileInfo.absolutePath());
-		QStringList arguments;
-		for (const QByteArray& argument: serviceArguments){
-			if (!argument.isEmpty()) {
-				arguments << QString(argument);
+	QByteArray startScriptPath = serviceInfoPtr->GetStartScriptPath();
+	if (!startScriptPath.isEmpty()){
+		QProcess process(this);
+
+		SetupProcess(process, startScriptPath, arguments);
+
+		process.startDetached();
+
+		ServiceProcess serviceProcess;
+		m_processMap.insert(serviceId, serviceProcess);
+
+		EmitChangeSignal(serviceId, IServiceStatusInfo::SS_RUNNING);
+	}
+	else{
+		QProcess* process = nullptr;
+
+		if (m_processMap.contains(serviceId)){
+			process = m_processMap.value(serviceId).m_processPtr;
+			if (process != nullptr){
+				bool isStopped = process->property("isStopped").toBool();
+				if (isStopped){
+					m_restartProcessing.append(serviceId);
+
+					return true;
+				}
 			}
 		}
-		if (!arguments.isEmpty()) {
-			process->setArguments(arguments);
+		else{
+			process = new QProcess(this);
+			ServiceProcess serviceProcess;
+			serviceProcess.m_processPtr = process;
+
+			m_processMap.insert(serviceId, serviceProcess);
+
+			connect(process, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(stateChanged(QProcess::ProcessState)));
+			connect(process, SIGNAL(readyReadStandardError()), this, SLOT(OnReadyReadStandardError()));
+			connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(OnReadyReadStandardOutput()));
+
+			SetupProcess(*process, servicePath, arguments);
 		}
+
+		process->start();
 	}
 
 	QString serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::ICollectionInfo::EIT_NAME).toString();
 
-	SendInfoMessage(0, QString("Start service: %1").arg(serviceName), serviceName);
-
-	process->start();
-
+	SendInfoMessage(0, QString("Service '%1' started").arg(serviceName), serviceName);
 
 	return true;
 }
@@ -120,33 +140,62 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 		serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::ICollectionInfo::EIT_NAME).toString();
 	}
 
-	SendInfoMessage(0, QString("Stop service: %1").arg(serviceName), serviceName);
+	agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = nullptr;
+	imtbase::IObjectCollection::DataPtr serviceDataPtr;
+	if (m_serviceCollectionCompPtr->GetObjectData(serviceId, serviceDataPtr)){
+		serviceInfoPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(serviceDataPtr.GetPtr());
+	}
+
+	if (serviceInfoPtr == nullptr){
+		Q_ASSERT(0);
+
+		return retVal;
+	}
+
+	QByteArray serviceStopScriptPath = serviceInfoPtr->GetStopScriptPath();
+	if (!serviceStopScriptPath.isEmpty()){
+		QProcess process(this);
+
+		QStringList arguments;
+		SetupProcess(process, serviceStopScriptPath, arguments);
+
+		process.startDetached();
+
+		m_processMap.remove(serviceId);
+
+		retVal = true;
+
+		EmitChangeSignal(serviceId, IServiceStatusInfo::SS_NOT_RUNNING);
+	}
 
 	if (m_processMap.contains(serviceId)){
-		QProcess *process = m_processMap[serviceId];
-		if (process != nullptr){
-			process->setProperty("isStopped", true);
-			process->close();
-			process->waitForFinished(2000);
-			if (process->isOpen()){
-				process->kill();
+		QProcess* processPtr = m_processMap[serviceId].m_processPtr;
+		if (processPtr != nullptr){
+			processPtr->setProperty("isStopped", true);
+			processPtr->close();
+			processPtr->waitForFinished(2000);
+			if (processPtr->isOpen()){
+				processPtr->kill();
 			}
 
 			retVal = true;
 		}
 	}
 
+	SendInfoMessage(0, QString("Service '%1' stopped").arg(serviceName), serviceName);
+
 	return retVal;
 }
 
 
 // reimplemented (istd::ILogger)
+
 void CServiceControllerComp::DecorateMessage(
-			istd::IInformationProvider::InformationCategory category,
-			int id,
-			int flags,
-			QString& message,
-			QString& messageSource) const
+		istd::IInformationProvider::InformationCategory category,
+		int id,
+		int flags,
+		QString& message,
+		QString& messageSource) const
 {
 	BaseClass2::DecorateMessage(category, id, flags, message, messageSource);
 }
@@ -186,6 +235,9 @@ void CServiceControllerComp::OnComponentCreated()
 			}
 		}
 	}
+
+	m_timer.setInterval(5000);
+	connect(&m_timer, &QTimer::timeout, this, &CServiceControllerComp::OnTimeout);
 }
 
 
@@ -208,22 +260,17 @@ void CServiceControllerComp::stateChanged(QProcess::ProcessState newState)
 
 	QList<QByteArray> keys = m_processMap.keys();
 
-	for (const QByteArray& serviceId: keys) {
-		QProcess *process = m_processMap[serviceId];
+	for (const QByteArray& serviceId: keys){
+		QProcess* process = m_processMap[serviceId].m_processPtr;
 		if (process != nullptr && process == senderProcess){
-			{
-				istd::IChangeable::ChangeSet changeSet(istd::IChangeable::CF_ANY);
-				IServiceController::NotifierStatusInfo notifierStatusInfo;
-				notifierStatusInfo.serviceId = serviceId;
-				notifierStatusInfo.serviceStatus = serviceStatus;
-				changeSet.SetChangeInfo(IServiceController::CN_STATUS_CHANGED, QVariant::fromValue(notifierStatusInfo));
-				istd::CChangeNotifier notifier(this, &changeSet);
-				QString serviceName;
-				if (m_serviceCollectionCompPtr.IsValid()){
-					serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::ICollectionInfo::EIT_NAME).toString();
-				}
-				SendInfoMessage(0, "Service state changed: " + IServiceStatusInfo::ToString(serviceStatus), serviceName);
+			EmitChangeSignal(serviceId, serviceStatus);
+
+			QString serviceName;
+			if (m_serviceCollectionCompPtr.IsValid()){
+				serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::ICollectionInfo::EIT_NAME).toString();
 			}
+
+			SendInfoMessage(0, "Service state changed: " + IServiceStatusInfo::ToString(serviceStatus), serviceName);
 
 			if (newState == QProcess::NotRunning){
 				agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = nullptr;
@@ -235,8 +282,8 @@ void CServiceControllerComp::stateChanged(QProcess::ProcessState newState)
 				bool isStoped = false;
 
 				if (m_processMap.contains(serviceId)){
-					isStoped = m_processMap[serviceId]->property("isStopped").toBool();
-					m_processMap.take(serviceId)->deleteLater();
+					isStoped = m_processMap[serviceId].m_processPtr->property("isStopped").toBool();
+					m_processMap.take(serviceId).m_processPtr->deleteLater();
 				}
 
 				if ((serviceInfoPtr != nullptr && serviceInfoPtr->IsAutoStart() && isStoped != true) || m_restartProcessing.contains(serviceId)){
@@ -257,7 +304,7 @@ void CServiceControllerComp::OnReadyReadStandardError()
 	QProcess* processPtr = dynamic_cast<QProcess*>(sender());
 	QByteArray serviceId = "Unknown service";
 	for (QByteArray id: m_processMap.keys()){
-		if (m_processMap[id] == processPtr){
+		if (m_processMap[id].m_processPtr == processPtr){
 			serviceId = id;
 		}
 	}
@@ -283,7 +330,7 @@ void CServiceControllerComp::OnReadyReadStandardOutput()
 	QProcess* processPtr = dynamic_cast<QProcess*>(sender());
 	QByteArray serviceId = "Unknown service";
 	for (QByteArray id: m_processMap.keys()){
-		if (m_processMap[id] == processPtr){
+		if (m_processMap[id].m_processPtr == processPtr){
 			serviceId = id;
 		}
 	}
@@ -301,6 +348,16 @@ void CServiceControllerComp::OnReadyReadStandardOutput()
 
 		SendInfoMessage(0, standardOutput, serviceName);
 	}
+}
+
+
+void CServiceControllerComp::SetupProcess(QProcess& process, const QByteArray& programPath, const QStringList& arguments) const
+{
+	process.setProgram(programPath);
+	process.setArguments(arguments);
+
+	QFileInfo fileInfo(programPath);
+	process.setWorkingDirectory(fileInfo.absolutePath());
 }
 
 
@@ -353,7 +410,39 @@ void CServiceControllerComp::updateServiceVersion(const QByteArray& serviceId)
 			}
 		}
 	}
+}
 
+
+void CServiceControllerComp::OnTimeout()
+{
+	QList<QByteArray> keys = m_processMap.keys();
+
+	for (const QByteArray& serviceId: keys){
+		QProcess* processPtr = m_processMap[serviceId].m_processPtr;
+		if (processPtr == nullptr){
+			imtbase::IObjectCollection::DataPtr serviceDataPtr;
+			if (m_serviceCollectionCompPtr->GetObjectData(serviceId, serviceDataPtr)){
+				agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+				if (serviceInfoPtr != nullptr){
+					// TODO
+				}
+			}
+		}
+	}
+}
+
+
+void CServiceControllerComp::EmitChangeSignal(const QByteArray& serviceId, IServiceStatusInfo::ServiceStatus serviceStatus)
+{
+	istd::IChangeable::ChangeSet changeSet(istd::IChangeable::CF_ANY);
+
+	IServiceController::NotifierStatusInfo notifierStatusInfo;
+	notifierStatusInfo.serviceId = serviceId;
+	notifierStatusInfo.serviceStatus = serviceStatus;
+
+	changeSet.SetChangeInfo(IServiceController::CN_STATUS_CHANGED, QVariant::fromValue(notifierStatusInfo));
+
+	istd::CChangeNotifier notifier(this, &changeSet);
 }
 
 

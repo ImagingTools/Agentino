@@ -13,8 +13,8 @@ DocumentCollectionViewDelegate {
     viewTypeId: "ServiceEditor"
     documentTypeId: "Service"
 
-    removeDialogTitle: qsTr("Deleting an agent");
-    removeMessage: qsTr("Delete the selected agent ?");
+    removeDialogTitle: qsTr("Deleting an service");
+    removeMessage: qsTr("Delete the selected service ?");
 
     function updateItemSelection(selectedItems){
         console.log("updateItemSelection", selectedItems);
@@ -99,6 +99,34 @@ DocumentCollectionViewDelegate {
         var gqlData = query.GetQuery();
         console.log("ServiceCollectionView setServiceCommand query ", gqlData);
         serviceGqlModel.SetGqlQuery(gqlData);
+    }
+
+    function setupContextMenu(){
+        let commandsController = collectionView.commandsController;
+        if (commandsController){
+            container.contextMenuModel.Clear();
+
+            let canEdit = commandsController.commandExists("Edit");
+            let canRemove = commandsController.commandExists("Remove");
+
+            if (canEdit){
+                let index = container.contextMenuModel.InsertNewItem();
+
+                container.contextMenuModel.SetData("Id", "Edit", index);
+                container.contextMenuModel.SetData("Name", qsTr("Edit"), index);
+                container.contextMenuModel.SetData("Icon", "Icons/Edit", index);
+            }
+
+            if (canRemove){
+                let index = container.contextMenuModel.InsertNewItem();
+
+                container.contextMenuModel.SetData("Id", "Remove", index);
+                container.contextMenuModel.SetData("Name", qsTr("Remove"), index);
+                container.contextMenuModel.SetData("Icon", "Icons/Delete", index);
+            }
+
+            container.contextMenuModel.Refresh();
+        }
     }
 
     property GqlModel servicesController: GqlModel {

@@ -65,8 +65,18 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 			serviceDescription = itemModel.GetData("Description").toString();
 		}
 
-		istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInfoPtr =
-					dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(GetServiceInfoFromRepresentationModel(itemModel));
+		istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInfoPtr;
+		serviceInfoPtr.SetPtr(new agentinodata::CIdentifiableServiceInfo);
+
+		if (!m_serviceInfoRepresentationController.GetDataModelFromRepresentation(itemModel, *serviceInfoPtr)){
+			errorMessage = QString("Unable to get service info from representation model");
+			SendErrorMessage(0, errorMessage);
+
+			return nullptr;
+		}
+
+//		istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInfoPtr =
+//					dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(GetServiceInfoFromRepresentationModel(itemModel));
 		serviceInfoPtr->SetObjectUuid(objectId);
 
 		istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr = new imtbase::CTreeItemModel;
@@ -148,7 +158,7 @@ agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepre
 	}
 
 	if (representationModel.ContainsKey("TracingLevel")){
-		int tracingLevel = representationModel.GetData("TracingLevel").toBool();
+		int tracingLevel = representationModel.GetData("TracingLevel").toInt();
 
 		serviceInfoPtr->SetTracingLevel(tracingLevel);
 	}

@@ -7,6 +7,7 @@
 // Agentino includes
 #include <agentinodata/IServiceInfo.h>
 #include <agentinodata/IServiceManager.h>
+#include <agentinodata/CServiceInfoRepresentationController.h>
 
 
 namespace agentinogql
@@ -30,6 +31,9 @@ protected:
 
 protected:
 	I_REF(agentinodata::IServiceManager, m_serviceManagerCompPtr);
+
+private:
+	agentinodata::CServiceInfoRepresentationController m_serviceInfoRepresentationController;
 };
 
 

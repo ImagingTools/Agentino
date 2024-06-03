@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5221" Description="ACF"/>
-            <Version Id="1" Number="2205" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394754" Description="Qt Framework"/>
+            <Version Id="0" Number="5222" Description="ACF"/>
+            <Version Id="1" Number="2207" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -351,7 +351,7 @@
             <Data Description="" Keywords="">
                 <ElementsList>
                     <Element Id="FileAutoPersistence" PackageId="ImtCoreVoce" ComponentId="FileAutoPersistence">
-                        <Data IsEnabled="true" Flags="1">
+                        <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                                     <Data IsEnabled="false"/>
@@ -428,6 +428,7 @@
                 <ExportedComponents>
                     <Component ExportedId="RoleRepository" ComponentId="UserLocalRepositories/RoleRepository"/>
                     <Component ExportedId="ServiceCollection" ComponentId="ServiceCollection"/>
+                    <Component ExportedId="ServiceCollectionAutoPersistence" ComponentId="FileAutoPersistence/AutoPersistence"/>
                     <Component ExportedId="UserGroupRepository" ComponentId="UserLocalRepositories/UserGroupRepository"/>
                     <Component ExportedId="UserRepository" ComponentId="UserLocalRepositories/UserRepository"/>
                 </ExportedComponents>
@@ -439,7 +440,11 @@
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="HttpServerFramework"/>
     </ExportedInterfaces>
     <ExportedComponents>
+        <Component ExportedId="AutoPersistence" ComponentId="ServerSettings/AutoPersistence"/>
+        <Component ExportedId="Preferences" ComponentId="ServerSettings/Preferences"/>
         <Component ExportedId="ServerSettings" ComponentId="ServerSettings"/>
+        <Component ExportedId="ServiceCollection" ComponentId="Repositories/ServiceCollection"/>
+        <Component ExportedId="ServiceCollectionAutoPersistence" ComponentId="Repositories/ServiceCollectionAutoPersistence"/>
         <Component ExportedId="ServiceController" ComponentId="ServiceController"/>
         <Component ExportedId="ServiceManagerSubscriptionClient" ComponentId="ServiceManagerSubscriptionClient"/>
     </ExportedComponents>

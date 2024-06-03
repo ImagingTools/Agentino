@@ -174,7 +174,9 @@ imtbase::IObjectCollection* CServiceInfo::GetDependantServiceConnections()
 	return &m_dependantServiceConnections;
 }
 
+
 // reimplemented (ilog::ITracingConfiguration)
+
 int CServiceInfo::GetTracingLevel() const
 {
 	return m_tracingLevel;
@@ -188,6 +190,7 @@ void CServiceInfo::SetTracingLevel(int tracingLevel)
 
 
 // reimplemented (iser::ISerializable)
+
 bool CServiceInfo::Serialize(iser::IArchive &archive)
 {
 	bool retVal = true;
@@ -284,6 +287,7 @@ bool CServiceInfo::Serialize(iser::IArchive &archive)
 
 
 // reimplemented (iser::IChangeable)
+
 int CServiceInfo::GetSupportedOperations() const
 {
 	return SO_COPY | SO_COMPARE | SO_RESET;

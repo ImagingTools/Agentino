@@ -1,6 +1,9 @@
 #pragma once
 
 
+// Qt includes
+#include <QtCore/QTimer>
+
 // ACF includes
 #include <ilog/TLoggerCompWrap.h>
 
@@ -56,12 +59,20 @@ public	Q_SLOTS:
 	void OnReadyReadStandardOutput();
 
 private:
+	void SetupProcess(QProcess& process, const QByteArray& programPath, const QStringList& arguments) const;
 	void updateServiceVersion(const QByteArray& serviceId);
+	void OnTimeout();
+	void EmitChangeSignal(const QByteArray& serviceId, IServiceStatusInfo::ServiceStatus serviceStatus);
+
+	struct ServiceProcess
+	{
+		QProcess* m_processPtr = nullptr;
+	};
 
 	class PluginManager: public imtbase::TPluginManager<
-							  imtservice::IConnectionCollectionPlugin,
-							  IMT_CREATE_PLUGIN_FUNCTION(ServiceSettings),
-							  IMT_DESTROY_PLUGIN_FUNCTION(ServiceSettings)>
+							imtservice::IConnectionCollectionPlugin,
+							IMT_CREATE_PLUGIN_FUNCTION(ServiceSettings),
+							IMT_DESTROY_PLUGIN_FUNCTION(ServiceSettings)>
 	{
 	public:
 		PluginManager(
@@ -81,12 +92,12 @@ private:
 private:
 	I_REF(imtbase::IObjectCollection, m_serviceCollectionCompPtr);
 
-	QMap<QByteArray, QProcess*> m_processMap;
+	QMap<QByteArray, ServiceProcess> m_processMap;
 	mutable QList<QByteArray> m_restartProcessing;
+	QTimer m_timer;
 };
 
 
 } // namespace agentinodata
-
 
 

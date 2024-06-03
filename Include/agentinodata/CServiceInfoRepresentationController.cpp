@@ -54,8 +54,8 @@ bool CServiceInfoRepresentationController::GetRepresentationFromDataModel(
 	QString serviceVersion = serviceInfoPtr->GetServiceVersion();
 
 	representation.SetData("Path", servicePath);
-	representation.SetData("StartScript", servicePath);
-	representation.SetData("StopScript", servicePath);
+	representation.SetData("StartScript", startScriptPath);
+	representation.SetData("StopScript", stopScriptPath);
 	representation.SetData("SettingsPath", settingsPath);
 	representation.SetData("Arguments", arguments);
 	representation.SetData("IsAutoStart", isAutoStart);

@@ -75,25 +75,16 @@ ViewBase {
             switchAutoStart.setChecked(false)
         }
 
-        if (serviceEditorContainer.model.ContainsKey("EnableVerbose")){
-            switchVerboseMessage.setChecked(serviceEditorContainer.model.GetData("EnableVerbose"));
-        }
-        else{
-            switchVerboseMessage.setChecked(false)
-        }
-
         if (serviceEditorContainer.model.ContainsKey("TracingLevel")){
             let tracingLevel = serviceEditorContainer.model.GetData("TracingLevel")
-            if (tracingLevelInput.currentIndex !== tracingLevel){
-                tracingLevelInput.currentIndex = tracingLevel
-            }
-            console.log("*DEBUG* tracingLevel", tracingLevel)
             if (tracingLevel > -1){
                 switchVerboseMessage.setChecked(true);
             }
             else{
                 switchVerboseMessage.setChecked(false);
             }
+
+            tracingLevelInput.currentIndex = tracingLevel
         }
         else{
             switchVerboseMessage.setChecked(false)
@@ -144,9 +135,19 @@ ViewBase {
         serviceEditorContainer.model.SetData("Path", pathInput.text);
         serviceEditorContainer.model.SetData("Arguments", argumentsInput.text);
         serviceEditorContainer.model.SetData("IsAutoStart", switchAutoStart.checked);
-        serviceEditorContainer.model.SetData("TracingLevel", tracingLevelInput.currentIndex);
         serviceEditorContainer.model.SetData("StartScript", startScriptInput.text);
         serviceEditorContainer.model.SetData("StopScript", stopScriptInput.text);
+
+        if (switchVerboseMessage.checked){
+            if (tracingLevelInput.currentIndex == -1){
+                tracingLevelInput.currentIndex = 0;
+            }
+
+            serviceEditorContainer.model.SetData("TracingLevel", tracingLevelInput.currentIndex);
+        }
+        else{
+            serviceEditorContainer.model.SetData("TracingLevel", -1);
+        }
     }
 
     MouseArea {
@@ -349,12 +350,6 @@ ViewBase {
 
                     backgroundColor: "#D4D4D4"
                     onCheckedChanged: {
-                        if (checked && tracingLevelInput.currentIndex < 0){
-                            tracingLevelInput.currentIndex = 0
-                        }
-                        else {
-                            tracingLevelInput.currentIndex = -1
-                        }
                         serviceEditorContainer.doUpdateModel();
                     }
                 }
@@ -382,19 +377,25 @@ ViewBase {
                     height: Style.itemSizeMedium * 0.75;
                     width: Style.itemSizeLarge;
                     visible: switchVerboseMessage.checked
-                    model: TreeItemModel {
 
+                    model: TreeItemModel {
                     }
                     Component.onCompleted: {
-                        model.SetData("Name", "0")
                         let index = model.InsertNewItem()
+                        model.SetData("Name", "0", index)
+
+                        index = model.InsertNewItem()
                         model.SetData("Name", "1", index)
+
                         index = model.InsertNewItem()
                         model.SetData("Name", "2", index)
+
                         index = model.InsertNewItem()
                         model.SetData("Name", "3", index)
+
                         index = model.InsertNewItem()
                         model.SetData("Name", "4", index)
+
                         index = model.InsertNewItem()
                         model.SetData("Name", "5", index)
                     }
