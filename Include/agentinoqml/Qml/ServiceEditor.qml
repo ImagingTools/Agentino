@@ -135,8 +135,6 @@ ViewBase {
         serviceEditorContainer.model.SetData("Path", pathInput.text);
         serviceEditorContainer.model.SetData("Arguments", argumentsInput.text);
         serviceEditorContainer.model.SetData("IsAutoStart", switchAutoStart.checked);
-        serviceEditorContainer.model.SetData("StartScript", startScriptInput.text);
-        serviceEditorContainer.model.SetData("StopScript", stopScriptInput.text);
 
         if (switchVerboseMessage.checked){
             if (tracingLevelInput.currentIndex == -1){
@@ -147,6 +145,20 @@ ViewBase {
         }
         else{
             serviceEditorContainer.model.SetData("TracingLevel", -1);
+        }
+
+        if(startScriptChecked.checkState === Qt.Checked){
+            serviceEditorContainer.model.SetData("StartScript", startScriptInput.text);
+        }
+        else{
+            serviceEditorContainer.model.SetData("StartScript", "");
+        }
+
+        if(stopScriptChecked.checkState === Qt.Checked){
+            serviceEditorContainer.model.SetData("StopScript", stopScriptInput.text);
+        }
+        else{
+            serviceEditorContainer.model.SetData("StopScript", "");
         }
     }
 
@@ -412,9 +424,11 @@ ViewBase {
                     if(startScriptChecked.checkState !== Qt.Checked){
                         startScriptChecked.checkState = Qt.Checked;
                     }
-                    else {
+                    else{
                         startScriptChecked.checkState = Qt.Unchecked;
                     }
+
+                    serviceEditorContainer.doUpdateModel();
                 }
             }
 
@@ -444,6 +458,8 @@ ViewBase {
                     else {
                         stopScriptChecked.checkState = Qt.Unchecked;
                     }
+
+                    serviceEditorContainer.doUpdateModel();
                 }
             }
 
