@@ -6,6 +6,7 @@
 
 // ACF includes
 #include <iser/IObject.h>
+#include <ilog/ITracingConfiguration.h>
 
 // ImtCore includes
 #include <imtbase/IObjectCollection.h>
@@ -19,7 +20,7 @@ namespace agentinodata
 	Interface for describing an agent info.
 	\ingroup Agent
 */
-class IAgentInfo: virtual public iser::IObject
+class IAgentInfo: virtual public iser::IObject, virtual public ilog::ITracingConfiguration
 {
 public:
 	/**

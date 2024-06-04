@@ -32,6 +32,10 @@ public:
 	virtual QString GetComputerName() const override;
 	virtual imtbase::IObjectCollection* GetServiceCollection() override;
 
+	// reimplemented (ilog::ITracingConfiguration)
+	virtual int GetTracingLevel() const override;
+	virtual void SetTracingLevel(int tracingLevel) override;
+
 	// reimplemented (iser::ISerializable)
 	virtual bool Serialize(iser::IArchive& archive) override;
 
@@ -46,6 +50,7 @@ protected:
 	QString m_version;
 	QString m_computerName;
 	imod::TModelWrap<imtbase::CObjectCollection> m_serviceCollection;
+	int m_tracingLevel;
 
 	imod::CModelUpdateBridge m_modelUpdateBridge;
 };

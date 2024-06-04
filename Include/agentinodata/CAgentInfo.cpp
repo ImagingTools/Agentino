@@ -20,6 +20,7 @@ namespace agentinodata
 // public methods
 
 CAgentInfo::CAgentInfo():
+	m_tracingLevel(-1),
 	m_modelUpdateBridge(this, imod::CModelUpdateBridge::UF_SOURCE)
 {
 	typedef istd::TSingleFactory<istd::IChangeable, agentinodata::CIdentifiableServiceInfo> FactoryServiceImpl;
@@ -80,10 +81,34 @@ imtbase::IObjectCollection* CAgentInfo::GetServiceCollection()
 }
 
 
+// reimplemented (ilog::ITracingConfiguration)
+
+int CAgentInfo::GetTracingLevel() const
+{
+	return m_tracingLevel;
+}
+
+
+void CAgentInfo::SetTracingLevel(int tracingLevel)
+{
+	if (m_tracingLevel != tracingLevel){
+		istd::CChangeNotifier changeNotifier(this);
+
+		m_tracingLevel = tracingLevel;
+	}
+}
+
+
 // reimplemented (iser::ISerializable)
 
 bool CAgentInfo::Serialize(iser::IArchive &archive)
 {
+	const iser::IVersionInfo& versionInfo = archive.GetVersionInfo();
+	quint32 imtCoreVersion;
+	if (!versionInfo.GetVersionNumber(imtcore::VI_IMTCORE, imtCoreVersion)){
+		imtCoreVersion = 0;
+	}
+
 	bool retVal = true;
 
 	iser::CArchiveTag lastConnectionTag("LastConnection", "LastConnection", iser::CArchiveTag::TT_LEAF);
@@ -106,6 +131,13 @@ bool CAgentInfo::Serialize(iser::IArchive &archive)
 	retVal = retVal && archive.Process(m_version);
 	retVal = retVal && archive.EndTag(versionTag);
 
+	if (imtCoreVersion > 9937){
+		iser::CArchiveTag tracingLevelTag("TracingLevel", "TracingLevel", iser::CArchiveTag::TT_LEAF);
+		retVal = retVal && archive.BeginTag(tracingLevelTag);
+		retVal = retVal && archive.Process(m_tracingLevel);
+		retVal = retVal && archive.EndTag(tracingLevelTag);
+	}
+
 	return retVal;
 }
 
@@ -125,6 +157,7 @@ bool CAgentInfo::CopyFrom(const IChangeable &object, CompatibilityMode /*mode*/)
 		m_lastConnection = sourcePtr->m_lastConnection;
 		m_computerName = sourcePtr->m_computerName;
 		m_version = sourcePtr->m_version;
+		m_tracingLevel = sourcePtr->m_tracingLevel;
 
 		m_serviceCollection.ResetData();
 		m_serviceCollection.CopyFrom(sourcePtr->m_serviceCollection);
@@ -154,6 +187,7 @@ bool CAgentInfo::ResetData(CompatibilityMode /*mode*/)
 	m_lastConnection = QDateTime();
 	m_serviceCollection.ResetData();
 	m_computerName.clear();
+	m_tracingLevel = -1;
 
 	return true;
 }

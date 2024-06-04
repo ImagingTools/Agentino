@@ -424,7 +424,8 @@ void CServiceControllerComp::OnTimeout()
 			if (m_serviceCollectionCompPtr->GetObjectData(serviceId, serviceDataPtr)){
 				agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
 				if (serviceInfoPtr != nullptr){
-					// TODO
+					QByteArray servicePath = serviceInfoPtr->GetServicePath();
+
 				}
 			}
 		}

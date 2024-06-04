@@ -185,7 +185,11 @@ int CServiceInfo::GetTracingLevel() const
 
 void CServiceInfo::SetTracingLevel(int tracingLevel)
 {
-	m_tracingLevel = tracingLevel;
+	if (m_tracingLevel != tracingLevel){
+		istd::CChangeNotifier changeNotifier(this);
+
+		m_tracingLevel = tracingLevel;
+	}
 }
 
 

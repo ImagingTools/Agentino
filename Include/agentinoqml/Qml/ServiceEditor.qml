@@ -17,7 +17,6 @@ ViewBase {
     }
 
     onWidthChanged: {
-        console.log("onWidthChanged", width);
         if (width < flickableWidth + 50){
             flickable.width = width - 50;
         }
@@ -159,14 +158,6 @@ ViewBase {
         }
         else{
             serviceEditorContainer.model.SetData("StopScript", "");
-        }
-    }
-
-    MouseArea {
-        anchors.fill: background;
-
-        onClicked: {
-            serviceEditorContainer.forceActiveFocus();
         }
     }
 

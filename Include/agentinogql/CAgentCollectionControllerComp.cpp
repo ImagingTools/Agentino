@@ -247,6 +247,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 			dataModel->SetData("Name", name);
 			dataModel->SetData("Description", description);
 			dataModel->SetData("LastConnection", lastConnection.toString("dd.MM.yyyy"));
+			dataModel->SetData("TracingLevel", agentPtr->GetTracingLevel());
 		}
 	}
 
@@ -314,10 +315,15 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObject(
 			agentPtr->SetVersion(version);
 		}
 
+		if (itemModel.ContainsKey("TracingLevel")){
+			int tracingLevel = itemModel.GetData("TracingLevel").toInt();
+			agentPtr->SetTracingLevel(tracingLevel);
+		}
+
 		return agentInstancePtr.PopPtr();
 	}
 
-	errorMessage = QString("Can not create agent: %1").arg(QString(objectId));
+	errorMessage = QString("Can not create agent: '%1'").arg(QString(objectId));
 
 	return nullptr;
 }
@@ -388,6 +394,12 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtg
 	}
 
 	const QList<imtgql::CGqlObject> inputParams = gqlRequest.GetParams();
+	if (inputParams.size() == 0){
+		errorMessage = QString("Unable to update model. Error: GraphQL input params is invalid.");
+		SendErrorMessage(0, errorMessage);
+
+		return nullptr;
+	}
 
 	imtbase::CTreeItemModel* retVal = nullptr;
 	QByteArray objectId = GetObjectIdFromInputParams(inputParams);
@@ -404,7 +416,17 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtg
 
 			if (!itemData.isEmpty()){
 				imtbase::CTreeItemModel itemModel;
-				itemModel.CreateFromJson(itemData);
+				if (!itemModel.CreateFromJson(itemData)){
+					errorMessage = QString("Unable to create model from JSON. Error: invalid JSON: '%1'.").arg(itemData);
+					SendErrorMessage(0, errorMessage);
+
+					return nullptr;
+				}
+
+				if (itemModel.ContainsKey("TracingLevel")){
+					int tracingLevel = itemModel.GetData("TracingLevel").toInt();
+					agentInfoPtr->SetTracingLevel(tracingLevel);
+				}
 
 				if (itemModel.ContainsKey("Name")){
 					name = itemModel.GetData("Name").toString();
