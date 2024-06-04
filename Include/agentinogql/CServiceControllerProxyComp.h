@@ -5,7 +5,6 @@
 #include <imtclientgql/CGqlRemoteRepresentationControllerCompBase.h>
 
 // Agentino includes
-#include <agentinodata/IServiceInfo.h>
 #include <agentinodata/IServiceManager.h>
 #include <agentinodata/CServiceInfoRepresentationController.h>
 
@@ -26,8 +25,6 @@ public:
 protected:
 	// reimplemented (imtgql::CGqlRequestHandlerCompBase)
 	virtual imtbase::CTreeItemModel* CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
-	virtual agentinodata::IServiceInfo* GetServiceInfoFromRepresentationModel(const imtbase::CTreeItemModel& representationModel) const;
-	virtual imtbase::CTreeItemModel* GetRepresentationModelFromServiceInfo(const agentinodata::IServiceInfo& serviceInfo) const;
 
 protected:
 	I_REF(agentinodata::IServiceManager, m_serviceManagerCompPtr);

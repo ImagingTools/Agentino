@@ -1,10 +1,6 @@
 #include <agentinogql/CServiceControllerProxyComp.h>
 
 
-// ImtCore includes
-#include <imtservice/CUrlConnectionParam.h>
-#include <imtservice/CUrlConnectionLinkParam.h>
-
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/CServiceInfo.h>
@@ -19,6 +15,18 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 			QString& errorMessage) const
 {
 	istd::TDelPtr<imtbase::CTreeItemModel> resultModelPtr = BaseClass::CreateInternalResponse(gqlRequest, errorMessage);
+	if (resultModelPtr.IsValid()){
+		if (resultModelPtr->ContainsKey("errors")){
+			imtbase::CTreeItemModel* errorsModelPtr = resultModelPtr->GetTreeItemModel("errors");
+			if (errorsModelPtr != nullptr){
+				if (errorsModelPtr->ContainsKey("message")){
+					errorMessage = errorsModelPtr->GetData("message").toString();
+				}
+			}
+
+			return nullptr;
+		}
+	}
 
 	if (m_serviceManagerCompPtr.IsValid()){
 		const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParam("input");
@@ -39,7 +47,7 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 		bool ok = false;
 		imtbase::CTreeItemModel itemModel;
 		if (gqlRequest.GetCommandId() == "ServiceAdd"){
-			if (resultModelPtr != nullptr && resultModelPtr->ContainsKey("item")){
+			if (resultModelPtr.IsValid() && resultModelPtr->ContainsKey("item")){
 				imtbase::CTreeItemModel* dataModelPtr = resultModelPtr->GetTreeItemModel("item");
 				if (dataModelPtr != nullptr){
 					itemModel.Copy(dataModelPtr);
@@ -75,8 +83,6 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 			return nullptr;
 		}
 
-//		istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInfoPtr =
-//					dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(GetServiceInfoFromRepresentationModel(itemModel));
 		serviceInfoPtr->SetObjectUuid(objectId);
 
 		istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr = new imtbase::CTreeItemModel;
@@ -103,170 +109,6 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 	}
 
 	return resultModelPtr.PopPtr();
-}
-
-
-agentinodata::IServiceInfo* CServiceControllerProxyComp::GetServiceInfoFromRepresentationModel(
-			const imtbase::CTreeItemModel& representationModel) const
-{
-	istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInfoPtr;
-	serviceInfoPtr.SetPtr(new agentinodata::CIdentifiableServiceInfo);
-
-	QByteArray serviceId;
-	if (representationModel.ContainsKey("Id")){
-		serviceId = representationModel.GetData("Id").toByteArray();
-	}
-
-	QString serviceName;
-	if (representationModel.ContainsKey("Name")){
-		serviceName = representationModel.GetData("Name").toString();
-	}
-
-	QString serviceTypeName;
-	if (representationModel.ContainsKey("TypeName")){
-		serviceTypeName = representationModel.GetData("TypeName").toString();
-	}
-
-	if (representationModel.ContainsKey("Path")){
-		QByteArray path = representationModel.GetData("Path").toByteArray();
-		serviceInfoPtr->SetServicePath(path);
-	}
-
-	if (representationModel.ContainsKey("StartScript")){
-		QByteArray path = representationModel.GetData("StartScript").toByteArray();
-		serviceInfoPtr->SetStartScriptPath(path);
-	}
-
-	if (representationModel.ContainsKey("StopScript")){
-		QByteArray path = representationModel.GetData("StopScript").toByteArray();
-		serviceInfoPtr->SetStopScriptPath(path);
-	}
-
-	if (representationModel.ContainsKey("SettingsPath")){
-		QByteArray settingsPath = representationModel.GetData("SettingsPath").toByteArray();
-		serviceInfoPtr->SetServiceSettingsPath(settingsPath);
-	}
-
-	if (representationModel.ContainsKey("Arguments")){
-		QByteArray arguments = representationModel.GetData("Arguments").toByteArray();
-		serviceInfoPtr->SetServiceArguments(arguments.split(' '));
-	}
-
-	if (representationModel.ContainsKey("IsAutoStart")){
-		bool isAutoStart = representationModel.GetData("IsAutoStart").toBool();
-		serviceInfoPtr->SetIsAutoStart(isAutoStart);
-	}
-
-	if (representationModel.ContainsKey("TracingLevel")){
-		int tracingLevel = representationModel.GetData("TracingLevel").toInt();
-
-		serviceInfoPtr->SetTracingLevel(tracingLevel);
-	}
-
-	imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
-
-	if (representationModel.ContainsKey("InputConnections")){
-		imtbase::CTreeItemModel* inputConnectionsModelPtr = representationModel.GetTreeItemModel("InputConnections");
-		if (inputConnectionsModelPtr != nullptr){
-			for (int i = 0; i < inputConnectionsModelPtr->GetItemsCount(); i++){
-				QByteArray id = inputConnectionsModelPtr->GetData("Id", i).toByteArray();
-				QString name = inputConnectionsModelPtr->GetData("ConnectionName", i).toString();
-				QString usageId = inputConnectionsModelPtr->GetData("UsageId", i).toString();
-				QString serviceTypeName = inputConnectionsModelPtr->GetData("ServiceTypeName", i).toString();
-				QString description = inputConnectionsModelPtr->GetData("Description", i).toString();
-				QString host = inputConnectionsModelPtr->GetData("Host", i).toString();
-				int port = inputConnectionsModelPtr->GetData("Port", i).toInt();
-
-				QUrl connectionUrl;
-				connectionUrl.setHost(host);
-				connectionUrl.setPort(port);
-
-				serviceInfoPtr->SetServiceTypeName(serviceTypeName.toUtf8());
-
-				istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
-				urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam(
-												 serviceTypeName.toUtf8(),
-												 usageId.toUtf8(),
-												 imtservice::IServiceConnectionParam::CT_INPUT,
-												 connectionUrl)
-											 );
-
-				if (inputConnectionsModelPtr->ContainsKey("ExternPorts", i)){
-					imtbase::CTreeItemModel* externPortsModelPtr = inputConnectionsModelPtr->GetTreeItemModel("ExternPorts", i);
-					if (externPortsModelPtr != nullptr){
-						imtbase::CTreeItemModel* elementsModelPtr = externPortsModelPtr;
-						if (elementsModelPtr != nullptr){
-							for (int j = 0; j < elementsModelPtr->GetItemsCount(); j++){
-								QByteArray objectId = elementsModelPtr->GetData("Id", j).toByteArray();
-								QString objectName = elementsModelPtr->GetData("Name", j).toString();
-								QString externDescription = elementsModelPtr->GetData("Description", j).toString();
-								QString externHost = elementsModelPtr->GetData("Host", j).toString();
-								int externPort = elementsModelPtr->GetData("Port", j).toInt();
-
-								imtservice::IServiceConnectionParam::IncomingConnectionParam externConnection;
-
-								externConnection.id = objectId;
-								externConnection.name = objectName;
-								externConnection.description = externDescription;
-
-								QUrl url;
-								url.setPort(externPort);
-								url.setHost(externHost);
-
-								externConnection.url = url;
-
-								urlConnectionParamPtr->AddExternConnection(externConnection);
-							}
-						}
-					}
-				}
-
-				connectionCollectionPtr->InsertNewObject(
-							"ConnectionInfo",
-							name,
-							description,
-							urlConnectionParamPtr.PopPtr(),
-							id);
-			}
-		}
-	}
-
-	imtbase::IObjectCollection* dependantServiceConnectionCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
-
-	if (representationModel.ContainsKey("OutputConnections")){
-		imtbase::CTreeItemModel* outputConnectionsModelPtr = representationModel.GetTreeItemModel("OutputConnections");
-		if (outputConnectionsModelPtr != nullptr && dependantServiceConnectionCollectionPtr != nullptr){
-			for (int i = 0; i < outputConnectionsModelPtr->GetItemsCount(); i++){
-				QByteArray id = outputConnectionsModelPtr->GetData("Id", i).toByteArray();
-				QString usageId = outputConnectionsModelPtr->GetData("UsageId", i).toString();
-				QString name = outputConnectionsModelPtr->GetData("ConnectionName", i).toString();
-				QString description = outputConnectionsModelPtr->GetData("Description", i).toString();
-				QString serviceTypeName = outputConnectionsModelPtr->GetData("ServiceTypeName", i).toString();
-				QString dependantServiceConnectionId = outputConnectionsModelPtr->GetData("DependantConnectionId", i).toString();
-
-				istd::TDelPtr<imtservice::CUrlConnectionLinkParam> urlConnectionLinkParamPtr;
-				urlConnectionLinkParamPtr.SetPtr(new imtservice::CUrlConnectionLinkParam(
-													serviceTypeName.toUtf8(),
-													usageId.toUtf8(),
-													dependantServiceConnectionId.toUtf8()));
-
-				dependantServiceConnectionCollectionPtr->InsertNewObject(
-							"ConnectionLink",
-							name,
-							description,
-							urlConnectionLinkParamPtr.PopPtr(),
-							id);
-			}
-		}
-	}
-
-	return serviceInfoPtr.PopPtr();
-}
-
-
-imtbase::CTreeItemModel* CServiceControllerProxyComp::GetRepresentationModelFromServiceInfo(const agentinodata::IServiceInfo& /*serviceInfo*/) const
-{
-	return nullptr;
 }
 
 

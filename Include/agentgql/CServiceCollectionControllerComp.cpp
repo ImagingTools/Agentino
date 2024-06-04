@@ -490,7 +490,11 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 	istd::IChangeable* savedObject = BaseClass::CreateObject(gqlRequest, objectId, name, description, errorMessage);
 	agentinodata::CServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::CServiceInfo*>(savedObject);
 	if (serviceInfoPtr == nullptr){
-		SendErrorMessage(0, QString("Unable to create object"), "CServiceCollectionControllerComp");
+		if (errorMessage.isEmpty()){
+			errorMessage = QString("Unable to create object");
+		}
+
+		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 
 		return nullptr;
 	}
@@ -708,6 +712,13 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObject(
 
 		if (itemModel.ContainsKey("Path")){
 			QByteArray path = itemModel.GetData("Path").toByteArray();
+			QFile file(path);
+			if (!file.exists()){
+				errorMessage = QT_TR_NOOP(QString("Unable to save service. Error: file with path '%1' does not exist.").arg(path));
+
+				return nullptr;
+			}
+
 			serviceInfoPtr->SetServicePath(path);
 		}
 
