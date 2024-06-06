@@ -153,14 +153,7 @@ DocumentCollectionViewDelegate {
                         message = dataModelLocal.GetData("message");
                     }
 
-                    let type;
-                    if (dataModelLocal.ContainsKey("type")){
-                        type = dataModelLocal.GetData("type");
-                    }
-
-                    Events.sendEvent("SendError", {"Message": message, "ErrorType": type})
-
-                    console.log("SendError");
+                    ModalDialogManager.showWarningDialog(message)
 
                     return;
                 }
