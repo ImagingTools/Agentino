@@ -6,14 +6,6 @@ Item {
 
     anchors.fill: parent;
 
-    ModalDialogManager {
-        id: modalDialogManager;
-
-        z: 30;
-
-        anchors.fill: parent;
-    }
-
     Component {
         id: topRightPanelDecoratorComp;
         AgentTopRightPanelDecorator {}
@@ -23,8 +15,6 @@ Item {
         id: application;
 
         anchors.fill: parent;
-
-        systemStatus: "NO_ERROR";
 
         serverReady: true
 

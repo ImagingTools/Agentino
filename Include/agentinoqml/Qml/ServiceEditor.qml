@@ -647,7 +647,7 @@ ViewBase {
                                 if (inputConnTable.elements.ContainsKey("ExternPorts", content.tableCellDelegate.rowIndex)){
                                     let externPortsModel = inputConnTable.elements.GetData("ExternPorts", content.tableCellDelegate.rowIndex);
                                     if (externPortsModel){
-                                        modalDialogManager.openDialog(externPortsDialogComp, {"portsModel": externPortsModel.CopyMe()});
+                                        ModalDialogManager.openDialog(externPortsDialogComp, {"portsModel": externPortsModel.CopyMe()});
                                     }
                                 }
                             }

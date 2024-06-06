@@ -11,14 +11,6 @@ ApplicationMain{
     canRecoveryPassword: false;
     authorizationServerConnected: true;
 
-    ModalDialogManager {
-        id: modalDialogManager;
-
-        z: 30;
-
-        anchors.fill: parent;
-    }
-
     Component.onCompleted: {
         context.appName = "Agentino"
     }
