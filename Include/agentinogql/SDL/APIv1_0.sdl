@@ -1,0 +1,61 @@
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+type AgentListInputViewParams {
+	Count: Int
+	Offset: Int
+	FilterModel: String
+}
+
+input AgentListInput {
+	viewParams: AgentListInputViewParams
+}
+
+type AgentItem {
+	Id: ID!
+	Name: String!
+	Description: String
+	Added: String
+	ComputerName: String
+	Services: String
+	Status: String
+	LastConnection: String
+	Version: String
+}
+
+type AgentListPayload{
+	items: [AgentItem]!
+}
+
+type AgentData {
+	Id: ID!
+	Name: String!
+	Description: String
+	LastConnection: String
+	TracingLevel: Integer
+}
+
+type AgentDataPayload{
+	item: AgentData!
+}
+
+input IdInput {
+	Id: ID!
+}
+
+type UpdatedNotificationPayload{
+	updatedNotification: String!
+}
+
+
+type Query {
+	AgentsList (input: AgentListInput): AgentListPayload!
+	AgentItem (input: IdInput): AgentDataPayload!
+}
+
+type Mutation {
+	AgentUpdate (input: AgentData): UpdatedNotificationPayload!
+}
