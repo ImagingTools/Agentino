@@ -54,6 +54,9 @@ list(APPEND webdirs ${buildwebdir}/src/imtcontrols)
 list(APPEND webdirs ${AUX_INCLUDE_DIR}/agentinodata/Ddl/Qml/agentino)
 list(APPEND webdirs ${buildwebdir}/src/agentino)
 
+list(APPEND webdirs ${AUX_INCLUDE_DIR}/agentinogql/SDL/QML/agentinogqlSdl)
+list(APPEND webdirs ${buildwebdir}/src/agentinogqlSdl)
+
 # copy Translations from to
 list(APPEND webdirs ${PROJECT_SOURCE_DIR}/../../../Impl/AgentinoLoc/Translations)
 list(APPEND webdirs ${buildwebdir}/Resources/Translations)

@@ -5,6 +5,7 @@ import imtgui 1.0
 import imtcolgui 1.0
 import imtguigql 1.0
 import imtdocgui 1.0
+import agentinogqlSdl 1.0
 
 RemoteCollectionView {
     id: root;

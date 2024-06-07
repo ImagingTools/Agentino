@@ -20,6 +20,8 @@
 #include <agentinodata/CServiceStatusInfo.h>
 #include <agentinodata/CAgentStatusInfo.h>
 
+#include <GeneratedFiles/agentinogql/SDL/CPP/CAgentItemGqlRequest.h>
+
 
 namespace agentinogql
 {
@@ -230,28 +232,47 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 		return nullptr;
 	}
 
-	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
-	imtbase::CTreeItemModel* dataModel = new imtbase::CTreeItemModel();
+	sdl::CAgentItemGqlRequest agentItemGqlRequest(gqlRequest);
+	sdl::CAgentDataPayload agentDataPayload;
+	sdl::AgentItemRequestArguments agentItemRequestArguments = agentItemGqlRequest.GetRequestedArguments();
+	QByteArray agentId = agentItemRequestArguments.input.GetId();
 
-	QByteArray objectId = GetObjectIdFromInputParams(gqlRequest.GetParams());
+
+	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
+	imtbase::CTreeItemModel* dataModel = rootModelPtr->AddTreeModel("data");
 
 	imtbase::IObjectCollection::DataPtr dataPtr;
-	if (m_objectCollectionCompPtr->GetObjectData(objectId, dataPtr)){
+	if (m_objectCollectionCompPtr->GetObjectData(agentId, dataPtr)){
 		const agentinodata::CAgentInfo* agentPtr = dynamic_cast<const agentinodata::CAgentInfo*>(dataPtr.GetPtr());
 		if (agentPtr != nullptr){
-			QString name = m_objectCollectionCompPtr->GetElementInfo(objectId, imtbase::ICollectionInfo::EIT_NAME).toString();
-			QString description = m_objectCollectionCompPtr->GetElementInfo(objectId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
+			QString name = m_objectCollectionCompPtr->GetElementInfo(agentId, imtbase::ICollectionInfo::EIT_NAME).toString();
+			QString description = m_objectCollectionCompPtr->GetElementInfo(agentId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
 			QDateTime lastConnection = agentPtr->GetLastConnection();
 
-			dataModel->SetData("Id", objectId);
-			dataModel->SetData("Name", name);
-			dataModel->SetData("Description", description);
-			dataModel->SetData("LastConnection", lastConnection.toString("dd.MM.yyyy"));
-			dataModel->SetData("TracingLevel", agentPtr->GetTracingLevel());
+			sdl::CAgentData agentData;
+			agentData.SetId(agentId);
+			agentData.SetName(name);
+			agentData.SetDescription(description);
+			agentData.SetLastConnection(lastConnection.toString("dd.MM.yyyy"));
+			agentData.SetTracingLevel(agentPtr->GetTracingLevel());
+			agentDataPayload.SetItem(agentData);
+
+			// dataModel->SetData("Id", objectId);
+			// dataModel->SetData("Name", name);
+			// dataModel->SetData("Description", description);
+			// dataModel->SetData("LastConnection", lastConnection.toString("dd.MM.yyyy"));
+			// dataModel->SetData("TracingLevel", agentPtr->GetTracingLevel());
 		}
 	}
 
-	rootModelPtr->SetExternTreeModel("data", dataModel);
+;
+
+	if (!agentDataPayload.WriteToModel(*dataModel)){
+		errorMessage = QString("Unable to setup gql item. Unable to write model.");
+		SendCriticalMessage(0, errorMessage, "CSpotColorCollectionControllerComp");
+		Q_ASSERT(0);
+	}
+
 
 	return rootModelPtr.PopPtr();
 }

@@ -4,6 +4,7 @@ import imtcontrols 1.0
 import imtdocgui 1.0
 import imtguigql 1.0
 import imtgui 1.0
+import agentinogqlSdl 1.0
 
 SingleDocumentWorkspaceView {
     id: root;
@@ -45,7 +46,14 @@ SingleDocumentWorkspaceView {
     Component {
         id: agentDataControllerComp
 
-        GqlDocumentDataController {
+        GqlRequestDocumentDataController {
+            id: requestDocumentDataController
+            // payloadModel: AgentDataPayload {
+            //     onM_itemChanged: {
+            //         requestDocumentDataController.documentModel = m_item
+            //     }
+            // }
+
             gqlGetCommandId: "AgentItem";
             gqlUpdateCommandId: "AgentUpdate";
             gqlAddCommandId: "AgentAdd";

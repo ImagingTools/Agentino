@@ -2,6 +2,7 @@ import QtQuick 2.0
 import Acf 1.0
 import imtgui 1.0
 import imtcontrols 1.0
+import agentinogqlSdl 1.0
 
 ViewBase {
     id: serviceEditorContainer;
@@ -9,57 +10,62 @@ ViewBase {
     property int mainMargin: 0;
     property int panelWidth: 700;
 
+    property AgentData agentData: model
+
     function blockEditing(){
         descriptionInput.readOnly = true;
         nameInput.readOnly = true;
     }
 
     function updateGui(){
-        if (serviceEditorContainer.model.ContainsKey("Name")){
-            nameInput.text = serviceEditorContainer.model.GetData("Name");
-        }
-        else{
-            nameInput.text = "";
-        }
+        nameInput.text = agentData.m_Name
+        descriptionInput.text = agentData.m_Description
 
-        if (serviceEditorContainer.model.ContainsKey("Description")){
-            descriptionInput.text = serviceEditorContainer.model.GetData("Description");
-        }
-        else{
-            descriptionInput.text = "";
-        }
+        // if (serviceEditorContainer.model.ContainsKey("Name")){
+        //     nameInput.text = serviceEditorContainer.model.GetData("Name");
+        // }
+        // else{
+        //     nameInput.text = "";
+        // }
 
-        if (serviceEditorContainer.model.ContainsKey("TracingLevel")){
-            let tracingLevel = serviceEditorContainer.model.GetData("TracingLevel")
-            if (tracingLevel > -1){
-                switchVerboseMessage.setChecked(true);
-            }
-            else{
-                switchVerboseMessage.setChecked(false);
-            }
+        // if (serviceEditorContainer.model.ContainsKey("Description")){
+        //     descriptionInput.text = serviceEditorContainer.model.GetData("Description");
+        // }
+        // else{
+        //     descriptionInput.text = "";
+        // }
 
-            tracingLevelInput.currentIndex = tracingLevel
-        }
-        else{
-            switchVerboseMessage.setChecked(false)
-        }
+        // if (serviceEditorContainer.model.ContainsKey("TracingLevel")){
+        //     let tracingLevel = serviceEditorContainer.model.GetData("TracingLevel")
+        //     if (tracingLevel > -1){
+        //         switchVerboseMessage.setChecked(true);
+        //     }
+        //     else{
+        //         switchVerboseMessage.setChecked(false);
+        //     }
+
+        //     tracingLevelInput.currentIndex = tracingLevel
+        // }
+        // else{
+        //     switchVerboseMessage.setChecked(false)
+        // }
     }
 
-    function updateModel(){
-        serviceEditorContainer.model.SetData("Name", nameInput.text);
-        serviceEditorContainer.model.SetData("Description", descriptionInput.text);
+    // function updateModel(){
+    //     serviceEditorContainer.model.SetData("Name", nameInput.text);
+    //     serviceEditorContainer.model.SetData("Description", descriptionInput.text);
 
-        if (switchVerboseMessage.checked){
-            if (tracingLevelInput.currentIndex == -1){
-                tracingLevelInput.currentIndex = 0;
-            }
+    //     if (switchVerboseMessage.checked){
+    //         if (tracingLevelInput.currentIndex == -1){
+    //             tracingLevelInput.currentIndex = 0;
+    //         }
 
-            serviceEditorContainer.model.SetData("TracingLevel", tracingLevelInput.currentIndex);
-        }
-        else{
-            serviceEditorContainer.model.SetData("TracingLevel", -1);
-        }
-    }
+    //         serviceEditorContainer.model.SetData("TracingLevel", tracingLevelInput.currentIndex);
+    //     }
+    //     else{
+    //         serviceEditorContainer.model.SetData("TracingLevel", -1);
+    //     }
+    // }
 
     Rectangle {
         id: background;
@@ -107,7 +113,7 @@ ViewBase {
                     placeHolderText: qsTr("Enter the name");
 
                     onEditingFinished: {
-                        serviceEditorContainer.doUpdateModel();
+                        serviceEditorContainer.agentData.m_Name = text
                     }
 
                     KeyNavigation.tab: descriptionInput;
@@ -134,7 +140,7 @@ ViewBase {
                     placeHolderText: qsTr("Enter the description");
 
                     onEditingFinished: {
-                        serviceEditorContainer.doUpdateModel();
+                        serviceEditorContainer.agentData.m_Description = text
                     }
 
                     KeyNavigation.tab: nameInput;
