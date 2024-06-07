@@ -10,7 +10,17 @@ ViewBase {
     property int mainMargin: 0;
     property int panelWidth: 700;
 
-    property AgentData agentData: model
+    property AgentData agentData: model;
+
+    onAgentDataChanged: {
+        console.log("onAgentDataChanged", agentData);
+    }
+
+//    property AgentData agentData: AgentData {
+//        onDataChanged: {
+//            console.log("AgentData onDataChanged");
+//        }
+//    }
 
     function updateGui(){
         nameInput.text = agentData.m_Name

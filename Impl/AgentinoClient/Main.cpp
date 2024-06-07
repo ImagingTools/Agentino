@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	Q_INIT_RESOURCE(imtguiTheme);
 	Q_INIT_RESOURCE(agentinoqml);
 
-//	Q_INIT_RESOURCE(agentinogqlSdl);
+	Q_INIT_RESOURCE(agentinogqlSdl);
 
 	Q_INIT_RESOURCE(imtlicguiqml);
 

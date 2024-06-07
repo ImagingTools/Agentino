@@ -46,12 +46,6 @@ SingleDocumentWorkspaceView {
     Component {
         id: agentDataControllerComp
 
-//        DocumentDataController {
-//            Component.onCompleted: {
-//                console.log("DocumentDataController onCompleted");
-//            }
-//        }
-
         GqlRequestDocumentDataController {
             id: requestDocumentDataController
 
@@ -61,9 +55,12 @@ SingleDocumentWorkspaceView {
 
              payloadModel: AgentDataPayload {
                  Component.onCompleted: {
-                     console.log("AgentDataPayload onCompleted");
+                     console.log("AgentDataPayload onCompleted", this);
                  }
                  onM_itemChanged: {
+                     console.log("AgentDataPayload onM_itemChanged", m_item);
+
+                     m_item.connectProperties();
                      requestDocumentDataController.documentModel = m_item
                  }
              }
