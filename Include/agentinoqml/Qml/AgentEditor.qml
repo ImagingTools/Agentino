@@ -12,43 +12,9 @@ ViewBase {
 
     property AgentData agentData: model
 
-    function blockEditing(){
-        descriptionInput.readOnly = true;
-        nameInput.readOnly = true;
-    }
-
     function updateGui(){
         nameInput.text = agentData.m_Name
         descriptionInput.text = agentData.m_Description
-
-        // if (serviceEditorContainer.model.ContainsKey("Name")){
-        //     nameInput.text = serviceEditorContainer.model.GetData("Name");
-        // }
-        // else{
-        //     nameInput.text = "";
-        // }
-
-        // if (serviceEditorContainer.model.ContainsKey("Description")){
-        //     descriptionInput.text = serviceEditorContainer.model.GetData("Description");
-        // }
-        // else{
-        //     descriptionInput.text = "";
-        // }
-
-        // if (serviceEditorContainer.model.ContainsKey("TracingLevel")){
-        //     let tracingLevel = serviceEditorContainer.model.GetData("TracingLevel")
-        //     if (tracingLevel > -1){
-        //         switchVerboseMessage.setChecked(true);
-        //     }
-        //     else{
-        //         switchVerboseMessage.setChecked(false);
-        //     }
-
-        //     tracingLevelInput.currentIndex = tracingLevel
-        // }
-        // else{
-        //     switchVerboseMessage.setChecked(false)
-        // }
     }
 
     // function updateModel(){
@@ -140,6 +106,7 @@ ViewBase {
                     placeHolderText: qsTr("Enter the description");
 
                     onEditingFinished: {
+                        console.log("descriptionInput onEditingFinished");
                         serviceEditorContainer.agentData.m_Description = text
                     }
 

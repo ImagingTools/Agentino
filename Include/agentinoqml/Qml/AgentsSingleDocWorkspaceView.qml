@@ -46,13 +46,27 @@ SingleDocumentWorkspaceView {
     Component {
         id: agentDataControllerComp
 
+//        DocumentDataController {
+//            Component.onCompleted: {
+//                console.log("DocumentDataController onCompleted");
+//            }
+//        }
+
         GqlRequestDocumentDataController {
             id: requestDocumentDataController
-            // payloadModel: AgentDataPayload {
-            //     onM_itemChanged: {
-            //         requestDocumentDataController.documentModel = m_item
-            //     }
-            // }
+
+            Component.onCompleted: {
+                console.log("GqlRequestDocumentDataController onCompleted");
+            }
+
+             payloadModel: AgentDataPayload {
+                 Component.onCompleted: {
+                     console.log("AgentDataPayload onCompleted");
+                 }
+                 onM_itemChanged: {
+                     requestDocumentDataController.documentModel = m_item
+                 }
+             }
 
             gqlGetCommandId: "AgentItem";
             gqlUpdateCommandId: "AgentUpdate";
