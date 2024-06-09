@@ -12,19 +12,18 @@ ViewBase {
 
     property AgentData agentData: model;
 
-    onAgentDataChanged: {
-        console.log("onAgentDataChanged", agentData);
-    }
-
-//    property AgentData agentData: AgentData {
-//        onDataChanged: {
-//            console.log("AgentData onDataChanged");
-//        }
-//    }
-
     function updateGui(){
         nameInput.text = agentData.m_Name
         descriptionInput.text = agentData.m_Description
+
+        if (agentData.m_TracingLevel > -1){
+            switchVerboseMessage.checked = true;
+            tracingLevelInput.currentIndex = agentData.m_TracingLevel;
+        }
+        else{
+            switchVerboseMessage.checked = false;
+            tracingLevelInput.currentIndex = -1;
+        }
     }
 
     // function updateModel(){
@@ -116,7 +115,6 @@ ViewBase {
                     placeHolderText: qsTr("Enter the description");
 
                     onEditingFinished: {
-                        console.log("descriptionInput onEditingFinished");
                         serviceEditorContainer.agentData.m_Description = text
                     }
 
@@ -147,7 +145,14 @@ ViewBase {
 
                         backgroundColor: "#D4D4D4"
                         onCheckedChanged: {
-                            serviceEditorContainer.doUpdateModel();
+                            if (checked){
+                                serviceEditorContainer.agentData.m_TracingLevel = 0;
+                            }
+                            else{
+                                serviceEditorContainer.agentData.m_TracingLevel = -1;
+                            }
+
+//                            serviceEditorContainer.doUpdateModel();
                         }
                     }
 
@@ -197,7 +202,11 @@ ViewBase {
                             model.SetData("Name", "5", index)
                         }
                         onCurrentIndexChanged: {
-                            serviceEditorContainer.doUpdateModel();
+                            if (currentIndex >= 0){
+                                serviceEditorContainer.agentData.m_TracingLevel = currentIndex;
+                            }
+
+//                            serviceEditorContainer.doUpdateModel();
                         }
                     }
                 }
