@@ -98,7 +98,7 @@ DocumentCollectionViewDelegate {
 
         var gqlData = query.GetQuery();
         console.log("ServiceCollectionView setServiceCommand query ", gqlData);
-        serviceGqlModel.SetGqlQuery(gqlData);
+        serviceGqlModel.setGqlQuery(gqlData);
     }
 
     function setupContextMenu(){

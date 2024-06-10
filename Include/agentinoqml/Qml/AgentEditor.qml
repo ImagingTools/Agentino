@@ -10,7 +10,7 @@ ViewBase {
     property int mainMargin: 0;
     property int panelWidth: 700;
 
-    property AgentData agentData: model;
+    property AgentData agentData: model ? model : null;
 
     function updateGui(){
         nameInput.text = agentData.m_name

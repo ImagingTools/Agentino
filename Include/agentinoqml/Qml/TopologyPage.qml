@@ -366,7 +366,7 @@ ViewBase {
             query.AddField(queryFields);
 
             var gqlData = query.GetQuery();
-            this.SetGqlQuery(gqlData);
+            this.setGqlQuery(gqlData);
         }
 
         onStateChanged: {
@@ -398,7 +398,7 @@ ViewBase {
             var gqlData = query.GetQuery();
 
             console.log("topologyPage query ", gqlData);
-            this.SetGqlQuery(gqlData);
+            this.setGqlQuery(gqlData);
         }
 
         onStateChanged: {
