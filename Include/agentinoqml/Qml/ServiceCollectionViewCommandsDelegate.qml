@@ -28,7 +28,7 @@ DocumentCollectionViewDelegate {
                 if (isEnabled){
                     let elements = container.collectionView.table.elements;
 
-                    let status = elements.GetData("Status", selectedItems[0]);
+                    let status = elements.getData("Status", selectedItems[0]);
 
                     commandsController.setCommandIsEnabled("Start", String(status) === ServiceStatus.s_NotRunning);
                     commandsController.setCommandIsEnabled("Stop", String(status) === ServiceStatus.s_Running);
@@ -58,7 +58,7 @@ DocumentCollectionViewDelegate {
         let indexes = container.collectionView.table.getSelectedIndexes();
         if (indexes.length > 0){
             let index = indexes[0];
-            let serviceId = elements.GetData("Id", index)
+            let serviceId = elements.getData("Id", index)
 
             setServiceCommand("Start", serviceId);
         }
@@ -69,7 +69,7 @@ DocumentCollectionViewDelegate {
         let indexes = container.collectionView.table.getSelectedIndexes();
         if (indexes.length > 0){
             let index = indexes[0];
-            let serviceId = elements.GetData("Id", index)
+            let serviceId = elements.getData("Id", index)
 
             setServiceCommand("Stop", serviceId);
         }
@@ -104,28 +104,28 @@ DocumentCollectionViewDelegate {
     function setupContextMenu(){
         let commandsController = collectionView.commandsController;
         if (commandsController){
-            container.contextMenuModel.Clear();
+            container.contextMenuModel.clear();
 
             let canEdit = commandsController.commandExists("Edit");
             let canRemove = commandsController.commandExists("Remove");
 
             if (canEdit){
-                let index = container.contextMenuModel.InsertNewItem();
+                let index = container.contextMenuModel.insertNewItem();
 
-                container.contextMenuModel.SetData("Id", "Edit", index);
-                container.contextMenuModel.SetData("Name", qsTr("Edit"), index);
-                container.contextMenuModel.SetData("Icon", "Icons/Edit", index);
+                container.contextMenuModel.setData("Id", "Edit", index);
+                container.contextMenuModel.setData("Name", qsTr("Edit"), index);
+                container.contextMenuModel.setData("Icon", "Icons/Edit", index);
             }
 
             if (canRemove){
-                let index = container.contextMenuModel.InsertNewItem();
+                let index = container.contextMenuModel.insertNewItem();
 
-                container.contextMenuModel.SetData("Id", "Remove", index);
-                container.contextMenuModel.SetData("Name", qsTr("Remove"), index);
-                container.contextMenuModel.SetData("Icon", "Icons/Delete", index);
+                container.contextMenuModel.setData("Id", "Remove", index);
+                container.contextMenuModel.setData("Name", qsTr("Remove"), index);
+                container.contextMenuModel.setData("Icon", "Icons/Delete", index);
             }
 
-            container.contextMenuModel.Refresh();
+            container.contextMenuModel.refresh();
         }
     }
 
@@ -135,22 +135,22 @@ DocumentCollectionViewDelegate {
             console.log("State:", this.state);
             if (this.state === "Ready"){
 
-                console.log("servicesController: ", this.ToJson());
+                console.log("servicesController: ", this.toJson());
                 var dataModelLocal;
 
-                if (this.ContainsKey("errors")){
-                    dataModelLocal = this.GetData("errors");
+                if (this.containsKey("errors")){
+                    dataModelLocal = this.getData("errors");
 
-                    if (dataModelLocal.ContainsKey("ServiceStart")){
-                        dataModelLocal = dataModelLocal.GetData("ServiceStart");
+                    if (dataModelLocal.containsKey("ServiceStart")){
+                        dataModelLocal = dataModelLocal.getData("ServiceStart");
                     }
-                    else if (dataModelLocal.ContainsKey("ServiceStop")){
-                        dataModelLocal = dataModelLocal.GetData("ServiceStop");
+                    else if (dataModelLocal.containsKey("ServiceStop")){
+                        dataModelLocal = dataModelLocal.getData("ServiceStop");
                     }
 
                     let message = ""
-                    if (dataModelLocal.ContainsKey("message")){
-                        message = dataModelLocal.GetData("message");
+                    if (dataModelLocal.containsKey("message")){
+                        message = dataModelLocal.getData("message");
                     }
 
                     ModalDialogManager.showWarningDialog(message)
@@ -158,7 +158,7 @@ DocumentCollectionViewDelegate {
                     return;
                 }
 
-                dataModelLocal = this.GetData("data");
+                dataModelLocal = this.getData("data");
 
                 if(!dataModelLocal)
                     return;

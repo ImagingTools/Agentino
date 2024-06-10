@@ -44,17 +44,17 @@ QtObject {
             if (this.state === "Ready") {
                 var dataModelLocal;
 
-                if (root.serviceLogGqlModel.ContainsKey("errors")){
-                    dataModelLocal = root.applicationInfoQuery.GetData("errors");
+                if (root.serviceLogGqlModel.containsKey("errors")){
+                    dataModelLocal = root.applicationInfoQuery.getData("errors");
 
                     return;
                 }
 
-                if (root.serviceLogGqlModel.ContainsKey("data")){
-                    dataModelLocal = root.serviceLogGqlModel.GetData("data");
+                if (root.serviceLogGqlModel.containsKey("data")){
+                    dataModelLocal = root.serviceLogGqlModel.getData("data");
 
-                    if (dataModelLocal.ContainsKey("GetServiceLog")){
-                        dataModelLocal = dataModelLocal.GetData("GetServiceLog");
+                    if (dataModelLocal.containsKey("GetServiceLog")){
+                        dataModelLocal = dataModelLocal.getData("GetServiceLog");
 
                         root.serviceLogModel = dataModelLocal;
                     }

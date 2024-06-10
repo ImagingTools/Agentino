@@ -30,7 +30,7 @@ RemoteCollectionView {
     }
 
     onVisibleChanged: {
-        if (visible && table.elements.GetItemsCount() !== 0){
+        if (visible && table.elements.getItemsCount() !== 0){
             root.doUpdateGui();
         }
     }
@@ -54,7 +54,7 @@ RemoteCollectionView {
     }
 
     onHeadersChanged: {
-        if (root.table.headers.GetItemsCount() > 0){
+        if (root.table.headers.getItemsCount() > 0){
             let orderIndex = root.table.getHeaderIndex("StatusName");
             root.table.setColumnContentComponent(orderIndex, stateColumnContentComp);
             let nameIndex = root.table.getHeaderIndex("Name");
@@ -98,7 +98,7 @@ RemoteCollectionView {
         if (selection.length > 0){
             let index = selection[0];
 
-            let serviceId = root.table.elements.GetData("Id", index);
+            let serviceId = root.table.elements.getData("Id", index);
         }
     }
 
@@ -170,7 +170,7 @@ RemoteCollectionView {
             icon.width: icon.visible ? 9 : 0;
             onRowIndexChanged: {
                 if (rowIndex >= 0){
-                    let status = root.table.elements.GetData("Status", rowIndex);
+                    let status = root.table.elements.getData("Status", rowIndex);
                     console.log("status" ,status);
 
                     if (status === ServiceStatus.s_Running){
@@ -198,7 +198,7 @@ RemoteCollectionView {
 
             ToolButton {
                 anchors.fill: cellDelegate.icon
-                tooltipText: width > 0 ? rowDelegate.tableItem.elements.GetData("DependantStatusInfo", rowIndex) : ""
+                tooltipText: width > 0 ? cellDelegate.rowDelegate.tableItem.elements.getData("DependantStatusInfo", cellDelegate.rowIndex) : ""
                 decorator: Component {
                     ToolButtonDecorator{
                         color: "transparent"
@@ -208,8 +208,8 @@ RemoteCollectionView {
 
             onRowIndexChanged: {
                 if (rowIndex >= 0){
-                    let status = root.table.elements.GetData("Status", rowIndex);
-                    let dependencyStatus = rowDelegate.tableItem.elements.GetData("DependencyStatus", rowIndex);
+                    let status = root.table.elements.getData("Status", rowIndex);
+                    let dependencyStatus = cellDelegate.rowDelegate.tableItem.elements.getData("DependencyStatus", rowIndex);
                     if (status !== ServiceStatus.s_Running){
                         icon.visible =false;
                     }
@@ -244,15 +244,15 @@ RemoteCollectionView {
 
         onStateChanged: {
             if (state === "Ready"){
-                console.log("OnServiceStatusChanged Ready", subscriptionClient.ToJson());
-                if (subscriptionClient.ContainsKey("data")){
+                console.log("OnServiceStatusChanged Ready", subscriptionClient.toJson());
+                if (subscriptionClient.containsKey("data")){
 
-                    let dataModel = subscriptionClient.GetData("data")
-                    if (dataModel.ContainsKey("OnServiceStatusChanged")){
-                        dataModel = dataModel.GetData("OnServiceStatusChanged")
+                    let dataModel = subscriptionClient.getData("data")
+                    if (dataModel.containsKey("OnServiceStatusChanged")){
+                        dataModel = dataModel.getData("OnServiceStatusChanged")
 
-                        let serviceId = dataModel.GetData("serviceId")
-                        let serviceStatus = dataModel.GetData("serviceStatus")
+                        let serviceId = dataModel.getData("serviceId")
+                        let serviceStatus = dataModel.getData("serviceStatus")
 
                         let elementsModel = root.table.elements;
                     }

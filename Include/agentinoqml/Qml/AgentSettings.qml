@@ -65,8 +65,8 @@ ViewBase {
     }
 
     function updateGui(){
-        if (agentSettingsContainer.model.ContainsKey("Url")){
-            agentinoUrlInput.text = agentSettingsContainer.model.GetData("Url");
+        if (agentSettingsContainer.model.containsKey("Url")){
+            agentinoUrlInput.text = agentSettingsContainer.model.getData("Url");
         }
         else{
             agentinoUrlInput.text = "";
@@ -74,7 +74,7 @@ ViewBase {
     }
 
     function updateModel(){
-        agentSettingsContainer.model.SetData("Url", agentinoUrlInput.text);
+        agentSettingsContainer.model.setData("Url", agentinoUrlInput.text);
     }
 
     Rectangle {
@@ -230,14 +230,14 @@ ViewBase {
 
         onStateChanged: {
             if (state === "Ready"){
-                console.log("OnAgentConnectionChanged Ready", subscriptionClient.ToJson());
-                if (subscriptionClient.ContainsKey("data")){
-                    let dataModel = subscriptionClient.GetData("data");
-                    if (dataModel.ContainsKey("OnAgentConnectionChanged")){
-                        dataModel = dataModel.GetData("OnAgentConnectionChanged");
+                console.log("OnAgentConnectionChanged Ready", subscriptionClient.toJson());
+                if (subscriptionClient.containsKey("data")){
+                    let dataModel = subscriptionClient.getData("data");
+                    if (dataModel.containsKey("OnAgentConnectionChanged")){
+                        dataModel = dataModel.getData("OnAgentConnectionChanged");
 
-                        if (dataModel.ContainsKey("status")){
-                            let status = dataModel.GetData("status");
+                        if (dataModel.containsKey("status")){
+                            let status = dataModel.getData("status");
                             agentSettingsContainer.agentStatus = status;
                         }
                     }
@@ -253,7 +253,7 @@ ViewBase {
             var query = Gql.GqlRequest("mutation", "SetAgentSettings");
 
             var inputParams = Gql.GqlObject("input");
-            inputParams.InsertField ("Item", agentSettingsContainer.model.ToJson());
+            inputParams.InsertField ("Item", agentSettingsContainer.model.toJson());
             query.AddParam(inputParams);
 
             var queryFields = Gql.GqlObject("updatedNotification");
@@ -267,11 +267,11 @@ ViewBase {
         onStateChanged: {
             console.log("State:", this.state);
             if (this.state === "Ready"){
-                if (saveModel.ContainsKey("data")){
-                    let dataModelLocal = saveModel.GetData("data");
-                    if (dataModelLocal.ContainsKey("SetAgentSettings")){
-                        dataModelLocal = dataModelLocal.GetData("SetAgentSettings");
-                        if (dataModelLocal.ContainsKey("updatedNotification")){
+                if (saveModel.containsKey("data")){
+                    let dataModelLocal = saveModel.getData("data");
+                    if (dataModelLocal.containsKey("SetAgentSettings")){
+                        dataModelLocal = dataModelLocal.getData("SetAgentSettings");
+                        if (dataModelLocal.containsKey("updatedNotification")){
 //                            commandsRepresentationProvider.setCommandIsEnabled("Save", false)
                         }
                     }
@@ -295,17 +295,17 @@ ViewBase {
 
         onStateChanged: {
             if (this.state === "Ready"){
-                console.log("GetAgentSettings Ready:", this.ToJson());
+                console.log("GetAgentSettings Ready:", this.toJson());
 
                 var dataModelLocal;
-                if (this.ContainsKey("errors")){
+                if (this.containsKey("errors")){
                     return;
                 }
 
-                if (this.ContainsKey("data")){
-                    dataModelLocal = this.GetData("data");
-                    if (dataModelLocal.ContainsKey("GetAgentSettings")){
-                        dataModelLocal = dataModelLocal.GetData("GetAgentSettings");
+                if (this.containsKey("data")){
+                    dataModelLocal = this.getData("data");
+                    if (dataModelLocal.containsKey("GetAgentSettings")){
+                        dataModelLocal = dataModelLocal.getData("GetAgentSettings");
 
                         agentSettingsContainer.model = dataModelLocal;
 

@@ -54,17 +54,17 @@ Dialog {
 
             property TreeItemModel headersModel: TreeItemModel {
                 Component.onCompleted: {
-                    let index = dialogBody.headersModel.InsertNewItem();
-                    dialogBody.headersModel.SetData("Id", "Host", index);
-                    dialogBody.headersModel.SetData("Name", qsTr("Host"), index);
+                    let index = dialogBody.headersModel.insertNewItem();
+                    dialogBody.headersModel.setData("Id", "Host", index);
+                    dialogBody.headersModel.setData("Name", qsTr("Host"), index);
 
-                    index = dialogBody.headersModel.InsertNewItem();
-                    dialogBody.headersModel.SetData("Id", "Port", index);
-                    dialogBody.headersModel.SetData("Name", qsTr("Port"), index);
+                    index = dialogBody.headersModel.insertNewItem();
+                    dialogBody.headersModel.setData("Id", "Port", index);
+                    dialogBody.headersModel.setData("Name", qsTr("Port"), index);
 
-                    index = dialogBody.headersModel.InsertNewItem();
-                    dialogBody.headersModel.SetData("Id", "Description", index);
-                    dialogBody.headersModel.SetData("Name", qsTr("Description"), index);
+                    index = dialogBody.headersModel.insertNewItem();
+                    dialogBody.headersModel.setData("Id", "Description", index);
+                    dialogBody.headersModel.setData("Name", qsTr("Description"), index);
 
                     tableTreeView.headers = dialogBody.headersModel;
                 }
@@ -85,21 +85,21 @@ Dialog {
                     id: commandsModel;
 
                     Component.onCompleted: {
-                        let index = commandsModel.InsertNewItem();
+                        let index = commandsModel.insertNewItem();
 
-                        commandsModel.SetData("Id", "Add", index);
-                        commandsModel.SetData("Name", "Add", index);
-                        commandsModel.SetData("Icon", "Icons/Add", index);
-                        commandsModel.SetData("IsEnabled", true, index);
-                        commandsModel.SetData("Visible", true, index);
+                        commandsModel.setData("Id", "Add", index);
+                        commandsModel.setData("Name", "Add", index);
+                        commandsModel.setData("Icon", "Icons/Add", index);
+                        commandsModel.setData("IsEnabled", true, index);
+                        commandsModel.setData("Visible", true, index);
 
-                        index = commandsModel.InsertNewItem();
+                        index = commandsModel.insertNewItem();
 
-                        commandsModel.SetData("Id", "Remove", index);
-                        commandsModel.SetData("Name", "Remove", index);
-                        commandsModel.SetData("Icon", "Icons/Delete", index);
-                        commandsModel.SetData("IsEnabled", false, index);
-                        commandsModel.SetData("Visible", true, index);
+                        commandsModel.setData("Id", "Remove", index);
+                        commandsModel.setData("Name", "Remove", index);
+                        commandsModel.setData("Icon", "Icons/Delete", index);
+                        commandsModel.setData("IsEnabled", false, index);
+                        commandsModel.setData("Visible", true, index);
 
                         commandsDecorator.commandModel = commandsModel;
                     }
@@ -113,20 +113,20 @@ Dialog {
 
                     onCommandActivated: {
                         if (commandId == "Add"){
-                            let index = portsDialog.portsModel.InsertNewItem();
+                            let index = portsDialog.portsModel.insertNewItem();
 
-                            portsDialog.portsModel.SetData("Id", UuidGenerator.generateUUID(), index);
-                            portsDialog.portsModel.SetData("Name", "", index);
-                            portsDialog.portsModel.SetData("Host", "localhost", index);
-                            portsDialog.portsModel.SetData("Port", "80", index);
-                            portsDialog.portsModel.SetData("Description", "", index);
+                            portsDialog.portsModel.setData("Id", UuidGenerator.generateUUID(), index);
+                            portsDialog.portsModel.setData("Name", "", index);
+                            portsDialog.portsModel.setData("Host", "localhost", index);
+                            portsDialog.portsModel.setData("Port", "80", index);
+                            portsDialog.portsModel.setData("Description", "", index);
                         }
                         else if (commandId == "Remove"){
                             let indexes = tableTreeView.getSelectedIndexes();
                             if (indexes.length > 0){
                                 let index = indexes[0];
 
-                                portsDialog.portsModel.RemoveItem(index)
+                                portsDialog.portsModel.removeItem(index)
 
                                 tableTreeView.resetSelection();
                             }

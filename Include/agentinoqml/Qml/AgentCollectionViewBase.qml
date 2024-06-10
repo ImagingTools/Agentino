@@ -32,7 +32,7 @@ RemoteCollectionView {
     }
 
     onHeadersChanged: {
-        if (root.table.headers.GetItemsCount() > 0){
+        if (root.table.headers.getItemsCount() > 0){
             let orderIndex = root.table.getHeaderIndex("Status");
             root.table.setColumnContentComponent(orderIndex, stateColumnContentComp);
         }
@@ -120,7 +120,7 @@ RemoteCollectionView {
 
             onRowIndexChanged: {
                 if (rowIndex >= 0){
-                    let status = root.table.elements.GetData("Status", rowIndex);
+                    let status = root.table.elements.getData("Status", rowIndex);
 
                     if (status === "Connected"){
                         image.source = "../../../../" + Style.getIconPath("Icons/Running", Icon.State.On, Icon.Mode.Normal);
@@ -158,7 +158,7 @@ RemoteCollectionView {
             console.log("OnAgentStatusChanged", state);
 
             if (state === "Ready"){
-                if (subscriptionClient.ContainsKey("data")){
+                if (subscriptionClient.containsKey("data")){
                     root.doUpdateGui();
                 }
             }

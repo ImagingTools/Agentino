@@ -57,10 +57,14 @@ SingleDocumentWorkspaceView {
                  Component.onCompleted: {
                      console.log("AgentDataPayload onCompleted", this);
                  }
+
+                 onDataChanged: {
+                     console.log("AgentDataPayload onDataChanged", name, sender)
+                 }
+
                  onM_itemChanged: {
                      console.log("AgentDataPayload onM_itemChanged", m_item);
-
-                     m_item.connectProperties();
+                     m_item.m_description = "fdfsdf";
                      requestDocumentDataController.documentModel = m_item
                  }
              }

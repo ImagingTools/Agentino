@@ -13,12 +13,12 @@ ViewBase {
     property AgentData agentData: model;
 
     function updateGui(){
-        nameInput.text = agentData.m_Name
-        descriptionInput.text = agentData.m_Description
+        nameInput.text = agentData.m_name
+        descriptionInput.text = agentData.m_description
 
-        if (agentData.m_TracingLevel > -1){
+        if (agentData.m_tracingLevel > -1){
             switchVerboseMessage.checked = true;
-            tracingLevelInput.currentIndex = agentData.m_TracingLevel;
+            tracingLevelInput.currentIndex = agentData.m_tracingLevel;
         }
         else{
             switchVerboseMessage.checked = false;
@@ -26,21 +26,22 @@ ViewBase {
         }
     }
 
-    // function updateModel(){
-    //     serviceEditorContainer.model.SetData("Name", nameInput.text);
-    //     serviceEditorContainer.model.SetData("Description", descriptionInput.text);
+     function updateModel(){
+         agentData.m_name = nameInput.text;
+         agentData.m_description = descriptionInput.text;
 
-    //     if (switchVerboseMessage.checked){
-    //         if (tracingLevelInput.currentIndex == -1){
-    //             tracingLevelInput.currentIndex = 0;
-    //         }
-
-    //         serviceEditorContainer.model.SetData("TracingLevel", tracingLevelInput.currentIndex);
-    //     }
-    //     else{
-    //         serviceEditorContainer.model.SetData("TracingLevel", -1);
-    //     }
-    // }
+         if (switchVerboseMessage.checked){
+             if (tracingLevelInput.currentIndex < 0){
+                 agentData.m_tracingLevel = 0;
+             }
+             else{
+                 agentData.m_tracingLevel = tracingLevelInput.currentIndex;
+             }
+         }
+        else{
+             agentData.m_tracingLevel = -1;
+         }
+     }
 
     Rectangle {
         id: background;
@@ -88,7 +89,7 @@ ViewBase {
                     placeHolderText: qsTr("Enter the name");
 
                     onEditingFinished: {
-                        serviceEditorContainer.agentData.m_Name = text
+                        serviceEditorContainer.doUpdateModel();
                     }
 
                     KeyNavigation.tab: descriptionInput;
@@ -115,7 +116,7 @@ ViewBase {
                     placeHolderText: qsTr("Enter the description");
 
                     onEditingFinished: {
-                        serviceEditorContainer.agentData.m_Description = text
+                        serviceEditorContainer.doUpdateModel();
                     }
 
                     KeyNavigation.tab: nameInput;
@@ -145,14 +146,7 @@ ViewBase {
 
                         backgroundColor: "#D4D4D4"
                         onCheckedChanged: {
-                            if (checked){
-                                serviceEditorContainer.agentData.m_TracingLevel = 0;
-                            }
-                            else{
-                                serviceEditorContainer.agentData.m_TracingLevel = -1;
-                            }
-
-//                            serviceEditorContainer.doUpdateModel();
+                            serviceEditorContainer.doUpdateModel();
                         }
                     }
 
@@ -183,30 +177,26 @@ ViewBase {
                         model: TreeItemModel {}
 
                         Component.onCompleted: {
-                            let index = model.InsertNewItem()
-                            model.SetData("Name", "0", index)
+                            let index = model.insertNewItem()
+                            model.setData("Name", "0", index)
 
-                            index = model.InsertNewItem()
-                            model.SetData("Name", "1", index)
+                            index = model.insertNewItem()
+                            model.setData("Name", "1", index)
 
-                            index = model.InsertNewItem()
-                            model.SetData("Name", "2", index)
+                            index = model.insertNewItem()
+                            model.setData("Name", "2", index)
 
-                            index = model.InsertNewItem()
-                            model.SetData("Name", "3", index)
+                            index = model.insertNewItem()
+                            model.setData("Name", "3", index)
 
-                            index = model.InsertNewItem()
-                            model.SetData("Name", "4", index)
+                            index = model.insertNewItem()
+                            model.setData("Name", "4", index)
 
-                            index = model.InsertNewItem()
-                            model.SetData("Name", "5", index)
+                            index = model.insertNewItem()
+                            model.setData("Name", "5", index)
                         }
                         onCurrentIndexChanged: {
-                            if (currentIndex >= 0){
-                                serviceEditorContainer.agentData.m_TracingLevel = currentIndex;
-                            }
-
-//                            serviceEditorContainer.doUpdateModel();
+                            serviceEditorContainer.doUpdateModel();
                         }
                     }
                 }

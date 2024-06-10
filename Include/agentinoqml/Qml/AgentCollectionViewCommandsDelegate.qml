@@ -47,8 +47,8 @@ DocumentCollectionViewDelegate {
         let indexes = container.collectionView.table.getSelectedIndexes();
         if (indexes.length > 0){
             let index = indexes[0];
-            if (elementsModel.ContainsKey("Id", index)){
-                let itemId = elementsModel.GetData("Id", index);
+            if (elementsModel.containsKey("Id", index)){
+                let itemId = elementsModel.getData("Id", index);
 
                 let documentManager = MainDocumentManager.getDocumentManager("AgentsSingleDocument");
                 if (documentManager){

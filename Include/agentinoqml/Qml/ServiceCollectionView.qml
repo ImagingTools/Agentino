@@ -27,7 +27,7 @@ SplitView {
         onSelectionChanged: {
             if (selection.length > 0){
                 let index = selection[0];
-                log.serviceId = serviceCollectionView.table.elements.GetData("Id", index);
+                log.serviceId = serviceCollectionView.table.elements.getData("Id", index);
             }
             else{
                 log.serviceId = ""
@@ -47,7 +47,7 @@ SplitView {
         }
 
         onServiceIdChanged: {
-            dataController.elementsModel.Clear()
+            dataController.elementsModel.clear()
             if (dataController.collectionId !== log.collectionId){
                 dataController.collectionId = log.collectionId
             }
@@ -68,12 +68,12 @@ SplitView {
             if (!dataModel){
                 return;
             }
-            if (dataModel.ContainsKey("OnServiceLogChanged")){
-                let body = dataModel.GetData("OnServiceLogChanged");
-                if (body.ContainsKey("serviceId")){
-                    let id = body.GetData("serviceId")
+            if (dataModel.containsKey("OnServiceLogChanged")){
+                let body = dataModel.getData("OnServiceLogChanged");
+                if (body.containsKey("serviceId")){
+                    let id = body.getData("serviceId")
                     if (id  === container.serviceId){
-                        dataController.elementsModel.Clear()
+                        dataController.elementsModel.clear()
                         dataController.updateModel()
                     }
                 }

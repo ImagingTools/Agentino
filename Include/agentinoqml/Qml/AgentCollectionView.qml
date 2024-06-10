@@ -24,8 +24,8 @@ SplitView {
         onSelectionChanged: {
             if (selection.length > 0){
                 let index = selection[0];
-                log.agentId = agentCollectionView.table.elements.GetData("Id", index);
-                selectedServices = agentCollectionView.table.elements.GetData("Services", index)
+                log.agentId = agentCollectionView.table.elements.getData("Id", index);
+                selectedServices = agentCollectionView.table.elements.getData("Services", index)
             }
             else{
                 log.agentId = ""
@@ -49,7 +49,7 @@ SplitView {
         }
 
         onAgentIdChanged: {
-            dataController.elementsModel.Clear()
+            dataController.elementsModel.clear()
             if (dataController.collectionId !== log.collectionId){
                 dataController.collectionId = log.collectionId
             }
@@ -68,13 +68,13 @@ SplitView {
             if (!dataModel){
                 return;
             }
-            dataController.elementsModel.Clear()
+            dataController.elementsModel.clear()
             dataController.updateModel()
 
-            // if (dataModel.ContainsKey("typeOperation")){
-            //     let body = dataModel.GetData("typeOperation");
+            // if (dataModel.containsKey("typeOperation")){
+            //     let body = dataModel.getData("typeOperation");
             //     if (body === "inserted"){
-            //         dataController.elementsModel.Clear()
+            //         dataController.elementsModel.clear()
             //         dataController.updateModel()
             //     }
             // }
@@ -88,11 +88,11 @@ SplitView {
                 property string services: agentCollectionView.selectedServices
 
                 onServicesChanged: {
-                    checkMenu.dataModel.Clear()
+                    checkMenu.dataModel.clear()
                     var servicesModel = services.split(';')
                     for (let i = 0; i < servicesModel.length; i++){
-                        checkMenu.dataModel.InsertNewItem()
-                        checkMenu.dataModel.SetData("Name", servicesModel[i], i)
+                        checkMenu.dataModel.insertNewItem()
+                        checkMenu.dataModel.setData("Name", servicesModel[i], i)
                     }
                     console.log("checkBoxMenu",checkMenu.dataModel)
                     filterDecorator.updateObjectFilter();
@@ -108,7 +108,7 @@ SplitView {
                     height: 30
                     visible: filterDecorator.filtermenu.x - x < width ? false : true
                     placeHolderText: qsTr("Services");
-                    menuHeight: delegateHeight  * (dataModel.GetItemsCount() + 1) ;
+                    menuHeight: delegateHeight  * (dataModel.getItemsCount() + 1) ;
                     delegateHeight: 40;
                     hasSearch: false;
                     canOpenMenu: true;
@@ -121,22 +121,22 @@ SplitView {
                 }
 
                 function updateObjectFilter(){
-                    let objectFilter = log.collectionFilter.filterModel.GetData("ObjectFilter");
+                    let objectFilter = log.collectionFilter.filterModel.getData("ObjectFilter");
                     if (!objectFilter){
-                        objectFilter = log.collectionFilter.filterModel.AddTreeModel("ObjectFilter")
+                        objectFilter = log.collectionFilter.filterModel.addTreeModel("ObjectFilter")
                     }
-                    let sourceFilter = objectFilter.GetData("Source");
+                    let sourceFilter = objectFilter.getData("Source");
                     if (!sourceFilter){
-                        sourceFilter = objectFilter.AddTreeModel("Source")
+                        sourceFilter = objectFilter.addTreeModel("Source")
                     }
-                    for (let i = 0; i < checkMenu.dataModel.GetItemsCount(); i++){
-                        let service = checkMenu.dataModel.GetData("Name", i)
-                        let status = checkMenu.dataModel.GetData("checkState", i)
+                    for (let i = 0; i < checkMenu.dataModel.getItemsCount(); i++){
+                        let service = checkMenu.dataModel.getData("Name", i)
+                        let status = checkMenu.dataModel.getData("checkState", i)
                         console.log("status", status)
-                        sourceFilter.SetData(service, status === 0 || status === undefined ? false : true);
+                        sourceFilter.setData(service, status === 0 || status === undefined ? false : true);
                     }
 
-                    console.log("checkMenu objectFilter", objectFilter.ToJson())
+                    console.log("checkMenu objectFilter", objectFilter.toJson())
 
                     log.dataController.updateModel()
                 }

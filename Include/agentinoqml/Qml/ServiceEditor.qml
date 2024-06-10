@@ -39,43 +39,43 @@ ViewBase {
     }
 
     function updateGui(){
-        if (serviceEditorContainer.model.ContainsKey("Name")){
-            nameInput.text = serviceEditorContainer.model.GetData("Name");
+        if (serviceEditorContainer.model.containsKey("Name")){
+            nameInput.text = serviceEditorContainer.model.getData("Name");
         }
         else{
             nameInput.text = "";
         }
 
-        if (serviceEditorContainer.model.ContainsKey("Description")){
-            descriptionInput.text = serviceEditorContainer.model.GetData("Description");
+        if (serviceEditorContainer.model.containsKey("Description")){
+            descriptionInput.text = serviceEditorContainer.model.getData("Description");
         }
         else{
             descriptionInput.text = "";
         }
 
-        if (serviceEditorContainer.model.ContainsKey("Path")){
-            pathInput.text = serviceEditorContainer.model.GetData("Path");
+        if (serviceEditorContainer.model.containsKey("Path")){
+            pathInput.text = serviceEditorContainer.model.getData("Path");
         }
         else{
             pathInput.text = "";
         }
 
-        if (serviceEditorContainer.model.ContainsKey("Arguments")){
-            argumentsInput.text = serviceEditorContainer.model.GetData("Arguments");
+        if (serviceEditorContainer.model.containsKey("Arguments")){
+            argumentsInput.text = serviceEditorContainer.model.getData("Arguments");
         }
         else{
             argumentsInput.text = "";
         }
 
-        if (serviceEditorContainer.model.ContainsKey("IsAutoStart")){
-            switchAutoStart.setChecked(serviceEditorContainer.model.GetData("IsAutoStart"));
+        if (serviceEditorContainer.model.containsKey("IsAutoStart")){
+            switchAutoStart.setChecked(serviceEditorContainer.model.getData("IsAutoStart"));
         }
         else{
             switchAutoStart.setChecked(false)
         }
 
-        if (serviceEditorContainer.model.ContainsKey("TracingLevel")){
-            let tracingLevel = serviceEditorContainer.model.GetData("TracingLevel")
+        if (serviceEditorContainer.model.containsKey("TracingLevel")){
+            let tracingLevel = serviceEditorContainer.model.getData("TracingLevel")
             if (tracingLevel > -1){
                 switchVerboseMessage.setChecked(true);
             }
@@ -89,8 +89,8 @@ ViewBase {
             switchVerboseMessage.setChecked(false)
         }
 
-        if (serviceEditorContainer.model.ContainsKey("StartScript")){
-            let startScript = serviceEditorContainer.model.GetData("StartScript")
+        if (serviceEditorContainer.model.containsKey("StartScript")){
+            let startScript = serviceEditorContainer.model.getData("StartScript")
             if (startScript !== ""){
                 startScriptChecked.checkState = Qt.Checked
                 startScriptInput.text = startScript
@@ -105,8 +105,8 @@ ViewBase {
             startScriptInput.text = ""
         }
 
-        if (serviceEditorContainer.model.ContainsKey("StopScript")){
-            let stopScript = serviceEditorContainer.model.GetData("StopScript")
+        if (serviceEditorContainer.model.containsKey("StopScript")){
+            let stopScript = serviceEditorContainer.model.getData("StopScript")
             if (stopScript !== ""){
                 stopScriptChecked.checkState = Qt.Checked
                 stopScriptInput.text = stopScript
@@ -119,45 +119,45 @@ ViewBase {
             stopScriptChecked.checkState = Qt.Unchecked
         }
 
-        if (serviceEditorContainer.model.ContainsKey("InputConnections")){
-            inputConnTable.elements = serviceEditorContainer.model.GetData("InputConnections")
+        if (serviceEditorContainer.model.containsKey("InputConnections")){
+            inputConnTable.elements = serviceEditorContainer.model.getData("InputConnections")
         }
 
-        if (serviceEditorContainer.model.ContainsKey("OutputConnections")){
-            ouputConnTable.elements = serviceEditorContainer.model.GetData("OutputConnections")
+        if (serviceEditorContainer.model.containsKey("OutputConnections")){
+            ouputConnTable.elements = serviceEditorContainer.model.getData("OutputConnections")
         }
     }
 
     function updateModel(){
-        serviceEditorContainer.model.SetData("Name", nameInput.text);
-        serviceEditorContainer.model.SetData("Description", descriptionInput.text);
-        serviceEditorContainer.model.SetData("Path", pathInput.text);
-        serviceEditorContainer.model.SetData("Arguments", argumentsInput.text);
-        serviceEditorContainer.model.SetData("IsAutoStart", switchAutoStart.checked);
+        serviceEditorContainer.model.setData("Name", nameInput.text);
+        serviceEditorContainer.model.setData("Description", descriptionInput.text);
+        serviceEditorContainer.model.setData("Path", pathInput.text);
+        serviceEditorContainer.model.setData("Arguments", argumentsInput.text);
+        serviceEditorContainer.model.setData("IsAutoStart", switchAutoStart.checked);
 
         if (switchVerboseMessage.checked){
             if (tracingLevelInput.currentIndex == -1){
                 tracingLevelInput.currentIndex = 0;
             }
 
-            serviceEditorContainer.model.SetData("TracingLevel", tracingLevelInput.currentIndex);
+            serviceEditorContainer.model.setData("TracingLevel", tracingLevelInput.currentIndex);
         }
         else{
-            serviceEditorContainer.model.SetData("TracingLevel", -1);
+            serviceEditorContainer.model.setData("TracingLevel", -1);
         }
 
         if(startScriptChecked.checkState === Qt.Checked){
-            serviceEditorContainer.model.SetData("StartScript", startScriptInput.text);
+            serviceEditorContainer.model.setData("StartScript", startScriptInput.text);
         }
         else{
-            serviceEditorContainer.model.SetData("StartScript", "");
+            serviceEditorContainer.model.setData("StartScript", "");
         }
 
         if(stopScriptChecked.checkState === Qt.Checked){
-            serviceEditorContainer.model.SetData("StopScript", stopScriptInput.text);
+            serviceEditorContainer.model.setData("StopScript", stopScriptInput.text);
         }
         else{
-            serviceEditorContainer.model.SetData("StopScript", "");
+            serviceEditorContainer.model.setData("StopScript", "");
         }
     }
 
@@ -384,23 +384,23 @@ ViewBase {
                     model: TreeItemModel {
                     }
                     Component.onCompleted: {
-                        let index = model.InsertNewItem()
-                        model.SetData("Name", "0", index)
+                        let index = model.insertNewItem()
+                        model.setData("Name", "0", index)
 
-                        index = model.InsertNewItem()
-                        model.SetData("Name", "1", index)
+                        index = model.insertNewItem()
+                        model.setData("Name", "1", index)
 
-                        index = model.InsertNewItem()
-                        model.SetData("Name", "2", index)
+                        index = model.insertNewItem()
+                        model.setData("Name", "2", index)
 
-                        index = model.InsertNewItem()
-                        model.SetData("Name", "3", index)
+                        index = model.insertNewItem()
+                        model.setData("Name", "3", index)
 
-                        index = model.InsertNewItem()
-                        model.SetData("Name", "4", index)
+                        index = model.insertNewItem()
+                        model.setData("Name", "4", index)
 
-                        index = model.InsertNewItem()
-                        model.SetData("Name", "5", index)
+                        index = model.insertNewItem()
+                        model.setData("Name", "5", index)
                     }
                     onCurrentIndexChanged: {
                         serviceEditorContainer.doUpdateModel();
@@ -500,7 +500,7 @@ ViewBase {
                 visible: false;
 
                 onElementsChanged: {
-                    let count = elements.GetItemsCount();
+                    let count = elements.getItemsCount();
 
                     inputConnectionsTitle.visible = count > 0;
                     inputConnTable.visible = count > 0;
@@ -522,30 +522,30 @@ ViewBase {
                     id: headersModel;
 
                     Component.onCompleted: {
-                        let index = headersModel.InsertNewItem();
+                        let index = headersModel.insertNewItem();
 
-                        headersModel.SetData("Id", "ConnectionName", index)
-                        headersModel.SetData("Name", qsTr("Usage"), index)
+                        headersModel.setData("Id", "ConnectionName", index)
+                        headersModel.setData("Name", qsTr("Usage"), index)
 
-                        index = headersModel.InsertNewItem();
+                        index = headersModel.insertNewItem();
 
-                        headersModel.SetData("Id", "Description", index)
-                        headersModel.SetData("Name", qsTr("Description"), index)
+                        headersModel.setData("Id", "Description", index)
+                        headersModel.setData("Name", qsTr("Description"), index)
 
-                        index = headersModel.InsertNewItem();
+                        index = headersModel.insertNewItem();
 
-                        headersModel.SetData("Id", "Host", index)
-                        headersModel.SetData("Name", qsTr("Host"), index)
+                        headersModel.setData("Id", "Host", index)
+                        headersModel.setData("Name", qsTr("Host"), index)
 
-                        index = headersModel.InsertNewItem();
+                        index = headersModel.insertNewItem();
 
-                        headersModel.SetData("Id", "Port", index)
-                        headersModel.SetData("Name", qsTr("Port"), index)
+                        headersModel.setData("Id", "Port", index)
+                        headersModel.setData("Name", qsTr("Port"), index)
 
-                        index = headersModel.InsertNewItem();
+                        index = headersModel.insertNewItem();
 
-                        headersModel.SetData("Id", "ExternPorts", index)
-                        headersModel.SetData("Name", qsTr("Extern Addresses"), index)
+                        headersModel.setData("Id", "ExternPorts", index)
+                        headersModel.setData("Name", qsTr("Extern Addresses"), index)
 
                         inputConnTable.headers = headersModel;
                     }
@@ -555,22 +555,22 @@ ViewBase {
                     id: inputTableDecoratorModel;
 
                     Component.onCompleted: {
-                        var cellWidthModel = inputTableDecoratorModel.AddTreeModel("CellWidth");
+                        var cellWidthModel = inputTableDecoratorModel.addTreeModel("CellWidth");
 
-                        let index = cellWidthModel.InsertNewItem();
-                        cellWidthModel.SetData("Width", 150, index);
+                        let index = cellWidthModel.insertNewItem();
+                        cellWidthModel.setData("Width", 150, index);
 
-                        index = cellWidthModel.InsertNewItem();
-                        cellWidthModel.SetData("Width", 300, index);
+                        index = cellWidthModel.insertNewItem();
+                        cellWidthModel.setData("Width", 300, index);
 
-                        index = cellWidthModel.InsertNewItem();
-                        cellWidthModel.SetData("Width", 100, index);
+                        index = cellWidthModel.insertNewItem();
+                        cellWidthModel.setData("Width", 100, index);
 
-                        index = cellWidthModel.InsertNewItem();
-                        cellWidthModel.SetData("Width", 100, index);
+                        index = cellWidthModel.insertNewItem();
+                        cellWidthModel.setData("Width", 100, index);
 
-                        index = cellWidthModel.InsertNewItem();
-                        cellWidthModel.SetData("Width", -1, index);
+                        index = cellWidthModel.insertNewItem();
+                        cellWidthModel.setData("Width", -1, index);
                     }
                 }
 
@@ -591,9 +591,9 @@ ViewBase {
                                 let valueModel = tableCellDelegate.getValue();
                                 if (valueModel){
                                     let values = []
-                                    for (let i = 0; i < valueModel.GetItemsCount(); i++){
-                                        let port = valueModel.GetData("Port", i);
-                                        let host = valueModel.GetData("Host", i)
+                                    for (let i = 0; i < valueModel.getItemsCount(); i++){
+                                        let port = valueModel.getData("Port", i);
+                                        let host = valueModel.getData("Host", i)
 
                                         values.push(host + ":" + port)
                                     }
@@ -644,10 +644,10 @@ ViewBase {
                             visible: !serviceEditorContainer.readOnly;
 
                             onClicked: {
-                                if (inputConnTable.elements.ContainsKey("ExternPorts", content.tableCellDelegate.rowIndex)){
-                                    let externPortsModel = inputConnTable.elements.GetData("ExternPorts", content.tableCellDelegate.rowIndex);
+                                if (inputConnTable.elements.containsKey("ExternPorts", content.tableCellDelegate.rowIndex)){
+                                    let externPortsModel = inputConnTable.elements.getData("ExternPorts", content.tableCellDelegate.rowIndex);
                                     if (externPortsModel){
-                                        ModalDialogManager.openDialog(externPortsDialogComp, {"portsModel": externPortsModel.CopyMe()});
+                                        ModalDialogManager.openDialog(externPortsDialogComp, {"portsModel": externPortsModel.copyMe()});
                                     }
                                 }
                             }
@@ -661,16 +661,16 @@ ViewBase {
                                     if (buttonId == Enums.save){
                                         if (content.tableCellDelegate.rowIndex >= 0){
                                             let ports = []
-                                            for (let i = 0; i < portsModel.GetItemsCount(); i++){
-                                                let port = portsModel.GetData("Port", i);
-                                                let host = portsModel.GetData("Host", i);
+                                            for (let i = 0; i < portsModel.getItemsCount(); i++){
+                                                let port = portsModel.getData("Port", i);
+                                                let host = portsModel.getData("Host", i);
                                                 ports.push(host + ":" + port)
                                             }
 
-                                            let externPortsModel = inputConnTable.elements.GetData("ExternPorts", content.tableCellDelegate.rowIndex);
+                                            let externPortsModel = inputConnTable.elements.getData("ExternPorts", content.tableCellDelegate.rowIndex);
 
-                                            externPortsModel.Copy(portsModel);
-                                            externPortsModel.Refresh()
+                                            externPortsModel.copy(portsModel);
+                                            externPortsModel.refresh()
 
                                             textLabel.text = ports.join('\n');
                                         }
@@ -716,7 +716,7 @@ ViewBase {
                 }
 
                 onElementsChanged: {
-                    let count = elements.GetItemsCount();
+                    let count = elements.getItemsCount();
 
                     dependantServicesTitle.visible = count > 0;
                     ouputConnTable.visible = count > 0;
@@ -745,15 +745,15 @@ ViewBase {
                             if (tableCellDelegate){
                                 let value = tableCellDelegate.getValue();
 
-                                let dependantConnectionId = ouputConnTable.elements.GetData("DependantConnectionId", bodyItem.tableCellDelegate.rowIndex);
+                                let dependantConnectionId = ouputConnTable.elements.getData("DependantConnectionId", bodyItem.tableCellDelegate.rowIndex);
 
-                                let elementsModel = ouputConnTable.elements.GetData("Elements", tableCellDelegate.rowIndex);
+                                let elementsModel = ouputConnTable.elements.getData("Elements", tableCellDelegate.rowIndex);
                                 textLabel.text = value;
                                 cb.model = elementsModel;
 
                                 if (cb.model){
-                                    for (let i = 0; i < cb.model.GetItemsCount(); i++){
-                                        let id = cb.model.GetData("Id", i);
+                                    for (let i = 0; i < cb.model.getItemsCount(); i++){
+                                        let id = cb.model.getData("Id", i);
                                         if (String(id) == dependantConnectionId){
                                             cb.currentIndex = i;
                                             break;
@@ -791,14 +791,14 @@ ViewBase {
 
                                 if (bodyItem.tableCellDelegate){
                                     if (cb.model){
-                                        let id = cb.model.GetData("Id", cb.currentIndex)
-                                        let name = cb.model.GetData("Name", cb.currentIndex)
-                                        let url = cb.model.GetData("Url", cb.currentIndex)
+                                        let id = cb.model.getData("Id", cb.currentIndex)
+                                        let name = cb.model.getData("Name", cb.currentIndex)
+                                        let url = cb.model.getData("Url", cb.currentIndex)
 
                                         textLabel.text = name;
 
-                                        ouputConnTable.elements.SetData("DependantConnectionId", id, bodyItem.tableCellDelegate.rowIndex);
-                                        ouputConnTable.elements.SetData("Url", url, bodyItem.tableCellDelegate.rowIndex);
+                                        ouputConnTable.elements.setData("DependantConnectionId", id, bodyItem.tableCellDelegate.rowIndex);
+                                        ouputConnTable.elements.setData("Url", url, bodyItem.tableCellDelegate.rowIndex);
 
 //                                        bodyItem.tableCellDelegate.setValue(name);
                                     }
@@ -824,7 +824,7 @@ ViewBase {
                             visible: !serviceEditorContainer.readOnly;
 
                             onDoubleClicked: {
-                                if (cb.model && cb.model.GetItemsCount() > 0){
+                                if (cb.model && cb.model.getItemsCount() > 0){
                                     cb.visible = true;
 
                                     cb.z = ma.z + 1;
@@ -842,25 +842,25 @@ ViewBase {
                     id: headersModel2;
 
                     Component.onCompleted: {
-                        let index = headersModel2.InsertNewItem();
+                        let index = headersModel2.insertNewItem();
 
-                        headersModel2.SetData("Id", "ConnectionName", index)
-                        headersModel2.SetData("Name", qsTr("Usage"), index)
+                        headersModel2.setData("Id", "ConnectionName", index)
+                        headersModel2.setData("Name", qsTr("Usage"), index)
 
-                        index = headersModel2.InsertNewItem();
+                        index = headersModel2.insertNewItem();
 
-                        headersModel2.SetData("Id", "ServiceTypeName", index)
-                        headersModel2.SetData("Name", qsTr("Service"), index)
+                        headersModel2.setData("Id", "ServiceTypeName", index)
+                        headersModel2.setData("Name", qsTr("Service"), index)
 
-                        index = headersModel2.InsertNewItem();
+                        index = headersModel2.insertNewItem();
 
-                        headersModel2.SetData("Id", "Description", index)
-                        headersModel2.SetData("Name", qsTr("Description"), index)
+                        headersModel2.setData("Id", "Description", index)
+                        headersModel2.setData("Name", qsTr("Description"), index)
 
-                        index = headersModel2.InsertNewItem();
+                        index = headersModel2.insertNewItem();
 
-                        headersModel2.SetData("Id", "DisplayUrl", index)
-                        headersModel2.SetData("Name", qsTr("Url"), index)
+                        headersModel2.setData("Id", "DisplayUrl", index)
+                        headersModel2.setData("Name", qsTr("Url"), index)
 
                         ouputConnTable.headers = headersModel2;
                     }
@@ -870,19 +870,19 @@ ViewBase {
                     id: outputTableDecoratorModel;
 
                     Component.onCompleted: {
-                        var cellWidthModel = outputTableDecoratorModel.AddTreeModel("CellWidth");
+                        var cellWidthModel = outputTableDecoratorModel.addTreeModel("CellWidth");
 
-                        let index = cellWidthModel.InsertNewItem();
-                        cellWidthModel.SetData("Width", 150, index);
+                        let index = cellWidthModel.insertNewItem();
+                        cellWidthModel.setData("Width", 150, index);
 
-                        index = cellWidthModel.InsertNewItem();
-                        cellWidthModel.SetData("Width", 80, index);
+                        index = cellWidthModel.insertNewItem();
+                        cellWidthModel.setData("Width", 80, index);
 
-                        index = cellWidthModel.InsertNewItem();
-                        cellWidthModel.SetData("Width", 350, index);
+                        index = cellWidthModel.insertNewItem();
+                        cellWidthModel.setData("Width", 350, index);
 
-                        index = cellWidthModel.InsertNewItem();
-                        cellWidthModel.SetData("Width", -1, index);
+                        index = cellWidthModel.insertNewItem();
+                        cellWidthModel.setData("Width", -1, index);
                     }
                 }
             }
