@@ -29,7 +29,7 @@ public:
 	I_END_COMPONENT;
 
 	// reimplemented (agentinodata::IServiceCompositeInfo)
-	virtual QByteArray GetServiceId(const QUrl& url, const QString& connectionServiceTypeName) const override;
+	virtual QByteArray GetServiceId(const QUrl& url) const override;
 	virtual QByteArray GetServiceId(const QByteArray& dependantServiceConnectionId) const override;
 	virtual IServiceStatusInfo::ServiceStatus GetServiceStatus(const QByteArray& serviceId) const override;
 	virtual StateOfRequiredServices GetStateOfRequiredServices(const QByteArray& serviceId) const override;

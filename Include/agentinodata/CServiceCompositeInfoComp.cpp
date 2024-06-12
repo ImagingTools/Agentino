@@ -12,15 +12,15 @@
 #include <agentinodata/IServiceStatusInfo.h>
 
 
-
 namespace agentinodata
 {
 
-// public implemented
+
+// public methods
+
 // reimplemented (agentinodata::IServiceCompositeInfo)
 
-
-QByteArray CServiceCompositeInfoComp::GetServiceId(const QUrl& url, const QString& connectionServiceTypeName) const
+QByteArray CServiceCompositeInfoComp::GetServiceId(const QUrl& url) const
 {
 	if (!m_agentCollectionCompPtr.IsValid()){
 		return QByteArray();
@@ -60,13 +60,13 @@ QByteArray CServiceCompositeInfoComp::GetServiceId(const QUrl& url, const QStrin
 							imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
 							if (connectionParamPtr != nullptr){
 								if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionParam::CT_INPUT){
-									if (connectionParamPtr->GetUrl() == url/* && connectionServiceName == serviceName*/){
+									if (connectionParamPtr->GetUrl() == url){
 										return serviceElementId;
 									}
 
 									QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
 									for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-										if (incomingConnection.url == url/* && connectionServiceName == serviceName*/){
+										if (incomingConnection.url == url){
 											return serviceElementId;
 										}
 									}
@@ -315,6 +315,7 @@ QString CServiceCompositeInfoComp::GetServiceAgentName(const QByteArray& service
 
 	return QString();
 }
+
 
 } // namespace agentinodata
 
