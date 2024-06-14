@@ -49,6 +49,14 @@ SingleDocumentWorkspaceView {
         GqlRequestDocumentDataController {
             id: requestDocumentDataController
 
+            documentModelComp: Component {
+                AgentData {
+                    Component.onCompleted: {
+                        console.log("AgentData onCompleted");
+                    }
+                }
+            }
+
              payloadModel: AgentDataPayload {
                  onM_itemChanged: {
                      requestDocumentDataController.documentModel = m_item

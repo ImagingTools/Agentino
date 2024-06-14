@@ -59,7 +59,10 @@ DocumentCollectionViewDelegate {
     }
 
     function onNew(){
-
+        let documentManager = MainDocumentManager.getDocumentManager("AgentsSingleDocument");
+        if (documentManager){
+            documentManager.insertNewDocument("Agent", "AgentEditor");
+        }
     }
 }
 

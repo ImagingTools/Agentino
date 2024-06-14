@@ -12,6 +12,14 @@ ViewBase {
 
     property AgentData agentData: model ? model : null;
 
+    Connections {
+        target: serviceEditorContainer.agentData;
+
+        function onDataChanged(){
+            console.log("AgentEditor onDataChanged");
+        }
+    }
+
     function updateGui(){
         nameInput.text = agentData.m_name
         descriptionInput.text = agentData.m_description
