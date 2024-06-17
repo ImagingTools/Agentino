@@ -37,7 +37,7 @@ target_link_libraries(${PROJECT_NAME} ImtCoreLoc AgentinoLoc)
 target_link_libraries(${PROJECT_NAME} agentinoqml agentinodata agentinogql agentgql)
 target_link_libraries(${PROJECT_NAME} imtcontrolsqml imtdocguiqml imtcolguiqml imtguiqml imtguigqlqml imtauthguiqml imtlicguiqml)
 target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Quick Qt${QT_VERSION_MAJOR}::WebSockets)
-target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Qml Qt${QT_VERSION_MAJOR}::Widgets)
 
 if(WIN32)
 	list(APPEND listOptions "--qmldir=${IMTCOREDIR}/Qml")
