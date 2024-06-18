@@ -15,8 +15,8 @@ ViewBase {
     Connections {
         target: serviceEditorContainer.agentData;
 
-        function onDataChanged(){
-            console.log("AgentEditor onDataChanged");
+        function onModelChanged(){
+            console.log("AgentEditor onModelChanged");
         }
     }
 
@@ -24,12 +24,12 @@ ViewBase {
         nameInput.text = agentData.m_name
         descriptionInput.text = agentData.m_description
 
+        switchVerboseMessage.setChecked(agentData.m_tracingLevel > -1);
+
         if (agentData.m_tracingLevel > -1){
-            switchVerboseMessage.checked = true;
             tracingLevelInput.currentIndex = agentData.m_tracingLevel;
         }
         else{
-            switchVerboseMessage.checked = false;
             tracingLevelInput.currentIndex = -1;
         }
     }

@@ -48,7 +48,7 @@ ViewBase {
     Connections {
         target: agentSettingsContainer.model;
 
-        function onDataChanged(){
+        function onModelChanged(){
             button.enabled = true;
         }
     }
