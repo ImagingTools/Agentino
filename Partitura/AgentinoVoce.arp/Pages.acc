@@ -2,25 +2,35 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5221" Description="ACF"/>
-            <Version Id="1" Number="2205" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394754" Description="Qt Framework"/>
+            <Version Id="0" Number="5225" Description="ACF"/>
+            <Version Id="1" Number="2208" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
     <Keywords></Keywords>
     <ElementsList>
-        <Element Id="AdministrationPage" PackageId="ImtQmlPck" ComponentId="PageGuiElementModel">
+        <Element Id="AdministrationPage" PackageId="ImtCoreVoce" ComponentId="Page">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="Alignment" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="64"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="IconPath" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="Icons/LightSettings"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="Id" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Administration"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="Name" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="Administration"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="PageId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="Administration"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="PagePermissions" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>ViewAdministration</Value>
+                            </Values>
+                        </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="PageQmlItem" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="../../imtdocgui/SingleDocumentWorkspaceView.qml"/>
@@ -31,17 +41,27 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="AgentsPage" PackageId="ImtQmlPck" ComponentId="PageGuiElementModel">
+        <Element Id="AgentsPage" PackageId="ImtCoreVoce" ComponentId="Page">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="IconPath" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="Icons/Product"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="Id" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Agents"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="Name" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="Agents"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="PageId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="Agents"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="PagePermissions" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>ViewAgents</Value>
+                                <Value>AddAgent</Value>
+                                <Value>RemoveAgent</Value>
+                                <Value>ChangeAgent</Value>
+                            </Values>
+                        </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="PageQmlItem" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="../../imtdocgui/MultiDocWorkspacePageView.qml"/>
@@ -50,11 +70,6 @@
                         <Data IsEnabled="true" Value="qrc:/qml/AgentsSingleDocWorkspaceView.qml"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="CheckPermissionOr" PackageId="ImtAuthPck" ComponentId="CheckPermissionOr">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap/>
             </Data>
         </Element>
         <Element Id="PageData" PackageId="" ComponentId="PageData">
@@ -90,29 +105,20 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="PageDataControllers" PackageId="ImtGqlPck" ComponentId="GraphQLDemultiplexer">
+        <Element Id="PagesController" PackageId="ImtGraphQlVoce" ComponentId="PagesController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
-                    <AttributeInfo Id="GqlRequestHandlers" Type="Reference[]" ExportId="">
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>PageData/GraphQLDemultiplexer</Value>
+                                <Value>PagesData</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="ShowComponentId" Type="Boolean" ExportId="">
-                        <Data IsEnabled="true" Value="true"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="Pages" PackageId="ImtGuiPck" ComponentId="GuiElementContainer">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="GuiElementModels" Type="Reference[]" ExportId="">
+                    <AttributeInfo Id="Pages" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>TopologyPage</Value>
@@ -120,6 +126,12 @@
                                 <Value>AdministrationPage</Value>
                             </Values>
                         </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -130,8 +142,8 @@
                     <AttributeInfo Id="GqlRequestHandlers" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>PagesVisualStatusController</Value>
-                                <Value>PageDataControllers</Value>
+                                <Value>PagesController</Value>
+                                <Value>PageData</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -141,96 +153,24 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="PagesPermissions" PackageId="" ComponentId="PagesPermissions">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="PagesRepresentation" PackageId="ImtCorePck" ComponentId="PageBasedGuiRepresentationController">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="CommandPermissionsProvider" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="PagesPermissions"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ObjectId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Pages"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="PermissionChecker" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="CheckPermissionOr"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="PagesVisualStatusController" PackageId="ImtGqlPck" ComponentId="GqlRepresentationDataController">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
-                        <Data IsEnabled="true">
-                            <Values>
-                                <Value>PagesData</Value>
-                            </Values>
-                        </Data>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DataModel" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Pages"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="EnableVerbose" Type="Boolean" ExportId="EnableVerbose">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="RepresentationController" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="PagesRepresentation"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="ServicesPage" PackageId="ImtQmlPck" ComponentId="PageGuiElementModel">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="IconPath" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="Services"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Id" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Services"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Name" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="Services"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="PageQmlItem" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="../../imtgui/AuxComponents/MultiDocWorkspacePageView.qml"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="StartQmlItem" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="../../ServiceCollectionView.qml"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="TopologyPage" PackageId="ImtQmlPck" ComponentId="PageGuiElementModel">
+        <Element Id="TopologyPage" PackageId="ImtCoreVoce" ComponentId="Page">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="IconPath" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="Icons/Production"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="Id" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Topology"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="Name" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="Topology"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="PageId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="Topology"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="PagePermissions" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>ViewTopology</Value>
+                            </Values>
+                        </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="PageQmlItem" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="../../imtdocgui/MultiDocWorkspacePageView.qml"/>

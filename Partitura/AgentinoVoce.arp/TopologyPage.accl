@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5210" Description="ACF"/>
-            <Version Id="1" Number="2205" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394754" Description="Qt Framework"/>
+            <Version Id="0" Number="5225" Description="ACF"/>
+            <Version Id="1" Number="2208" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
@@ -15,30 +15,14 @@
     <EmbeddedRegistries>
         <EmbededRegistry Id="TopologyCommands">
             <PositionMap>
-                <Element ComponentName="AutoFit" X="125" Y="475" Note=""/>
-                <Element ComponentName="AutoFitPermissions" X="1025" Y="700" Note=""/>
-                <Element ComponentName="CheckPermissionOr" X="725" Y="200" Note=""/>
-                <Element ComponentName="ClosePermissions" X="1025" Y="375" Note=""/>
-                <Element ComponentName="CommandPermissions" X="1025" Y="200" Note=""/>
-                <Element ComponentName="Commands" X="300" Y="225" Note=""/>
-                <Element ComponentName="CommandsController" X="300" Y="125" Note=""/>
-                <Element ComponentName="CommandsRepresentation" X="700" Y="50" Note=""/>
-                <Element ComponentName="Edit" X="450" Y="400" Note=""/>
-                <Element ComponentName="Empty" X="550" Y="775" Note=""/>
-                <Element ComponentName="Redo" X="350" Y="775" Note=""/>
-                <Element ComponentName="RedoPermissions" X="850" Y="800" Note=""/>
-                <Element ComponentName="Save" X="450" Y="325" Note=""/>
-                <Element ComponentName="SavePermissions" X="1025" Y="300" Note=""/>
-                <Element ComponentName="Start" X="450" Y="525" Note=""/>
-                <Element ComponentName="StartPermissions" X="1025" Y="450" Note=""/>
-                <Element ComponentName="Stop" X="450" Y="575" Note=""/>
-                <Element ComponentName="StopPermissions" X="1025" Y="525" Note=""/>
-                <Element ComponentName="Undo" X="125" Y="775" Note=""/>
-                <Element ComponentName="UndoPermissions" X="850" Y="800" Note=""/>
-                <Element ComponentName="ZoomIn" X="125" Y="325" Note=""/>
-                <Element ComponentName="ZoomInPermissions" X="1025" Y="600" Note=""/>
-                <Element ComponentName="ZoomOut" X="125" Y="400" Note=""/>
-                <Element ComponentName="ZoomOutPermissions" X="1025" Y="650" Note=""/>
+                <Element ComponentName="AutoFit" X="950" Y="500" Note=""/>
+                <Element ComponentName="CommandsController" X="575" Y="75" Note=""/>
+                <Element ComponentName="Edit" X="200" Y="375" Note=""/>
+                <Element ComponentName="Save" X="200" Y="250" Note=""/>
+                <Element ComponentName="Start" X="575" Y="250" Note=""/>
+                <Element ComponentName="Stop" X="575" Y="375" Note=""/>
+                <Element ComponentName="ZoomIn" X="950" Y="250" Note=""/>
+                <Element ComponentName="ZoomOut" X="950" Y="375" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

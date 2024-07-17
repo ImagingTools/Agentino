@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5210" Description="ACF"/>
-            <Version Id="1" Number="2205" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394754" Description="Qt Framework"/>
+            <Version Id="0" Number="5225" Description="ACF"/>
+            <Version Id="1" Number="2208" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -73,14 +73,14 @@
         <EmbeddedRegistry Id="TopologyCommands">
             <Data Description="" Keywords="">
                 <ElementsList>
-                    <Element Id="AutoFit" PackageId="ImtGuiPck" ComponentId="GuiElementModel">
+                    <Element Id="AutoFit" PackageId="ImtCoreVoce" ComponentId="Command">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
+                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="AutoFit"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="IconPath" Type="Text" ExportId="">
                                     <Data IsEnabled="true" Value="Icons/ZoomToFit"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Id" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="AutoFit"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="IsEnabled" Type="Boolean" ExportId="">
                                     <Data IsEnabled="true" Value="true"/>
@@ -88,120 +88,58 @@
                                 <AttributeInfo Id="IsVisible" Type="Boolean" ExportId="">
                                     <Data IsEnabled="true" Value="true"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="Name" Type="Text" ExportId="">
                                     <Data IsEnabled="true" Value="Auto Fit"/>
                                 </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="AutoFitPermissions" PackageId="ImtCorePck" ComponentId="SingleCommandPermissionsProvider">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
-                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="AutoFit"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>ViewTopology</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="CheckPermissionOr" PackageId="ImtAuthPck" ComponentId="CheckPermissionOr">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap/>
-                        </Data>
-                    </Element>
-                    <Element Id="ClosePermissions" PackageId="ImtCorePck" ComponentId="SingleCommandPermissionsProvider">
+                    <Element Id="CommandsController" PackageId="ImtGraphQlVoce" ComponentId="CommandsController">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
-                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="Close"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>ViewTopology</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
-                                <AttributeInfo Id="EnableVerbose" Type="Boolean" ExportId="EnableVerbose">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="CommandPermissions" PackageId="ImtCorePck" ComponentId="CommandPermissionsProviderJoiner">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
-                                <AttributeInfo Id="CommandPermissionsProvider" Type="Reference[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>SavePermissions</Value>
-                                            <Value>ClosePermissions</Value>
-                                            <Value>StopPermissions</Value>
-                                            <Value>StartPermissions</Value>
-                                            <Value>ZoomInPermissions</Value>
-                                            <Value>ZoomOutPermissions</Value>
-                                            <Value>AutoFitPermissions</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="Commands" PackageId="ImtGuiPck" ComponentId="GuiElementContainer">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
-                                <AttributeInfo Id="GuiElementModels" Type="Reference[]" ExportId="">
+                                <AttributeInfo Id="CenterAlignmentCommands" Type="Reference[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
                                             <Value>Start</Value>
                                             <Value>Stop</Value>
-                                            <Value>Empty</Value>
-                                            <Value>Edit</Value>
-                                            <Value>Empty</Value>
-                                            <Value>Save</Value>
-                                            <Value>Empty</Value>
-                                            <Value>ZoomIn</Value>
-                                            <Value>ZoomOut</Value>
-                                            <Value>AutoFit</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="CommandsController" PackageId="ImtGqlPck" ComponentId="GqlRepresentationDataController">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
-                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                                <AttributeInfo Id="GqlCommandIds" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
                                             <Value>TopologyCommands</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
-                                <AttributeInfo Id="DataModel" Type="Reference" ExportId="">
-                                    <Data IsEnabled="true" Value="Commands"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="EnableVerbose" Type="Boolean" ExportId="EnableVerbose">
-                                    <Data IsEnabled="false"/>
+                                <AttributeInfo Id="LeftAlignmentCommands" Type="Reference[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Save</Value>
+                                            <Value>Edit</Value>
+                                        </Values>
+                                    </Data>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="RepresentationController" Type="Reference" ExportId="">
-                                    <Data IsEnabled="true" Value="CommandsRepresentation"/>
+                                <AttributeInfo Id="RightAlignmentCommands" Type="Reference[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>ZoomIn</Value>
+                                            <Value>ZoomOut</Value>
+                                            <Value>AutoFit</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>
@@ -209,320 +147,149 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="CommandsRepresentation" PackageId="ImtCorePck" ComponentId="GuiElementRepresentationController">
+                    <Element Id="Edit" PackageId="ImtCoreVoce" ComponentId="Command">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
-                                <AttributeInfo Id="CommandPermissionsProvider" Type="Reference" ExportId="">
-                                    <Data IsEnabled="true" Value="CommandPermissions"/>
+                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Edit"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="ObjectId" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="Service"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="PermissionChecker" Type="Reference" ExportId="">
-                                    <Data IsEnabled="true" Value="CheckPermissionOr"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="Edit" PackageId="ImtGuiPck" ComponentId="GuiElementModel">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
                                 <AttributeInfo Id="IconPath" Type="Text" ExportId="">
                                     <Data IsEnabled="true" Value="Icons/Edit"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="Id" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="Edit"/>
-                                </AttributeInfo>
                                 <AttributeInfo Id="IsEnabled" Type="Boolean" ExportId="">
                                     <Data IsEnabled="true" Value="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="IsVisible" Type="Boolean" ExportId="">
                                     <Data IsEnabled="true" Value="true"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Name" Type="Text" ExportId="">
-                                    <Data IsEnabled="true" Value="Edit"/>
-                                </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="Empty" PackageId="ImtGuiPck" ComponentId="GuiElementModel">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
-                                <AttributeInfo Id="IsEnabled" Type="Boolean" ExportId="">
-                                    <Data IsEnabled="true" Value="false"/>
-                                </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="Redo" PackageId="ImtGuiPck" ComponentId="GuiElementModel">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
-                                <AttributeInfo Id="IconPath" Type="Text" ExportId="">
-                                    <Data IsEnabled="true" Value="Icons/Redo"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Id" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="Redo"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="IsEnabled" Type="Boolean" ExportId="">
-                                    <Data IsEnabled="true" Value="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="IsVisible" Type="Boolean" ExportId="">
-                                    <Data IsEnabled="true" Value="true"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Name" Type="Text" ExportId="">
-                                    <Data IsEnabled="true" Value="Redo"/>
-                                </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="RedoPermissions" PackageId="ImtCorePck" ComponentId="SingleCommandPermissionsProvider">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
-                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="Redo"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>EditLicense</Value>
-                                            <Value>ChangeLicense</Value>
-                                            <Value>ChangeLisenseNumber</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
-                                <AttributeInfo Id="EnableVerbose" Type="Boolean" ExportId="EnableVerbose">
-                                    <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="Name" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="Edit"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="Save" PackageId="ImtGuiPck" ComponentId="GuiElementModel">
+                    <Element Id="Save" PackageId="ImtCoreVoce" ComponentId="Command">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
+                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Save"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="IconPath" Type="Text" ExportId="">
                                     <Data IsEnabled="true" Value="Icons/Save"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="Id" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="Save"/>
-                                </AttributeInfo>
                                 <AttributeInfo Id="IsEnabled" Type="Boolean" ExportId="">
                                     <Data IsEnabled="true" Value="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="IsVisible" Type="Boolean" ExportId="">
                                     <Data IsEnabled="true" Value="true"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Name" Type="Text" ExportId="">
-                                    <Data IsEnabled="true" Value="Save"/>
-                                </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="SavePermissions" PackageId="ImtCorePck" ComponentId="SingleCommandPermissionsProvider">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
-                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="Save"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>EditLicense</Value>
-                                            <Value>ChangeLicense</Value>
-                                            <Value>ChangeLisenseNumber</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
-                                <AttributeInfo Id="EnableVerbose" Type="Boolean" ExportId="EnableVerbose">
-                                    <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="Name" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="Save"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="Start" PackageId="ImtGuiPck" ComponentId="GuiElementModel">
+                    <Element Id="Start" PackageId="ImtCoreVoce" ComponentId="Command">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
+                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Start"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="IconPath" Type="Text" ExportId="">
                                     <Data IsEnabled="true" Value="Icons/Play"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Id" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="Start"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="IsEnabled" Type="Boolean" ExportId="">
                                     <Data IsEnabled="true" Value="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="IsVisible" Type="Boolean" ExportId="">
                                     <Data IsEnabled="true" Value="true"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Name" Type="Text" ExportId="">
                                     <Data IsEnabled="true" Value="Start service"/>
                                 </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="StartPermissions" PackageId="ImtCorePck" ComponentId="SingleCommandPermissionsProvider">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
-                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="Start"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>StartService</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="Stop" PackageId="ImtGuiPck" ComponentId="GuiElementModel">
+                    <Element Id="Stop" PackageId="ImtCoreVoce" ComponentId="Command">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
+                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Stop"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="IconPath" Type="Text" ExportId="">
                                     <Data IsEnabled="true" Value="Icons/Stop"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Id" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="Stop"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="IsEnabled" Type="Boolean" ExportId="">
                                     <Data IsEnabled="true" Value="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="IsVisible" Type="Boolean" ExportId="">
                                     <Data IsEnabled="true" Value="true"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Name" Type="Text" ExportId="">
                                     <Data IsEnabled="true" Value="Stop service"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="StopPermissions" PackageId="ImtCorePck" ComponentId="SingleCommandPermissionsProvider">
+                    <Element Id="ZoomIn" PackageId="ImtCoreVoce" ComponentId="Command">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandId" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="Stop"/>
+                                    <Data IsEnabled="true" Value="ZoomIn"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>StopService</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="Undo" PackageId="ImtGuiPck" ComponentId="GuiElementModel">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
-                                <AttributeInfo Id="IconPath" Type="Text" ExportId="">
-                                    <Data IsEnabled="true" Value="Icons/Undo"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Id" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="Undo"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="IsEnabled" Type="Boolean" ExportId="">
-                                    <Data IsEnabled="true" Value="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="IsVisible" Type="Boolean" ExportId="">
-                                    <Data IsEnabled="true" Value="true"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Name" Type="Text" ExportId="">
-                                    <Data IsEnabled="true" Value="Undo"/>
-                                </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="UndoPermissions" PackageId="ImtCorePck" ComponentId="SingleCommandPermissionsProvider">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
-                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="Undo"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>EditLicense</Value>
-                                            <Value>ChangeLicense</Value>
-                                            <Value>ChangeLisenseNumber</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
-                                <AttributeInfo Id="EnableVerbose" Type="Boolean" ExportId="EnableVerbose">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="ZoomIn" PackageId="ImtGuiPck" ComponentId="GuiElementModel">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
                                 <AttributeInfo Id="IconPath" Type="Text" ExportId="">
                                     <Data IsEnabled="true" Value="Icons/ZoomIn"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="Id" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="ZoomIn"/>
-                                </AttributeInfo>
                                 <AttributeInfo Id="IsEnabled" Type="Boolean" ExportId="">
                                     <Data IsEnabled="true" Value="true"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="IsVisible" Type="Boolean" ExportId="">
                                     <Data IsEnabled="true" Value="true"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Name" Type="Text" ExportId="">
                                     <Data IsEnabled="true" Value="Zoom In"/>
                                 </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="ZoomInPermissions" PackageId="ImtCorePck" ComponentId="SingleCommandPermissionsProvider">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
-                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="ZoomIn"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>ViewTopology</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="ZoomOut" PackageId="ImtGuiPck" ComponentId="GuiElementModel">
+                    <Element Id="ZoomOut" PackageId="ImtCoreVoce" ComponentId="Command">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
+                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="ZoomOut"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="IconPath" Type="Text" ExportId="">
                                     <Data IsEnabled="true" Value="Icons/ZoomOut"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Id" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="ZoomOut"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="IsEnabled" Type="Boolean" ExportId="">
                                     <Data IsEnabled="true" Value="true"/>
@@ -530,26 +297,13 @@
                                 <AttributeInfo Id="IsVisible" Type="Boolean" ExportId="">
                                     <Data IsEnabled="true" Value="true"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="Name" Type="Text" ExportId="">
                                     <Data IsEnabled="true" Value="Zoom Out"/>
                                 </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="ZoomOutPermissions" PackageId="ImtCorePck" ComponentId="SingleCommandPermissionsProvider">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
-                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="ZoomOut"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>ViewTopology</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>
@@ -558,9 +312,10 @@
                 </ElementsList>
                 <EmbeddedRegistriesList/>
                 <ExportedInterfaces>
+                    <Interface InterfaceId="imtbase::IRepresentationController" ComponentId="CommandsController"/>
                     <Interface InterfaceId="imtgql::IGqlRepresentationController" ComponentId="CommandsController"/>
                     <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="CommandsController"/>
-                    <Interface InterfaceId="istd::IPolymorphic" ComponentId="CommandsController"/>
+                    <Interface InterfaceId="imtgui::IGuiElementContainer" ComponentId="CommandsController"/>
                 </ExportedInterfaces>
                 <ExportedComponents/>
             </Data>

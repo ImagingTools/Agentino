@@ -34,7 +34,7 @@ ViewBase {
         itemsTopologyModel.updateModel()
     }
 
-    commandsControllerComp: Component {CommandsRepresentationProvider {
+    commandsControllerComp: Component {CommandsPanelController {
         id: commandsRepresentationProvider
         commandId: "Topology"
         uuid: topologyPage.viewId;
@@ -204,7 +204,7 @@ ViewBase {
             }
             }
 
-            commandsControllerComp: Component {CommandsRepresentationProvider {
+            commandsControllerComp: Component {CommandsPanelController {
                 commandId: "Service";
                 uuid: serviceEditor.viewId;
                 function getAdditionalInputParams(){

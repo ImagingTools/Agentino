@@ -9,6 +9,8 @@ import agentinogqlSdl 1.0
 SingleDocumentWorkspaceView {
     id: root;
 
+    anchors.fill: parent;
+
     Component.onCompleted: {
         registerDocumentView("Agent", "AgentEditor", agentEditorComp);
         registerDocumentDataController("Agent", agentDataControllerComp);
@@ -29,7 +31,7 @@ SingleDocumentWorkspaceView {
             }
             }
 
-            commandsControllerComp: Component {CommandsRepresentationProvider {
+            commandsControllerComp: Component {CommandsPanelController {
                 commandId: "Agent";
                 uuid: agentEditor.viewId;
             }
@@ -40,7 +42,9 @@ SingleDocumentWorkspaceView {
     Component {
         id: agentCollectionViewComp;
 
-        AgentCollectionView {}
+        AgentCollectionView {
+            anchors.fill: root;
+        }
     }
 
     Component {

@@ -17,9 +17,19 @@ SplitView {
     AgentCollectionViewBase {
         id: agentCollectionView;
 
-        width: parent.width
         height: 200 //container.height - log.height
         property string selectedServices
+
+        onCommandsViewChanged:  {
+            console.log("AgentCollectionViewBase onCommandsViewChanged", commandsView);
+            if (commandsView){
+                commandsView.width = container.width;
+            }
+        }
+
+        onWidthChanged: {
+            console.log("AgentCollectionViewBase onWidthChanged", width);
+        }
 
         onSelectionChanged: {
             if (selection.length > 0){
