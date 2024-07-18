@@ -43,7 +43,8 @@ SingleDocumentWorkspaceView {
         id: agentCollectionViewComp;
 
         AgentCollectionView {
-            anchors.fill: root;
+            width: root.width;
+            height: root.height;
         }
     }
 
@@ -62,7 +63,7 @@ SingleDocumentWorkspaceView {
             }
 
              payloadModel: AgentDataPayload {
-                 onM_itemChanged: {
+                 onFinished: {
                      requestDocumentDataController.documentModel = m_item
                  }
              }

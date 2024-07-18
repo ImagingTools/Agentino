@@ -17,19 +17,8 @@ SplitView {
     AgentCollectionViewBase {
         id: agentCollectionView;
 
-        height: 200 //container.height - log.height
+        height: 200
         property string selectedServices
-
-        onCommandsViewChanged:  {
-            console.log("AgentCollectionViewBase onCommandsViewChanged", commandsView);
-            if (commandsView){
-                commandsView.width = container.width;
-            }
-        }
-
-        onWidthChanged: {
-            console.log("AgentCollectionViewBase onWidthChanged", width);
-        }
 
         onSelectionChanged: {
             if (selection.length > 0){
@@ -51,7 +40,6 @@ SplitView {
         collectionId: "AgentLog";
 
         collectionFilter: MessageCollectionFilter {
-
         }
 
         Component.onCompleted: {
@@ -145,8 +133,6 @@ SplitView {
                         console.log("status", status)
                         sourceFilter.setData(service, status === 0 || status === undefined ? false : true);
                     }
-
-                    console.log("checkMenu objectFilter", objectFilter.toJson())
 
                     log.dataController.updateModel()
                 }
