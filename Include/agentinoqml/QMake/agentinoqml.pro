@@ -18,8 +18,6 @@ compyleWeb($$buildwebdir, "agentino")
 
 GENERATED_RESOURCES = $$_PRO_FILE_PWD_/../empty
 
-include($(IMTCOREDIR)/Config/QMake/WebQrc.pri)
-
 include($(ACFDIR)/Config/QMake/StaticConfig.pri)
 include($(IMTCOREDIR)/Config/QMake/ImtCore.pri)
 
