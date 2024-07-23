@@ -184,14 +184,14 @@ IServiceCompositeInfo::StateOfRequiredServices CServiceCompositeInfoComp::GetSta
 										imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
 										if (connectionLinkParamPtr != nullptr){
 											QByteArray dependantServiceId =  GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
-											IServiceStatusInfo::ServiceStatus serviceStatus = GetServiceStatus(dependantServiceId);
-											if (serviceStatus == IServiceStatusInfo::SS_UNDEFINED){
+											IServiceStatusInfo::ServiceStatus dependantServiceStatus = GetServiceStatus(dependantServiceId);
+											if (dependantServiceStatus == IServiceStatusInfo::SS_UNDEFINED){
 												return IServiceCompositeInfo::SORS_UNDEFINED;
 											}
-											else if (serviceStatus == IServiceStatusInfo::SS_NOT_RUNNING){
+											else if (dependantServiceStatus == IServiceStatusInfo::SS_NOT_RUNNING){
 												retVal = IServiceCompositeInfo::SORS_NOT_RUNNING;
 											}
-											else if (serviceStatus == IServiceStatusInfo::SS_RUNNING && retVal != IServiceCompositeInfo::SORS_NOT_RUNNING){
+											else if (dependantServiceStatus == IServiceStatusInfo::SS_RUNNING && retVal != IServiceCompositeInfo::SORS_NOT_RUNNING){
 												retVal = IServiceCompositeInfo::SORS_RUNNING;
 											}
 										}

@@ -153,7 +153,7 @@ imtbase::CTreeItemModel* CTopologyControllerComp::CreateTopologyModel() const
 }
 
 
-imtbase::CTreeItemModel* CTopologyControllerComp::SaveTopologyModel(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+imtbase::CTreeItemModel* CTopologyControllerComp::SaveTopologyModel(const imtgql::CGqlRequest& gqlRequest, QString& /*errorMessage*/) const
 {
 	const imtgql::CGqlObject* inputParams = gqlRequest.GetParam("input");
 	if (inputParams == nullptr || !m_topologyCollectionCompPtr.IsValid()){
