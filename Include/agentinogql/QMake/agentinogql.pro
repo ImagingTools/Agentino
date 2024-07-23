@@ -12,5 +12,3 @@ SDL_GENERATOR_QML_OUT_SUBFOLDER = $$OUT_PWD/$$AUXINCLUDEPATH/GeneratedFiles/$$TA
 SDL_GENERATOR_QML_MODULE_NAME = $${TARGET}Sdl
 include($(IMTCOREDIR)/Config/QMake/SdlCodeGenerator.pri)
 
-LIBS += -L../../../Lib/$$COMPILER_DIR  -limtguigql -limtbase -limtauth -limtgui -limtwidgets -limtlic
-

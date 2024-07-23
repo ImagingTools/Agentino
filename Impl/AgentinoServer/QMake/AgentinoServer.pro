@@ -16,7 +16,7 @@ LIBS += -L../../../Lib/$$COMPILER_DIR -liauth -liqtgui -liservice
 LIBS += -limtbase -limtauth -limtauthgui -limtgui -limtlicdb -limtlic -limtlicgui -lImtCoreLoc -limtwidgets -limtzip -limtrest -limtcrypt -limt3dgui -limtrepo -limtstyle -limtqml -limtdb -limtfile -limtlog
 LIBS += -limtlicgql -limtguigql -limtgql -limtauthgql -limtauthdb -limtcom -limtapp -limtclientgql -limtservice
 LIBS += -limtcontrolsqml -limtstylecontrolsqml -limtguigqlqml -limtcolguiqml -limtdocguiqml -limtauthguiqml -limtlicguiqml -limtguiqml
-LIBS += -lagentinoqml -lagentinogql -lagentgql -lagentinodata -lImtCoreLoc
+LIBS += -lagentinoqml -lagentinogql -lagentgql -lagentinodata -lImtCoreLoc -lAgentinoLoc
 
 # Set OS-specific build options:
 win32-msvc*{
@@ -34,14 +34,14 @@ ARXC_OUTDIR = $$OUT_PWD/$$AUXINCLUDEPATH/GeneratedFiles/$$TARGET
 
 # Conversion of resource templates:
 win*{
-    # File transformation
-	ACF_CONVERT_FILES = $$PWD/../VC/AgentinoServer.rc.xtracf
-	ACF_CONVERT_OUTDIR = $$AUXINCLUDEPATH/GeneratedFiles/$$TARGET
+# File transformation
+ACF_CONVERT_FILES = $$PWD/../VC/AgentinoServer.rc.xtracf
+ACF_CONVERT_OUTDIR = $$AUXINCLUDEPATH/GeneratedFiles/$$TARGET
 	ACF_CONVERT_REGISTRY =  $$PWD/../VC/FileSubstitCopyApp.acc
 	ACF_CONVERT_CONFIG = $$PWD/../../../Config/BaseOnly.awc
 
-    RC_FILE = $$OUT_PWD/$$AUXINCLUDEPATH/GeneratedFiles/$$TARGET/AgentinoServer.rc
-	RC_INCLUDEPATH = $$_PRO_FILE_PWD_
+RC_FILE = $$OUT_PWD/$$AUXINCLUDEPATH/GeneratedFiles/$$TARGET/AgentinoServer.rc
+RC_INCLUDEPATH = $$_PRO_FILE_PWD_
 }
 
 include($(ACFDIR)/Config/QMake/AcfQt.pri)

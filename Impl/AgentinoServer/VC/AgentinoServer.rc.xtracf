@@ -9,6 +9,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #endif //_WIN32
 
 VS_VERSION_INFO VERSIONINFO
+ FILEVERSION $AcfRcVersion:2023$
+ PRODUCTVERSION $AcfRcVersion:2023$
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -23,6 +25,15 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
+			VALUE "Comments", "Internal build version ($AcfRawVersion:2023$), based on ACF $AcfVersion:0$ ($AcfRawVersion:0$), ACF-Solutions $AcfVersion:1$ ($AcfRawVersion:1$)  and Qt $AcfVersion:1023$, build on $AcfTimestamp$ ($CompilerName$)"
+            VALUE "CompanyName", "ImagingTools GmbH"
+			VALUE "FileDescription", "Agentino Server Runtime"
+			VALUE "FileVersion", "$AcfVersion:2023$"
+			VALUE "InternalName", "AgentinoServer"
+            VALUE "LegalCopyright", "Copyright (C) 2017-2021 ImagingTools GmbH"
+			VALUE "OriginalFilename", "AgentinoServer.exe"
+			VALUE "ProductName", "AgentinoServer"
+			VALUE "ProductVersion", "$AcfVersion:2023$"
         END
     END
     BLOCK "VarFileInfo"

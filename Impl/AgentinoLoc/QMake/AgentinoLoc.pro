@@ -1,4 +1,4 @@
-TARGET = ServiceManagerLoc
+TARGET = AgentinoLoc
 
 include($(ACFCONFIGDIR)/QMake/StaticConfig.pri)
 
@@ -11,7 +11,7 @@ TRANSLATIONS += $$files($$_PRO_FILE_PWD_/../Translations/*.ts, false)
 
 # Set configuration of custom builds:
 # ARX Compiler:
-ARXC_CONFIG = $$PWD/../../../Config/ServiceManager.awc
+ARXC_CONFIG = $$PWD/../../../Config/Agentino.awc
 ARXC_FILES += $$files($$_PRO_FILE_PWD_/../*.acc, false)
 ARXC_OUTDIR = $$OUT_PWD/$$AUXINCLUDEPATH/GeneratedFiles/$$TARGET
 
