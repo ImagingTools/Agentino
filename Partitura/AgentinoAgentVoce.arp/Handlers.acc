@@ -91,7 +91,7 @@
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="FileAccessCommandId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Agent/files*"/>
+                        <Data IsEnabled="true" Value="Agent/files/*"/>
                     </AttributeInfo>
                     <AttributeInfo Id="GqlRequestHandler" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
@@ -106,10 +106,10 @@
                     <AttributeInfo Id="HttpCommandIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>Agent/Views*</Value>
+                                <Value>Agent/Views/*</Value>
                                 <Value></Value>
                                 <Value>Agent/graphql</Value>
-                                <Value>Agent/files*</Value>
+                                <Value>Agent/files/*</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -132,7 +132,7 @@
                         <Data IsEnabled="true" Value="ApplicationController/UserSettingsRepository"/>
                     </AttributeInfo>
                     <AttributeInfo Id="WebCommandId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Agent/Views*"/>
+                        <Data IsEnabled="true" Value="Agent/Views/*"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>

@@ -89,7 +89,7 @@
                         </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="CommandId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Lisa/Views*"/>
+                        <Data IsEnabled="true" Value="Lisa/Views/*"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -109,7 +109,7 @@
                     <AttributeInfo Id="HttpCommandIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>ProLife/Views*</Value>
+                                <Value>ProLife/Views/*</Value>
                                 <Value>ProLife/Models*</Value>
                                 <Value>ProLife/Views</Value>
                                 <Value></Value>
