@@ -49,11 +49,11 @@ RemoteCollectionView {
 
         SingleDocumentWorkspaceView {
             id: singleDocumentManager
-
             anchors.fill: parent;
+            documentManager: DocumentManager {}
 
             Component.onCompleted: {
-                MainDocumentManager.registerDocumentManager("Services", singleDocumentManager);
+                MainDocumentManager.registerDocumentManager("Services", documentManager);
 
                 var clientId = root.table.getSelectedIds()[0];
                 var clientName = root.table.getSelectedNames()[0];

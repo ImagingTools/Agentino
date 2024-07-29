@@ -20,7 +20,7 @@ DocumentCollectionViewDelegate {
 
             let documentManagerPtr = MainDocumentManager.getDocumentManager("Agents")
             if (documentManagerPtr){
-                 documentManagerPtr.openDocument(itemId, documentTypeId, viewTypeId);
+                documentManagerPtr.openDocument(itemId, documentTypeId, viewTypeId);
             }
         }
     }

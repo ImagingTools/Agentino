@@ -10,12 +10,15 @@ SingleDocumentWorkspaceView {
     id: root;
 
     anchors.fill: parent;
+    initialItemTitleVisible: false;
+
+    documentManager: DocumentManager {}
 
     Component.onCompleted: {
-        registerDocumentView("Agent", "AgentEditor", agentEditorComp);
-        registerDocumentDataController("Agent", agentDataControllerComp);
+        documentManager.registerDocumentView("Agent", "AgentEditor", agentEditorComp);
+        documentManager.registerDocumentDataController("Agent", agentDataControllerComp);
 
-        MainDocumentManager.registerDocumentManager("AgentsSingleDocument", root);
+        MainDocumentManager.registerDocumentManager("AgentsSingleDocument", documentManager);
 
         addInitialItem(agentCollectionViewComp, "Agents");
     }
