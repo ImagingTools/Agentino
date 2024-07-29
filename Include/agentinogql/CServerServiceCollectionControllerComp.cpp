@@ -155,7 +155,7 @@ QStringList CServerServiceCollectionControllerComp::GetConnectionInfoAboutDepend
 }
 
 
-QStringList CServerServiceCollectionControllerComp::GetConnectionInfoAboutServiceDepends(const QByteArray& connectionId) const
+QStringList CServerServiceCollectionControllerComp::GetConnectionInfoAboutServiceDepends(const QByteArray& /*connectionId*/) const
 {
 	return QStringList();
 }
@@ -402,7 +402,7 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::ListObjects(
 }
 
 
-imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(const imtgql::CGqlRequest& gqlRequest, QString& /*errorMessage*/) const
 {
 	if (!m_objectCollectionCompPtr.IsValid() || !m_serviceCompositeInfoCompPtr.IsValid()){
 		Q_ASSERT(0);
@@ -513,12 +513,12 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 				}
 				dataModelPtr->SetData("Name", dependantServicesStr, index);
 
-				imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
+				imtbase::CTreeItemModel* childContentModelPtr = dataModelPtr->AddTreeModel("Children", index);
 
 				for (const QString& info : connectionInfos){
-					int childIndex = contentModelPtr->InsertNewItem();
+					int childIndex = childContentModelPtr->InsertNewItem();
 
-					contentModelPtr->SetData("Value", info, childIndex);
+					childContentModelPtr->SetData("Value", info, childIndex);
 				}
 			}
 		}

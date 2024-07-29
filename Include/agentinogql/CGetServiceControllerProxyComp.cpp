@@ -204,8 +204,8 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelF
 										&& connectionDependantDataPtr.IsValid()){
 								imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDependantDataPtr.GetPtr());
 								if (connectionParamPtr != nullptr){
-									QUrl url = connectionParamPtr->GetUrl();
-									outputConnectionsModelPtr->SetData("Url", url.toString(), index);
+									QUrl outputUrl = connectionParamPtr->GetUrl();
+									outputConnectionsModelPtr->SetData("Url", outputUrl.toString(), index);
 								}
 							}
 						}
@@ -266,10 +266,10 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetConnectionsModel(con
 														for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
 															index = result->InsertNewItem();
 
-															QString urlStr = serviceName + "@" + incomingConnection.url.host() + ":" + QString::number(incomingConnection.url.port());
+															QString incommingUrlStr = serviceName + "@" + incomingConnection.url.host() + ":" + QString::number(incomingConnection.url.port());
 
 															result->SetData("Id", incomingConnection.id, index);
-															result->SetData("Name", urlStr, index);
+															result->SetData("Name", incommingUrlStr, index);
 															result->SetData("Url", incomingConnection.url.toString(), index);
 														}
 													}

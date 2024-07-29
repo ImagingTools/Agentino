@@ -49,7 +49,7 @@ void CSubscriptionControllerComp::OnSubscriptionStatusChanged(
 
 // reimplemented (imod::CSingleModelObserverBase)
 
-void CSubscriptionControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& changeSet)
+void CSubscriptionControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& /*changeSet*/)
 {
 	if (m_subscriptionManagerCompPtr.IsValid() && m_agentCollectionCompPtr.IsValid()){
 		imtbase::ICollectionInfo::Ids agentCollectionIds = m_agentCollectionCompPtr->GetElementIds();

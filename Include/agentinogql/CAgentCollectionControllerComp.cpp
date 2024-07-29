@@ -643,7 +643,9 @@ void CAgentCollectionControllerComp::OnTimeout()
 													imtbase::CTreeItemModel* agentInputConnectionsModelPtr = dataModelPtr->GetTreeItemModel("InputConnections");
 													if (agentInputConnectionsModelPtr != nullptr){
 														for (int i = 0; i < agentInputConnectionsModelPtr->GetItemsCount(); i++){
-															QByteArray id = agentInputConnectionsModelPtr->GetData("Id", i).toByteArray();
+															QByteArray inputConnectionId = agentInputConnectionsModelPtr->GetData("Id", i).toByteArray();
+															Q_UNUSED(inputConnectionId); // CHECK!!!
+
 															QString usageId = agentInputConnectionsModelPtr->GetData("UsageId", i).toString();
 															QString serviceTypeName = agentInputConnectionsModelPtr->GetData("ServiceTypeName", i).toString();
 															QString description = agentInputConnectionsModelPtr->GetData("Description", i).toString();
@@ -661,7 +663,7 @@ void CAgentCollectionControllerComp::OnTimeout()
 																							 imtservice::IServiceConnectionParam::CT_INPUT,
 																							 connectionUrl));
 
-															inputConnectionCollectionPtr->InsertNewObject("ConnectionInfo", serviceTypeName, description, urlConnectionParamPtr.PopPtr());
+															inputConnectionCollectionPtr->InsertNewObject("ConnectionInfo", serviceTypeName, description, urlConnectionParamPtr.PopPtr()/*,inputConnectionId*/);
 														}
 													}
 												}
@@ -676,7 +678,7 @@ void CAgentCollectionControllerComp::OnTimeout()
 													imtbase::CTreeItemModel* agentOutputConnectionsModelPtr = dataModelPtr->GetTreeItemModel("OutputConnections");
 													if (agentOutputConnectionsModelPtr != nullptr){
 														for (int i = 0; i < agentOutputConnectionsModelPtr->GetItemsCount(); i++){
-															QByteArray id = agentOutputConnectionsModelPtr->GetData("Id", i).toByteArray();
+															QByteArray outputConnnectionId = agentOutputConnectionsModelPtr->GetData("Id", i).toByteArray();
 
 															QString serviceTypeName = agentOutputConnectionsModelPtr->GetData("ServiceTypeName", i).toString();
 															QString usageId = agentOutputConnectionsModelPtr->GetData("UsageId", i).toString();
@@ -689,7 +691,7 @@ void CAgentCollectionControllerComp::OnTimeout()
 																								 usageId.toUtf8(),
 																								 dependantServiceConnectionId.toUtf8()));
 
-															dependantConnectionCollectionPtr->InsertNewObject("ConnectionLink", serviceTypeName, description, urlConnectionLinkParamPtr.PopPtr(), id);
+															dependantConnectionCollectionPtr->InsertNewObject("ConnectionLink", serviceTypeName, description, urlConnectionLinkParamPtr.PopPtr(), outputConnnectionId);
 														}
 													}
 												}

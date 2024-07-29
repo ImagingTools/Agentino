@@ -24,15 +24,17 @@ void CAgentsSubscriberProxyControllerComp::OnResponseReceived(const QByteArray &
 	istd::IChangeable::ChangeSet changeSet(istd::IChangeable::CF_ANY);
 	agentinodata::IServiceController::NotifierStatusInfo notifierInfo;
 	QJsonDocument document = QJsonDocument::fromJson(subscriptionData);
-	QString subscriptionTypeId;
+
 	QStringList keys = document.object().keys();
 	if (!keys.isEmpty()){
 		QByteArray subscriptionTypeId = keys[0].toUtf8();
 		QList<QByteArray> subscriptionIds = m_registeredAgents.values();
 		if (subscriptionIds.contains(subscriptionId)){
 			QJsonObject jsonData = document.object().value(subscriptionTypeId).toObject();
+
 			QJsonDocument documentBody;
 			documentBody.setObject(jsonData);
+
 			QByteArray body = documentBody.toJson(QJsonDocument::Compact);
 			SetAllSubscriptions(subscriptionTypeId, body);
 		}
@@ -50,7 +52,7 @@ void CAgentsSubscriberProxyControllerComp::OnSubscriptionStatusChanged(
 
 // reimplemented (imod::CSingleModelObserverBase)
 
-void CAgentsSubscriberProxyControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& changeSet)
+void CAgentsSubscriberProxyControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& /*changeSet*/)
 {
 	if (m_subscriptionManagerCompPtr.IsValid() && m_agentCollectionCompPtr.IsValid()){
 		imtbase::ICollectionInfo::Ids agentCollectionIds = m_agentCollectionCompPtr->GetElementIds();
