@@ -20,7 +20,7 @@
 #include <agentinodata/CServiceStatusInfo.h>
 #include <agentinodata/CAgentStatusInfo.h>
 
-#include <GeneratedFiles/agentinogql/SDL/CPP/CAgentItemGqlRequest.h>
+#include <GeneratedFiles/agentinogql/SDL/CPP/APIv1_0.h>
 
 
 namespace agentinogql

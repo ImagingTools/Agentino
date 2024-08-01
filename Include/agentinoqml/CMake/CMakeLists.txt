@@ -5,7 +5,7 @@ include(${ACFDIR}/Config/CMake/StaticConfig.cmake)
 include(${IMTCOREDIR}/Config/CMake/ImtCoreSdl.cmake)
 
 
-ImtCoreGenerateSdl(
+ImtCoreGenerateQmlSdl(
 	"${CMAKE_CURRENT_LIST_DIR}/../../agentinogql/SDL/APIv1_0.sdl"
 	"${AUX_INCLUDE_DIR}/agentinogql/SDL/QML/agentinogqlSdl"
 	"agentinogqlSdl"

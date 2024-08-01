@@ -4,7 +4,7 @@ include(${ACFDIR}/Config/CMake/StaticConfig.cmake)
 include(${IMTCOREDIR}/Config/CMake/ImtCore.cmake)
 include(${IMTCOREDIR}/Config/CMake/ImtCoreSdl.cmake)
 
-ImtCoreGenerateSdl(
+ImtCoreGenerateCppSdl(
 	"${CMAKE_CURRENT_LIST_DIR}/../SDL/APIv1_0.sdl"
 	"${AUX_INCLUDE_DIR}/${PROJECT_NAME}/SDL/CPP"
 	"${PROJECT_NAME}::sdl"
