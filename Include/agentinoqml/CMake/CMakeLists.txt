@@ -2,10 +2,10 @@ project(agentinoqml LANGUAGES CXX)
 
 include(${IMTCOREDIR}/Config/CMake/WebCompiler.cmake)
 include(${ACFDIR}/Config/CMake/StaticConfig.cmake)
-include(${IMTCOREDIR}/Config/CMake/ImtCoreSdl.cmake)
+include(${IMTCOREDIR}/Config/CMake/ImtSdlConfig.cmake)
 
 
-ImtCoreGenerateQmlSdl(
+ImtGenerateQmlSdl(
 	"${CMAKE_CURRENT_LIST_DIR}/../../agentinogql/SDL/APIv1_0.sdl"
 	"${AUX_INCLUDE_DIR}/agentinogql/SDL/QML/agentinogqlSdl"
 	"agentinogqlSdl"
@@ -14,7 +14,7 @@ ImtCoreGenerateQmlSdl(
 
 SET(sdldependency "${AUX_INCLUDE_DIR}/agentinogql/SDL/QML/agentinogqlSdl/agentinogqlSdl.qrc")
 
-ImtCoreFutureResourceWrap (
+ImtFutureResourceWrap (
 	agentinogql
 	"${sdldependency}"
 )

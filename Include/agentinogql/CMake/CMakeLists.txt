@@ -2,11 +2,11 @@ project(agentinogql LANGUAGES CXX)
 
 include(${ACFDIR}/Config/CMake/StaticConfig.cmake)
 include(${IMTCOREDIR}/Config/CMake/ImtCore.cmake)
-include(${IMTCOREDIR}/Config/CMake/ImtCoreSdl.cmake)
+include(${IMTCOREDIR}/Config/CMake/ImtCoreProjectSdlConfig.cmake)
 
-ImtCoreGenerateCppSdl(
-	"${CMAKE_CURRENT_LIST_DIR}/../SDL/APIv1_0.sdl"
-	"${AUX_INCLUDE_DIR}/${PROJECT_NAME}/SDL/CPP"
+ImtCoreConfigureSdlCpp(
+	"APIv1_0"
+	"CPP"
 	"${PROJECT_NAME}::sdl"
 	"-MVMap;-MTreeModel;-MGraphQL;--GQL;--CPP"
 )
