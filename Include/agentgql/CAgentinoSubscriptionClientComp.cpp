@@ -28,12 +28,12 @@ void CAgentinoSubscriptionClientComp::OnComponentCreated()
 }
 
 
-void CAgentinoSubscriptionClientComp::OnResponseReceived(const QByteArray & subscriptionId, const QByteArray & subscriptionData)
+void CAgentinoSubscriptionClientComp::OnResponseReceived(const QByteArray& /*subscriptionId*/, const QByteArray& /*subscriptionData*/)
 {
 }
 
 
-void CAgentinoSubscriptionClientComp::OnSubscriptionStatusChanged(const QByteArray & subscriptionId, const SubscriptionStatus & status, const QString & message)
+void CAgentinoSubscriptionClientComp::OnSubscriptionStatusChanged(const QByteArray& /*subscriptionId*/, const SubscriptionStatus& /*status*/, const QString& /*message*/)
 {
 }
 

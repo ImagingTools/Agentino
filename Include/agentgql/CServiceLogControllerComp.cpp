@@ -51,7 +51,6 @@ imtbase::CTreeItemModel* CServiceLogControllerComp::CreateInternalResponse(
 	QByteArray serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_NAME).toByteArray();
 
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
-	imtbase::CTreeItemModel* dataModelPtr = rootModelPtr->AddTreeModel("data");
 
 	QFileInfo fileInfo(servicePath);
 	QString pluginPath = fileInfo.path() + "/Plugins";
@@ -78,17 +77,6 @@ imtbase::CTreeItemModel* CServiceLogControllerComp::CreateInternalResponse(
 			}
 		}
 	}
-
-//	QString logPath = QString("C:/Users/Public/ImagingTools GmbH/Lisa/LisaServer/LisaServerLog.txt");
-
-//	QFile logFile(logPath);
-//	if (logFile.open(QIODevice::ReadOnly)){
-//		QByteArray fileData = logFile.readAll();
-
-//		dataModelPtr->SetData("Text", fileData);
-
-//		logFile.close();
-//	}
 
 	return rootModelPtr.PopPtr();
 }
