@@ -14,6 +14,10 @@ if(NOT DEFINED WEB_COMPILE)
 	set(WEB_COMPILE ON CACHE BOOL "Build whith web compatibility")
 endif()
 
+if(NOT DEFINED BUILDDIR)
+	set(BUILDDIR "${CMAKE_CURRENT_LIST_DIR}/../../..")
+endif()
+
 if(NOT DEFINED IMTCOREDIR)
 	set(IMTCOREDIR "$ENV{IMTCOREDIR}")
 endif()
