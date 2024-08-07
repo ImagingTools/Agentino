@@ -63,16 +63,14 @@ bool CMessageCollectionControllerComp::SetupGqlItem(
 		}
 
 		if (messagePtr != nullptr){
-			QByteArray serviceId;
-			for (QByteArray informationId : informationIds){
+			for (const QByteArray& informationId : informationIds){
 				QVariant elementInformation;
 
 				if(informationId == "TypeId"){
 					elementInformation = messageCollectionPtr->GetObjectTypeId(objectCollectionIterator->GetObjectId());
 				}
 				else if(informationId == "Id"){
-					serviceId = objectCollectionIterator->GetObjectId();
-					elementInformation = serviceId;
+					elementInformation = objectCollectionIterator->GetObjectId();
 				}
 				else if(informationId == "Text"){
 					elementInformation = messagePtr->GetInformationDescription();
@@ -93,7 +91,6 @@ bool CMessageCollectionControllerComp::SetupGqlItem(
 					elementInformation = messagePtr->GetInformationTimeStamp().toString("dd.MM.yyyy hh:mm:ss.zzz");
 				}
 
-
 				if (elementInformation.isNull()){
 					elementInformation = "";
 				}
@@ -103,7 +100,6 @@ bool CMessageCollectionControllerComp::SetupGqlItem(
 
 			return retVal;
 		}
-
 	}
 	errorMessage = "Unable to get object data from object collection";
 
