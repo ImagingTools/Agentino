@@ -2,18 +2,17 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5225" Description="ACF"/>
-            <Version Id="1" Number="2208" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5229" Description="ACF"/>
+            <Version Id="1" Number="2213" Description="ACF-Solutions"/>
             <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
-        <Element ComponentName="AdministrationPage" X="600" Y="400" Note=""/>
-        <Element ComponentName="AgentsPage" X="125" Y="400" Note=""/>
-        <Element ComponentName="PageData" X="955.656854249" Y="225" Note=""/>
+        <Element ComponentName="AgentsPage" X="625" Y="400" Note=""/>
+        <Element ComponentName="PageData" X="950" Y="225" Note=""/>
         <Element ComponentName="PagesController" X="375" Y="225" Note=""/>
         <Element ComponentName="PagesDemultiplexer" X="600" Y="75" Note=""/>
-        <Element ComponentName="TopologyPage" X="350" Y="400" Note=""/>
+        <Element ComponentName="TopologyPage" X="150" Y="400" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
         <EmbededRegistry Id="PageData">
