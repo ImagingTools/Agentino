@@ -551,9 +551,7 @@ void CAgentCollectionControllerComp::UpdateAgentService(
 
 	QString errorMessage;
 	istd::TDelPtr<imtbase::CTreeItemModel> responseModelPtr = m_requestHandlerCompPtr->CreateResponse(request, errorMessage);
-	if (responseModelPtr.IsValid()){
-	}
-	else{
+	if (!responseModelPtr.IsValid()){
 		SendErrorMessage(0, QString("Unable to update service on the agent"));
 	}
 }
