@@ -35,22 +35,6 @@ bool CAgentMessageCollectionControllerComp::SetupGqlItem(
 			const imtbase::IObjectCollectionIterator* objectCollectionIterator,
 			QString& errorMessage) const
 {
-	// QByteArray agentId;
-	// const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParam("input");
-	// if (gqlInputParamPtr != nullptr){
-	// 	const imtgql::CGqlObject* addition =gqlInputParamPtr->GetFieldArgumentObjectPtr("addition");
-	// 	if (addition != nullptr) {
-	// 		agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
-	// 	}
-	// }
-
-	// istd::TDelPtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(gqlRequest, errorMessage);
-	// if (!messageCollectionPtr.IsValid()){
-	// 	SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
-
-	// 	return false;
-	// }
-
 	bool retVal = true;
 
 	QByteArrayList informationIds = GetInformationIds(gqlRequest, "items");
@@ -89,7 +73,6 @@ bool CAgentMessageCollectionControllerComp::SetupGqlItem(
 				else if(informationId == "Timestamp" || informationId == "LastModified"){
 					elementInformation = messagePtr->GetInformationTimeStamp().toString("dd.MM.yyyy hh:mm:ss.zzz");
 				}
-
 
 				if (elementInformation.isNull()){
 					elementInformation = "";
