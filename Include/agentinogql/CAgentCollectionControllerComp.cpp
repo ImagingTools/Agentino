@@ -160,7 +160,7 @@ imtbase::CTreeItemModel *CAgentCollectionControllerComp::ListObjects(const imtgq
 		return nullptr;
 	}
 
-	const QList<imtgql::CGqlObject> inputParams = gqlRequest.GetParams();
+	const imtgql::CGqlObject& inputParams = gqlRequest.GetParams();
 
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
 
@@ -178,8 +178,9 @@ imtbase::CTreeItemModel *CAgentCollectionControllerComp::ListObjects(const imtgq
 		notificationModel = new imtbase::CTreeItemModel();
 
 		const imtgql::CGqlObject* viewParamsGql = nullptr;
-		if (inputParams.size() > 0){
-			viewParamsGql = inputParams.at(0).GetFieldArgumentObjectPtr("viewParams");
+		const imtgql::CGqlObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
+		if (inputObject != nullptr){
+			viewParamsGql = inputObject->GetFieldArgumentObjectPtr("viewParams");
 		}
 
 		iprm::CParamsSet filterParams;
@@ -290,7 +291,7 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObject(
 		return nullptr;
 	}
 
-	objectId = GetObjectIdFromInputParams(inputParams);
+	objectId = GetObjectIdFromInputParams(inputParams.first());
 	if (objectId.isEmpty()){
 		objectId = QUuid::createUuid().toString(QUuid::WithoutBraces).toUtf8();
 	}
@@ -357,7 +358,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 		return nullptr;
 	}
 
-	const QList<imtgql::CGqlObject> inputParams = gqlRequest.GetParams();
+	const imtgql::CGqlObject& inputParams = gqlRequest.GetParams();
 
 	QByteArray agentId = GetObjectIdFromInputParams(inputParams);
 
@@ -367,13 +368,11 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 		if (agentInfoPtr != nullptr){
 			agentInfoPtr->SetLastConnection(QDateTime::currentDateTimeUtc());
 
-			if (inputParams.count() > 0){
-				QByteArray item = inputParams.at(0).GetFieldArgumentValue("Item").toByteArray();
-				QJsonDocument itemDoc = QJsonDocument::fromJson(item);
-				if (itemDoc.object().contains("Version")){
-					QString version = itemDoc.object().value("Version").toString();
-					agentInfoPtr->SetVersion(version);
-				}
+			QByteArray item = inputParams.GetFieldArgumentValue("Item").toByteArray();
+			QJsonDocument itemDoc = QJsonDocument::fromJson(item);
+			if (itemDoc.object().contains("Version")){
+				QString version = itemDoc.object().value("Version").toString();
+				agentInfoPtr->SetVersion(version);
 			}
 
 			if (!m_objectCollectionCompPtr->SetObjectData(agentId, *agentInfoPtr)){
@@ -385,7 +384,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 		QString name;
 		QString description;
 
-		istd::TDelPtr<istd::IChangeable> objectPtr = BaseClass::CreateObject(gqlRequest, agentId, name, description, errorMessage);
+		istd::TDelPtr<istd::IChangeable> objectPtr = BaseClass::CreateObjectFromRequest(gqlRequest, agentId, name, description, errorMessage);
 		if (objectPtr == nullptr){
 			return nullptr;
 		}
@@ -414,8 +413,8 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtg
 		return nullptr;
 	}
 
-	const QList<imtgql::CGqlObject> inputParams = gqlRequest.GetParams();
-	if (inputParams.size() == 0){
+	const imtgql::CGqlObject& inputParams = gqlRequest.GetParams();
+	if (inputParams.GetFieldIds().size() == 0){
 		errorMessage = QString("Unable to update model. Error: GraphQL input params is invalid.");
 		SendErrorMessage(0, errorMessage);
 
@@ -432,7 +431,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtg
 			QDateTime dateTime = QDateTime::currentDateTimeUtc();
 			agentInfoPtr->SetLastConnection(dateTime);
 
-			QByteArray itemData = inputParams.at(0).GetFieldArgumentValue("Item").toByteArray();
+			QByteArray itemData = inputParams.GetFieldArgumentValue("Item").toByteArray();
 			QString name;
 
 			if (!itemData.isEmpty()){
@@ -536,18 +535,18 @@ void CAgentCollectionControllerComp::UpdateAgentService(
 	serviceRepresentationModel.SetData("Description", description);
 
 	imtgql::CGqlRequest request(imtgql::CGqlRequest::RT_MUTATION, "ServiceUpdate");
-	imtgql::CGqlObject inputObject("input");
+	imtgql::CGqlObject inputObject;
 	inputObject.InsertField(QByteArray("Id"), QVariant(serviceId));
 	inputObject.InsertField(QByteArray("Item"), QVariant(serviceRepresentationModel.ToJson()));
 
-	imtgql::CGqlObject additionObject("addition");
+	imtgql::CGqlObject additionObject;
 	additionObject.InsertField("clientId", QVariant(agentId));
 	inputObject.InsertField("addition", additionObject);
-	request.AddParam(inputObject);
+	request.AddParam("input", inputObject);
 
-	imtgql::CGqlObject updatedObject("updatedNotification");
+	imtgql::CGqlObject updatedObject;
 	updatedObject.InsertField("Id");
-	request.AddField(updatedObject);
+	request.AddField("updatedNotification", updatedObject);
 
 	QString errorMessage;
 	istd::TDelPtr<imtbase::CTreeItemModel> responseModelPtr = m_requestHandlerCompPtr->CreateResponse(request, errorMessage);
@@ -590,17 +589,17 @@ void CAgentCollectionControllerComp::OnTimeout()
 							serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_UNDEFINED);
 
 							imtgql::CGqlRequest request(imtgql::CGqlRequest::RT_QUERY, "ServiceItem");
-							imtgql::CGqlObject inputObject("input");
+							imtgql::CGqlObject inputObject;
 							inputObject.InsertField(QByteArray("Id"), QVariant(id));
 
-							imtgql::CGqlObject additionObject("addition");
+							imtgql::CGqlObject additionObject;
 							additionObject.InsertField("clientId", QVariant(agentId));
 							inputObject.InsertField("addition", additionObject);
-							request.AddParam(inputObject);
+							request.AddParam("input", inputObject);
 
-							imtgql::CGqlObject itemObject("item");
+							imtgql::CGqlObject itemObject;
 							itemObject.InsertField("Id");
-							request.AddField(itemObject);
+							request.AddField("item", itemObject);
 
 							// Service representaton model from Agent
 							QString errorMessage;

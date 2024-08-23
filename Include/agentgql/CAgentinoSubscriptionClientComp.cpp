@@ -47,7 +47,7 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 
 	if (loginStatus == imtauth::ILoginStatusProvider::LSF_LOGGED_IN){
 		imtgql::CGqlRequest* gqlInitRequest = new imtgql::CGqlRequest(imtgql::IGqlRequest::RT_MUTATION, "AgentAdd");
-		imtgql::CGqlObject inputDataParams("input");
+		imtgql::CGqlObject inputDataParams;
 		QString clientId;
 		if (m_clientIdCompPtr.IsValid()){
 			clientId = m_clientIdCompPtr->GetText();
@@ -76,11 +76,11 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 		itemDocument.setObject(item);
 
 		inputDataParams.InsertField("Item", QVariant(itemDocument.toJson(QJsonDocument::Compact)));
-		gqlInitRequest->AddParam(inputDataParams);
+		gqlInitRequest->AddParam("input", inputDataParams);
 
-		imtgql::CGqlObject returnNotify("addedNotification");
+		imtgql::CGqlObject returnNotify;
 //		returnNotify.InsertField("status");
-		gqlInitRequest->AddField(returnNotify);
+		gqlInitRequest->AddField("addedNotification", returnNotify);
 
 		imtclientgql::IGqlClient::GqlRequestPtr requestPtr(gqlInitRequest);
 		imtclientgql::IGqlClient::GqlResponsePtr responsePtr = m_gqlClientCompPtr->SendRequest(requestPtr);

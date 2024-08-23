@@ -68,16 +68,16 @@ void CAgentsSubscriberProxyControllerComp::OnUpdate(const istd::IChangeable::Cha
 			if(!m_registeredAgents.contains(agentId)){
 				for (int index = 0; index < m_commandIdsAttrPtr.GetCount(); index++){
 					imtgql::CGqlRequest gqlAddRequest(imtgql::IGqlRequest::RT_SUBSCRIPTION, m_commandIdsAttrPtr[index]);
-					imtgql::CGqlObject subscriptionInput("input");
-					imtgql::CGqlObject subscriptionAddition("addition");
+					imtgql::CGqlObject subscriptionInput;
+					imtgql::CGqlObject subscriptionAddition;
 					subscriptionAddition.InsertField("clientId", QString(agentId));
 					subscriptionInput.InsertField("addition", subscriptionAddition);
-					gqlAddRequest.AddParam(subscriptionInput);
+					gqlAddRequest.AddParam("input", subscriptionInput);
 
-					imtgql::CGqlObject subscriptionField("data");
+					imtgql::CGqlObject subscriptionField;
 					subscriptionField.InsertField("id");
 					subscriptionField.InsertField("status");
-					gqlAddRequest.AddField(subscriptionField);
+					gqlAddRequest.AddField("data", subscriptionField);
 					QByteArray subscriptionId = m_subscriptionManagerCompPtr->RegisterSubscription(gqlAddRequest, this);
 					m_registeredAgents.insert(agentId, subscriptionId);
 				}

@@ -42,4 +42,4 @@ BEGIN
     END
 END
 
-IDI_ICON1               ICON                    "..\\..\\ServiceManagerServer\\VC\\Logo.ico"
+IDI_ICON1               ICON                    "..\\..\\AgentinoServer\\VC\\Logo.ico"

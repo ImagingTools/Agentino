@@ -29,7 +29,7 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 	}
 
 	if (m_serviceManagerCompPtr.IsValid()){
-		const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParam("input");
+		const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParamObject("input");
 
 		QByteArray itemData;
 		QByteArray agentId;

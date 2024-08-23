@@ -24,16 +24,15 @@ imtbase::CTreeItemModel* CServiceControllerComp::CreateInternalResponse(const im
 		return nullptr;
 	}
 
-	const QList<imtgql::CGqlObject> fieldList = gqlRequest.GetFields();
-	const QList<imtgql::CGqlObject> paramList = gqlRequest.GetParams();
+	const imtgql::CGqlObject& fieldList = gqlRequest.GetFields();
+	const imtgql::CGqlObject& paramList = gqlRequest.GetParams();
 
-	int count = fieldList.count();
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
 	imtbase::CTreeItemModel* dataModel = nullptr;
 	QByteArray serviceId;
 
-	if (paramList.count() > 0 && paramList[0].GetFieldIds().contains("serviceId")){
-		serviceId = paramList[0].GetFieldArgumentValue("serviceId").toByteArray();
+	if (paramList.GetFieldIds().contains("serviceId")){
+		serviceId = paramList.GetFieldArgumentValue("serviceId").toByteArray();
 	}
 
 	if (serviceId.isEmpty()){
@@ -53,21 +52,16 @@ imtbase::CTreeItemModel* CServiceControllerComp::CreateInternalResponse(const im
 		else if (commandId == "ServiceStop"){
 			result = m_serviceControllerCompPtr->StopService(serviceId);
 		}
+		agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
+		agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
 
-		for (int i = 0; i < count; i++){
-			if (fieldList.at(i).GetId() == agentino::ServiceStatus::s_Key){
+		dataModel = new imtbase::CTreeItemModel();
+		imtbase::CTreeItemModel* statusModel = dataModel->AddTreeModel(agentino::ServiceStatus::s_Key);
 
-				agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
-				agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
+		statusModel->SetData("serviceId", serviceId);
+		statusModel->SetData("status", processStateEnum.id);
+		statusModel->SetData("statusName", processStateEnum.name);
 
-				dataModel = new imtbase::CTreeItemModel();
-				imtbase::CTreeItemModel* statusModel = dataModel->AddTreeModel(agentino::ServiceStatus::s_Key);
-
-				statusModel->SetData("serviceId", serviceId);
-				statusModel->SetData("status", processStateEnum.id);
-				statusModel->SetData("statusName", processStateEnum.name);
-			}
-		}
 		rootModelPtr->SetExternTreeModel("data", dataModel);
 	}
 

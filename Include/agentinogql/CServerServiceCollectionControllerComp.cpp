@@ -177,7 +177,7 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 	}
 
 	QByteArray agentId;
-	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParam("input");
+	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
 	if (gqlInputParamPtr != nullptr){
 		const imtgql::CGqlObject* addition =gqlInputParamPtr->GetFieldArgumentObjectPtr("addition");
 		if (addition != nullptr) {
@@ -315,7 +315,7 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::ListObjects(
 			const imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	const QList<imtgql::CGqlObject> inputParams = gqlRequest.GetParams();
+	const imtgql::CGqlObject& inputParams = gqlRequest.GetParams();
 
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
 
@@ -334,13 +334,14 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::ListObjects(
 
 		QByteArray agentId;
 		const imtgql::CGqlObject* viewParamsGql = nullptr;
-		if (inputParams.size() > 0){
-			viewParamsGql = inputParams.at(0).GetFieldArgumentObjectPtr("viewParams");
-
-			const imtgql::CGqlObject* addition = inputParams.at(0).GetFieldArgumentObjectPtr("addition");
-			if (addition != nullptr) {
-				agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
-			}
+		const imtgql::CGqlObject* addition = nullptr;
+		const imtgql::CGqlObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
+		if (inputObject != nullptr){
+			viewParamsGql = inputObject->GetFieldArgumentObjectPtr("viewParams");
+			addition = inputObject->GetFieldArgumentObjectPtr("addition");
+		}
+		if (addition != nullptr) {
+			agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
 		}
 
 		imtbase::IObjectCollection* serviceCollectionPtr = nullptr;
@@ -412,7 +413,7 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 
 	QByteArray agentId;
 	QByteArray serviceId;
-	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParam("input");
+	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
 	if (gqlInputParamPtr != nullptr){
 		serviceId = gqlInputParamPtr->GetFieldArgumentValue("Id").toByteArray();
 

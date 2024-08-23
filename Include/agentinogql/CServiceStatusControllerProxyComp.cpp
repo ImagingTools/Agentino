@@ -17,7 +17,7 @@ imtbase::CTreeItemModel* CServiceStatusControllerProxyComp::CreateInternalRespon
 	QByteArray commandId = gqlRequest.GetCommandId();
 
 	if (m_serviceStatusCollectionCompPtr.IsValid()){
-		const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParam("input");
+		const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParamObject("input");
 		if (inputParamPtr != nullptr){
 			serviceId = inputParamPtr->GetFieldArgumentValue("serviceId").toByteArray();
 		}
