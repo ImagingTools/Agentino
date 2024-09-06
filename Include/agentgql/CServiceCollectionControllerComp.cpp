@@ -669,8 +669,18 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObject(
 			QString& description,
 			QString& errorMessage) const
 {
+	Q_ASSERT(inputParams.empty());
+
 	if (!m_serviceInfoFactCompPtr.IsValid() || !m_objectCollectionCompPtr.IsValid()){
 		Q_ASSERT(false);
+
+		return nullptr;
+	}
+
+	const imtgql::CGqlObject* inputDataPtr = inputParams.first().GetFieldArgumentObjectPtr("input");
+	if (inputDataPtr == nullptr){
+		Q_ASSERT(false);
+
 		return nullptr;
 	}
 
@@ -679,7 +689,7 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObject(
 		objectId = QUuid::createUuid().toString(QUuid::WithoutBraces).toUtf8();
 	}
 
-	QByteArray itemData = inputParams.at(0).GetFieldArgumentValue("Item").toByteArray();
+	QByteArray itemData = inputDataPtr->GetFieldArgumentValue("Item").toByteArray();
 	if (!itemData.isEmpty()){
 		agentinodata::IServiceInfo* serviceInstancePtr = m_serviceInfoFactCompPtr.CreateInstance();
 		if (serviceInstancePtr == nullptr){

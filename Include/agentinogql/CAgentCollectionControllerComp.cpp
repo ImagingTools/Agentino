@@ -296,7 +296,16 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObject(
 		objectId = QUuid::createUuid().toString(QUuid::WithoutBraces).toUtf8();
 	}
 
-	QByteArray itemData = inputParams.at(0).GetFieldArgumentValue("Item").toByteArray();
+	Q_ASSERT(inputParams.empty());
+
+	const imtgql::CGqlObject* inputDataPtr = inputParams.first().GetFieldArgumentObjectPtr("input");
+	if (inputDataPtr == nullptr) {
+		Q_ASSERT(false);
+
+		return nullptr;
+	}
+
+	QByteArray itemData = inputDataPtr->GetFieldArgumentValue("Item").toByteArray();
 	if (!itemData.isEmpty()){
 		istd::TDelPtr<agentinodata::IAgentInfo> agentInstancePtr = m_agentFactCompPtr.CreateInstance();
 		if (agentInstancePtr == nullptr){
