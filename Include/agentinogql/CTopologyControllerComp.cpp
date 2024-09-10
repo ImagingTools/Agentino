@@ -4,7 +4,7 @@
 //Qt includes
 #include <QtCore/QPoint>
 
-// Acf includes
+// ACF includes
 #include <i2d/CPosition2d.h>
 
 // ImtCore includes
