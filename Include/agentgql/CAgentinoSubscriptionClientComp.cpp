@@ -79,13 +79,12 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 		gqlInitRequest->AddParam("input", inputDataParams);
 
 		imtgql::CGqlObject returnNotify;
-//		returnNotify.InsertField("status");
+		returnNotify.InsertField("status");
 		gqlInitRequest->AddField("addedNotification", returnNotify);
 
 		imtclientgql::IGqlClient::GqlRequestPtr requestPtr(gqlInitRequest);
 		imtclientgql::IGqlClient::GqlResponsePtr responsePtr = m_gqlClientCompPtr->SendRequest(requestPtr);
 	}
-
 }
 
 

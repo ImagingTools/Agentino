@@ -51,6 +51,7 @@ protected:
 
 	// reimplemented (imod::CSingleModelObserverBase)
 	virtual void OnUpdate(const istd::IChangeable::ChangeSet& changeSet) override;
+
 private:
 	I_REF(imtclientgql::IGqlSubscriptionManager, m_subscriptionManagerCompPtr);
 	I_REF(imtclientgql::IGqlClient, m_gqlClientCompPtr);

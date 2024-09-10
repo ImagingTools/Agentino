@@ -19,7 +19,6 @@
 #include <agentinodata/CServiceInfo.h>
 #include <agentinodata/CServiceStatusInfo.h>
 #include <agentinodata/CAgentStatusInfo.h>
-
 #include <GeneratedFiles/agentinogql/SDL/CPP/APIv1_0.h>
 
 
@@ -40,11 +39,11 @@ void CAgentCollectionControllerComp::OnComponentCreated()
 // reimplemented (imtgql::CObjectCollectionControllerCompBase)
 
 bool CAgentCollectionControllerComp::SetupGqlItem(
-			const imtgql::CGqlRequest& gqlRequest,
-			imtbase::CTreeItemModel& model,
-			int itemIndex,
-			const QByteArray& collectionId,
-			QString& errorMessage) const
+	const imtgql::CGqlRequest& gqlRequest,
+	imtbase::CTreeItemModel& model,
+	int itemIndex,
+	const QByteArray& collectionId,
+	QString& errorMessage) const
 {
 	qDebug("Test log qDebug()");
 	SendErrorMessage(0, "Test log", "CObjectCollectionControllerCompBase");
@@ -257,16 +256,10 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 			agentData.SetLastConnection(lastConnection.toString("dd.MM.yyyy"));
 			agentData.SetTracingLevel(agentPtr->GetTracingLevel());
 			agentDataPayload.SetItem(agentData);
-
-			// dataModel->SetData("Id", objectId);
-			// dataModel->SetData("Name", name);
-			// dataModel->SetData("Description", description);
-			// dataModel->SetData("LastConnection", lastConnection.toString("dd.MM.yyyy"));
-			// dataModel->SetData("TracingLevel", agentPtr->GetTracingLevel());
 		}
 	}
 
-;
+	;
 
 	if (!agentDataPayload.WriteToModel(*dataModel)){
 		errorMessage = QString("Unable to setup gql item. Unable to write model.");
@@ -279,84 +272,82 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 }
 
 
-istd::IChangeable* CAgentCollectionControllerComp::CreateObject(
-			const QList<imtgql::CGqlObject>& inputParams,
-			QByteArray& objectId,
-			QString& name,
-			QString& description,
-			QString& errorMessage) const
+istd::IChangeable* CAgentCollectionControllerComp::CreateObjectFromRequest(
+	const imtgql::CGqlRequest& gqlRequest,
+	QByteArray& objectId,
+	QString& name,
+	QString& description,
+	QString& errorMessage) const
 {
 	if (!m_agentFactCompPtr.IsValid() || !m_objectCollectionCompPtr.IsValid()){
 		Q_ASSERT(false);
 		return nullptr;
 	}
 
-	objectId = GetObjectIdFromInputParams(inputParams.first());
-	if (objectId.isEmpty()){
-		objectId = QUuid::createUuid().toString(QUuid::WithoutBraces).toUtf8();
-	}
-
-	Q_ASSERT(inputParams.empty());
-
-	const imtgql::CGqlObject* inputDataPtr = inputParams.first().GetFieldArgumentObjectPtr("input");
+	const imtgql::CGqlObject* inputDataPtr = gqlRequest.GetParamObject("input");
 	if (inputDataPtr == nullptr) {
 		Q_ASSERT(false);
 
 		return nullptr;
 	}
 
-	QByteArray itemData = inputDataPtr->GetFieldArgumentValue("Item").toByteArray();
-	if (!itemData.isEmpty()){
-		istd::TDelPtr<agentinodata::IAgentInfo> agentInstancePtr = m_agentFactCompPtr.CreateInstance();
-		if (agentInstancePtr == nullptr){
-			return nullptr;
-		}
-
-		agentinodata::CIdentifiableAgentInfo* agentPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(agentInstancePtr.GetPtr());
-		if (agentPtr == nullptr){
-			errorMessage = QT_TR_NOOP("Unable to get an service info!");
-			return nullptr;
-		}
-
-		imtbase::CTreeItemModel itemModel;
-		itemModel.CreateFromJson(itemData);
-
-		agentPtr->SetObjectUuid(objectId);
-
-		if (itemModel.ContainsKey("Name")){
-			name = itemModel.GetData("Name").toString();
-		}
-
-		if (name.isEmpty()){
-			errorMessage = QT_TR_NOOP("Service name can't be empty");
-			return nullptr;
-		}
-
-		if (itemModel.ContainsKey("Description")){
-			description = itemModel.GetData("Description").toString();
-		}
-
-		if (itemModel.ContainsKey("ComputerName")){
-			QString computerName = itemModel.GetData("ComputerName").toString();
-			agentPtr->SetComputerName(computerName);
-		}
-
-		if (itemModel.ContainsKey("Version")){
-			QString version = itemModel.GetData("Version").toString();
-			agentPtr->SetVersion(version);
-		}
-
-		if (itemModel.ContainsKey("TracingLevel")){
-			int tracingLevel = itemModel.GetData("TracingLevel").toInt();
-			agentPtr->SetTracingLevel(tracingLevel);
-		}
-
-		return agentInstancePtr.PopPtr();
+	objectId = inputDataPtr->GetFieldArgumentValue("Id").toByteArray();
+	if (objectId.isEmpty()){
+		objectId = QUuid::createUuid().toString(QUuid::WithoutBraces).toUtf8();
 	}
 
-	errorMessage = QString("Can not create agent: '%1'").arg(QString(objectId));
+	QByteArray itemData = inputDataPtr->GetFieldArgumentValue("Item").toByteArray();
+	if (itemData.isEmpty()){
+		return nullptr;
+	}
 
-	return nullptr;
+	istd::TDelPtr<agentinodata::IAgentInfo> agentInstancePtr = m_agentFactCompPtr.CreateInstance();
+	if (agentInstancePtr == nullptr){
+		return nullptr;
+	}
+
+	agentinodata::CIdentifiableAgentInfo* agentPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(agentInstancePtr.GetPtr());
+	if (agentPtr == nullptr){
+		errorMessage = QT_TR_NOOP("Unable to get an service info!");
+		return nullptr;
+	}
+
+	imtbase::CTreeItemModel itemModel;
+	if (!itemModel.CreateFromJson(itemData)){
+		return nullptr;
+	}
+
+	agentPtr->SetObjectUuid(objectId);
+
+	if (itemModel.ContainsKey("Name")){
+		name = itemModel.GetData("Name").toString();
+	}
+
+	if (name.isEmpty()){
+		errorMessage = QT_TR_NOOP("Service name can't be empty");
+		return nullptr;
+	}
+
+	if (itemModel.ContainsKey("Description")){
+		description = itemModel.GetData("Description").toString();
+	}
+
+	if (itemModel.ContainsKey("ComputerName")){
+		QString computerName = itemModel.GetData("ComputerName").toString();
+		agentPtr->SetComputerName(computerName);
+	}
+
+	if (itemModel.ContainsKey("Version")){
+		QString version = itemModel.GetData("Version").toString();
+		agentPtr->SetVersion(version);
+	}
+
+	if (itemModel.ContainsKey("TracingLevel")){
+		int tracingLevel = itemModel.GetData("TracingLevel").toInt();
+		agentPtr->SetTracingLevel(tracingLevel);
+	}
+
+	return agentInstancePtr.PopPtr();
 }
 
 
@@ -488,8 +479,8 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtg
 
 
 void CAgentCollectionControllerComp::UpdateAgentService(
-			const QByteArray& agentId,
-			const QByteArray& serviceId) const
+	const QByteArray& agentId,
+	const QByteArray& serviceId) const
 {
 	if (!m_requestHandlerCompPtr.IsValid()){
 		return;
@@ -664,10 +655,10 @@ void CAgentCollectionControllerComp::OnTimeout()
 
 															istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
 															urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam(
-																							 serviceTypeName.toUtf8(),
-																							 usageId.toUtf8(),
-																							 imtservice::IServiceConnectionParam::CT_INPUT,
-																							 connectionUrl));
+																serviceTypeName.toUtf8(),
+																usageId.toUtf8(),
+																imtservice::IServiceConnectionParam::CT_INPUT,
+																connectionUrl));
 
 															inputConnectionCollectionPtr->InsertNewObject("ConnectionInfo", serviceTypeName, description, urlConnectionParamPtr.PopPtr()/*,inputConnectionId*/);
 														}
@@ -693,9 +684,9 @@ void CAgentCollectionControllerComp::OnTimeout()
 
 															istd::TDelPtr<imtservice::CUrlConnectionLinkParam> urlConnectionLinkParamPtr;
 															urlConnectionLinkParamPtr.SetPtr(new imtservice::CUrlConnectionLinkParam(
-																								 serviceTypeName.toUtf8(),
-																								 usageId.toUtf8(),
-																								 dependantServiceConnectionId.toUtf8()));
+																serviceTypeName.toUtf8(),
+																usageId.toUtf8(),
+																dependantServiceConnectionId.toUtf8()));
 
 															dependantConnectionCollectionPtr->InsertNewObject("ConnectionLink", serviceTypeName, description, urlConnectionLinkParamPtr.PopPtr(), outputConnnectionId);
 														}

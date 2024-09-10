@@ -25,6 +25,12 @@ ViewBase {
         }
     }
 
+    onModelChanged: {
+        if (model){
+            administrationView.productId = model.GetData("ServiceTypeName");
+        }
+    }
+
     function setReadOnly(readOnly){
         nameInput.readOnly = readOnly;
         pathInput.readOnly = readOnly;
@@ -197,6 +203,16 @@ ViewBase {
             width: flickable.width;
 
             spacing: Style.size_mainMargin;
+
+            Button {
+                id: button;
+                width: 70;
+                height: 30;
+                text: qsTr("Administration");
+                onClicked: {
+                    administrationView.visible = true;
+                }
+            }
 
             Text {
                 id: titleName;
@@ -826,11 +842,8 @@ ViewBase {
                             onDoubleClicked: {
                                 if (cb.model && cb.model.getItemsCount() > 0){
                                     cb.visible = true;
-
                                     cb.z = ma.z + 1;
-
                                     cb.forceActiveFocus();
-
                                     cb.openPopupMenu();
                                 }
                             }
@@ -887,5 +900,12 @@ ViewBase {
                 }
             }
         }//Column bodyColumn
+    }
+
+    AdministrationView {
+        id: administrationView;
+        anchors.fill: parent;
+        visible: false;
+        // productId:
     }
 }//Container

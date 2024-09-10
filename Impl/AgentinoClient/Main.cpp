@@ -38,6 +38,10 @@ int main(int argc, char *argv[])
 	Q_INIT_RESOURCE(imtguiTheme);
 	Q_INIT_RESOURCE(agentinoqml);
 
+	Q_INIT_RESOURCE(imtauthGroupsSdl);
+	Q_INIT_RESOURCE(imtauthRolesSdl);
+	Q_INIT_RESOURCE(imtauthUsersSdl);
+
 	Q_INIT_RESOURCE(agentinogqlSdl);
 
 	Q_INIT_RESOURCE(imtlicguiqml);

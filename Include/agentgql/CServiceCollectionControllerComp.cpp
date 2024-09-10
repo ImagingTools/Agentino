@@ -30,11 +30,11 @@ namespace agentgql
 
 
 bool CServiceCollectionControllerComp::SetupGqlItem(
-			const imtgql::CGqlRequest& gqlRequest,
-			imtbase::CTreeItemModel& model,
-			int itemIndex,
-			const QByteArray& collectionId,
-			QString& errorMessage) const
+	const imtgql::CGqlRequest& gqlRequest,
+	imtbase::CTreeItemModel& model,
+	int itemIndex,
+	const QByteArray& collectionId,
+	QString& errorMessage) const
 {
 	QByteArray agentId;
 	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
@@ -154,78 +154,62 @@ imtbase::CTreeItemModel *CServiceCollectionControllerComp::ListObjects(const imt
 
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
 
-	imtbase::CTreeItemModel* dataModel = nullptr;
-	imtbase::CTreeItemModel* itemsModel = nullptr;
-	imtbase::CTreeItemModel* notificationModel = nullptr;
+	imtbase::CTreeItemModel* dataModel = rootModelPtr->AddTreeModel("data");
+	imtbase::CTreeItemModel* itemsModel = dataModel->AddTreeModel("items");
+	imtbase::CTreeItemModel* notificationModel = dataModel->AddTreeModel("notification");
 
-	if (!errorMessage.isEmpty()){
-		imtbase::CTreeItemModel* errorsItemModel = rootModelPtr->AddTreeModel("errors");
-		errorsItemModel->SetData("message", errorMessage);
+	QByteArray agentId;
+	const imtgql::CGqlObject* viewParamsGql = nullptr;
+	const imtgql::CGqlObject* addition = nullptr;
+	const imtgql::CGqlObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
+	if (inputObject != nullptr){
+		viewParamsGql = inputObject->GetFieldArgumentObjectPtr("viewParams");
+		addition = inputObject->GetFieldArgumentObjectPtr("addition");
 	}
-	else{
-		dataModel = new imtbase::CTreeItemModel();
-		itemsModel = new imtbase::CTreeItemModel();
-		notificationModel = new imtbase::CTreeItemModel();
+	if (addition != nullptr) {
+		agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
+	}
 
-		QByteArray agentId;
-		const imtgql::CGqlObject* viewParamsGql = nullptr;
-		const imtgql::CGqlObject* addition = nullptr;
-		const imtgql::CGqlObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
-		if (inputObject != nullptr){
-			viewParamsGql = inputObject->GetFieldArgumentObjectPtr("viewParams");
-			addition = inputObject->GetFieldArgumentObjectPtr("addition");
-		}
-		if (addition != nullptr) {
-			agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
-		}
+	istd::TDelPtr<imtbase::IObjectCollection> collectionPtr = GetObjectCollection(agentId);
+	if (!collectionPtr.IsValid()){
+		errorMessage = QString("Unable to get list objects. Internal error.");
+		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 
-		istd::TDelPtr<imtbase::IObjectCollection> collectionPtr = GetObjectCollection(agentId);
+		return nullptr;
+	}
 
-		if (!collectionPtr.IsValid()){
-			errorMessage = QString("Unable to get list objects. Internal error.");
-			SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
+	iprm::CParamsSet filterParams;
 
-			return nullptr;
-		}
+	int offset = 0, count = -1;
 
-		iprm::CParamsSet filterParams;
+	if (viewParamsGql != nullptr){
+		offset = viewParamsGql->GetFieldArgumentValue("Offset").toInt();
+		count = viewParamsGql->GetFieldArgumentValue("Count").toInt();
+		PrepareFilters(gqlRequest, *viewParamsGql, filterParams);
+	}
 
-		int offset = 0, count = -1;
+	int elementsCount = collectionPtr->GetElementsCount(&filterParams);
 
-		if (viewParamsGql != nullptr){
-			offset = viewParamsGql->GetFieldArgumentValue("Offset").toInt();
-			count = viewParamsGql->GetFieldArgumentValue("Count").toInt();
-			PrepareFilters(gqlRequest, *viewParamsGql, filterParams);
-		}
+	int pagesCount = std::ceil(elementsCount / (double)count);
+	if (pagesCount <= 0){
+		pagesCount = 1;
+	}
 
-		int elementsCount = collectionPtr->GetElementsCount(&filterParams);
+	notificationModel->SetData("PagesCount", pagesCount);
+	notificationModel->SetData("TotalCount", elementsCount);
 
-		int pagesCount = std::ceil(elementsCount / (double)count);
-		if (pagesCount <= 0){
-			pagesCount = 1;
-		}
+	imtbase::ICollectionInfo::Ids ids = collectionPtr->GetElementIds(offset, count, &filterParams);
 
-		notificationModel->SetData("PagesCount", pagesCount);
-		notificationModel->SetData("TotalCount", elementsCount);
+	for (const QByteArray& id: ids){
+		int itemIndex = itemsModel->InsertNewItem();
+		if (itemIndex >= 0){
+			if (!SetupGqlItem(gqlRequest, *itemsModel, itemIndex, id, errorMessage)){
+				SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
 
-		imtbase::ICollectionInfo::Ids ids = collectionPtr->GetElementIds(offset, count, &filterParams);
-
-		for (QByteArray id: ids){
-			int itemIndex = itemsModel->InsertNewItem();
-			if (itemIndex >= 0){
-				if (!SetupGqlItem(gqlRequest, *itemsModel, itemIndex, id, errorMessage)){
-					SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
-
-					return nullptr;
-				}
+				return nullptr;
 			}
 		}
-		itemsModel->SetIsArray(true);
-		dataModel->SetExternTreeModel("items", itemsModel);
-		dataModel->SetExternTreeModel("notification", notificationModel);
 	}
-
-	rootModelPtr->SetExternTreeModel("data", dataModel);
 
 	return rootModelPtr.PopPtr();
 }
@@ -487,8 +471,8 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 	name = params.GetFieldArgumentValue("name").toByteArray();
 	description = params.GetFieldArgumentValue("description").toString();
 
-	istd::IChangeable* savedObject = BaseClass::CreateObjectFromRequest(gqlRequest, objectId, name, description, errorMessage);
-	agentinodata::CServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::CServiceInfo*>(savedObject);
+	istd::TDelPtr<istd::IChangeable> savedObject = CreateObjectFromRequest(gqlRequest, objectId, name, description, errorMessage);
+	agentinodata::CServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::CServiceInfo*>(savedObject.GetPtr());
 	if (serviceInfoPtr == nullptr){
 		if (errorMessage.isEmpty()){
 			errorMessage = QString("Unable to create object");
@@ -516,7 +500,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 		}
 	}
 	else{
-		QByteArray result = m_objectCollectionCompPtr->InsertNewObject("DocumentInfo", name, description, savedObject, objectId);
+		QByteArray result = m_objectCollectionCompPtr->InsertNewObject("DocumentInfo", name, description, savedObject.GetPtr(), objectId);
 		if (result.isEmpty()){
 			errorMessage = QString("Cannot insert service: '%1'").arg(qPrintable(objectId));
 			SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
@@ -662,48 +646,56 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 }
 
 
-istd::IChangeable* CServiceCollectionControllerComp::CreateObject(
-			const QList<imtgql::CGqlObject>& inputParams,
-			QByteArray& objectId,
-			QString& name,
-			QString& description,
-			QString& errorMessage) const
+istd::IChangeable* CServiceCollectionControllerComp::CreateObjectFromRequest(
+	const imtgql::CGqlRequest& gqlRequest,
+	QByteArray& objectId,
+	QString& name,
+	QString& description,
+	QString& errorMessage) const
 {
-	Q_ASSERT(inputParams.empty());
-
 	if (!m_serviceInfoFactCompPtr.IsValid() || !m_objectCollectionCompPtr.IsValid()){
 		Q_ASSERT(false);
 
 		return nullptr;
 	}
 
-	const imtgql::CGqlObject* inputDataPtr = inputParams.first().GetFieldArgumentObjectPtr("input");
+	const imtgql::CGqlObject* inputDataPtr = gqlRequest.GetParamObject("input");
 	if (inputDataPtr == nullptr){
 		Q_ASSERT(false);
 
 		return nullptr;
 	}
 
-	objectId = GetObjectIdFromInputParams(inputParams.first());
+	objectId = inputDataPtr->GetFieldArgumentValue("Id").toByteArray();
 	if (objectId.isEmpty()){
 		objectId = QUuid::createUuid().toString(QUuid::WithoutBraces).toUtf8();
 	}
 
 	QByteArray itemData = inputDataPtr->GetFieldArgumentValue("Item").toByteArray();
 	if (!itemData.isEmpty()){
-		agentinodata::IServiceInfo* serviceInstancePtr = m_serviceInfoFactCompPtr.CreateInstance();
-		if (serviceInstancePtr == nullptr){
+		istd::TDelPtr<agentinodata::IServiceInfo> serviceInstancePtr = m_serviceInfoFactCompPtr.CreateInstance();
+		if (!serviceInstancePtr.IsValid()){
+			errorMessage = QString("Unable to create service instance. Object is invalid");
+			SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
 			return nullptr;
 		}
 
-		agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(serviceInstancePtr);
+		agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(serviceInstancePtr.GetPtr());
 		if (serviceInfoPtr == nullptr){
-			errorMessage = QString("Unable to get an service info!");
+			errorMessage = QString("Unable to cast service info. Object is invalid");
+			SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
 			return nullptr;
 		}
 
 		imtbase::CTreeItemModel itemModel;
-		itemModel.CreateFromJson(itemData);
+		if (!itemModel.CreateFromJson(itemData)){
+			errorMessage = QString("Unable to create tree model from JSON: '%1'").arg(qPrintable(itemData));
+			SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
+			return nullptr;
+		}
 
 		serviceInfoPtr->SetObjectUuid(objectId);
 
@@ -762,7 +754,7 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObject(
 			serviceInfoPtr->SetTracingLevel(tracingLevel);
 		}
 
-		return serviceInfoPtr;
+		return serviceInstancePtr.PopPtr();
 	}
 
 	errorMessage = QString("Can not create service: %1").arg(QString(objectId));
