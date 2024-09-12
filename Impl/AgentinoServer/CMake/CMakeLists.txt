@@ -31,7 +31,7 @@ endif()
 
 
 target_link_libraries(${PROJECT_NAME} iauth iservice)
-target_link_libraries(${PROJECT_NAME} imtqml imtstyle imtauthgui imtauthgql imtstylecontrolsqml imtgui imtguigql imtlic imtauth imtcrypt)
+target_link_libraries(${PROJECT_NAME} imtqml imtstyle imtauthgui imtauthgql imtstylecontrolsqml imtgui imtguigql imtlic imtauth imtcrypt imtauthsdl)
 target_link_libraries(${PROJECT_NAME} imtrest imtlicgui imtlicgql imtclientgql imtgql imtauthdb imtdb imtbase imtapp imtfile imtlog)
 target_link_libraries(${PROJECT_NAME} ImtCoreLoc AgentinoLoc)
 target_link_libraries(${PROJECT_NAME} agentinoqml agentinodata agentinogql agentgql)
