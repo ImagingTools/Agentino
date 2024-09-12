@@ -9,363 +9,356 @@ ViewBase {
 
     property int radius: 3;
     property int flickableWidth: 800;
+    property string productId;
+    property var documentManager: null;
 
     Component.onCompleted: {
         let ok = PermissionsController.checkPermission("ChangeService");
 
         serviceEditorContainer.readOnly = !ok;
+
+        tabPanel.addTab("General", qsTr("General"), mainEditorComp);
     }
 
-    onWidthChanged: {
-        if (width < flickableWidth + 50){
-            flickable.width = width - 50;
-        }
-        else{
-            flickable.width = flickableWidth;
+    // onWidthChanged: {
+    //     if (width < flickableWidth + 50){
+    //         flickable.width = width - 50;
+    //     }
+    //     else{
+    //         flickable.width = flickableWidth;
+    //     }
+    // }
+
+    onProductIdChanged: {
+        if (productId !== ""){
+            console.log("Service productId");
+
+            tabPanel.addTab("Administration", qsTr("Administration"), administrationViewComp);
         }
     }
 
     onModelChanged: {
         if (model){
-            administrationView.productId = model.GetData("ServiceTypeName");
+            serviceEditorContainer.productId = model.getData("Name");
         }
     }
 
-    function setReadOnly(readOnly){
-        nameInput.readOnly = readOnly;
-        pathInput.readOnly = readOnly;
-        argumentsInput.readOnly = readOnly;
-        descriptionInput.readOnly = readOnly;
+    // function setReadOnly(readOnly){
+    //     nameInput.readOnly = readOnly;
+    //     pathInput.readOnly = readOnly;
+    //     argumentsInput.readOnly = readOnly;
+    //     descriptionInput.readOnly = readOnly;
 
-        inputConnTable.readOnly = readOnly;
-        ouputConnTable.readOnly = readOnly;
+    //     inputConnTable.readOnly = readOnly;
+    //     ouputConnTable.readOnly = readOnly;
 
-        switchAutoStart.enabled = !readOnly;
-        switchVerboseMessage.enabled = !readOnly
-    }
+    //     switchAutoStart.enabled = !readOnly;
+    //     switchVerboseMessage.enabled = !readOnly
+    // }
 
     function updateGui(){
-        if (serviceEditorContainer.model.containsKey("Name")){
-            nameInput.text = serviceEditorContainer.model.getData("Name");
-        }
-        else{
-            nameInput.text = "";
-        }
-
-        if (serviceEditorContainer.model.containsKey("Description")){
-            descriptionInput.text = serviceEditorContainer.model.getData("Description");
-        }
-        else{
-            descriptionInput.text = "";
-        }
-
-        if (serviceEditorContainer.model.containsKey("Path")){
-            pathInput.text = serviceEditorContainer.model.getData("Path");
-        }
-        else{
-            pathInput.text = "";
-        }
-
-        if (serviceEditorContainer.model.containsKey("Arguments")){
-            argumentsInput.text = serviceEditorContainer.model.getData("Arguments");
-        }
-        else{
-            argumentsInput.text = "";
-        }
-
-        if (serviceEditorContainer.model.containsKey("IsAutoStart")){
-            switchAutoStart.setChecked(serviceEditorContainer.model.getData("IsAutoStart"));
-        }
-        else{
-            switchAutoStart.setChecked(false)
-        }
-
-        if (serviceEditorContainer.model.containsKey("TracingLevel")){
-            let tracingLevel = serviceEditorContainer.model.getData("TracingLevel")
-            if (tracingLevel > -1){
-                switchVerboseMessage.setChecked(true);
-            }
-            else{
-                switchVerboseMessage.setChecked(false);
-            }
-
-            tracingLevelInput.currentIndex = tracingLevel
-        }
-        else{
-            switchVerboseMessage.setChecked(false)
-        }
-
-        if (serviceEditorContainer.model.containsKey("StartScript")){
-            let startScript = serviceEditorContainer.model.getData("StartScript")
-            if (startScript !== ""){
-                startScriptChecked.checkState = Qt.Checked
-                startScriptInput.text = startScript
-            }
-            else{
-                startScriptChecked.checkState = Qt.Unchecked
-                startScriptInput.text = ""
-            }
-        }
-        else{
-            startScriptChecked.checkState = Qt.Unchecked
-            startScriptInput.text = ""
-        }
-
-        if (serviceEditorContainer.model.containsKey("StopScript")){
-            let stopScript = serviceEditorContainer.model.getData("StopScript")
-            if (stopScript !== ""){
-                stopScriptChecked.checkState = Qt.Checked
-                stopScriptInput.text = stopScript
-            }
-            else{
-                stopScriptChecked.checkState = Qt.Unchecked
-            }
-        }
-        else{
-            stopScriptChecked.checkState = Qt.Unchecked
-        }
-
-        if (serviceEditorContainer.model.containsKey("InputConnections")){
-            inputConnTable.elements = serviceEditorContainer.model.getData("InputConnections")
-        }
-
-        if (serviceEditorContainer.model.containsKey("OutputConnections")){
-            ouputConnTable.elements = serviceEditorContainer.model.getData("OutputConnections")
-        }
+        let item = tabPanel.getTabByIndex(0);
+        item.updateGui();
     }
 
     function updateModel(){
-        serviceEditorContainer.model.setData("Name", nameInput.text);
-        serviceEditorContainer.model.setData("Description", descriptionInput.text);
-        serviceEditorContainer.model.setData("Path", pathInput.text);
-        serviceEditorContainer.model.setData("Arguments", argumentsInput.text);
-        serviceEditorContainer.model.setData("IsAutoStart", switchAutoStart.checked);
-
-        if (switchVerboseMessage.checked){
-            if (tracingLevelInput.currentIndex == -1){
-                tracingLevelInput.currentIndex = 0;
-            }
-
-            serviceEditorContainer.model.setData("TracingLevel", tracingLevelInput.currentIndex);
-        }
-        else{
-            serviceEditorContainer.model.setData("TracingLevel", -1);
-        }
-
-        if(startScriptChecked.checkState === Qt.Checked){
-            serviceEditorContainer.model.setData("StartScript", startScriptInput.text);
-        }
-        else{
-            serviceEditorContainer.model.setData("StartScript", "");
-        }
-
-        if(stopScriptChecked.checkState === Qt.Checked){
-            serviceEditorContainer.model.setData("StopScript", stopScriptInput.text);
-        }
-        else{
-            serviceEditorContainer.model.setData("StopScript", "");
-        }
+        let item = tabPanel.getTabByIndex(0);
+        item.updateModel();
     }
 
-    CustomScrollbar {
-        id: scrollbar;
-
-        anchors.left: flickable.right;
-        anchors.leftMargin: 5;
-        anchors.top: parent.top;
-        anchors.bottom: parent.bottom;
-
-        secondSize: 10;
-        targetItem: flickable;
-
-        visible: parent.visible;
+    TabView {
+        id: tabPanel
+        anchors.fill: parent;
+        currentIndex: 0;
     }
 
-    Flickable {
-        id: flickable;
-        anchors.top: parent.top;
-        anchors.bottom: parent.bottom;
-        anchors.left: parent.left;
-        anchors.leftMargin: 20;
+    Component {
+        id: mainEditorComp;
 
-        width: serviceEditorContainer.flickableWidth;
+        Flickable {
+            id: flickable;
+            anchors.top: parent.top;
+            anchors.bottom: parent.bottom;
+            anchors.left: parent.left;
+            anchors.leftMargin: 20;
 
-        contentWidth: bodyColumn.width;
-        contentHeight: bodyColumn.height;
+            width: serviceEditorContainer.flickableWidth;
 
-        boundsBehavior: Flickable.StopAtBounds;
+            contentWidth: bodyColumn.width;
+            contentHeight: bodyColumn.height;
 
-        clip: true;
+            boundsBehavior: Flickable.StopAtBounds;
 
-        Column {
-            id: bodyColumn;
+            clip: true;
 
-            width: flickable.width;
+            function updateGui(){
+                if (serviceEditorContainer.model.containsKey("Name")){
+                    nameInput.text = serviceEditorContainer.model.getData("Name");
+                }
+                else{
+                    nameInput.text = "";
+                }
 
-            spacing: Style.size_mainMargin;
+                if (serviceEditorContainer.model.containsKey("Description")){
+                    descriptionInput.text = serviceEditorContainer.model.getData("Description");
+                }
+                else{
+                    descriptionInput.text = "";
+                }
 
-            Button {
-                id: button;
-                width: 70;
-                height: 30;
-                text: qsTr("Administration");
-                onClicked: {
-                    administrationView.visible = true;
+                if (serviceEditorContainer.model.containsKey("Path")){
+                    pathInput.text = serviceEditorContainer.model.getData("Path");
+                }
+                else{
+                    pathInput.text = "";
+                }
+
+                if (serviceEditorContainer.model.containsKey("Arguments")){
+                    argumentsInput.text = serviceEditorContainer.model.getData("Arguments");
+                }
+                else{
+                    argumentsInput.text = "";
+                }
+
+                if (serviceEditorContainer.model.containsKey("IsAutoStart")){
+                    switchAutoStart.setChecked(serviceEditorContainer.model.getData("IsAutoStart"));
+                }
+                else{
+                    switchAutoStart.setChecked(false)
+                }
+
+                if (serviceEditorContainer.model.containsKey("TracingLevel")){
+                    let tracingLevel = serviceEditorContainer.model.getData("TracingLevel")
+                    if (tracingLevel > -1){
+                        switchVerboseMessage.setChecked(true);
+                    }
+                    else{
+                        switchVerboseMessage.setChecked(false);
+                    }
+
+                    tracingLevelInput.currentIndex = tracingLevel
+                }
+                else{
+                    switchVerboseMessage.setChecked(false)
+                }
+
+                if (serviceEditorContainer.model.containsKey("StartScript")){
+                    let startScript = serviceEditorContainer.model.getData("StartScript")
+                    if (startScript !== ""){
+                        startScriptChecked.checkState = Qt.Checked
+                        startScriptInput.text = startScript
+                    }
+                    else{
+                        startScriptChecked.checkState = Qt.Unchecked
+                        startScriptInput.text = ""
+                    }
+                }
+                else{
+                    startScriptChecked.checkState = Qt.Unchecked
+                    startScriptInput.text = ""
+                }
+
+                if (serviceEditorContainer.model.containsKey("StopScript")){
+                    let stopScript = serviceEditorContainer.model.getData("StopScript")
+                    if (stopScript !== ""){
+                        stopScriptChecked.checkState = Qt.Checked
+                        stopScriptInput.text = stopScript
+                    }
+                    else{
+                        stopScriptChecked.checkState = Qt.Unchecked
+                    }
+                }
+                else{
+                    stopScriptChecked.checkState = Qt.Unchecked
+                }
+
+                if (serviceEditorContainer.model.containsKey("InputConnections")){
+                    inputConnTable.elements = serviceEditorContainer.model.getData("InputConnections")
+                }
+
+                if (serviceEditorContainer.model.containsKey("OutputConnections")){
+                    ouputConnTable.elements = serviceEditorContainer.model.getData("OutputConnections")
                 }
             }
 
-            Text {
-                id: titleName;
+            function updateModel(){
+                serviceEditorContainer.model.setData("Name", nameInput.text);
+                serviceEditorContainer.model.setData("Description", descriptionInput.text);
+                serviceEditorContainer.model.setData("Path", pathInput.text);
+                serviceEditorContainer.model.setData("Arguments", argumentsInput.text);
+                serviceEditorContainer.model.setData("IsAutoStart", switchAutoStart.checked);
 
-                anchors.left: parent.left;
+                if (switchVerboseMessage.checked){
+                    if (tracingLevelInput.currentIndex == -1){
+                        tracingLevelInput.currentIndex = 0;
+                    }
 
-                color: Style.textColor;
-                font.family: Style.fontFamily;
-                font.pixelSize: Style.fontSize_common;
-
-                text: qsTr("Name");
-            }
-
-            CustomTextField {
-                id: nameInput;
-
-                width: parent.width;
-                height: Style.itemSizeMedium;
-
-                placeHolderText: qsTr("Enter the name");
-
-                onEditingFinished: {
-                    serviceEditorContainer.doUpdateModel();
+                    serviceEditorContainer.model.setData("TracingLevel", tracingLevelInput.currentIndex);
+                }
+                else{
+                    serviceEditorContainer.model.setData("TracingLevel", -1);
                 }
 
-                KeyNavigation.tab: descriptionInput;
-            }
-
-            Text {
-                id: descriptionName;
-
-                anchors.left: parent.left;
-
-                color: Style.textColor;
-                font.family: Style.fontFamily;
-                font.pixelSize: Style.fontSize_common;
-
-                text: qsTr("Description");
-            }
-
-            CustomTextField {
-                id: descriptionInput;
-
-                width: parent.width;
-                height: Style.itemSizeMedium;
-
-                placeHolderText: qsTr("Enter the description");
-
-                onEditingFinished: {
-                    serviceEditorContainer.doUpdateModel();
+                if(startScriptChecked.checkState === Qt.Checked){
+                    serviceEditorContainer.model.setData("StartScript", startScriptInput.text);
+                }
+                else{
+                    serviceEditorContainer.model.setData("StartScript", "");
                 }
 
-                KeyNavigation.tab: pathInput;
-            }
-
-            Text {
-                id: titlePath;
-
-                anchors.left: parent.left;
-
-                color: Style.textColor;
-                font.family: Style.fontFamily;
-                font.pixelSize: Style.fontSize_common;
-
-                text: qsTr("Path");
-            }
-
-            CustomTextField {
-                id: pathInput;
-
-                width: parent.width;
-                height: Style.itemSizeMedium;
-
-                placeHolderText: qsTr("Enter the path");
-
-                onEditingFinished: {
-                    serviceEditorContainer.doUpdateModel();
+                if(stopScriptChecked.checkState === Qt.Checked){
+                    serviceEditorContainer.model.setData("StopScript", stopScriptInput.text);
                 }
-
-                KeyNavigation.tab: argumentsInput;
-            }
-
-            Text {
-                id: titleArguments;
-
-                anchors.left: parent.left;
-
-                color: Style.textColor;
-                font.family: Style.fontFamily;
-                font.pixelSize: Style.fontSize_common;
-
-                text: qsTr("Arguments");
-            }
-
-            CustomTextField {
-                id: argumentsInput;
-
-                width: parent.width;
-                height: Style.itemSizeMedium;
-
-                placeHolderText: qsTr("Enter the arguments");
-
-                onEditingFinished: {
-                    serviceEditorContainer.doUpdateModel();
-                }
-
-                KeyNavigation.tab: nameInput;
-            }
-
-            Text {
-                id: titleAutoStart;
-
-                anchors.left: parent.left;
-
-                width: parent.width;
-
-                color: Style.textColor;
-                font.family: Style.fontFamily;
-                font.pixelSize: Style.fontSize_common;
-
-                text: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("on") : qsTr("off")) + ")";
-            }
-
-            SwitchCustom {
-                id: switchAutoStart
-
-                backgroundColor: "#D4D4D4"
-                onCheckedChanged: {
-                    serviceEditorContainer.doUpdateModel();
+                else{
+                    serviceEditorContainer.model.setData("StopScript", "");
                 }
             }
 
-            Text {
-                id: titleVerboseMessage;
+            CustomScrollbar {
+                id: scrollbar;
 
-                anchors.left: parent.left;
+                anchors.left: flickable.right;
+                anchors.leftMargin: Style.size_smallMargin;
+                anchors.top: parent.top;
+                anchors.bottom: parent.bottom;
 
-                width: parent.width;
+                secondSize: Style.size_mainMargin;
+                targetItem: flickable;
 
-                color: Style.textColor;
-                font.family: Style.fontFamily;
-                font.pixelSize: Style.fontSize_common;
-
-                text: qsTr("Verbose message (") + (switchVerboseMessage.checked ? qsTr("on") : qsTr("off")) + ")";
+                visible: parent.visible;
             }
 
-            Row {
-                height:  Style.itemSizeMedium;
+            Column {
+                id: bodyColumn;
+
+                width: flickable.width;
+
                 spacing: Style.size_mainMargin;
 
+                Text {
+                    id: titleName;
+
+                    anchors.left: parent.left;
+
+                    color: Style.textColor;
+                    font.family: Style.fontFamily;
+                    font.pixelSize: Style.fontSize_common;
+
+                    text: qsTr("Name");
+                }
+
+                CustomTextField {
+                    id: nameInput;
+
+                    width: parent.width;
+                    height: Style.itemSizeMedium;
+
+                    placeHolderText: qsTr("Enter the name");
+
+                    onEditingFinished: {
+                        serviceEditorContainer.doUpdateModel();
+                    }
+
+                    KeyNavigation.tab: descriptionInput;
+                }
+
+                Text {
+                    id: descriptionName;
+
+                    anchors.left: parent.left;
+
+                    color: Style.textColor;
+                    font.family: Style.fontFamily;
+                    font.pixelSize: Style.fontSize_common;
+
+                    text: qsTr("Description");
+                }
+
+                CustomTextField {
+                    id: descriptionInput;
+
+                    width: parent.width;
+                    height: Style.itemSizeMedium;
+
+                    placeHolderText: qsTr("Enter the description");
+
+                    onEditingFinished: {
+                        serviceEditorContainer.doUpdateModel();
+                    }
+
+                    KeyNavigation.tab: pathInput;
+                }
+
+                Text {
+                    id: titlePath;
+
+                    anchors.left: parent.left;
+
+                    color: Style.textColor;
+                    font.family: Style.fontFamily;
+                    font.pixelSize: Style.fontSize_common;
+
+                    text: qsTr("Path");
+                }
+
+                CustomTextField {
+                    id: pathInput;
+
+                    width: parent.width;
+                    height: Style.itemSizeMedium;
+
+                    placeHolderText: qsTr("Enter the path");
+
+                    onEditingFinished: {
+                        serviceEditorContainer.doUpdateModel();
+                    }
+
+                    KeyNavigation.tab: argumentsInput;
+                }
+
+                Text {
+                    id: titleArguments;
+
+                    anchors.left: parent.left;
+
+                    color: Style.textColor;
+                    font.family: Style.fontFamily;
+                    font.pixelSize: Style.fontSize_common;
+
+                    text: qsTr("Arguments");
+                }
+
+                CustomTextField {
+                    id: argumentsInput;
+
+                    width: parent.width;
+                    height: Style.itemSizeMedium;
+
+                    placeHolderText: qsTr("Enter the arguments");
+
+                    onEditingFinished: {
+                        serviceEditorContainer.doUpdateModel();
+                    }
+
+                    KeyNavigation.tab: nameInput;
+                }
+
+                Text {
+                    id: titleAutoStart;
+
+                    anchors.left: parent.left;
+
+                    width: parent.width;
+
+                    color: Style.textColor;
+                    font.family: Style.fontFamily;
+                    font.pixelSize: Style.fontSize_common;
+
+                    text: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("on") : qsTr("off")) + ")";
+                }
+
                 SwitchCustom {
-                    id: switchVerboseMessage
-                    anchors.verticalCenter: parent.verticalCenter
+                    id: switchAutoStart
 
                     backgroundColor: "#D4D4D4"
                     onCheckedChanged: {
@@ -373,539 +366,573 @@ ViewBase {
                     }
                 }
 
-                Item {
-                    width: Style.size_mainMargin;
-                    height: Style.itemSizeMedium
-                }
-
                 Text {
-                    id: titleTracingLevel;
-                    anchors.verticalCenter: parent.verticalCenter
+                    id: titleVerboseMessage;
 
-                    visible: switchVerboseMessage.checked
+                    anchors.left: parent.left;
+
+                    width: parent.width;
+
                     color: Style.textColor;
                     font.family: Style.fontFamily;
                     font.pixelSize: Style.fontSize_common;
 
-                    text: qsTr("Tracing level");
+                    text: qsTr("Verbose message (") + (switchVerboseMessage.checked ? qsTr("on") : qsTr("off")) + ")";
                 }
 
-                ComboBox {
-                    id: tracingLevelInput
-                    anchors.verticalCenter: parent.verticalCenter
-                    height: Style.itemSizeMedium * 0.75;
-                    width: Style.itemSizeLarge;
-                    visible: switchVerboseMessage.checked
+                Row {
+                    height:  Style.itemSizeMedium;
+                    spacing: Style.size_mainMargin;
 
-                    model: TreeItemModel {
+                    SwitchCustom {
+                        id: switchVerboseMessage
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        backgroundColor: "#D4D4D4"
+                        onCheckedChanged: {
+                            serviceEditorContainer.doUpdateModel();
+                        }
                     }
-                    Component.onCompleted: {
-                        let index = model.insertNewItem()
-                        model.setData("Name", "0", index)
 
-                        index = model.insertNewItem()
-                        model.setData("Name", "1", index)
-
-                        index = model.insertNewItem()
-                        model.setData("Name", "2", index)
-
-                        index = model.insertNewItem()
-                        model.setData("Name", "3", index)
-
-                        index = model.insertNewItem()
-                        model.setData("Name", "4", index)
-
-                        index = model.insertNewItem()
-                        model.setData("Name", "5", index)
+                    Item {
+                        width: Style.size_mainMargin;
+                        height: Style.itemSizeMedium
                     }
-                    onCurrentIndexChanged: {
+
+                    Text {
+                        id: titleTracingLevel;
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        visible: switchVerboseMessage.checked
+                        color: Style.textColor;
+                        font.family: Style.fontFamily;
+                        font.pixelSize: Style.fontSize_common;
+
+                        text: qsTr("Tracing level");
+                    }
+
+                    ComboBox {
+                        id: tracingLevelInput
+                        anchors.verticalCenter: parent.verticalCenter
+                        height: Style.itemSizeMedium * 0.75;
+                        width: Style.itemSizeLarge;
+                        visible: switchVerboseMessage.checked
+
+                        model: TreeItemModel {
+                        }
+                        Component.onCompleted: {
+                            let index = model.insertNewItem()
+                            model.setData("Name", "0", index)
+
+                            index = model.insertNewItem()
+                            model.setData("Name", "1", index)
+
+                            index = model.insertNewItem()
+                            model.setData("Name", "2", index)
+
+                            index = model.insertNewItem()
+                            model.setData("Name", "3", index)
+
+                            index = model.insertNewItem()
+                            model.setData("Name", "4", index)
+
+                            index = model.insertNewItem()
+                            model.setData("Name", "5", index)
+                        }
+                        onCurrentIndexChanged: {
+                            serviceEditorContainer.doUpdateModel();
+                        }
+                    }
+                }
+
+                CheckBox {
+                    id: startScriptChecked
+                    text: qsTr("Start script")
+                    onClicked: {
+                        if(startScriptChecked.checkState !== Qt.Checked){
+                            startScriptChecked.checkState = Qt.Checked;
+                        }
+                        else{
+                            startScriptChecked.checkState = Qt.Unchecked;
+                        }
+
                         serviceEditorContainer.doUpdateModel();
                     }
                 }
-            }
 
-            CheckBox {
-                id: startScriptChecked
-                text: qsTr("Start script")
-                onClicked: {
-                    if(startScriptChecked.checkState !== Qt.Checked){
-                        startScriptChecked.checkState = Qt.Checked;
-                    }
-                    else{
-                        startScriptChecked.checkState = Qt.Unchecked;
-                    }
+                CustomTextField {
+                    id: startScriptInput;
 
-                    serviceEditorContainer.doUpdateModel();
-                }
-            }
+                    width: parent.width;
+                    height: Style.itemSizeMedium;
+                    visible: startScriptChecked.checkState === Qt.Checked
 
-            CustomTextField {
-                id: startScriptInput;
+                    placeHolderText: qsTr("Enter the start script path");
 
-                width: parent.width;
-                height: Style.itemSizeMedium;
-                visible: startScriptChecked.checkState === Qt.Checked
-
-                placeHolderText: qsTr("Enter the start script path");
-
-                onEditingFinished: {
-                    serviceEditorContainer.doUpdateModel();
-                }
-
-                KeyNavigation.tab: nameInput;
-            }
-
-            CheckBox {
-                id: stopScriptChecked
-                text: qsTr("Stop script")
-                onClicked: {
-                    if(stopScriptChecked.checkState !== Qt.Checked){
-                        stopScriptChecked.checkState = Qt.Checked;
-                    }
-                    else {
-                        stopScriptChecked.checkState = Qt.Unchecked;
+                    onEditingFinished: {
+                        serviceEditorContainer.doUpdateModel();
                     }
 
-                    serviceEditorContainer.doUpdateModel();
-                }
-            }
-
-            CustomTextField {
-                id: stopScriptInput;
-
-                width: parent.width;
-                height: Style.itemSizeMedium;
-                visible: stopScriptChecked.checkState === Qt.Checked
-
-                placeHolderText: qsTr("Enter the stop script path");
-
-                onEditingFinished: {
-                    serviceEditorContainer.doUpdateModel();
+                    KeyNavigation.tab: nameInput;
                 }
 
-                KeyNavigation.tab: nameInput;
-            }
-
-            Text {
-                id: inputConnectionsTitle;
-
-                anchors.left: parent.left;
-
-                color: Style.textColor;
-                font.family: Style.fontFamily;
-                font.pixelSize: Style.fontSize_common;
-
-                text: qsTr("Incoming Connections");
-
-                visible: false;
-            }
-
-            AuxTable {
-                id: inputConnTable;
-
-                width: parent.width;
-                height: contentHeight + headerHeight + 15;
-
-                canMoveColumns: true;
-                canFitHeight: true;
-                wrapMode_deleg: Text.WordWrap;
-
-                radius: 0;
-                selectable: false
-
-                visible: false;
-
-                onElementsChanged: {
-                    let count = elements.getItemsCount();
-
-                    inputConnectionsTitle.visible = count > 0;
-                    inputConnTable.visible = count > 0;
-                }
-
-                onHeadersChanged: {
-                    inputConnTable.setColumnContentComponent(1, textInputComp)
-                    inputConnTable.setColumnContentComponent(3, textInputComp)
-                    inputConnTable.setColumnContentComponent(4, externCompEditComp)
-
-                    inputConnTable.tableDecorator = inputTableDecoratorModel;
-                }
-
-                onSelectionChanged: {
-                    ouputConnTable.resetSelection();
-                }
-
-                TreeItemModel {
-                    id: headersModel;
-
-                    Component.onCompleted: {
-                        let index = headersModel.insertNewItem();
-
-                        headersModel.setData("Id", "ConnectionName", index)
-                        headersModel.setData("Name", qsTr("Usage"), index)
-
-                        index = headersModel.insertNewItem();
-
-                        headersModel.setData("Id", "Description", index)
-                        headersModel.setData("Name", qsTr("Description"), index)
-
-                        index = headersModel.insertNewItem();
-
-                        headersModel.setData("Id", "Host", index)
-                        headersModel.setData("Name", qsTr("Host"), index)
-
-                        index = headersModel.insertNewItem();
-
-                        headersModel.setData("Id", "Port", index)
-                        headersModel.setData("Name", qsTr("Port"), index)
-
-                        index = headersModel.insertNewItem();
-
-                        headersModel.setData("Id", "ExternPorts", index)
-                        headersModel.setData("Name", qsTr("Extern Addresses"), index)
-
-                        inputConnTable.headers = headersModel;
-                    }
-                }
-
-                TreeItemModel {
-                    id: inputTableDecoratorModel;
-
-                    Component.onCompleted: {
-                        var cellWidthModel = inputTableDecoratorModel.addTreeModel("CellWidth");
-
-                        let index = cellWidthModel.insertNewItem();
-                        cellWidthModel.setData("Width", 150, index);
-
-                        index = cellWidthModel.insertNewItem();
-                        cellWidthModel.setData("Width", 300, index);
-
-                        index = cellWidthModel.insertNewItem();
-                        cellWidthModel.setData("Width", 100, index);
-
-                        index = cellWidthModel.insertNewItem();
-                        cellWidthModel.setData("Width", 100, index);
-
-                        index = cellWidthModel.insertNewItem();
-                        cellWidthModel.setData("Width", -1, index);
-                    }
-                }
-
-                TextInputCellContentComp {
-                    id: textInputComp;
-                }
-
-                Component {
-                    id: externCompEditComp;
-                    Item {
-                        id: content;
-                        width: parent.width;
-
-                        property Item tableCellDelegate: null;
-
-                        onTableCellDelegateChanged: {
-                            if (tableCellDelegate){
-                                let valueModel = tableCellDelegate.getValue();
-                                if (valueModel){
-                                    let values = []
-                                    for (let i = 0; i < valueModel.getItemsCount(); i++){
-                                        let port = valueModel.getData("Port", i);
-                                        let host = valueModel.getData("Host", i)
-
-                                        values.push(host + ":" + port)
-                                    }
-
-                                    textLabel.text = values.join('\n')
-                                }
-                            }
+                CheckBox {
+                    id: stopScriptChecked
+                    text: qsTr("Stop script")
+                    onClicked: {
+                        if(stopScriptChecked.checkState !== Qt.Checked){
+                            stopScriptChecked.checkState = Qt.Checked;
+                        }
+                        else {
+                            stopScriptChecked.checkState = Qt.Unchecked;
                         }
 
-                        Text {
-                            id: textLabel;
-
-                            anchors.verticalCenter: parent.verticalCenter;
-                            anchors.left: parent.left;
-                            anchors.right: button.left;
-
-                            elide: Text.ElideRight;
-                            wrapMode: Text.WordWrap;
-
-                            clip: true;
-
-                            color: Style.textColor;
-                            font.family: Style.fontFamily;
-                            font.pixelSize: Style.fontSize_common;
-                            lineHeight: 1.5;
-
-                            onTextChanged: {
-                                if (content.tableCellDelegate){
-                                    console.log("onTextChanged", text);
-                                    let columnIndex = content.tableCellDelegate.columnIndex;
-                                    content.tableCellDelegate.pTableDelegateContainer.setHeightModelElememt(columnIndex, textLabel.height);
-                                    content.tableCellDelegate.pTableDelegateContainer.setCellHeight();
-                                }
-                            }
-                        }
-
-                        ToolButton {
-                            id: button;
-
-                            anchors.verticalCenter: parent.verticalCenter;
-                            anchors.right: parent.right;
-
-                            width: 18;
-                            height: width;
-
-                            iconSource: "../../../../" + Style.getIconPath("Icons/Edit", Icon.State.Off, Icon.Mode.Normal);
-
-                            visible: !serviceEditorContainer.readOnly;
-
-                            onClicked: {
-                                if (inputConnTable.elements.containsKey("ExternPorts", content.tableCellDelegate.rowIndex)){
-                                    let externPortsModel = inputConnTable.elements.getData("ExternPorts", content.tableCellDelegate.rowIndex);
-                                    if (externPortsModel){
-                                        ModalDialogManager.openDialog(externPortsDialogComp, {"portsModel": externPortsModel.copyMe()});
-                                    }
-                                }
-                            }
-                        }
-
-                        Component {
-                            id: externPortsDialogComp;
-
-                            ExternPortsDialog {
-                                onFinished: {
-                                    if (buttonId == Enums.save){
-                                        if (content.tableCellDelegate.rowIndex >= 0){
-                                            let ports = []
-                                            for (let i = 0; i < portsModel.getItemsCount(); i++){
-                                                let port = portsModel.getData("Port", i);
-                                                let host = portsModel.getData("Host", i);
-                                                ports.push(host + ":" + port)
-                                            }
-
-                                            let externPortsModel = inputConnTable.elements.getData("ExternPorts", content.tableCellDelegate.rowIndex);
-
-                                            externPortsModel.copy(portsModel);
-                                            externPortsModel.refresh()
-
-                                            textLabel.text = ports.join('\n');
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        serviceEditorContainer.doUpdateModel();
                     }
                 }
-            }
 
-            Text {
-                id: dependantServicesTitle;
+                CustomTextField {
+                    id: stopScriptInput;
 
-                anchors.left: parent.left;
+                    width: parent.width;
+                    height: Style.itemSizeMedium;
+                    visible: stopScriptChecked.checkState === Qt.Checked
 
-                color: Style.textColor;
-                font.family: Style.fontFamily;
-                font.pixelSize: Style.fontSize_common;
+                    placeHolderText: qsTr("Enter the stop script path");
 
-                text: qsTr("Dependant Services");
+                    onEditingFinished: {
+                        serviceEditorContainer.doUpdateModel();
+                    }
 
-                visible: false;
-            }
-
-            AuxTable {
-                id: ouputConnTable;
-
-                width: parent.width;
-                height: visible ? contentHeight + headerHeight + 15 : 0;
-
-                canMoveColumns: true;
-                radius: 0;
-                selectable: false;
-
-                visible: false;
-
-                onHeadersChanged: {
-                    ouputConnTable.setColumnContentComponent(2, textInputComp2)
-                    ouputConnTable.setColumnContentComponent(3, comboBoxComp2)
-
-                    ouputConnTable.tableDecorator = outputTableDecoratorModel;
+                    KeyNavigation.tab: nameInput;
                 }
 
-                onElementsChanged: {
-                    let count = elements.getItemsCount();
+                Text {
+                    id: inputConnectionsTitle;
 
-                    dependantServicesTitle.visible = count > 0;
-                    ouputConnTable.visible = count > 0;
+                    anchors.left: parent.left;
+
+                    color: Style.textColor;
+                    font.family: Style.fontFamily;
+                    font.pixelSize: Style.fontSize_common;
+
+                    text: qsTr("Incoming Connections");
+
+                    visible: false;
                 }
 
-                TextInputCellContentComp {
-                    id: textInputComp2;
-                }
+                AuxTable {
+                    id: inputConnTable;
 
-                Component {
-                    id: comboBoxComp2;
+                    width: parent.width;
+                    height: contentHeight + headerHeight + 15;
 
-                    Item {
-                        id: bodyItem;
+                    canMoveColumns: true;
+                    canFitHeight: true;
+                    wrapMode_deleg: Text.WordWrap;
 
-                        property Item tableCellDelegate: null;
+                    radius: 0;
+                    selectable: false
 
-//                        z: parent.z + 1;
+                    visible: false;
 
-                        width: parent.width;
-                        height: 25;
+                    onElementsChanged: {
+                        let count = elements.getItemsCount();
 
-                        property bool ok: tableCellDelegate != null && ouputConnTable.elements;
+                        inputConnectionsTitle.visible = count > 0;
+                        inputConnTable.visible = count > 0;
+                    }
 
-                        onOkChanged: {
-                            if (tableCellDelegate){
-                                let value = tableCellDelegate.getValue();
+                    onHeadersChanged: {
+                        inputConnTable.setColumnContentComponent(1, textInputComp)
+                        inputConnTable.setColumnContentComponent(3, textInputComp)
+                        inputConnTable.setColumnContentComponent(4, externCompEditComp)
 
-                                let dependantConnectionId = ouputConnTable.elements.getData("DependantConnectionId", bodyItem.tableCellDelegate.rowIndex);
+                        inputConnTable.tableDecorator = inputTableDecoratorModel;
+                    }
 
-                                let elementsModel = ouputConnTable.elements.getData("Elements", tableCellDelegate.rowIndex);
-                                textLabel.text = value;
-                                cb.model = elementsModel;
+                    onSelectionChanged: {
+                        ouputConnTable.resetSelection();
+                    }
 
-                                if (cb.model){
-                                    for (let i = 0; i < cb.model.getItemsCount(); i++){
-                                        let id = cb.model.getData("Id", i);
-                                        if (String(id) == dependantConnectionId){
-                                            cb.currentIndex = i;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
+                    TreeItemModel {
+                        id: headersModel;
+
+                        Component.onCompleted: {
+                            let index = headersModel.insertNewItem();
+
+                            headersModel.setData("Id", "ConnectionName", index)
+                            headersModel.setData("Name", qsTr("Usage"), index)
+
+                            index = headersModel.insertNewItem();
+
+                            headersModel.setData("Id", "Description", index)
+                            headersModel.setData("Name", qsTr("Description"), index)
+
+                            index = headersModel.insertNewItem();
+
+                            headersModel.setData("Id", "Host", index)
+                            headersModel.setData("Name", qsTr("Host"), index)
+
+                            index = headersModel.insertNewItem();
+
+                            headersModel.setData("Id", "Port", index)
+                            headersModel.setData("Name", qsTr("Port"), index)
+
+                            index = headersModel.insertNewItem();
+
+                            headersModel.setData("Id", "ExternPorts", index)
+                            headersModel.setData("Name", qsTr("Extern Addresses"), index)
+
+                            inputConnTable.headers = headersModel;
                         }
+                    }
 
-                        Text {
-                            id: textLabel;
+                    TreeItemModel {
+                        id: inputTableDecoratorModel;
 
-                            anchors.verticalCenter: parent.verticalCenter;
+                        Component.onCompleted: {
+                            var cellWidthModel = inputTableDecoratorModel.addTreeModel("CellWidth");
 
+                            let index = cellWidthModel.insertNewItem();
+                            cellWidthModel.setData("Width", 150, index);
+
+                            index = cellWidthModel.insertNewItem();
+                            cellWidthModel.setData("Width", 300, index);
+
+                            index = cellWidthModel.insertNewItem();
+                            cellWidthModel.setData("Width", 100, index);
+
+                            index = cellWidthModel.insertNewItem();
+                            cellWidthModel.setData("Width", 100, index);
+
+                            index = cellWidthModel.insertNewItem();
+                            cellWidthModel.setData("Width", -1, index);
+                        }
+                    }
+
+                    TextInputCellContentComp {
+                        id: textInputComp;
+                    }
+
+                    Component {
+                        id: externCompEditComp;
+                        Item {
+                            id: content;
                             width: parent.width;
 
-                            elide: Text.ElideRight;
-                            wrapMode: Text.NoWrap;
+                            property Item tableCellDelegate: null;
 
-                            color: Style.textColor;
-                            font.family: Style.fontFamily;
-                            font.pixelSize: Style.fontSize_common;
+                            onTableCellDelegateChanged: {
+                                if (tableCellDelegate){
+                                    let valueModel = tableCellDelegate.getValue();
+                                    if (valueModel){
+                                        let values = []
+                                        for (let i = 0; i < valueModel.getItemsCount(); i++){
+                                            let port = valueModel.getData("Port", i);
+                                            let host = valueModel.getData("Host", i)
+
+                                            values.push(host + ":" + port)
+                                        }
+
+                                        textLabel.text = values.join('\n')
+                                    }
+                                }
+                            }
+
+                            Text {
+                                id: textLabel;
+
+                                anchors.verticalCenter: parent.verticalCenter;
+                                anchors.left: parent.left;
+                                anchors.right: button.left;
+
+                                elide: Text.ElideRight;
+                                wrapMode: Text.WordWrap;
+
+                                clip: true;
+
+                                color: Style.textColor;
+                                font.family: Style.fontFamily;
+                                font.pixelSize: Style.fontSize_common;
+                                lineHeight: 1.5;
+
+                                onTextChanged: {
+                                    if (content.tableCellDelegate){
+                                        console.log("onTextChanged", text);
+                                        let columnIndex = content.tableCellDelegate.columnIndex;
+                                        content.tableCellDelegate.pTableDelegateContainer.setHeightModelElememt(columnIndex, textLabel.height);
+                                        content.tableCellDelegate.pTableDelegateContainer.setCellHeight();
+                                    }
+                                }
+                            }
+
+                            ToolButton {
+                                id: button;
+
+                                anchors.verticalCenter: parent.verticalCenter;
+                                anchors.right: parent.right;
+
+                                width: 18;
+                                height: width;
+
+                                iconSource: "../../../../" + Style.getIconPath("Icons/Edit", Icon.State.Off, Icon.Mode.Normal);
+
+                                visible: !serviceEditorContainer.readOnly;
+
+                                onClicked: {
+                                    if (inputConnTable.elements.containsKey("ExternPorts", content.tableCellDelegate.rowIndex)){
+                                        let externPortsModel = inputConnTable.elements.getData("ExternPorts", content.tableCellDelegate.rowIndex);
+                                        if (externPortsModel){
+                                            ModalDialogManager.openDialog(externPortsDialogComp, {"portsModel": externPortsModel.copyMe()});
+                                        }
+                                    }
+                                }
+                            }
+
+                            Component {
+                                id: externPortsDialogComp;
+
+                                ExternPortsDialog {
+                                    onFinished: {
+                                        if (buttonId == Enums.save){
+                                            if (content.tableCellDelegate.rowIndex >= 0){
+                                                let ports = []
+                                                for (let i = 0; i < portsModel.getItemsCount(); i++){
+                                                    let port = portsModel.getData("Port", i);
+                                                    let host = portsModel.getData("Host", i);
+                                                    ports.push(host + ":" + port)
+                                                }
+
+                                                let externPortsModel = inputConnTable.elements.getData("ExternPorts", content.tableCellDelegate.rowIndex);
+
+                                                externPortsModel.copy(portsModel);
+                                                externPortsModel.refresh()
+
+                                                textLabel.text = ports.join('\n');
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
+                    }
+                }
 
-                        ComboBox {
-                            id: cb;
+                Text {
+                    id: dependantServicesTitle;
+
+                    anchors.left: parent.left;
+
+                    color: Style.textColor;
+                    font.family: Style.fontFamily;
+                    font.pixelSize: Style.fontSize_common;
+
+                    text: qsTr("Dependant Services");
+
+                    visible: false;
+                }
+
+                AuxTable {
+                    id: ouputConnTable;
+
+                    width: parent.width;
+                    height: visible ? contentHeight + headerHeight + 15 : 0;
+
+                    canMoveColumns: true;
+                    radius: 0;
+                    selectable: false;
+
+                    visible: false;
+
+                    onHeadersChanged: {
+                        ouputConnTable.setColumnContentComponent(2, textInputComp2)
+                        ouputConnTable.setColumnContentComponent(3, comboBoxComp2)
+
+                        ouputConnTable.tableDecorator = outputTableDecoratorModel;
+                    }
+
+                    onElementsChanged: {
+                        let count = elements.getItemsCount();
+
+                        dependantServicesTitle.visible = count > 0;
+                        ouputConnTable.visible = count > 0;
+                    }
+
+                    TextInputCellContentComp {
+                        id: textInputComp2;
+                    }
+
+                    Component {
+                        id: comboBoxComp2;
+
+                        Item {
+                            id: bodyItem;
+
+                            property Item tableCellDelegate: null;
+
+    //                        z: parent.z + 1;
 
                             width: parent.width;
                             height: 25;
 
-                            visible: false;
+                            property bool ok: tableCellDelegate != null && ouputConnTable.elements;
 
-                            onCurrentIndexChanged: {
-                                cb.visible = false;
+                            onOkChanged: {
+                                if (tableCellDelegate){
+                                    let value = tableCellDelegate.getValue();
 
-                                if (bodyItem.tableCellDelegate){
+                                    let dependantConnectionId = ouputConnTable.elements.getData("DependantConnectionId", bodyItem.tableCellDelegate.rowIndex);
+
+                                    let elementsModel = ouputConnTable.elements.getData("Elements", tableCellDelegate.rowIndex);
+                                    textLabel.text = value;
+                                    cb.model = elementsModel;
+
                                     if (cb.model){
-                                        let id = cb.model.getData("Id", cb.currentIndex)
-                                        let name = cb.model.getData("Name", cb.currentIndex)
-                                        let url = cb.model.getData("Url", cb.currentIndex)
-
-                                        textLabel.text = name;
-
-                                        ouputConnTable.elements.setData("DependantConnectionId", id, bodyItem.tableCellDelegate.rowIndex);
-                                        ouputConnTable.elements.setData("Url", url, bodyItem.tableCellDelegate.rowIndex);
-
-//                                        bodyItem.tableCellDelegate.setValue(name);
+                                        for (let i = 0; i < cb.model.getItemsCount(); i++){
+                                            let id = cb.model.getData("Id", i);
+                                            if (String(id) == dependantConnectionId){
+                                                cb.currentIndex = i;
+                                                break;
+                                            }
+                                        }
                                     }
                                 }
                             }
 
-                            onFinished: {
-                                cb.visible = false;
+                            Text {
+                                id: textLabel;
+
+                                anchors.verticalCenter: parent.verticalCenter;
+
+                                width: parent.width;
+
+                                elide: Text.ElideRight;
+                                wrapMode: Text.NoWrap;
+
+                                color: Style.textColor;
+                                font.family: Style.fontFamily;
+                                font.pixelSize: Style.fontSize_common;
                             }
 
-                            onFocusChanged: {
-                                if (!focus){
+                            ComboBox {
+                                id: cb;
+
+                                width: parent.width;
+                                height: 25;
+
+                                visible: false;
+
+                                onCurrentIndexChanged: {
+                                    cb.visible = false;
+
+                                    if (bodyItem.tableCellDelegate){
+                                        if (cb.model){
+                                            let id = cb.model.getData("Id", cb.currentIndex)
+                                            let name = cb.model.getData("Name", cb.currentIndex)
+                                            let url = cb.model.getData("Url", cb.currentIndex)
+
+                                            textLabel.text = name;
+
+                                            ouputConnTable.elements.setData("DependantConnectionId", id, bodyItem.tableCellDelegate.rowIndex);
+                                            ouputConnTable.elements.setData("Url", url, bodyItem.tableCellDelegate.rowIndex);
+
+    //                                        bodyItem.tableCellDelegate.setValue(name);
+                                        }
+                                    }
+                                }
+
+                                onFinished: {
                                     cb.visible = false;
                                 }
+
+                                onFocusChanged: {
+                                    if (!focus){
+                                        cb.visible = false;
+                                    }
+                                }
                             }
-                        }
 
-                        MouseArea {
-                            id: ma;
+                            MouseArea {
+                                id: ma;
 
-                            anchors.fill: parent;
+                                anchors.fill: parent;
 
-                            visible: !serviceEditorContainer.readOnly;
+                                visible: !serviceEditorContainer.readOnly;
 
-                            onDoubleClicked: {
-                                if (cb.model && cb.model.getItemsCount() > 0){
-                                    cb.visible = true;
-                                    cb.z = ma.z + 1;
-                                    cb.forceActiveFocus();
-                                    cb.openPopupMenu();
+                                onDoubleClicked: {
+                                    if (cb.model && cb.model.getItemsCount() > 0){
+                                        cb.visible = true;
+                                        cb.z = ma.z + 1;
+                                        cb.forceActiveFocus();
+                                        cb.openPopupMenu();
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                TreeItemModel {
-                    id: headersModel2;
+                    TreeItemModel {
+                        id: headersModel2;
 
-                    Component.onCompleted: {
-                        let index = headersModel2.insertNewItem();
+                        Component.onCompleted: {
+                            let index = headersModel2.insertNewItem();
 
-                        headersModel2.setData("Id", "ConnectionName", index)
-                        headersModel2.setData("Name", qsTr("Usage"), index)
+                            headersModel2.setData("Id", "ConnectionName", index)
+                            headersModel2.setData("Name", qsTr("Usage"), index)
 
-                        index = headersModel2.insertNewItem();
+                            index = headersModel2.insertNewItem();
 
-                        headersModel2.setData("Id", "ServiceTypeName", index)
-                        headersModel2.setData("Name", qsTr("Service"), index)
+                            headersModel2.setData("Id", "ServiceTypeName", index)
+                            headersModel2.setData("Name", qsTr("Service"), index)
 
-                        index = headersModel2.insertNewItem();
+                            index = headersModel2.insertNewItem();
 
-                        headersModel2.setData("Id", "Description", index)
-                        headersModel2.setData("Name", qsTr("Description"), index)
+                            headersModel2.setData("Id", "Description", index)
+                            headersModel2.setData("Name", qsTr("Description"), index)
 
-                        index = headersModel2.insertNewItem();
+                            index = headersModel2.insertNewItem();
 
-                        headersModel2.setData("Id", "DisplayUrl", index)
-                        headersModel2.setData("Name", qsTr("Url"), index)
+                            headersModel2.setData("Id", "DisplayUrl", index)
+                            headersModel2.setData("Name", qsTr("Url"), index)
 
-                        ouputConnTable.headers = headersModel2;
+                            ouputConnTable.headers = headersModel2;
+                        }
+                    }
+
+                    TreeItemModel {
+                        id: outputTableDecoratorModel;
+
+                        Component.onCompleted: {
+                            var cellWidthModel = outputTableDecoratorModel.addTreeModel("CellWidth");
+
+                            let index = cellWidthModel.insertNewItem();
+                            cellWidthModel.setData("Width", 150, index);
+
+                            index = cellWidthModel.insertNewItem();
+                            cellWidthModel.setData("Width", 80, index);
+
+                            index = cellWidthModel.insertNewItem();
+                            cellWidthModel.setData("Width", 350, index);
+
+                            index = cellWidthModel.insertNewItem();
+                            cellWidthModel.setData("Width", -1, index);
+                        }
                     }
                 }
-
-                TreeItemModel {
-                    id: outputTableDecoratorModel;
-
-                    Component.onCompleted: {
-                        var cellWidthModel = outputTableDecoratorModel.addTreeModel("CellWidth");
-
-                        let index = cellWidthModel.insertNewItem();
-                        cellWidthModel.setData("Width", 150, index);
-
-                        index = cellWidthModel.insertNewItem();
-                        cellWidthModel.setData("Width", 80, index);
-
-                        index = cellWidthModel.insertNewItem();
-                        cellWidthModel.setData("Width", 350, index);
-
-                        index = cellWidthModel.insertNewItem();
-                        cellWidthModel.setData("Width", -1, index);
-                    }
-                }
-            }
-        }//Column bodyColumn
+            }//Column bodyColumn
+        }
     }
 
-    AdministrationView {
-        id: administrationView;
-        anchors.fill: parent;
-        visible: false;
-        // productId:
+    Component {
+        id: administrationViewComp;
+
+        AdministrationView {
+            id: administrationView;
+            anchors.fill: parent;
+            productId: serviceEditorContainer.productId;
+            documentManager: serviceEditorContainer.documentManager;
+        }
     }
 }//Container
+

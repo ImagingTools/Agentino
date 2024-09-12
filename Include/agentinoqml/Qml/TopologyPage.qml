@@ -15,6 +15,7 @@ ViewBase {
     clip: true;
 
     property TreeItemModel objectModel: TreeItemModel{};
+    property var documentManager: MainDocumentManager.getDocumentManager("Topology");
 
     //for scrollBars
     property real originX: 0;
@@ -24,7 +25,7 @@ ViewBase {
     Component.onCompleted: {
         console.log("TopologyPage onCompleted");
 
-        let documentManager = MainDocumentManager.getDocumentManager("Topology");
+        // let documentManager = MainDocumentManager.getDocumentManager("Topology");
         if (documentManager){
             documentManager.registerDocumentView("Service", "ServiceView", serviceEditorComp);
             documentManager.registerDocumentDataController("Service", serviceDataControllerComp);
@@ -199,6 +200,7 @@ ViewBase {
 
         ServiceEditor {
             id: serviceEditor
+            documentManager: topologyPage.documentManager;
             commandsDelegateComp: Component {ViewCommandsDelegateBase {
                 view: serviceEditor;
             }

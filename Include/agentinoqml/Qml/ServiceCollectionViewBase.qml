@@ -21,6 +21,8 @@ RemoteCollectionView {
 
     hasPagination: false
 
+    property var documentManager: MainDocumentManager.getDocumentManager(root.collectionId);
+
     Component.onDestruction: {
         let documentManagerPtr = MainDocumentManager.getDocumentManager("Agents")
         if (documentManagerPtr){
@@ -43,7 +45,8 @@ RemoteCollectionView {
         commandsController.commandId = root.collectionId;
         dataController.collectionId = root.collectionId;
 
-        let documentManagerPtr = MainDocumentManager.getDocumentManager(root.collectionId)
+        // let documentManagerPtr = MainDocumentManager.getDocumentManager(root.collectionId)
+        let documentManagerPtr = root.documentManager;
         if (documentManagerPtr){
             root.commandsDelegate.documentManager = documentManagerPtr
 
@@ -107,6 +110,7 @@ RemoteCollectionView {
 
         ServiceEditor {
             id: serviceEditor
+            documentManager: root.documentManager;
 
             commandsDelegateComp: Component {ViewCommandsDelegateBase {
                 view: serviceEditor;

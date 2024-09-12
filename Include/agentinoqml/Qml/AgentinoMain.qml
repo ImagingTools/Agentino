@@ -22,6 +22,8 @@ ApplicationMain{
         function onLoginSuccessful(){
             CachedGroupCollection.updateModel();
             CachedUserCollection.updateModel();
+
+            CachedRoleCollection.productId = context.appName;
             CachedRoleCollection.updateModel();
         }
 
