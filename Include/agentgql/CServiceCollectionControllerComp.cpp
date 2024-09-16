@@ -293,7 +293,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 					dataModel->SetData("Version", serviceVersion);
 					tracingLevel = connectionCollection->GetTracingLevel();
 					dataModel->SetData("TracingLevel", tracingLevel);
-					const imtbase::ICollectionInfo* collectionInfo = connectionCollection->GetUrlList();
+					const imtbase::ICollectionInfo* collectionInfo = static_cast<const imtbase::ICollectionInfo*>(connectionCollection->GetUrlList());
 					const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
 					if (objectCollection != nullptr){
 						imtbase::ICollectionInfo::Ids ids = collectionInfo->GetElementIds();
