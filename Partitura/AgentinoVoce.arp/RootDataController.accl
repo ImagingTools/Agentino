@@ -8,7 +8,6 @@
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
-        <Element ComponentName="AgentinoGqlRequestRedirector" X="650" Y="500" Note=""/>
         <Element ComponentName="ApplicationController" X="600" Y="50" Note=""/>
         <Element ComponentName="AuthorizationConcept" X="500" Y="275" Note=""/>
         <Element ComponentName="AuthorizationOptions" X="775" Y="300" Note=""/>

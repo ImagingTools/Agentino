@@ -10,21 +10,6 @@
     <Description></Description>
     <Keywords></Keywords>
     <ElementsList>
-        <Element Id="AgentinoGqlRequestRedirector" PackageId="AgentinoVoce" ComponentId="AgentinoGqlRequestRedirector">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentCollection">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
         <Element Id="ApplicationController" PackageId="ImtGqlPck" ComponentId="GraphQLDemultiplexer">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
@@ -40,7 +25,6 @@
                                 <Value>UsersPage</Value>
                                 <Value>RolesPage</Value>
                                 <Value>WebSocketController</Value>
-                                <Value>AgentinoGqlRequestRedirector</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

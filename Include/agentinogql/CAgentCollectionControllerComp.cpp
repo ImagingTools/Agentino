@@ -237,7 +237,6 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 	sdl::AgentItemRequestArguments agentItemRequestArguments = agentItemGqlRequest.GetRequestedArguments();
 	QByteArray agentId = agentItemRequestArguments.input.GetId();
 
-
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
 	imtbase::CTreeItemModel* dataModel = rootModelPtr->AddTreeModel("data");
 
@@ -259,14 +258,11 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 		}
 	}
 
-	;
-
 	if (!agentDataPayload.WriteToModel(*dataModel)){
 		errorMessage = QString("Unable to setup gql item. Unable to write model.");
 		SendCriticalMessage(0, errorMessage, "CSpotColorCollectionControllerComp");
 		Q_ASSERT(0);
 	}
-
 
 	return rootModelPtr.PopPtr();
 }
@@ -301,13 +297,9 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObjectFromRequest(
 		return nullptr;
 	}
 
-	istd::TDelPtr<agentinodata::IAgentInfo> agentInstancePtr = m_agentFactCompPtr.CreateInstance();
-	if (agentInstancePtr == nullptr){
-		return nullptr;
-	}
-
-	agentinodata::CIdentifiableAgentInfo* agentPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(agentInstancePtr.GetPtr());
-	if (agentPtr == nullptr){
+	istd::TDelPtr<agentinodata::CIdentifiableAgentInfo> agentPtr;
+	agentPtr.SetCastedOrRemove(m_agentFactCompPtr.CreateInstance());
+	if (!agentPtr.IsValid()){
 		errorMessage = QT_TR_NOOP("Unable to get an service info!");
 		return nullptr;
 	}
@@ -347,7 +339,7 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObjectFromRequest(
 		agentPtr->SetTracingLevel(tracingLevel);
 	}
 
-	return agentInstancePtr.PopPtr();
+	return agentPtr.PopPtr();
 }
 
 
@@ -384,19 +376,15 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 		QString name;
 		QString description;
 
-		istd::TDelPtr<istd::IChangeable> objectPtr = BaseClass::CreateObjectFromRequest(gqlRequest, agentId, name, description, errorMessage);
-		if (objectPtr == nullptr){
-			return nullptr;
-		}
-
-		agentinodata::CIdentifiableAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(objectPtr.GetPtr());
-		if (agentInfoPtr == nullptr){
+		istd::TDelPtr<agentinodata::CIdentifiableAgentInfo> agentInfoPtr;
+		agentInfoPtr.SetCastedOrRemove(CreateObjectFromRequest(gqlRequest, agentId, name, description, errorMessage));
+		if (!agentInfoPtr.IsValid()){
 			return nullptr;
 		}
 
 		agentInfoPtr->SetLastConnection(QDateTime::currentDateTimeUtc());
 
-		m_objectCollectionCompPtr->InsertNewObject("DocumentInfo", name, description, agentInfoPtr, agentId);
+		m_objectCollectionCompPtr->InsertNewObject("DocumentInfo", name, description, agentInfoPtr.GetPtr(), agentId);
 	}
 
 	m_connectedAgents.append(agentId);
