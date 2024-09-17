@@ -2,25 +2,25 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5225" Description="ACF"/>
-            <Version Id="1" Number="2208" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5241" Description="ACF"/>
+            <Version Id="1" Number="2216" Description="ACF-Solutions"/>
             <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
-        <Element ComponentName="ApplicationController" X="575" Y="325" Note=""/>
-        <Element ComponentName="AuthorizationConcept" X="525" Y="625" Note=""/>
-        <Element ComponentName="AuthorizationOptions" X="800" Y="625" Note=""/>
-        <Element ComponentName="PermissionController" X="250" Y="475" Note=""/>
+        <Element ComponentName="AgentinoGqlRequestRedirector" X="650" Y="500" Note=""/>
+        <Element ComponentName="ApplicationController" X="600" Y="50" Note=""/>
+        <Element ComponentName="AuthorizationConcept" X="500" Y="275" Note=""/>
+        <Element ComponentName="AuthorizationOptions" X="775" Y="300" Note=""/>
+        <Element ComponentName="PermissionController" X="200" Y="275" Note=""/>
         <Element ComponentName="RolesPage" X="1050" Y="600" Note=""/>
-        <Element ComponentName="SettingsController" X="250" Y="325" Note=""/>
-        <Element ComponentName="SingleProductPermission" X="250" Y="625" Note=""/>
+        <Element ComponentName="SettingsController" X="225" Y="75" Note=""/>
+        <Element ComponentName="SingleProductPermission" X="150" Y="550" Note=""/>
         <Element ComponentName="SlaveGraphQLDemultiplexer" X="1050" Y="325" Note=""/>
-        <Element ComponentName="TestConnectionController" X="325" Y="50" Note=""/>
         <Element ComponentName="UserGroupsPage" X="1050" Y="725" Note=""/>
         <Element ComponentName="UsersPage" X="1050" Y="475" Note=""/>
-        <Element ComponentName="WebSocketController" X="850" Y="150" Note=""/>
-        <Element ComponentName="WebSocketRepresentationController" X="775" Y="50" Note=""/>
+        <Element ComponentName="WebSocketController" X="950" Y="50" Note=""/>
+        <Element ComponentName="WebSocketRepresentationController" X="900" Y="150" Note=""/>
     </PositionMap>
     <EmbeddedRegistries/>
 </Acf>

@@ -10,6 +10,7 @@ ViewBase {
     property int radius: 3;
     property int flickableWidth: 800;
     property string productId;
+    property string agentId;
     property var documentManager: null;
 
     Component.onCompleted: {
@@ -20,19 +21,8 @@ ViewBase {
         tabPanel.addTab("General", qsTr("General"), mainEditorComp);
     }
 
-    // onWidthChanged: {
-    //     if (width < flickableWidth + 50){
-    //         flickable.width = width - 50;
-    //     }
-    //     else{
-    //         flickable.width = flickableWidth;
-    //     }
-    // }
-
     onProductIdChanged: {
         if (productId !== ""){
-            console.log("Service productId");
-
             tabPanel.addTab("Administration", qsTr("Administration"), administrationViewComp);
         }
     }
@@ -42,19 +32,6 @@ ViewBase {
             serviceEditorContainer.productId = model.getData("Name");
         }
     }
-
-    // function setReadOnly(readOnly){
-    //     nameInput.readOnly = readOnly;
-    //     pathInput.readOnly = readOnly;
-    //     argumentsInput.readOnly = readOnly;
-    //     descriptionInput.readOnly = readOnly;
-
-    //     inputConnTable.readOnly = readOnly;
-    //     ouputConnTable.readOnly = readOnly;
-
-    //     switchAutoStart.enabled = !readOnly;
-    //     switchVerboseMessage.enabled = !readOnly
-    // }
 
     function updateGui(){
         let item = tabPanel.getTabByIndex(0);

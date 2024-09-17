@@ -5,7 +5,6 @@ import imtgui 1.0
 import imtguigql 1.0
 import imtcolgui 1.0
 import imtdocgui 1.0
-
 import agentino 1.0
 
 ViewBase {
@@ -23,9 +22,6 @@ ViewBase {
     //for scrollBars
 
     Component.onCompleted: {
-        console.log("TopologyPage onCompleted");
-
-        // let documentManager = MainDocumentManager.getDocumentManager("Topology");
         if (documentManager){
             documentManager.registerDocumentView("Service", "ServiceView", serviceEditorComp);
             documentManager.registerDocumentDataController("Service", serviceDataControllerComp);
@@ -113,7 +109,6 @@ ViewBase {
         property string selectedService: ""
 
         onAutoFitChanged: {
-            console.log("onAutoFitChanged", scheme.autoFit);
             topologyPage.commandsController.setToggled("AutoFit", scheme.autoFit);
         }
 
@@ -213,6 +208,11 @@ ViewBase {
                     return topologyPage.getAdditionalInputParams();
                 }
             }}
+
+            Component.onCompleted: {
+                let agentId = scheme.objectModel.getData("agentId", scheme.selectedIndex);
+                serviceEditor.agentId = agentId;
+            }
         }
     }
 
