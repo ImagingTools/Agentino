@@ -20,7 +20,7 @@ IServiceStatusInfo::ServiceStatus  CServiceControllerComp::GetServiceStatus(cons
 {
 	IServiceStatusInfo::ServiceStatus retVal = IServiceStatusInfo::SS_NOT_RUNNING;
 
-	if (m_processMap.contains(serviceId)){\
+	if (m_processMap.contains(serviceId)){
 		QProcess* processPtr = m_processMap[serviceId].m_processPtr;
 		if (processPtr == nullptr){
 			return IServiceStatusInfo::SS_UNDEFINED;
@@ -46,12 +46,9 @@ IServiceStatusInfo::ServiceStatus  CServiceControllerComp::GetServiceStatus(cons
 
 bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 {
-	bool retVal = false;
-
 	if (!m_serviceCollectionCompPtr.IsValid()){
-		Q_ASSERT(0);
-
-		return retVal;
+		Q_ASSERT(false);
+		return false;
 	}
 
 	updateServiceVersion(serviceId);
@@ -63,9 +60,8 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 	}
 
 	if (serviceInfoPtr == nullptr){
-		Q_ASSERT(0);
-
-		return retVal;
+		Q_ASSERT(false);
+		return false;
 	}
 
 	QByteArray servicePath = serviceInfoPtr->GetServicePath();
@@ -124,7 +120,7 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 
 	QString serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::ICollectionInfo::EIT_NAME).toString();
 
-	SendInfoMessage(0, QString("Service '%1' started").arg(serviceName), serviceName);
+	SendInfoMessage(0, QString("Service '%1' started").arg(serviceName));
 
 	return true;
 }

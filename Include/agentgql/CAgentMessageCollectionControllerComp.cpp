@@ -9,7 +9,6 @@
 #undef StartService
 
 // ACF includes
-#include <idoc/IDocumentMetaInfo.h>
 #include <iprm/CTextParam.h>
 #include <ilog/CMessage.h>
 
@@ -83,7 +82,6 @@ bool CAgentMessageCollectionControllerComp::SetupGqlItem(
 
 			return retVal;
 		}
-
 	}
 	errorMessage = "Unable to get object data from object collection";
 
@@ -116,24 +114,23 @@ void CAgentMessageCollectionControllerComp::SetObjectFilter(
 {
 	QByteArrayList keys;
 	keys << "VerboseFilter" << "InfoFilter" << "WarningFilter" << "ErrorFilter" << "CriticalFilter";
-	istd::TDelPtr<iprm::CParamsSet> categoryFilterPtr(new iprm::CParamsSet());
-
-	imtbase::CTreeItemModel *categoryModel = objectFilterModel.GetTreeItemModel("Category");
+	iprm::CParamsSet* categoryFilterPtr = new iprm::CParamsSet();
+	imtbase::CTreeItemModel* categoryModel = objectFilterModel.GetTreeItemModel("Category");
 	if (categoryModel == nullptr){
 		keys.clear();
 	}
 
-	for (QByteArray key: keys){
+	for (const QByteArray& key : keys){
 		if (categoryModel->ContainsKey(key)){
 			QByteArray filterValue = categoryModel->GetData(key).toByteArray();
 			if (!filterValue.isEmpty()){
-				istd::TDelPtr<iprm::CTextParam> textParamPtr(new iprm::CTextParam());
+				iprm::CTextParam* textParamPtr = new iprm::CTextParam();
 				textParamPtr->SetText(filterValue);
-				categoryFilterPtr->SetEditableParameter(key, textParamPtr.PopPtr());
+				categoryFilterPtr->SetEditableParameter(key, textParamPtr, true);
 			}
 		}
 	}
-	filterParams.SetEditableParameter("Category", categoryFilterPtr.PopPtr());
+	filterParams.SetEditableParameter("Category", categoryFilterPtr, true);
 
 	istd::TDelPtr<iprm::CParamsSet> sourceFilterPtr(new iprm::CParamsSet());
 
@@ -141,23 +138,23 @@ void CAgentMessageCollectionControllerComp::SetObjectFilter(
 	if (sourceModel == nullptr){
 		return;
 	}
+
 	keys.clear();
-	for (QString key: sourceModel->GetKeys()){
+	for (const QString& key : sourceModel->GetKeys()){
 		keys << key.toUtf8();
 	}
-	for (QByteArray key: keys){
+
+	for (const QByteArray& key : keys){
 		if (sourceModel->ContainsKey(key)){
 			QByteArray filterValue = sourceModel->GetData(key).toByteArray();
 			if (!filterValue.isEmpty()){
-				istd::TDelPtr<iprm::CTextParam> textParamPtr(new iprm::CTextParam());
+				iprm::CTextParam* textParamPtr = new iprm::CTextParam();
 				textParamPtr->SetText(filterValue);
-				sourceFilterPtr->SetEditableParameter(key, textParamPtr.PopPtr());
+				sourceFilterPtr->SetEditableParameter(key, textParamPtr, true);
 			}
 		}
 	}
 	filterParams.SetEditableParameter("Source", sourceFilterPtr.PopPtr());
-
-
 }
 
 

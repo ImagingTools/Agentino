@@ -47,10 +47,13 @@ SplitView {
         }
 
         onAgentIdChanged: {
+            console.log("onAgentIdChanged", agentId);
             dataController.elementsModel.clear()
             if (dataController.collectionId !== log.collectionId){
                 dataController.collectionId = log.collectionId
             }
+            console.log("onAgentIdChanged collectionId", dataController.collectionId);
+
             unRegisterSubscription()
             registerSubscription()
         }
@@ -86,14 +89,15 @@ SplitView {
                 property string services: agentCollectionView.selectedServices
 
                 onServicesChanged: {
-                    checkMenu.dataModel.clear()
-                    var servicesModel = services.split(';')
-                    for (let i = 0; i < servicesModel.length; i++){
-                        checkMenu.dataModel.insertNewItem()
-                        checkMenu.dataModel.setData("Name", servicesModel[i], i)
+                    if (services != ""){
+                        checkMenu.dataModel.clear()
+                        var servicesModel = services.split(';')
+                        for (let i = 0; i < servicesModel.length; i++){
+                            checkMenu.dataModel.insertNewItem()
+                            checkMenu.dataModel.setData("Name", servicesModel[i], i)
+                        }
+                        // filterDecorator.updateObjectFilter();
                     }
-                    console.log("checkBoxMenu",checkMenu.dataModel)
-                    filterDecorator.updateObjectFilter();
                 }
 
                 CheckBoxMenu{
@@ -134,7 +138,7 @@ SplitView {
                         sourceFilter.setData(service, status === 0 || status === undefined ? false : true);
                     }
 
-                    log.dataController.updateModel()
+                    log.doUpdateGui()
                 }
             }
         }

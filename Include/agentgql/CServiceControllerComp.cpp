@@ -13,57 +13,53 @@ namespace agentgql
 imtbase::CTreeItemModel* CServiceControllerComp::CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
 {
 	if (!m_serviceControllerCompPtr.IsValid()){
-		Q_ASSERT(0);
-
+		Q_ASSERT(false);
 		return nullptr;
 	}
 
 	QByteArray commandId = gqlRequest.GetCommandId();
 
 	if (m_commandIdsAttrPtr.FindValue(commandId) < 0){
+		Q_ASSERT(false);
 		return nullptr;
 	}
 
-	const imtgql::CGqlObject& fieldList = gqlRequest.GetFields();
-	const imtgql::CGqlObject& paramList = gqlRequest.GetParams();
+	const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParamObject("input");
+	if (inputParamPtr == nullptr){
+		errorMessage = QString("Unable to create response for command '%1'. Error: GraphQL input parameters is invalid").arg(qPrintable(commandId));
+		return nullptr;
+	}
+
+	QByteArray serviceId = inputParamPtr->GetFieldArgumentValue("serviceId").toByteArray();
+	if (serviceId.isEmpty()){
+		errorMessage = QString("Unable to create response for command '%1'. Error: Service ID is empty");
+		return nullptr;
+	}
+
+	if (commandId == "ServiceStart"){
+		if (!m_serviceControllerCompPtr->StartService(serviceId)){
+			errorMessage = QString("Unable to create response for command '%1'. Error when trying to start the service");
+			return nullptr;
+		}
+	}
+	else if (commandId == "ServiceStop"){
+		if (!m_serviceControllerCompPtr->StopService(serviceId)){
+			errorMessage = QString("Unable to create response for command '%1'. Error when trying to stop the service");
+			return nullptr;
+		}
+	}
+
+	agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
+	agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
 
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
-	imtbase::CTreeItemModel* dataModel = nullptr;
-	QByteArray serviceId;
+	imtbase::CTreeItemModel* dataModelPtr = rootModelPtr->AddTreeModel("data");
 
-	if (paramList.GetFieldIds().contains("serviceId")){
-		serviceId = paramList.GetFieldArgumentValue("serviceId").toByteArray();
-	}
+	imtbase::CTreeItemModel* statusModel = dataModelPtr->AddTreeModel(agentino::ServiceStatus::s_Key);
 
-	if (serviceId.isEmpty()){
-		errorMessage = QString("Invalid input parameters, service Id missing.");
-	}
-
-	if (!errorMessage.isEmpty()){
-		imtbase::CTreeItemModel* notificationItemModel = rootModelPtr->AddTreeModel("errors");
-		notificationItemModel->SetData("message", errorMessage);
-	}
-	else {
-		bool result = false;
-
-		if (commandId == "ServiceStart"){
-			result = m_serviceControllerCompPtr->StartService(serviceId);
-		}
-		else if (commandId == "ServiceStop"){
-			result = m_serviceControllerCompPtr->StopService(serviceId);
-		}
-		agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
-		agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
-
-		dataModel = new imtbase::CTreeItemModel();
-		imtbase::CTreeItemModel* statusModel = dataModel->AddTreeModel(agentino::ServiceStatus::s_Key);
-
-		statusModel->SetData("serviceId", serviceId);
-		statusModel->SetData("status", processStateEnum.id);
-		statusModel->SetData("statusName", processStateEnum.name);
-
-		rootModelPtr->SetExternTreeModel("data", dataModel);
-	}
+	statusModel->SetData("serviceId", serviceId);
+	statusModel->SetData("status", processStateEnum.id);
+	statusModel->SetData("statusName", processStateEnum.name);
 
 	return rootModelPtr.PopPtr();
 }

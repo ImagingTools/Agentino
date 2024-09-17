@@ -3,13 +3,7 @@
 
 // ImtCore includes
 #include <imtgql/CObjectCollectionControllerCompBase.h>
-// #include <imtbase/PluginInterface.h>
-// #include <imtservice/IObjectCollectionPlugin.h>
-// #include <imtbase/TPluginManager.h>
 
-// Agentino includes
-// #include <agentinodata/IServiceInfo.h>
-// #include <agentinodata/IServiceController.h>
 
 #undef GetObject
 
@@ -18,8 +12,7 @@ namespace agentgql
 {
 
 
-class CAgentMessageCollectionControllerComp:
-			public imtgql::CObjectCollectionControllerCompBase
+class CAgentMessageCollectionControllerComp: public imtgql::CObjectCollectionControllerCompBase
 {
 public:
 	typedef imtgql::CObjectCollectionControllerCompBase BaseClass;
@@ -38,9 +31,10 @@ protected:
 	virtual imtbase::CTreeItemModel* GetObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 	virtual imtbase::CTreeItemModel* InsertObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 	virtual imtbase::CTreeItemModel* UpdateObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
-	virtual void SetObjectFilter(const imtgql::CGqlRequest& gqlRequest,
-								 const imtbase::CTreeItemModel& objectFilterModel,
-								 iprm::CParamsSet& filterParams) const override;
+	virtual void SetObjectFilter(
+				const imtgql::CGqlRequest& gqlRequest,
+				const imtbase::CTreeItemModel& objectFilterModel,
+				iprm::CParamsSet& filterParams) const override;
 };
 
 
