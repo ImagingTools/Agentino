@@ -23,11 +23,6 @@ Dialog {
         portsDialog.contentItem.tableView.elements = portsDialog.portsModel;
     }
 
-    onFinished: {
-        if (buttonId == Enums.save){
-        }
-    }
-
     Keys.onPressed: {
         if (event.key === Qt.Key_Return){
             let enabled = portsDialog.buttons.getButtonState(Enums.ok);
@@ -55,6 +50,10 @@ Dialog {
             property TreeItemModel headersModel: TreeItemModel {
                 Component.onCompleted: {
                     let index = dialogBody.headersModel.insertNewItem();
+                    dialogBody.headersModel.setData("Id", "Scheme", index);
+                    dialogBody.headersModel.setData("Name", qsTr("Scheme"), index);
+
+                    index = dialogBody.headersModel.insertNewItem();
                     dialogBody.headersModel.setData("Id", "Host", index);
                     dialogBody.headersModel.setData("Name", qsTr("Host"), index);
 
@@ -117,6 +116,7 @@ Dialog {
 
                             portsDialog.portsModel.setData("Id", UuidGenerator.generateUUID(), index);
                             portsDialog.portsModel.setData("Name", "", index);
+                            portsDialog.portsModel.setData("Scheme", "http", index);
                             portsDialog.portsModel.setData("Host", "localhost", index);
                             portsDialog.portsModel.setData("Port", "80", index);
                             portsDialog.portsModel.setData("Description", "", index);
@@ -138,6 +138,35 @@ Dialog {
                     id: textInputComp;
                 }
 
+                Component {
+                    id: comboBoxCellContentComp;
+                    ComboBoxCellContentComp {
+                        model: schemesModel;
+
+                        onCurrentIndexChanged: {
+                            model.getData();
+                        }
+                    }
+                }
+
+                TreeItemModel {
+                    id: schemesModel;
+
+                    Component.onCompleted: {
+                        let index = schemesModel.insertNewItem();
+                        schemesModel.setData("Scheme", "http", index);
+
+                        index = schemesModel.insertNewItem();
+                        schemesModel.setData("Scheme", "https", index);
+
+                        index = schemesModel.insertNewItem();
+                        schemesModel.setData("Scheme", "ws", index);
+
+                        index = schemesModel.insertNewItem();
+                        schemesModel.setData("Scheme", "wss", index);
+                    }
+                }
+
                 Table {
                     id: tableTreeView;
 
@@ -147,9 +176,10 @@ Dialog {
                     radius: 0;
 
                     onHeadersChanged: {
-                        tableTreeView.setColumnContentComponent(0, textInputComp)
+                        tableTreeView.setColumnContentComponent(0, comboBoxCellContentComp)
                         tableTreeView.setColumnContentComponent(1, textInputComp)
                         tableTreeView.setColumnContentComponent(2, textInputComp)
+                        tableTreeView.setColumnContentComponent(3, textInputComp)
                     }
 
                     onSelectionChanged: {

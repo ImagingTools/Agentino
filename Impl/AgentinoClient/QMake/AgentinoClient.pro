@@ -14,7 +14,7 @@ LIBS += -L../../../Lib/$$COMPILER_DIR -liauth -liqtgui -liservice
 LIBS += -limtbase -limtgui -limtauth -limtauthgui -limtlic -limtlicgui -limtwidgets -limtrest -limtcrypt -limt3dgui -limtrepo -limtstyle -limtqml -limtcom -limtdb -limtauthsdl
 LIBS += -limtcontrolsqml -limtstylecontrolsqml -limtguigqlqml -limtcolguiqml -limtdocguiqml -limtauthguiqml -limtlicguiqml -limtguiqml
 LIBS += -limtlicgql -limtguigql -limtgql -limtauthgql -limtclientgql -lImtCoreLoc
-LIBS += -lagentinodata -lagentinogql -lagentgql -lagentinoqml -lAgentinoLoc
+LIBS += -lagentinodata -lagentinogql -lagentgql -lagentinoqml -lAgentinoLoc -lAcfLoc -lAcfSlnLoc
 
 # Set OS-specific build options:
 win32-msvc*{
@@ -33,12 +33,12 @@ ARXC_OUTDIR = $$OUT_PWD/$$AUXINCLUDEPATH/GeneratedFiles/$$TARGET
 # Conversion of resource templates:
 win*{
 # File transformation
-ACF_CONVERT_FILES = $$PWD/../VC/AgentinoClient.rc.xtracf
+# ACF_CONVERT_FILES = $$PWD/../VC/AgentinoClient.rc.xtracf
 ACF_CONVERT_OUTDIR = $$AUXINCLUDEPATH/GeneratedFiles/$$TARGET
 	ACF_CONVERT_REGISTRY =  $$PWD/../VC/FileSubstitCopyApp.acc
 	ACF_CONVERT_CONFIG = $$PWD/../../../Config/BaseOnly.awc
 
-RC_FILE = $$OUT_PWD/$$AUXINCLUDEPATH/GeneratedFiles/$$TARGET/AgentinoClient.rc
+# RC_FILE = $$OUT_PWD/$$AUXINCLUDEPATH/GeneratedFiles/$$TARGET/AgentinoClient.rc
 RC_INCLUDEPATH = $$_PRO_FILE_PWD_
 }
 

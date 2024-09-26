@@ -27,7 +27,7 @@ include(${ACFDIR}/Config/CMake/ApplicationConfig.cmake)
 
 target_link_libraries(${PROJECT_NAME} imtrest imtlicgui imtlicgql imtclientgql imtgql imtauthdb imtdb imtbase imtapp imtfile imtcom)
 target_link_libraries(${PROJECT_NAME} i2d idoc imtqml  imtstyle imtauthgui imtauthgql imtstylecontrolsqml imtgui imtguigql imtlic imtauth imtauthsdl)
-target_link_libraries(${PROJECT_NAME} ImtCoreLoc AgentinoLoc)
+target_link_libraries(${PROJECT_NAME} ImtCoreLoc AgentinoLoc AcfLoc AcfSlnLoc)
 target_link_libraries(${PROJECT_NAME} agentinodata agentinogql agentgql agentinoqml)
 target_link_libraries(${PROJECT_NAME} imtcontrolsqml imtdocguiqml imtcolguiqml imtguiqml imtguigqlqml imtauthguiqml imtlicguiqml)
 target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Quick Qt${QT_VERSION_MAJOR}::WebSockets)

@@ -755,7 +755,6 @@ ViewBase {
                             id: bodyItem;
 
                             onRowIndexChanged: {
-                                console.log("comboBoxComp2 editor width", width, rowIndex)
                                 if (rowIndex >= 0){
 
                                     let value = getValue();

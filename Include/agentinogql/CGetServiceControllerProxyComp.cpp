@@ -163,6 +163,7 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::GetRepresentationModelF
 									externPortsModelPtr->SetData("Description", incomingConnection.description, externIndex);
 									externPortsModelPtr->SetData("Host", incomingConnection.url.host(), externIndex);
 									externPortsModelPtr->SetData("Port", incomingConnection.url.port(), externIndex);
+									externPortsModelPtr->SetData("Scheme", incomingConnection.url.scheme(), externIndex);
 								}
 							}
 						}
