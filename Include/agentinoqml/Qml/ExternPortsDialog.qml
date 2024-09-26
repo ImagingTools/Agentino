@@ -138,7 +138,7 @@ Dialog {
                     id: textInputComp;
                 }
 
-                AuxTable {
+                Table {
                     id: tableTreeView;
 
                     width: parent.width;

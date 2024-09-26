@@ -54,15 +54,11 @@ ViewBase {
 
         Flickable {
             id: flickable;
-            anchors.top: parent.top;
-            anchors.bottom: parent.bottom;
-            anchors.left: parent.left;
-            anchors.leftMargin: 20;
 
-            width: serviceEditorContainer.flickableWidth;
+            anchors.fill: parent
 
-            contentWidth: bodyColumn.width;
-            contentHeight: bodyColumn.height;
+            contentWidth: bodyContainer.width;
+            contentHeight: bodyContainer.height;
 
             boundsBehavior: Flickable.StopAtBounds;
 
@@ -205,10 +201,18 @@ ViewBase {
                 visible: parent.visible;
             }
 
+            Item {
+                id: bodyContainer
+                width: flickable.width
+                height: bodyColumn.height + Style.size_largeMargin * 2
+
             Column {
                 id: bodyColumn;
 
-                width: flickable.width;
+                anchors.top: bodyContainer.top
+                anchors.left: bodyContainer.left;
+                anchors.right: bodyContainer.right
+                anchors.margins: Style.size_largeMargin
 
                 spacing: Style.size_mainMargin;
 
@@ -229,6 +233,7 @@ ViewBase {
 
                     width: parent.width;
                     height: Style.itemSizeMedium;
+                    autoEditingFinished: false
 
                     placeHolderText: qsTr("Enter the name");
 
@@ -498,7 +503,7 @@ ViewBase {
                     visible: false;
                 }
 
-                AuxTable {
+                Table {
                     id: inputConnTable;
 
                     width: parent.width;
@@ -594,27 +599,28 @@ ViewBase {
 
                     Component {
                         id: externCompEditComp;
-                        Item {
+                        TableCellDelegateBase {
                             id: content;
-                            width: parent.width;
 
-                            property Item tableCellDelegate: null;
+                            onRowIndexChanged: {
+                                console.log("Service editor width", width, rowIndex)
+                                if (rowIndex >= 0){
 
-                            onTableCellDelegateChanged: {
-                                if (tableCellDelegate){
-                                    let valueModel = tableCellDelegate.getValue();
+                                    let valueModel = getValue();
                                     if (valueModel){
                                         let values = []
                                         for (let i = 0; i < valueModel.getItemsCount(); i++){
                                             let port = valueModel.getData("Port", i);
                                             let host = valueModel.getData("Host", i)
-
                                             values.push(host + ":" + port)
                                         }
-
                                         textLabel.text = values.join('\n')
                                     }
                                 }
+                            }
+
+                            onWidthChanged: {
+                                console.log("Service editor onWidthChanged", width, rowIndex)
                             }
 
                             Text {
@@ -649,6 +655,7 @@ ViewBase {
 
                                 anchors.verticalCenter: parent.verticalCenter;
                                 anchors.right: parent.right;
+                                anchors.rightMargin: Style.size_mainMargin
 
                                 width: 18;
                                 height: width;
@@ -658,8 +665,9 @@ ViewBase {
                                 visible: !serviceEditorContainer.readOnly;
 
                                 onClicked: {
-                                    if (inputConnTable.elements.containsKey("ExternPorts", content.tableCellDelegate.rowIndex)){
-                                        let externPortsModel = inputConnTable.elements.getData("ExternPorts", content.tableCellDelegate.rowIndex);
+                                    console.log("Edit onClicked")
+                                    if (inputConnTable.elements.containsKey("ExternPorts", content.rowIndex)){
+                                        let externPortsModel = inputConnTable.elements.getData("ExternPorts", content.rowIndex);
                                         if (externPortsModel){
                                             ModalDialogManager.openDialog(externPortsDialogComp, {"portsModel": externPortsModel.copyMe()});
                                         }
@@ -673,7 +681,7 @@ ViewBase {
                                 ExternPortsDialog {
                                     onFinished: {
                                         if (buttonId == Enums.save){
-                                            if (content.tableCellDelegate.rowIndex >= 0){
+                                            if (content.rowIndex >= 0){
                                                 let ports = []
                                                 for (let i = 0; i < portsModel.getItemsCount(); i++){
                                                     let port = portsModel.getData("Port", i);
@@ -681,7 +689,7 @@ ViewBase {
                                                     ports.push(host + ":" + port)
                                                 }
 
-                                                let externPortsModel = inputConnTable.elements.getData("ExternPorts", content.tableCellDelegate.rowIndex);
+                                                let externPortsModel = inputConnTable.elements.getData("ExternPorts", content.rowIndex);
 
                                                 externPortsModel.copy(portsModel);
                                                 externPortsModel.refresh()
@@ -710,7 +718,7 @@ ViewBase {
                     visible: false;
                 }
 
-                AuxTable {
+                Table {
                     id: ouputConnTable;
 
                     width: parent.width;
@@ -743,25 +751,18 @@ ViewBase {
                     Component {
                         id: comboBoxComp2;
 
-                        Item {
+                        TableCellDelegateBase {
                             id: bodyItem;
 
-                            property Item tableCellDelegate: null;
+                            onRowIndexChanged: {
+                                console.log("comboBoxComp2 editor width", width, rowIndex)
+                                if (rowIndex >= 0){
 
-    //                        z: parent.z + 1;
+                                    let value = getValue();
 
-                            width: parent.width;
-                            height: 25;
+                                    let dependantConnectionId = ouputConnTable.elements.getData("DependantConnectionId", bodyItem.rowIndex);
 
-                            property bool ok: tableCellDelegate != null && ouputConnTable.elements;
-
-                            onOkChanged: {
-                                if (tableCellDelegate){
-                                    let value = tableCellDelegate.getValue();
-
-                                    let dependantConnectionId = ouputConnTable.elements.getData("DependantConnectionId", bodyItem.tableCellDelegate.rowIndex);
-
-                                    let elementsModel = ouputConnTable.elements.getData("Elements", tableCellDelegate.rowIndex);
+                                    let elementsModel = ouputConnTable.elements.getData("Elements", bodyItem.rowIndex);
                                     textLabel.text = value;
                                     cb.model = elementsModel;
 
@@ -802,20 +803,17 @@ ViewBase {
 
                                 onCurrentIndexChanged: {
                                     cb.visible = false;
+                                    if (cb.model){
+                                        let id = cb.model.getData("Id", cb.currentIndex)
+                                        let name = cb.model.getData("Name", cb.currentIndex)
+                                        let url = cb.model.getData("Url", cb.currentIndex)
 
-                                    if (bodyItem.tableCellDelegate){
-                                        if (cb.model){
-                                            let id = cb.model.getData("Id", cb.currentIndex)
-                                            let name = cb.model.getData("Name", cb.currentIndex)
-                                            let url = cb.model.getData("Url", cb.currentIndex)
+                                        textLabel.text = name;
 
-                                            textLabel.text = name;
+                                        ouputConnTable.elements.setData("DependantConnectionId", id, bodyItem.rowIndex);
+                                        ouputConnTable.elements.setData("Url", url, bodyItem.rowIndex);
 
-                                            ouputConnTable.elements.setData("DependantConnectionId", id, bodyItem.tableCellDelegate.rowIndex);
-                                            ouputConnTable.elements.setData("Url", url, bodyItem.tableCellDelegate.rowIndex);
-
-    //                                        bodyItem.tableCellDelegate.setValue(name);
-                                        }
+                                        //                                        bodyItem.tableCellDelegate.setValue(name);
                                     }
                                 }
 
@@ -898,6 +896,7 @@ ViewBase {
                     }
                 }
             }//Column bodyColumn
+            }
         }
     }
 
@@ -911,5 +910,5 @@ ViewBase {
             documentManager: serviceEditorContainer.documentManager;
         }
     }
-}//Container
+}//serviceEditorContainer
 
