@@ -5,6 +5,7 @@
 #include <imtgql/CObjectCollectionControllerCompBase.h>
 #include <imtbase/PluginInterface.h>
 #include <imtservice/IConnectionCollectionPlugin.h>
+#include <imtservice/IConnectionCollectionProvider.h>
 #include <imtbase/TPluginManager.h>
 
 // Agentino includes
@@ -21,12 +22,15 @@ namespace agentgql
 {
 
 
-class CServiceCollectionControllerComp: public imtgql::CObjectCollectionControllerCompBase
+class CServiceCollectionControllerComp:
+			public imtgql::CObjectCollectionControllerCompBase,
+			virtual public imtservice::IConnectionCollectionProvider
 {
 public:
 	typedef imtgql::CObjectCollectionControllerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceCollectionControllerComp);
+		I_REGISTER_INTERFACE(imtservice::IConnectionCollectionProvider)
 		I_ASSIGN(m_serviceInfoFactCompPtr, "ServiceFactory", "Factory used for creation of the new service instance", false, "ServiceFactory");
 		I_ASSIGN(m_serviceControllerCompPtr, "ServiceController", "Service controller used to manage services", false, "ServiceController");
 	I_END_COMPONENT;
@@ -44,6 +48,9 @@ protected:
 	virtual imtbase::CTreeItemModel* InsertObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 	virtual imtbase::CTreeItemModel* UpdateObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 	virtual istd::IChangeable* CreateObjectFromRequest(const imtgql::CGqlRequest& gqlRequest, QByteArray &objectId, QString &name, QString &description, QString& errorMessage) const override;
+
+	// reimplemented (imtservice::IConnectionCollectionProvider)
+	virtual std::shared_ptr<imtservice::IConnectionCollection> GetConnectionCollection(const QByteArray& serviceId) const override;
 
 	// reimplemented (icomp::CComponentBase)
 	virtual void OnComponentDestroyed() override;

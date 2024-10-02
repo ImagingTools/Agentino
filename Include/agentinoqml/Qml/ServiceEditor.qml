@@ -43,6 +43,10 @@ ViewBase {
         item.updateModel();
     }
 
+    function getAdditionalInputParams(){
+        return {};
+    }
+
     TabView {
         id: tabPanel
         anchors.fill: parent;
@@ -907,6 +911,18 @@ ViewBase {
             anchors.fill: parent;
             productId: serviceEditorContainer.productId;
             documentManager: serviceEditorContainer.documentManager;
+
+            function getAdditionalInputParams(){
+                if (container.productId === ""){
+                    console.error("Unable to get additional parameters. Product-ID is empty");
+                    return null;
+                }
+
+                let obj = serviceEditorContainer.getAdditionalInputParams();
+                obj["ProductId"] = container.productId;
+
+                return obj;
+            }
         }
     }
 }//serviceEditorContainer

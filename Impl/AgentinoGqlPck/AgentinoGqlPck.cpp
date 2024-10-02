@@ -56,6 +56,12 @@ I_EXPORT_COMPONENT(
 			"Service Log Subscriber Controller");
 
 I_EXPORT_COMPONENT(
+			AgentGqlRemoteRepresentationController,
+			"Retranslate requests from argent to servicies",
+			"Agentino Retranslate Request Controller");
+
+
+I_EXPORT_COMPONENT(
 			ServiceSubscriberController,
 			"Service subscriber controller",
 			"GraphQl Service Subscriber Controller");
@@ -130,6 +136,10 @@ I_EXPORT_COMPONENT(
 			"Agent subscriber proxy controller",
 			"Agent Subscriber Proxy Controller");
 
+I_EXPORT_COMPONENT(
+			AgentinoGqlRemoteRepresentationController,
+			"Retranslate requests from argentina to agent",
+			"Agentino Retranslate Request Controller");
 
 
 } // namespace AgentinoGqlPck

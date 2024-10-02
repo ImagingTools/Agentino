@@ -24,15 +24,20 @@ SplitView {
         width: parent.width
         height: 200 //container.height - log.height
 
-        onSelectionChanged: {
-            if (selection.length > 0){
-                let index = selection[0];
-                log.serviceId = serviceCollectionView.table.elements.getData("Id", index);
-            }
-            else{
-                log.serviceId = ""
-            }
+        onServiceIdChanged: {
+            console.log("onServiceIdChanged", serviceId)
+            log.serviceId = serviceId
         }
+
+        // onSelectionChanged: {
+        //     if (selection.length > 0){
+        //         let index = selection[0];
+        //         log.serviceId = serviceCollectionView.table.elements.getData("Id", index);
+        //     }
+        //     else{
+        //         log.serviceId = ""
+        //     }
+        // }
     }
 
     MessageCollectionView {

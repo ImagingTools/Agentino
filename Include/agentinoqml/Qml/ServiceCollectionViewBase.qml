@@ -13,6 +13,7 @@ RemoteCollectionView {
 
     property string clientId;
     property string clientName;
+    property string serviceId;
 
     filterMenuVisible: false;
 
@@ -98,11 +99,17 @@ RemoteCollectionView {
 
 
     onSelectionChanged: {
+        console.log("onSelectionChanged", selection)
         if (selection.length > 0){
             let index = selection[0];
 
-            let serviceId = root.table.elements.getData("Id", index);
+            root.serviceId = root.table.elements.getData("Id", index);
         }
+    }
+
+    onSelectedIndexChanged: {
+        console.log("onSelectedIndexChanged", index)
+        root.serviceId = root.table.elements.getData("Id", index);
     }
 
     Component {
@@ -125,6 +132,13 @@ RemoteCollectionView {
                     return root.getAdditionalInputParams();
                 }
             }
+            }
+
+            function getAdditionalInputParams(){
+                let additionalInputParams = root.getAdditionalInputParams();
+                additionalInputParams["serviceId"] = root.serviceId;
+
+                return additionalInputParams;
             }
         }
     }

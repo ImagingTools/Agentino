@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5221" Description="ACF"/>
-            <Version Id="1" Number="2205" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5236" Description="ACF"/>
+            <Version Id="1" Number="2215" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -258,6 +258,7 @@
                 <ExportedComponents>
                     <Component ExportedId="AgentSettingsPage" ComponentId="AgentSettingsPage"/>
                     <Component ExportedId="LogData" ComponentId="LogData"/>
+                    <Component ExportedId="ServiceCollectionController" ComponentId="ServicesPage/ServiceCollectionController"/>
                     <Component ExportedId="ServicesPage" ComponentId="ServicesPage"/>
                 </ExportedComponents>
             </Data>
@@ -380,5 +381,7 @@
         <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="PagesDemultiplexer"/>
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="PagesDemultiplexer"/>
     </ExportedInterfaces>
-    <ExportedComponents/>
+    <ExportedComponents>
+        <Component ExportedId="ServiceCollectionController" ComponentId="PageData/ServiceCollectionController"/>
+    </ExportedComponents>
 </Acf>

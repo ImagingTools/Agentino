@@ -763,6 +763,56 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObjectFromRequest(
 }
 
 
+// reimplemented (imtservice::IConnectionCollectionProvider)
+std::shared_ptr<imtservice::IConnectionCollection> CServiceCollectionControllerComp::GetConnectionCollection(const QByteArray& serviceId) const
+{
+	std::shared_ptr<imtservice::IConnectionCollection> connectionCollection;
+	QByteArray servicePath;
+	QByteArray serviceName;
+
+	imtbase::IObjectCollection::DataPtr dataPtr;
+	if (m_objectCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
+		const agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = dynamic_cast<const agentinodata::CIdentifiableServiceInfo*>(dataPtr.GetPtr());
+		if (serviceInfoPtr != nullptr){
+			serviceName = m_objectCollectionCompPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_NAME).toByteArray();
+			servicePath = serviceInfoPtr->GetServicePath();
+		}
+	}
+
+	if (servicePath.isEmpty()){
+		return connectionCollection;
+	}
+
+	QFileInfo fileInfo(servicePath);
+	QString pluginPath = fileInfo.path() + "/Plugins";
+
+	istd::TDelPtr<PluginManager>& pluginManagerPtr = m_pluginMap[serviceName];
+	pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), nullptr));
+
+	if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")) {
+		SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(serviceName), "CServiceCollectionControllerComp");
+		m_pluginMap.remove(serviceName);
+	}
+
+	if (m_pluginMap.contains(serviceName)){
+		const imtservice::IConnectionCollectionPlugin::IConnectionCollectionFactory* connectionCollectionFactoryPtr = nullptr;
+		for (int index = 0; index < m_pluginMap[serviceName]->m_plugins.count(); index++){
+			imtservice::IConnectionCollectionPlugin* pluginPtr = m_pluginMap[serviceName]->m_plugins[index].pluginPtr;
+			if (pluginPtr != nullptr){
+				connectionCollectionFactoryPtr = pluginPtr->GetConnectionCollectionFactory();
+
+				break;
+			}
+		}
+		Q_ASSERT(connectionCollectionFactoryPtr != nullptr);
+
+		connectionCollection.reset(connectionCollectionFactoryPtr->CreateInstance());
+	}
+
+	return connectionCollection;
+}
+
+
 void CServiceCollectionControllerComp::OnComponentDestroyed()
 {
 	m_pluginMap.clear();

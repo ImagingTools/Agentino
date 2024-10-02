@@ -2,14 +2,117 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5241" Description="ACF"/>
-            <Version Id="1" Number="2216" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5236" Description="ACF"/>
+            <Version Id="1" Number="2215" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
     <Keywords></Keywords>
     <ElementsList>
+        <Element Id="AgentinoGqlRemoteRepresentationController" PackageId="AgentinoGqlPck" ComponentId="AgentinoGqlRemoteRepresentationController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ApiClient" Type="Reference" ExportId="ApiClient">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>GetUserInfo</Value>
+                                <Value>ChangePassword</Value>
+                                <Value>UserInfo</Value>
+                                <Value>UserDataMetaInfo</Value>
+                                <Value>UserMetaInfo</Value>
+                                <Value>UserList</Value>
+                                <Value>UserView</Value>
+                                <Value>UserRemove</Value>
+                                <Value>UserSetDescription</Value>
+                                <Value>UserAdd</Value>
+                                <Value>UserUpdate</Value>
+                                <Value>UserItem</Value>
+                                <Value>UserCount</Value>
+                                <Value>UserIds</Value>
+                                <Value>UserSubCollection</Value>
+                                <Value>UsersInfo</Value>
+                                <Value>UserAdd</Value>
+                                <Value>UserUpdate</Value>
+                                <Value>UserItem</Value>
+                                <Value>UsersRemove</Value>
+                                <Value>UsersList</Value>
+                                <Value>UsersMetaInfo</Value>
+                                <Value>UsersRename</Value>
+                                <Value>UsersSetDescription</Value>
+                                <Value>UsersObjectView</Value>
+                                <Value>UserCommands</Value>
+                                <Value>UsersCommands</Value>
+                                <Value>GetRoleInfo</Value>
+                                <Value>RoleInfo</Value>
+                                <Value>RoleDataMetaInfo</Value>
+                                <Value>RoleMetaInfo</Value>
+                                <Value>RoleList</Value>
+                                <Value>RoleView</Value>
+                                <Value>RoleRemove</Value>
+                                <Value>RoleSetDescription</Value>
+                                <Value>RoleAdd</Value>
+                                <Value>RoleUpdate</Value>
+                                <Value>RoleItem</Value>
+                                <Value>RoleCount</Value>
+                                <Value>RoleIds</Value>
+                                <Value>RoleSubCollection</Value>
+                                <Value>RolesInfo</Value>
+                                <Value>RoleItem</Value>
+                                <Value>RoleAdd</Value>
+                                <Value>RoleUpdate</Value>
+                                <Value>RolesList</Value>
+                                <Value>RolesRemove</Value>
+                                <Value>RolesMetaInfo</Value>
+                                <Value>RolesRename</Value>
+                                <Value>RolesSetDescription</Value>
+                                <Value>RolesObjectView</Value>
+                                <Value>RoleCommands</Value>
+                                <Value>RolesCommands</Value>
+                                <Value>GetUserGroupInfo</Value>
+                                <Value>GroupInfo</Value>
+                                <Value>GroupDataMetaInfo</Value>
+                                <Value>GroupMetaInfo</Value>
+                                <Value>GroupList</Value>
+                                <Value>GroupView</Value>
+                                <Value>GroupRemove</Value>
+                                <Value>GroupSetDescription</Value>
+                                <Value>GroupAdd</Value>
+                                <Value>GroupUpdate</Value>
+                                <Value>GroupItem</Value>
+                                <Value>GroupCount</Value>
+                                <Value>GroupIds</Value>
+                                <Value>GroupSubCollection</Value>
+                                <Value>GroupsInfo</Value>
+                                <Value>GroupAdd</Value>
+                                <Value>GroupUpdate</Value>
+                                <Value>GroupItem</Value>
+                                <Value>GroupsList</Value>
+                                <Value>GroupsRemove</Value>
+                                <Value>GroupsMetaInfo</Value>
+                                <Value>GroupsRename</Value>
+                                <Value>GroupsSetDescription</Value>
+                                <Value>GroupsObjectView</Value>
+                                <Value>GroupCommands</Value>
+                                <Value>GroupsCommands</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="ApplicationController" PackageId="AgentinoVoce" ComponentId="RootDataController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
@@ -23,7 +126,7 @@
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>Pages</Value>
-                                <Value>SlaveGraphQLDemultiplexer</Value>
+                                <Value>AgentinoGqlRemoteRepresentationController</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -131,18 +234,6 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="SlaveGraphQLDemultiplexer" PackageId="ImtGqlPck" ComponentId="GraphQLDemultiplexer">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="GqlRequestHandlers" Type="Reference[]" ExportId="SlaveGqlRequestHandlers">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
