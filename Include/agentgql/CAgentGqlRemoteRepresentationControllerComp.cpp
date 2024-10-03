@@ -3,6 +3,7 @@
 
 // ImtCore includes
 #include <imtgql/CGqlResponse.h>
+#include <imtgql/CGqlContext.h>
 #include <imtbase/IObjectCollection.h>
 #include <imtservice/CUrlConnectionParam.h>
 #include <imtbase/CUrlParam.h>
@@ -44,17 +45,32 @@ imtbase::CTreeItemModel* CAgentGqlRemoteRepresentationControllerComp::CreateInte
 		return nullptr;
 	}
 
-	imtclientgql::IGqlClient::GqlRequestPtr requestPtr(dynamic_cast<imtgql::IGqlRequest*>(gqlRequest.CloneMe()));
-	if (!requestPtr.isNull()){
+	imtgql::CGqlRequest* gqlRequestPtr = dynamic_cast<imtgql::CGqlRequest*>(gqlRequest.CloneMe());
+	if (gqlRequestPtr == nullptr){
+		return nullptr;
+	}
+
+	imtclientgql::IGqlClient::GqlRequestPtr clientRequestPtr(dynamic_cast<imtgql::IGqlRequest*>(gqlRequestPtr));
+	if (!clientRequestPtr.isNull()){
 		QByteArray serviceId;
+		QByteArray token;
+
 		const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
 		if (gqlInputParamPtr != nullptr){
 			const imtgql::CGqlObject* addition = gqlInputParamPtr->GetFieldArgumentObjectPtr("addition");
 			if (addition != nullptr) {
 				serviceId = addition->GetFieldArgumentValue("serviceId").toByteArray();
+				token = addition->GetFieldArgumentValue("token").toByteArray();
+				imtgql::CGqlContext* sessionGqlContextPtr = dynamic_cast<imtgql::CGqlContext*>(gqlRequestPtr->GetRequestContext());
+				if (sessionGqlContextPtr == nullptr){
+					sessionGqlContextPtr = new imtgql::CGqlContext();
+				}
+				sessionGqlContextPtr->SetToken(token);
+				gqlRequestPtr->SetGqlContext(sessionGqlContextPtr);
 			}
 		}
 		QUrl url;
+		QByteArray serviceTypeName;
 		std::shared_ptr<imtservice::IConnectionCollection> connectionCollection = m_connectionCollectionProviderCompPtr->GetConnectionCollection(serviceId);
 		if (connectionCollection != nullptr){
 			const imtbase::ICollectionInfo* collectionInfo = static_cast<const imtbase::ICollectionInfo*>(connectionCollection->GetUrlList());
@@ -70,7 +86,8 @@ imtbase::CTreeItemModel* CAgentGqlRemoteRepresentationControllerComp::CreateInte
 					if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionParam::CT_INPUT){
 						QString connectionName = objectCollection->GetElementInfo(id, imtbase::IObjectCollection::EIT_NAME).toString();
 						QString connectionDescription = collectionInfo->GetElementInfo(id, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
-						QUrl url = connectionParamPtr->GetDefaultUrl();
+						serviceTypeName = connectionCollection->GetServiceTypeName().toUtf8();
+						url = connectionParamPtr->GetDefaultUrl();
 
 						imtbase::IObjectCollection::DataPtr dataPtr;
 						objectCollection->GetObjectData(id, dataPtr);
@@ -87,10 +104,10 @@ imtbase::CTreeItemModel* CAgentGqlRemoteRepresentationControllerComp::CreateInte
 				}
 			}
 		}
-		url.setPath("/graphql");
+		url.setPath("/" + serviceTypeName + "/graphql");
 		imtbase::CUrlParam urlParam;
 		urlParam.SetUrl(url);
-		imtclientgql::IGqlClient::GqlResponsePtr responsePtr = m_apiClientCompPtr->SendRequest(requestPtr, &urlParam);
+		imtclientgql::IGqlClient::GqlResponsePtr responsePtr = m_apiClientCompPtr->SendRequest(clientRequestPtr, &urlParam);
 		if (!responsePtr.isNull()){
 			return CreateTreeItemModelFromResponse(*responsePtr);
 		}

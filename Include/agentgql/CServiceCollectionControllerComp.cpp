@@ -588,11 +588,14 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 						int servicePort = inputConnectionsModelPtr->GetData("Port", i).toInt();
 
 						if (connectionCollectionPtr.IsValid()){
-							QUrl url;
-							url.setHost("localhost");
-							url.setPort(servicePort);
+							const imtservice::IServiceConnectionParam* connectionParamPtr = connectionCollectionPtr->GetConnectionMetaInfo(usageId);
+							if (connectionParamPtr != nullptr){
+								QUrl url = connectionParamPtr->GetDefaultUrl();
+								url.setHost("localhost");
+								url.setPort(servicePort);
 
-							connectionCollectionPtr->SetUrl(usageId, url);
+								connectionCollectionPtr->SetUrl(usageId, url);
+							}
 						}
 					}
 				}
@@ -608,6 +611,11 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 						QUrl url(urlStr);
 
 						if (connectionCollectionPtr.IsValid()){
+							const imtservice::IServiceConnectionParam* serviceConnectionParamPtr = connectionCollectionPtr->GetConnectionMetaInfo(outputConnectionId);
+							if (serviceConnectionParamPtr != nullptr){
+								const QUrl defaultUrl = serviceConnectionParamPtr->GetDefaultUrl();
+								url.setScheme(defaultUrl.scheme());
+							}
 							connectionCollectionPtr->SetUrl(outputConnectionId, url);
 						}
 					}

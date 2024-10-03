@@ -906,22 +906,66 @@ ViewBase {
     Component {
         id: administrationViewComp;
 
-        AdministrationView {
-            id: administrationView;
+        Item {
+            id: administrationViewItem
             anchors.fill: parent;
-            productId: serviceEditorContainer.productId;
-            documentManager: serviceEditorContainer.documentManager;
 
             function getAdditionalInputParams(){
-                if (container.productId === ""){
+                if (serviceEditorContainer.productId === ""){
                     console.error("Unable to get additional parameters. Product-ID is empty");
                     return null;
                 }
 
                 let obj = serviceEditorContainer.getAdditionalInputParams();
-                obj["ProductId"] = container.productId;
+                obj["ProductId"] = serviceEditorContainer.productId;
+                obj["token"] = userTokenProvider.token;
 
                 return obj;
+            }
+
+            UserTokenProvider {
+                id: userTokenProvider
+                productId: serviceEditorContainer.productId;
+                isTokenGlobal: false
+
+                function getAdditionalInputParams(){
+                    return administrationViewItem.getAdditionalInputParams();
+                }
+
+                onAccepted: {
+                    authorizationPage.visible = false;
+                    loader.sourceComponent = administrationView
+                }
+
+                onFailed: {
+                    root.loginFailed();
+                }
+            }
+
+            AuthorizationPage {
+                id: authorizationPage
+                anchors.fill: parent;
+                function onLogin(login, password){
+                    userTokenProvider.authorization(login, password)
+                }
+            }
+
+            Loader {
+                id: loader
+                anchors.fill: parent;
+            }
+
+            Component {
+                id: administrationView;
+                AdministrationView {
+                    anchors.fill: parent;
+                    productId: serviceEditorContainer.productId;
+                    documentManager: serviceEditorContainer.documentManager;
+
+                    function getAdditionalInputParams(){
+                        return administrationViewItem.getAdditionalInputParams();
+                    }
+                }
             }
         }
     }
