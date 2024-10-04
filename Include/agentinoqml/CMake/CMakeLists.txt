@@ -55,8 +55,8 @@ list(APPEND webdirs ${buildwebdir}/src/imtcontrols)
 list(APPEND webdirs ${AUX_INCLUDE_DIR}/agentinodata/Ddl/Qml/agentino)
 list(APPEND webdirs ${buildwebdir}/src/agentino)
 
-list(APPEND webdirs ${AUX_INCLUDE_DIR}/agentinogql/SDL/QML/agentinogqlSdl)
-list(APPEND webdirs ${buildwebdir}/src/agentinogqlSdl)
+list(APPEND webdirs ${AUX_INCLUDE_DIR}/agentinosdl/SDL/1.0/QML/agentinoAgentsSdl)
+list(APPEND webdirs ${buildwebdir}/src/agentinoAgentsSdl)
 
 list(APPEND webdirs ${IMTCOREDIR}/AuxInclude/${TARGETNAME}/GeneratedFiles/imtauthsdl/SDL/1.0/QML/imtauthGroupsSdl)
 list(APPEND webdirs ${buildwebdir}/src/imtauthGroupsSdl)
