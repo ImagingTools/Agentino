@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 	Q_INIT_RESOURCE(AgentinoLoc);
 
 	Q_INIT_RESOURCE(agentino);
-
+	Q_INIT_RESOURCE(imtdb);
 	CAgentinoServer instance;
 
 	ibase::IApplication* applicationPtr = instance.GetInterface<ibase::IApplication>();
