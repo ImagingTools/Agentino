@@ -1,22 +1,6 @@
 TARGET = AgentinoAgent
 
-include($(ACFDIR)/Config/QMake/ApplicationConfig.pri)
-include($(ACFDIR)/Config/QMake/QtBaseConfig.pri)
-include($(IMTCOREDIR)/Config/QMake/OpenSSL.pri)
 include($(AGENTINODIR)/Config/QMake/Agentino.pri)
-
-HEADERS =
-QT += xml network sql quick qml
-
-RESOURCES += $$files($$_PRO_FILE_PWD_/../*.qrc, false)
-
-DEFINES += WEB_COMPILE
-
-LIBS += -L../../../Lib/$$COMPILER_DIR -liauth -liqtgui -liservice
-LIBS += -limtbase -limtauth -limtauthgui -limtgui -limtlicdb -limtlic -limtlicgui -lImtCoreLoc -limtwidgets -limtzip -limtrest -limtcrypt -limt3dgui -limtrepo -limtstyle -limtqml -limtdb -limtfile -limtlog -limtauthsdl -limtappsdl
-LIBS += -limtlicgql -limtguigql -limtgql -limtauthgql -limtauthdb -limtcom -limtapp -limtclientgql -limtservice
-LIBS += -limtcontrolsqml -limtstylecontrolsqml -limtguigqlqml -limtcolguiqml -limtdocguiqml -limtauthguiqml -limtlicguiqml -limtguiqml -lImtCoreLoc
-LIBS += -lagentinoqml -lagentinogql -lagentgql -lagentinodata
 
 # Set OS-specific build options:
 win32-msvc*{
@@ -40,7 +24,7 @@ win*{
 	ACF_CONVERT_REGISTRY =  $$PWD/../VC/FileSubstitCopyApp.acc
 	ACF_CONVERT_CONFIG = $$PWD/../../../Config/BaseOnly.awc
 
-    RC_FILE = $$OUT_PWD/$$AUXINCLUDEPATH/GeneratedFiles/$$TARGET/AgentinoAgent.rc
+	RC_FILE = $$OUT_PWD/$$AUXINCLUDEPATH/GeneratedFiles/$$TARGET/AgentinoAgent.rc
 	RC_INCLUDEPATH = $$_PRO_FILE_PWD_
 }
 

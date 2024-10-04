@@ -4,5 +4,21 @@ INCLUDEPATH += $(AGENTINODIR)/Include
 INCLUDEPATH += $(AGENTINODIR)/Impl
 INCLUDEPATH += $(AGENTINODIR)/$$AUXINCLUDEDIR
 
-LIBS += -L$$PWD/../../Lib/$$COMPILER_DIR
+include($(ACFDIR)/Config/QMake/ApplicationConfig.pri)
+include($(ACFDIR)/Config/QMake/QtBaseConfig.pri)
+include($(IMTCOREDIR)/Config/QMake/OpenSSL.pri)
+include($(IACFDIR)/Config/QMake/zlib.pri)
 
+HEADERS =
+QT += xml network sql quick qml websockets
+
+RESOURCES += $$files($$_PRO_FILE_PWD_/../*.qrc, false)
+
+DEFINES += WEB_COMPILE
+
+LIBS += -L$(ACFDIR)/Lib/$$COMPILER_DIR -lAcfLoc
+LIBS += -L$(ACFSLNDIR)/Lib/$$COMPILER_DIR -liauth -liservice -lAcfSlnLoc
+LIBS += -L$(IMTCOREDIR)/Lib/$$COMPILER_DIR -limtbase -limtauth -limtauthgui -limtgui -limtlicdb -limtlic -limtlicgui -lImtCoreLoc -limtwidgets -limtzip -limtrest -limtcrypt -limt3dgui -limtrepo -limtstyle -limtqml -limtdb -limtfile -limtlog -limtauthsdl -limtappsdl
+LIBS += -L$(IMTCOREDIR)/Lib/$$COMPILER_DIR -limtlicgql -limtguigql -limtgql -limtauthgql -limtauthdb -limtcom -limtapp -limtclientgql -limtservice
+LIBS += -L$(IMTCOREDIR)/Lib/$$COMPILER_DIR -limtcontrolsqml -limtstylecontrolsqml -limtguigqlqml -limtcolguiqml -limtdocguiqml -limtauthguiqml -limtlicguiqml -limtguiqml -lImtCoreLoc
+LIBS += -L../../../Lib/$$COMPILER_DIR -lagentinoqml -lagentinogql -lagentgql -lagentinodata -lagentinosdl -lAgentinoLoc

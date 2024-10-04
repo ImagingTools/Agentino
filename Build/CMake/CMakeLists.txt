@@ -30,6 +30,7 @@ include(${IMTCOREDIR}/Config/CMake/ImtCoreEnv.cmake)
 
 set(INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/../../Include")
 set(IMPL_DIR "${CMAKE_CURRENT_LIST_DIR}/../../Impl")
+set(SDL_DIR "${CMAKE_CURRENT_LIST_DIR}/../../Sdl")
 
 set(AUX_INCLUDE_DIR "${BUILDDIR}/Agentino/AuxInclude/${TARGETNAME}/GeneratedFiles")
 
@@ -42,6 +43,8 @@ add_subdirectory("${INCLUDE_DIR}/agentgql/CMake" "${AUX_INCLUDE_DIR}/agentgql")
 add_subdirectory("${INCLUDE_DIR}/agentinoqml/CMake" "${AUX_INCLUDE_DIR}/agentinoqml")
 add_dependencies(agentinoqml agentinogql agentgql)
 
+# Sdl
+add_subdirectory("${SDL_DIR}/agentino/CMake" "${AUX_INCLUDE_DIR}/agentinosdl")
 
 # Impl
 add_subdirectory("${IMPL_DIR}/AgentinoGqlPck/CMake" "${AUX_INCLUDE_DIR}/AgentinoGqlPck")

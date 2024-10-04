@@ -5,9 +5,8 @@ include($(IMTCOREDIR)/Config/QMake/ImtCore.pri)
 
 QT += network
 
-LIBS += -L../../../Lib/$$COMPILER_DIR  -limtguigql -limtbase -limtgql -limtgui -limtwidgets -limtlic -limtdb -limtservice
-LIBS += -limtbase
-LIBS += -lagentinogql -lagentinodata -lagentgql -limtclientgql -limtrest
+LIBS += -L$(IMTCOREDIR)/Lib/$$COMPILER_DIR  -limtguigql -limtbase -limtgql -limtgui -limtwidgets -limtlic -limtdb -limtservice -limtrest -limtclientgql -limtbase
+LIBS += -L../../../Lib/$$COMPILER_DIR -lagentinodata -lagentgql -lagentinosdl -lagentinogql
 
 include($(ACFDIR)/Config/QMake/AcfQt.pri)
 include($(ACFDIR)/Config/QMake/AcfStd.pri)

@@ -2,8 +2,8 @@ schema {
 	query: Query
 	mutation: Mutation
 	subscription: Subscription
-	name: Agentino
-	namespace: agentinogql
+	name: Agents
+	namespace: agentino
 	version: 1.0
 }
 
@@ -52,7 +52,6 @@ input IdInput {
 type UpdatedNotificationPayload{
 	updatedNotification: String!
 }
-
 
 type Query {
 	AgentsList (input: AgentListInput): AgentListPayload!

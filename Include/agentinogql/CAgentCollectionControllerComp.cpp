@@ -19,7 +19,7 @@
 #include <agentinodata/CServiceInfo.h>
 #include <agentinodata/CServiceStatusInfo.h>
 #include <agentinodata/CAgentStatusInfo.h>
-#include <GeneratedFiles/agentinogql/SDL/CPP/APIv1_0.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Agents.h>
 
 
 namespace agentinogql
@@ -232,9 +232,9 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 		return nullptr;
 	}
 
-	sdl::CAgentItemGqlRequest agentItemGqlRequest(gqlRequest);
-	sdl::CAgentDataPayload agentDataPayload;
-	sdl::AgentItemRequestArguments agentItemRequestArguments = agentItemGqlRequest.GetRequestedArguments();
+	sdl::agentino::Agents::V1_0::CAgentItemGqlRequest agentItemGqlRequest(gqlRequest);
+	sdl::agentino::Agents::V1_0::CAgentDataPayload agentDataPayload;
+	sdl::agentino::Agents::V1_0::AgentItemRequestArguments agentItemRequestArguments = agentItemGqlRequest.GetRequestedArguments();
 	QByteArray agentId = agentItemRequestArguments.input.GetId();
 
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
@@ -248,7 +248,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 			QString description = m_objectCollectionCompPtr->GetElementInfo(agentId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
 			QDateTime lastConnection = agentPtr->GetLastConnection();
 
-			sdl::CAgentData agentData;
+			sdl::agentino::Agents::V1_0::CAgentData agentData;
 			agentData.SetId(agentId);
 			agentData.SetName(name);
 			agentData.SetDescription(description);

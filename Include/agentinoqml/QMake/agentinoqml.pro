@@ -10,10 +10,10 @@ imtcoredir = $(IMTCOREDIR)
 prepareWebQml($$buildwebdir)
 
 # copy DDL files
-copyToWebDir($$PWD/../../../$$AUXINCLUDEDIR/GeneratedFiles/agentinodata/Ddl/Qml/agentino/, $$buildwebdir/src/agentinoDDL)
+# copyToWebDir($$PWD/../../../$$AUXINCLUDEDIR/GeneratedFiles/agentinodata/Ddl/Qml/agentino/, $$buildwebdir/src/agentinoDDL)
 
 # copy SDL files
-copyToWebDir($$PWD/../../../$$AUXINCLUDEDIR/GeneratedFiles/agentinogql/SDL/QML, $$buildwebdir/src/agentinoSDL)
+# copyToWebDir($$PWD/../../../$$AUXINCLUDEDIR/GeneratedFiles/agentinogql/SDL/QML, $$buildwebdir/src/agentinoSDL)
 
 # copy project qml from to
 copyToWebDir($$PWD/../Qml/, $$buildwebdir/src)
@@ -23,9 +23,10 @@ copyToWebDir($$PWD/../Resources/html/, $$buildwebdir/Resources)
 copyToWebDir($$PWD/../../../Impl/AgentinoLoc/Translations/, $$buildwebdir/Resources/Translations)
 copyToWebDir($$imtcoredir/Impl/ImtCoreLoc/Translations/, $$buildwebdir/Resources/Translations)
 
-
 copyToWebDir($$imtcoredir/Include/imtstylecontrolsqml/Qml/Fonts/, $$buildwebdir/Resources)
 copyToWebDir($$imtcoredir/Include/imtstylecontrolsqml/Qml/Acf/, $$buildwebdir/src/Acf)
+
+copyToWebDir($$imtcoredir/../Agentino/$$AUXINCLUDEDIR/GeneratedFiles/agentinosdl/SDL/1.0/QML/agentinoAgentsSdl, $$buildwebdir/src/agentinoAgentsSdl)
 
 compyleWeb($$buildwebdir, "agentino")
 

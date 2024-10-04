@@ -14,6 +14,9 @@ agentinogql.file = ../../Include/agentinogql/QMake/agentinogql.pro
 SUBDIRS += agentinoqml
 agentinoqml.file = ../../Include/agentinoqml/QMake/agentinoqml.pro
 
+SUBDIRS += agentinosdl
+agentinosdl.file = ../../Sdl/agentino/QMake/agentinosdl.pro
+
 SUBDIRS += AgentinoDataPck
 AgentinoDataPck.file = ../../Impl/AgentinoDataPck/QMake/AgentinoDataPck.pro
 AgentinoServer.depends = agentinodata
