@@ -14,6 +14,7 @@ RemoteCollectionView {
     property string clientId;
     property string clientName;
     property string serviceId;
+    property string serviceName;
 
     filterMenuVisible: false;
 
@@ -77,6 +78,10 @@ RemoteCollectionView {
                 root.commandsController.setCommandIsEnabled("Stop", false);
             }
         }
+
+        function getHeaders(){
+            return root.getHeaders()
+        }
     }
     }
 
@@ -85,15 +90,16 @@ RemoteCollectionView {
 
         additionalFieldIds: root.additionalFieldIds;
 
-        function getAdditionalInputParams(){
-            return root.getAdditionalInputParams()
+        function getHeaders(){
+            return root.getHeaders()
         }
     }
     }
 
-    function getAdditionalInputParams(){
+    function getHeaders(){
         let additionInputParams = {}
         additionInputParams["clientId"] = root.clientId;
+        console.log("ServiceCollectionView getHeaders", additionInputParams)
         return additionInputParams
     }
 
@@ -104,12 +110,14 @@ RemoteCollectionView {
             let index = selection[0];
 
             root.serviceId = root.table.elements.getData("Id", index);
+            root.serviceName = root.table.elements.getData("Name", index);
         }
     }
 
     onSelectedIndexChanged: {
         console.log("onSelectedIndexChanged", index)
         root.serviceId = root.table.elements.getData("Id", index);
+        root.serviceName = root.table.elements.getData("Name", index);
     }
 
     Component {
@@ -128,15 +136,16 @@ RemoteCollectionView {
                 commandId: "Service";
                 uuid: serviceEditor.viewId;
 
-                function getAdditionalInputParams(){
-                    return root.getAdditionalInputParams();
+                function getHeaders(){
+                    return root.getHeaders();
                 }
             }
             }
 
-            function getAdditionalInputParams(){
-                let additionalInputParams = root.getAdditionalInputParams();
+            function getHeaders(){
+                let additionalInputParams = root.getHeaders();
                 additionalInputParams["serviceId"] = root.serviceId;
+                console.log("ServiceEditor getHeaders", additionInputParams)
 
                 return additionalInputParams;
             }
@@ -166,8 +175,9 @@ RemoteCollectionView {
                 }
             }
 
-            function getAdditionalInputParams(){
-                return root.getAdditionalInputParams();
+            function getHeaders(){
+                console.log("serviceDataControllerComp getHeaders", root.getHeaders())
+                return root.getHeaders();
             }
 
             function getDocumentName() {

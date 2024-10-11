@@ -37,6 +37,10 @@ DocumentCollectionViewDelegate {
         }
     }
 
+    function getHeaders(){
+        return {};
+    }
+
     onCommandActivated: {
         if (commandId == "Start" || commandId == "Stop"){
             let commandsController = container.collectionView.commandsController;
@@ -81,14 +85,6 @@ DocumentCollectionViewDelegate {
 
         let inputParams = Gql.GqlObject("input");
         inputParams.InsertField("serviceId", serviceId);
-        let additionInputParams = container.collectionView.getAdditionalInputParams()
-        if (Object.keys(additionInputParams).length > 0){
-            let additionParams = Gql.GqlObject("addition");
-            for (let key in additionInputParams){
-                additionParams.InsertField(key, additionInputParams[key]);
-            }
-            inputParams.InsertFieldObject(additionParams);
-        }
         query.AddParam(inputParams);
 
         var queryField = Gql.GqlObject("serviceStatus");
@@ -98,7 +94,7 @@ DocumentCollectionViewDelegate {
 
         var gqlData = query.GetQuery();
         console.log("ServiceCollectionView setServiceCommand query ", gqlData);
-        serviceGqlModel.setGqlQuery(gqlData);
+        serviceGqlModel.setGqlQuery(gqlData, container.getHeaders());
     }
 
     function setupContextMenu(){

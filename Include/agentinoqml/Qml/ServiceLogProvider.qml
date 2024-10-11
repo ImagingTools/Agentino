@@ -12,7 +12,7 @@ QtObject {
         serviceLogGqlModel.updateModel(serviceId);
     }
 
-    function getAdditionalInputParams(){
+    function getHeaders(){
         return {};
     }
 
@@ -23,7 +23,7 @@ QtObject {
             var inputParams = Gql.GqlObject("input");
             inputParams.InsertField("Id", serviceId);
 
-            let additionInputParams = root.getAdditionalInputParams();
+            let additionInputParams = root.getHeaders();
             if (Object.keys(additionInputParams).length > 0){
                 let additionParams = Gql.GqlObject("addition");
                 for (let key in additionInputParams){

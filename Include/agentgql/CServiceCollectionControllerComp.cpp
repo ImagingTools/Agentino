@@ -36,14 +36,7 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 	const QByteArray& collectionId,
 	QString& errorMessage) const
 {
-	QByteArray agentId;
-	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
-	if (gqlInputParamPtr != nullptr){
-		const imtgql::CGqlObject* addition = gqlInputParamPtr->GetFieldArgumentObjectPtr("addition");
-		if (addition != nullptr) {
-			agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
-		}
-	}
+	QByteArray agentId = gqlRequest.GetHeader("clientId");
 
 	istd::TDelPtr<imtbase::IObjectCollection> collectionPtr = GetObjectCollection(agentId);
 	if (!collectionPtr.IsValid()){
@@ -158,16 +151,11 @@ imtbase::CTreeItemModel *CServiceCollectionControllerComp::ListObjects(const imt
 	imtbase::CTreeItemModel* itemsModel = dataModel->AddTreeModel("items");
 	imtbase::CTreeItemModel* notificationModel = dataModel->AddTreeModel("notification");
 
-	QByteArray agentId;
+	QByteArray agentId = gqlRequest.GetHeader("clientId");
 	const imtgql::CGqlObject* viewParamsGql = nullptr;
-	const imtgql::CGqlObject* addition = nullptr;
 	const imtgql::CGqlObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
 	if (inputObject != nullptr){
 		viewParamsGql = inputObject->GetFieldArgumentObjectPtr("viewParams");
-		addition = inputObject->GetFieldArgumentObjectPtr("addition");
-	}
-	if (addition != nullptr) {
-		agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
 	}
 
 	istd::TDelPtr<imtbase::IObjectCollection> collectionPtr = GetObjectCollection(agentId);

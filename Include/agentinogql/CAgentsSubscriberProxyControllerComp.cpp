@@ -5,6 +5,7 @@
 #include <imtbase/CTreeItemModel.h>
 #include <imtbase/ICollectionInfo.h>
 #include <imtgql/CGqlRequest.h>
+#include <imtgql/CGqlContext.h>
 
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
@@ -16,6 +17,17 @@ namespace agentinogql
 
 
 // protected methods
+
+// reimplemented (imtgql::IGqlSubscriberController)
+
+bool CAgentsSubscriberProxyControllerComp::IsRequestSupported(const imtgql::CGqlRequest& gqlRequest) const
+{
+	bool retVal = BaseClass::IsRequestSupported(gqlRequest);
+	QByteArray agentId = gqlRequest.GetHeader("clientId");
+
+	return retVal && !agentId.isEmpty();
+}
+
 
 // reimplemented (imtclientgql::IGqlSubscriptionClient)
 
@@ -69,15 +81,22 @@ void CAgentsSubscriberProxyControllerComp::OnUpdate(const istd::IChangeable::Cha
 				for (int index = 0; index < m_commandIdsAttrPtr.GetCount(); index++){
 					imtgql::CGqlRequest gqlAddRequest(imtgql::IGqlRequest::RT_SUBSCRIPTION, m_commandIdsAttrPtr[index]);
 					imtgql::CGqlObject subscriptionInput;
-					imtgql::CGqlObject subscriptionAddition;
-					subscriptionAddition.InsertField("clientId", QString(agentId));
-					subscriptionInput.InsertField("addition", subscriptionAddition);
+					// imtgql::CGqlObject subscriptionAddition;
+					// subscriptionAddition.InsertField("clientId", QString(agentId));
+					// subscriptionInput.InsertField("addition", subscriptionAddition);
 					gqlAddRequest.AddParam("input", subscriptionInput);
 
 					imtgql::CGqlObject subscriptionField;
 					subscriptionField.InsertField("id");
 					subscriptionField.InsertField("status");
 					gqlAddRequest.AddField("data", subscriptionField);
+
+					imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
+					imtgql::IGqlContext::Headers headers;
+					headers.insert("clientId",agentId);
+					gqlContextPtr->SetHeaders(headers);
+					gqlAddRequest.SetGqlContext(gqlContextPtr);
+
 					QByteArray subscriptionId = m_subscriptionManagerCompPtr->RegisterSubscription(gqlAddRequest, this);
 					m_registeredAgents.insert(agentId, subscriptionId);
 				}

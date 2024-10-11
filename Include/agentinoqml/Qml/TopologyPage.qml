@@ -95,6 +95,10 @@ ViewBase {
         function onEdit(){
             scheme.goInside()
         }
+
+        function getHeaders(){
+            return topologyPage.getHeaders();
+        }
     }
     }
 
@@ -167,12 +171,12 @@ ViewBase {
             metaInfo.metaInfoModel = metaInfoModel;
         }
 
-        function getAdditionalInputParams(){
-            return topologyPage.getAdditionalInputParams();
+        function getHeaders(){
+            return topologyPage.getHeaders();
         }
     }
 
-    function getAdditionalInputParams(){
+    function getHeaders(){
         let additionInputParams = {}
 
         if(scheme.selectedIndex >= 0){
@@ -204,14 +208,18 @@ ViewBase {
             commandsControllerComp: Component {CommandsPanelController {
                 commandId: "Service";
                 uuid: serviceEditor.viewId;
-                function getAdditionalInputParams(){
-                    return topologyPage.getAdditionalInputParams();
+                function getHeaders(){
+                    return topologyPage.getHeaders();
                 }
             }}
 
             Component.onCompleted: {
                 let agentId = scheme.objectModel.getData("agentId", scheme.selectedIndex);
                 serviceEditor.agentId = agentId;
+            }
+
+            function getHeaders(){
+                return topologyPage.getHeaders();
             }
         }
     }
@@ -226,8 +234,8 @@ ViewBase {
 
             subscriptionCommandId: "OnServicesCollectionChanged";
 
-            function getAdditionalInputParams(){
-                return topologyPage.getAdditionalInputParams();
+            function getHeaders(){
+                return topologyPage.getHeaders();
             }
 
             function getDocumentName(){

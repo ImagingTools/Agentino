@@ -13,6 +13,7 @@
 #include <imtdb/CSqlDatabaseObjectCollectionComp.h>
 #include <imtservice/CUrlConnectionParam.h>
 #include <imtservice/CUrlConnectionLinkParam.h>
+#include <imtgql/CGqlContext.h>
 
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
@@ -527,14 +528,17 @@ void CAgentCollectionControllerComp::UpdateAgentService(
 	inputObject.InsertField(QByteArray("Id"), QVariant(serviceId));
 	inputObject.InsertField(QByteArray("Item"), QVariant(serviceRepresentationModel.ToJson()));
 
-	imtgql::CGqlObject additionObject;
-	additionObject.InsertField("clientId", QVariant(agentId));
-	inputObject.InsertField("addition", additionObject);
 	request.AddParam("input", inputObject);
 
 	imtgql::CGqlObject updatedObject;
 	updatedObject.InsertField("Id");
 	request.AddField("updatedNotification", updatedObject);
+
+	imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
+	imtgql::IGqlContext::Headers headers;
+	headers.insert("clientId",agentId);
+	gqlContextPtr->SetHeaders(headers);
+	request.SetGqlContext(gqlContextPtr);
 
 	QString errorMessage;
 	istd::TDelPtr<imtbase::CTreeItemModel> responseModelPtr = m_requestHandlerCompPtr->CreateResponse(request, errorMessage);
@@ -579,15 +583,17 @@ void CAgentCollectionControllerComp::OnTimeout()
 							imtgql::CGqlRequest request(imtgql::CGqlRequest::RT_QUERY, "ServiceItem");
 							imtgql::CGqlObject inputObject;
 							inputObject.InsertField(QByteArray("Id"), QVariant(id));
-
-							imtgql::CGqlObject additionObject;
-							additionObject.InsertField("clientId", QVariant(agentId));
-							inputObject.InsertField("addition", additionObject);
 							request.AddParam("input", inputObject);
 
 							imtgql::CGqlObject itemObject;
 							itemObject.InsertField("Id");
 							request.AddField("item", itemObject);
+
+							imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
+							imtgql::IGqlContext::Headers headers;
+							headers.insert("clientId",agentId);
+							gqlContextPtr->SetHeaders(headers);
+							request.SetGqlContext(gqlContextPtr);
 
 							// Service representaton model from Agent
 							QString errorMessage;

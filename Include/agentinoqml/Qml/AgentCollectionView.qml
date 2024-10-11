@@ -58,7 +58,7 @@ SplitView {
             registerSubscription()
         }
 
-        function getAdditionalInputParams(){
+        function getHeaders(){
             let additionInputParams = {}
             additionInputParams["clientId"] = log.agentId;
 

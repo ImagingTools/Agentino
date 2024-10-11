@@ -27,15 +27,10 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::CreateInternalResponse(
 	if (m_agentCollectionCompPtr.IsValid()){
 		const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParamObject("input");
 
-		QByteArray agentId;
+		QByteArray agentId = gqlRequest.GetHeader("clientId");
 		QByteArray objectId;
 		if (inputParamPtr != nullptr){
 			objectId = inputParamPtr->GetFieldArgumentValue("Id").toByteArray();
-
-			const imtgql::CGqlObject* addition = inputParamPtr->GetFieldArgumentObjectPtr("addition");
-			if (addition != nullptr) {
-				agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
-			}
 		}
 
 		imtbase::IObjectCollection::DataPtr dataPtr;

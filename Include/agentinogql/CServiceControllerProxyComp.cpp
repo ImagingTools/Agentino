@@ -31,17 +31,12 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 	if (m_serviceManagerCompPtr.IsValid()){
 		const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParamObject("input");
 
+		QByteArray agentId = gqlRequest.GetHeader("clientId");
 		QByteArray itemData;
-		QByteArray agentId;
 		QByteArray objectId;
 		if (inputParamPtr != nullptr){
 			objectId = inputParamPtr->GetFieldArgumentValue("Id").toByteArray();
 			itemData = inputParamPtr->GetFieldArgumentValue("Item").toByteArray();
-
-			const imtgql::CGqlObject* addition = inputParamPtr->GetFieldArgumentObjectPtr("addition");
-			if (addition != nullptr) {
-				agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
-			}
 		}
 
 		bool ok = false;

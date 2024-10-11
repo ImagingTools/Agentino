@@ -35,14 +35,7 @@ bool CMessageCollectionControllerComp::SetupGqlItem(
 			const imtbase::IObjectCollectionIterator* objectCollectionIterator,
 			QString& errorMessage) const
 {
-	QByteArray agentId;
-	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
-	if (gqlInputParamPtr != nullptr){
-		const imtgql::CGqlObject* addition = gqlInputParamPtr->GetFieldArgumentObjectPtr("addition");
-		if (addition != nullptr) {
-			agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
-		}
-	}
+	QByteArray agentId = gqlRequest.GetHeader("clientId");
 
 	istd::TDelPtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(gqlRequest, errorMessage);
 	if (!messageCollectionPtr.IsValid()){
@@ -121,17 +114,11 @@ imtbase::CTreeItemModel *CMessageCollectionControllerComp::ListObjects(const imt
 	rootModelPtr->SetExternTreeModel("data", dataModel);
 	itemsModel->SetIsArray(true);
 
-	QByteArray agentId;
+	QByteArray agentId = gqlRequest.GetHeader("clientId");
 	const imtgql::CGqlObject* viewParamsGql = nullptr;
-	const imtgql::CGqlObject* addition = nullptr;
 	const imtgql::CGqlObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
 	if (inputObject != nullptr){
 		viewParamsGql = inputObject->GetFieldArgumentObjectPtr("viewParams");
-		addition = inputObject->GetFieldArgumentObjectPtr("addition");
-	}
-
-	if (addition != nullptr) {
-		agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
 	}
 
 	istd::TDelPtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(gqlRequest, errorMessage);
@@ -239,16 +226,8 @@ imtbase::IObjectCollection* CMessageCollectionControllerComp::GetMessageCollecti
 		return nullptr;
 	}
 
-	QByteArray serviceId;
+	QByteArray serviceId = gqlRequest.GetHeader("serviceId");
 	const imtgql::CGqlObject& inputParams = gqlRequest.GetParams();
-	const imtgql::CGqlObject* addition = nullptr;
-	const imtgql::CGqlObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
-	if (inputObject != nullptr){
-		addition = inputObject->GetFieldArgumentObjectPtr("addition");
-	}
-	if (addition != nullptr) {
-		serviceId = addition->GetFieldArgumentValue("serviceId").toByteArray();
-	}
 
 	imtbase::IObjectCollection::DataPtr dataPtr;
 	if (m_objectCollectionCompPtr->GetObjectData(serviceId, dataPtr)){

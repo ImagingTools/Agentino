@@ -19,17 +19,12 @@ imtbase::CTreeItemModel* CRemoveServiceControllerProxyComp::CreateInternalRespon
 			QString& errorMessage) const
 {
 	if (m_serviceManagerCompPtr.IsValid()){
-		QByteArray agentId;
+		QByteArray agentId = gqlRequest.GetHeader("clientId");
 		QByteArray serviceId;
 
 		const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParamObject("input");
 		if (inputParamPtr != nullptr){
 			serviceId = inputParamPtr->GetFieldArgumentValue("Id").toByteArray();
-
-			const imtgql::CGqlObject* additionObjectPtr = inputParamPtr->GetFieldArgumentObjectPtr("addition");
-			if (additionObjectPtr != nullptr) {
-				agentId = additionObjectPtr->GetFieldArgumentValue("clientId").toByteArray();
-			}
 		}
 
 		if (m_serviceManagerCompPtr->ServiceExists(agentId, serviceId)){

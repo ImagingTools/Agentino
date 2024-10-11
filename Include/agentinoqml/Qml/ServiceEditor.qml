@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import Acf 1.0
 import imtgui 1.0
+import imtdocgui 1.0
 import imtauthgui 1.0
 import imtcontrols 1.0
 
@@ -10,6 +11,7 @@ ViewBase {
     property int radius: 3;
     property int flickableWidth: 800;
     property string productId;
+    property string productName;
     property string agentId;
     property var documentManager: null;
 
@@ -43,7 +45,7 @@ ViewBase {
         item.updateModel();
     }
 
-    function getAdditionalInputParams(){
+    function getHeaders(){
         return {};
     }
 
@@ -910,13 +912,13 @@ ViewBase {
             id: administrationViewItem
             anchors.fill: parent;
 
-            function getAdditionalInputParams(){
+            function getHeaders(){
                 if (serviceEditorContainer.productId === ""){
                     console.error("Unable to get additional parameters. Product-ID is empty");
                     return null;
                 }
 
-                let obj = serviceEditorContainer.getAdditionalInputParams();
+                let obj = serviceEditorContainer.getHeaders();
                 obj["ProductId"] = serviceEditorContainer.productId;
                 obj["token"] = userTokenProvider.token;
 
@@ -928,13 +930,13 @@ ViewBase {
                 productId: serviceEditorContainer.productId;
                 isTokenGlobal: false
 
-                function getAdditionalInputParams(){
-                    return administrationViewItem.getAdditionalInputParams();
+                function getHeaders(){
+                    return administrationViewItem.getHeaders();
                 }
 
                 onAccepted: {
                     authorizationPage.visible = false;
-                    loader.sourceComponent = administrationView
+                    loader.sourceComponent = administrationViewDocument
                 }
 
                 onFailed: {
@@ -945,6 +947,7 @@ ViewBase {
             AuthorizationPage {
                 id: authorizationPage
                 anchors.fill: parent;
+                appName: serviceEditorContainer.productId
                 function onLogin(login, password){
                     userTokenProvider.authorization(login, password)
                 }
@@ -956,17 +959,32 @@ ViewBase {
             }
 
             Component {
-                id: administrationView;
-                AdministrationView {
-                    anchors.fill: parent;
-                    productId: serviceEditorContainer.productId;
-                    documentManager: serviceEditorContainer.documentManager;
+                id: administrationViewDocument
+                SingleDocumentWorkspaceView {
+                    id: singleDocumentWorkspaceView
+                    anchors.fill: administrationViewItem
+                    documentManager: DocumentManager {}
 
-                    function getAdditionalInputParams(){
-                        return administrationViewItem.getAdditionalInputParams();
+                    Component.onCompleted: {
+                        addInitialItem(administrationView, "Administration")
+                    }
+
+                    Component {
+                        id: administrationView;
+                        AdministrationView {
+                            anchors.fill: parent;
+                            productId: serviceEditorContainer.productId;
+                            documentManager: singleDocumentWorkspaceView.documentManager;
+
+                            function getHeaders(){
+                                return administrationViewItem.getHeaders();
+                            }
+                        }
                     }
                 }
             }
+
+
         }
     }
 }//serviceEditorContainer

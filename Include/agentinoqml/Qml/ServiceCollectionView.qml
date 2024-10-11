@@ -61,8 +61,8 @@ SplitView {
             }
         }
 
-        function getAdditionalInputParams(){
-            console.log("getAdditionalInputParams", container.clientId)
+        function getHeaders(){
+            console.log("getHeaders", container.clientId)
             let additionInputParams = {}
             additionInputParams["clientId"] = container.clientId;
             additionInputParams["serviceId"] = log.serviceId;

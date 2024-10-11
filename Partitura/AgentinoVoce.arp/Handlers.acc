@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5226" Description="ACF"/>
-            <Version Id="1" Number="2211" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5262" Description="ACF"/>
+            <Version Id="1" Number="2218" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -126,8 +126,8 @@
                     <AttributeInfo Id="GqlRequestHandlers" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>Pages</Value>
                                 <Value>AgentinoGqlRemoteRepresentationController</Value>
+                                <Value>Pages</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

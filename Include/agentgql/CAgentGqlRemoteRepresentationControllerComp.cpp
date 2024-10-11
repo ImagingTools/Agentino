@@ -20,14 +20,7 @@ bool CAgentGqlRemoteRepresentationControllerComp::IsRequestSupported(const imtgq
 {
 	bool retVal = BaseClass::IsRequestSupported(gqlRequest);
 	if (retVal){
-		QByteArray agentId;
-		const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
-		if (gqlInputParamPtr != nullptr){
-			const imtgql::CGqlObject* addition = gqlInputParamPtr->GetFieldArgumentObjectPtr("addition");
-			if (addition != nullptr) {
-				agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
-			}
-		}
+		QByteArray agentId = gqlRequest.GetHeader("clientId");
 		if (!agentId.isEmpty()){
 			return true;
 		}
@@ -52,23 +45,8 @@ imtbase::CTreeItemModel* CAgentGqlRemoteRepresentationControllerComp::CreateInte
 
 	imtclientgql::IGqlClient::GqlRequestPtr clientRequestPtr(dynamic_cast<imtgql::IGqlRequest*>(gqlRequestPtr));
 	if (!clientRequestPtr.isNull()){
-		QByteArray serviceId;
-		QByteArray token;
-
-		const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
-		if (gqlInputParamPtr != nullptr){
-			const imtgql::CGqlObject* addition = gqlInputParamPtr->GetFieldArgumentObjectPtr("addition");
-			if (addition != nullptr) {
-				serviceId = addition->GetFieldArgumentValue("serviceId").toByteArray();
-				token = addition->GetFieldArgumentValue("token").toByteArray();
-				imtgql::CGqlContext* sessionGqlContextPtr = dynamic_cast<imtgql::CGqlContext*>(gqlRequestPtr->GetRequestContext());
-				if (sessionGqlContextPtr == nullptr){
-					sessionGqlContextPtr = new imtgql::CGqlContext();
-				}
-				sessionGqlContextPtr->SetToken(token);
-				gqlRequestPtr->SetGqlContext(sessionGqlContextPtr);
-			}
-		}
+		QByteArray serviceId = gqlRequest.GetHeader("serviceId");
+		QByteArray token = gqlRequest.GetHeader("token");
 		QUrl url;
 		QByteArray serviceTypeName;
 		std::shared_ptr<imtservice::IConnectionCollection> connectionCollection = m_connectionCollectionProviderCompPtr->GetConnectionCollection(serviceId);

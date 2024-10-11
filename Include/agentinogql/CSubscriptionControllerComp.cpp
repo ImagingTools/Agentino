@@ -5,6 +5,7 @@
 #include <imtbase/CTreeItemModel.h>
 #include <imtbase/ICollectionInfo.h>
 #include <imtgql/CGqlRequest.h>
+#include <imtgql/CGqlContext.h>
 
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
@@ -65,15 +66,19 @@ void CSubscriptionControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& /
 			if(!m_registeredAgents.contains(agentId)){
 				imtgql::CGqlRequest gqlAddRequest(imtgql::IGqlRequest::RT_SUBSCRIPTION, "OnServiceStateChanged");
 				imtgql::CGqlObject subscriptionInput;
-				imtgql::CGqlObject subscriptionAddition;
-				subscriptionAddition.InsertField("clientId", QString(agentId));
-				subscriptionInput.InsertField("addition", subscriptionAddition);
 				gqlAddRequest.AddParam("input", subscriptionInput);
 
 				imtgql::CGqlObject subscriptionField;
 				subscriptionField.InsertField("id");
 				subscriptionField.InsertField("status");
 				gqlAddRequest.AddField("data", subscriptionField);
+
+				imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
+				imtgql::IGqlContext::Headers headers;
+				headers.insert("clientId",agentId);
+				gqlContextPtr->SetHeaders(headers);
+				gqlAddRequest.SetGqlContext(gqlContextPtr);
+
 				QByteArray subscriptionId = m_subscriptionManagerCompPtr->RegisterSubscription(gqlAddRequest, this);
 				m_registeredAgents.insert(agentId, subscriptionId);
 			}

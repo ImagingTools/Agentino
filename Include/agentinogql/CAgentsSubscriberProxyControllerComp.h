@@ -32,6 +32,9 @@ public:
 	I_END_COMPONENT;
 
 protected:
+	// reimplemented (imtgql::IGqlSubscriberController)
+	virtual bool IsRequestSupported(const imtgql::CGqlRequest& gqlRequest) const override;
+
 	// reimplemented (imtclientgql::IGqlSubscriptionClient)
 	virtual void OnResponseReceived(const QByteArray& subscriptionId, const QByteArray& subscriptionData) override;
 	virtual void OnSubscriptionStatusChanged(const QByteArray& subscriptionId, const SubscriptionStatus& status, const QString& message) override;

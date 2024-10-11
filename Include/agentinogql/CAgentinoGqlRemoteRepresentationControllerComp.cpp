@@ -16,14 +16,8 @@ bool CAgentinoGqlRemoteRepresentationControllerComp::IsRequestSupported(const im
 {
 	bool retVal = BaseClass::IsRequestSupported(gqlRequest);
 	if (retVal){
-		QByteArray agentId;
-		const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
-		if (gqlInputParamPtr != nullptr){
-			const imtgql::CGqlObject* addition = gqlInputParamPtr->GetFieldArgumentObjectPtr("addition");
-			if (addition != nullptr) {
-				agentId = addition->GetFieldArgumentValue("clientId").toByteArray();
-			}
-		}
+		QByteArray agentId = gqlRequest.GetHeader("clientId");
+
 		if (!agentId.isEmpty()){
 			return true;
 		}

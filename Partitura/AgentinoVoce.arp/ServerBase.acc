@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5229" Description="ACF"/>
-            <Version Id="1" Number="2213" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5262" Description="ACF"/>
+            <Version Id="1" Number="2218" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -142,6 +142,7 @@
                     <AttributeInfo Id="GqlSubscriberControllers" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
+                                <Value>Subscribers/AgentRolesSubscriberProxyController</Value>
                                 <Value>Subscribers/AgentsLogSubscriberProxyController</Value>
                                 <Value>Subscribers/AgentServicesLogSubscriberProxyController</Value>
                                 <Value>Subscribers/ServiceCollectionSubscriberController</Value>
@@ -403,6 +404,40 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
+                    <Element Id="AgentRolesSubscriberProxyController" PackageId="AgentinoGqlPck" ComponentId="AgentsSubscriberProxyController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>OnRolesCollectionChanged</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="GqlRequestHandler" Type="Reference" ExportId="GqlRequestHandler">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Model" Type="Reference" ExportId="AgentRepository">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="SubscriptionManager" Type="Reference" ExportId="SubscriptionManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
                     <Element Id="AgentServicesLogSubscriberProxyController" PackageId="AgentinoGqlPck" ComponentId="AgentsSubscriberProxyController">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
@@ -653,6 +688,7 @@
                 <EmbeddedRegistriesList/>
                 <ExportedInterfaces/>
                 <ExportedComponents>
+                    <Component ExportedId="AgentRolesSubscriberProxyController" ComponentId="AgentRolesSubscriberProxyController"/>
                     <Component ExportedId="AgentServicesLogSubscriberProxyController" ComponentId="AgentServicesLogSubscriberProxyController"/>
                     <Component ExportedId="AgentStatusCollectionSubscriber" ComponentId="AgentStatusCollectionSubscriber"/>
                     <Component ExportedId="AgentsLogSubscriberProxyController" ComponentId="AgentsLogSubscriberProxyController"/>
