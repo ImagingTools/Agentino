@@ -99,6 +99,7 @@
                                 <Value>GroupCommands</Value>
                                 <Value>GroupsCommands</Value>
                                 <Value>Authorization</Value>
+                                <Value>ProductPermissions</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

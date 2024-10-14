@@ -42,11 +42,16 @@ imtbase::CTreeItemModel* CAgentGqlRemoteRepresentationControllerComp::CreateInte
 	if (gqlRequestPtr == nullptr){
 		return nullptr;
 	}
+	QByteArray serviceId = gqlRequestPtr->GetHeader("serviceId");
+	QByteArray token = gqlRequestPtr->GetHeader("token");
+	imtgql::IGqlContext* gqlContext = const_cast<imtgql::IGqlContext*>(gqlRequestPtr->GetRequestContext());
+	if (gqlContext != nullptr){
+		gqlContext->SetToken(token);
+	}
 
 	imtclientgql::IGqlClient::GqlRequestPtr clientRequestPtr(dynamic_cast<imtgql::IGqlRequest*>(gqlRequestPtr));
 	if (!clientRequestPtr.isNull()){
-		QByteArray serviceId = gqlRequest.GetHeader("serviceId");
-		QByteArray token = gqlRequest.GetHeader("token");
+
 		QUrl url;
 		QByteArray serviceTypeName;
 		std::shared_ptr<imtservice::IConnectionCollection> connectionCollection = m_connectionCollectionProviderCompPtr->GetConnectionCollection(serviceId);

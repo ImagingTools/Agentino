@@ -145,7 +145,7 @@ RemoteCollectionView {
             function getHeaders(){
                 let additionalInputParams = root.getHeaders();
                 additionalInputParams["serviceId"] = root.serviceId;
-                console.log("ServiceEditor getHeaders", additionInputParams)
+                console.log("ServiceEditor getHeaders", additionalInputParams)
 
                 return additionalInputParams;
             }
