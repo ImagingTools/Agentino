@@ -7,3 +7,6 @@ target_link_libraries(${PROJECT_NAME} imtguigql imtbase imtlic imtgui imtwidgets
 
 target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::WebSockets)
 
+ADD_DEFINITIONS(-DUNICODE)
+ADD_DEFINITIONS(-D_UNICODE)
+

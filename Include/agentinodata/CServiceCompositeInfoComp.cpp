@@ -14,6 +14,9 @@
 #include <agentinodata/IServiceInfo.h>
 #include <agentinodata/IServiceStatusInfo.h>
 
+// Qt includes
+#include <QtCore/QDebug>
+
 
 namespace agentinodata
 {

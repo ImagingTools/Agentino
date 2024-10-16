@@ -49,3 +49,6 @@ if(WIN32)
 	unset(listOptions)
 endif()
 
+
+ADD_DEFINITIONS(-DUNICODE)
+ADD_DEFINITIONS(-D_UNICODE)

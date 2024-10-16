@@ -17,4 +17,6 @@ GenerateDdlCode(${MODULE_CPP_NAME}
 
 target_link_libraries(${PROJECT_NAME} imtservice)
 
+ADD_DEFINITIONS(-DUNICODE)
+ADD_DEFINITIONS(-D_UNICODE)
 

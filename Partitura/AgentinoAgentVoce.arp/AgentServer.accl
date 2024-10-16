@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5225" Description="ACF"/>
-            <Version Id="1" Number="2174" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5262" Description="ACF"/>
+            <Version Id="1" Number="2218" Description="ACF-Solutions"/>
             <Version Id="1023" Number="331522" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -11,7 +11,7 @@
         <Element ComponentName="AgentHandlers" X="575" Y="200" Note=""/>
         <Element ComponentName="AgentSubscribers" X="925" Y="475" Note=""/>
         <Element ComponentName="AgentinoLocalization" X="275" Y="75" Note=""/>
-        <Element ComponentName="AgentsSubscriptionManager" X="450" Y="725" Note=""/>
+        <Element ComponentName="AgentsSubscriptionManager" X="375" Y="650" Note=""/>
         <Element ComponentName="DatabaseEngine" X="800" Y="125" Note=""/>
         <Element ComponentName="HttpServerFramework" X="500" Y="550" Note=""/>
         <Element ComponentName="Repositories" X="625" Y="300" Note=""/>
@@ -20,7 +20,7 @@
         <Element ComponentName="ServiceManagerSubscriptionClient" X="925" Y="725" Note=""/>
         <Element ComponentName="WebSocketAgentHandlers" X="325" Y="375" Note=""/>
         <Element ComponentName="WebSocketClient" X="780" Y="620" Note=""/>
-        <Element ComponentName="WebSocketServerFramework" X="367" Y="866" Note=""/>
+        <Element ComponentName="WebSocketServerFramework" X="500" Y="775" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
         <EmbededRegistry Id="Repositories">

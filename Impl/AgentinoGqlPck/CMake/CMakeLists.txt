@@ -22,3 +22,6 @@ target_link_libraries(${PROJECT_NAME}
 	agentinodata
 	agentinosdl
 	agentgql)
+
+ADD_DEFINITIONS(-DUNICODE)
+ADD_DEFINITIONS(-D_UNICODE)
