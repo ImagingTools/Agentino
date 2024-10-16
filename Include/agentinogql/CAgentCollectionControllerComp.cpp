@@ -426,7 +426,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtg
 			if (!itemData.isEmpty()){
 				imtbase::CTreeItemModel itemModel;
 				if (!itemModel.CreateFromJson(itemData)){
-					errorMessage = QString("Unable to create model from JSON. Error: invalid JSON: '%1'.").arg(itemData);
+					errorMessage = QString("Unable to create model from JSON. Error: invalid JSON: '%1'.").arg(qPrintable(itemData));
 					SendErrorMessage(0, errorMessage);
 
 					return nullptr;

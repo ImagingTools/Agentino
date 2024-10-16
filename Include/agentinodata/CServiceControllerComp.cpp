@@ -378,7 +378,7 @@ void CServiceControllerComp::updateServiceVersion(const QByteArray& serviceId)
 			pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), nullptr));
 
 			if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")) {
-				SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(serviceName), "CServiceControllerComp");
+				SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(qPrintable(serviceName)), "CServiceControllerComp");
 				m_pluginMap.remove(serviceId);
 
 				return;

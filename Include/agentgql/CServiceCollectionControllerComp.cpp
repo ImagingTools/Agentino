@@ -260,7 +260,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 			pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), nullptr));
 
 			if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")) {
-				SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(serviceName), "CServiceCollectionControllerComp");
+				SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(qPrintable(serviceName)), "CServiceCollectionControllerComp");
 				m_pluginMap.remove(serviceName);
 			}
 
@@ -438,7 +438,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 	pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), nullptr));
 
 	if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")) {
-		SendWarningMessage(0, QString("Unable to load a plugin for '%1'").arg(serviceTypeName), "CServiceCollectionControllerComp");
+		SendWarningMessage(0, QString("Unable to load a plugin for '%1'").arg(qPrintable(serviceTypeName)), "CServiceCollectionControllerComp");
 		m_pluginMap.remove(serviceTypeName);
 	}
 
@@ -476,7 +476,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 		serviceInfoPtr->SetServiceVersion(serviceVersion);
 	}
 	else{
-		SendWarningMessage(0, QString("Connection collection for '%1' from plugin is invalid").arg(serviceTypeName), "CServiceCollectionControllerComp");
+		SendWarningMessage(0, QString("Connection collection for '%1' from plugin is invalid").arg(qPrintable(serviceTypeName)), "CServiceCollectionControllerComp");
 	}
 
 	if (m_objectCollectionCompPtr->GetElementIds().contains(objectId)){
@@ -551,7 +551,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 
 				bool wasStopped = m_serviceControllerCompPtr->StopService(objectId);
 				if (!wasStopped){
-					errorMessage = QString("Service '%1' cannot be stopped").arg(serviceTypeName);
+					errorMessage = QString("Service '%1' cannot be stopped").arg(qPrintable(serviceTypeName));
 					SendErrorMessage(0, errorMessage);
 
 					return nullptr;
@@ -712,7 +712,7 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObjectFromRequest(
 			QByteArray path = itemModel.GetData("Path").toByteArray();
 			QFile file(path);
 			if (!file.exists()){
-				errorMessage = QT_TR_NOOP(QString("Unable to save service. Error: file with path '%1' does not exist.").arg(path));
+				errorMessage = QT_TR_NOOP(QString("Unable to save service. Error: file with path '%1' does not exist.").arg(qPrintable(path)));
 
 				return nullptr;
 			}
@@ -786,7 +786,7 @@ std::shared_ptr<imtservice::IConnectionCollection> CServiceCollectionControllerC
 	pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), nullptr));
 
 	if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")) {
-		SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(serviceName), "CServiceCollectionControllerComp");
+		SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(qPrintable(serviceName)), "CServiceCollectionControllerComp");
 		m_pluginMap.remove(serviceName);
 	}
 

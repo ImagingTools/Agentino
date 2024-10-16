@@ -163,19 +163,19 @@ imtbase::CTreeItemModel *CMessageCollectionControllerComp::ListObjects(const imt
 }
 
 
-imtbase::CTreeItemModel* CMessageCollectionControllerComp::GetObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+imtbase::CTreeItemModel* CMessageCollectionControllerComp::GetObject(const imtgql::CGqlRequest& /*gqlRequest*/, QString& /*errorMessage*/) const
 {
 	return nullptr;
 }
 
 
-imtbase::CTreeItemModel* CMessageCollectionControllerComp::InsertObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+imtbase::CTreeItemModel* CMessageCollectionControllerComp::InsertObject(const imtgql::CGqlRequest& /*gqlRequest*/, QString& /*errorMessage*/) const
 {
 	return nullptr;
 }
 
 
-imtbase::CTreeItemModel* CMessageCollectionControllerComp::UpdateObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+imtbase::CTreeItemModel* CMessageCollectionControllerComp::UpdateObject(const imtgql::CGqlRequest& /*gqlRequest*/, QString& /*errorMessage*/) const
 {
 	return nullptr;
 }
@@ -245,7 +245,7 @@ imtbase::IObjectCollection* CMessageCollectionControllerComp::GetMessageCollecti
 				pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceLog), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceLog), nullptr));
 
 				if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceLog")) {
-					SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(serviceName), "CMessageCollectionControllerComp");
+					SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(qPrintable(serviceName)), "CMessageCollectionControllerComp");
 					m_pluginMap.remove(serviceName);
 
 					return nullptr;

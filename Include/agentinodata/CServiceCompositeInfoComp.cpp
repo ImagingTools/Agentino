@@ -1,6 +1,9 @@
 #include <agentinodata/CServiceCompositeInfoComp.h>
 
 
+// Qt includes
+#include <QtCore/QDebug>
+
 // ImtCore includes
 #include <imtservice/CUrlConnectionParam.h>
 #include <imtservice/CUrlConnectionLinkParam.h>

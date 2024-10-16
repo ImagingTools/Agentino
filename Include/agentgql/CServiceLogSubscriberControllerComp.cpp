@@ -52,7 +52,7 @@ void CServiceLogSubscriberControllerComp::OnComponentDestroyed()
 
 // reimplemented (imod::CSingleModelObserverBase)
 
-void CServiceLogSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& changeSet)
+void CServiceLogSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& /*changeSet*/)
 {
 	if (!m_serviceCollectionCompPtr.IsValid()){
 		return;
@@ -90,7 +90,7 @@ void CServiceLogSubscriberControllerComp::OnUpdate(const istd::IChangeable::Chan
 			pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceLog), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceLog), nullptr));
 
 			if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceLog")){
-				SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(serviceName), "CServiceLogSubscriberControllerComp");
+				SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(qPrintable(serviceName)), "CServiceLogSubscriberControllerComp");
 				m_pluginMap.remove(serviceId);
 				m_servicesMessageInfo.remove(serviceId);
 

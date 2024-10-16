@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5262" Description="ACF"/>
-            <Version Id="1" Number="2218" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394754" Description="Qt Framework"/>
+            <Version Id="0" Number="5225" Description="ACF"/>
+            <Version Id="1" Number="2174" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="331522" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -20,7 +20,7 @@
                         <Data IsEnabled="true" Value="Repositories/AgentStatusCollection"/>
                     </AttributeInfo>
                     <AttributeInfo Id="LoginStatusProvider" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="HttpServerFramework/WebSocketServer"/>
+                        <Data IsEnabled="true" Value="WebSocketServerFramework/WebSocketServer"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
@@ -38,7 +38,7 @@
                         <Data IsEnabled="true" Value="Repositories/AgentStatusCollection"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ApiClient" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="HttpServerFramework/SubscriptionManager"/>
+                        <Data IsEnabled="true" Value="WebSocketServerFramework/SubscriptionManager"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                         <Data IsEnabled="false"/>
@@ -56,7 +56,7 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="MessageConsumer" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="HttpServerFramework/BroadcastMessageConsumerSubscriber"/>
+                        <Data IsEnabled="true" Value="WebSocketServerFramework/BroadcastMessageConsumerSubscriber"/>
                     </AttributeInfo>
                     <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/RoleRepository"/>
@@ -234,7 +234,7 @@
                         <Data IsEnabled="true" Value="SubscriptionController"/>
                     </AttributeInfo>
                     <AttributeInfo Id="RequestManager" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="HttpServerFramework/WebSocketServer"/>
+                        <Data IsEnabled="true" Value="WebSocketServerFramework/WebSocketServer"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
@@ -261,7 +261,7 @@
                         <Data IsEnabled="true" Value="Repositories/AgentCollection"/>
                     </AttributeInfo>
                     <AttributeInfo Id="RequestManager" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="HttpServerFramework/WebSocketServer"/>
+                        <Data IsEnabled="true" Value="WebSocketServerFramework/WebSocketServer"/>
                     </AttributeInfo>
                     <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/RoleRepository"/>
@@ -273,7 +273,7 @@
                         <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
                     </AttributeInfo>
                     <AttributeInfo Id="SubscriptionManager" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="HttpServerFramework/SubscriptionManager"/>
+                        <Data IsEnabled="true" Value="WebSocketServerFramework/SubscriptionManager"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
@@ -303,7 +303,7 @@
                         <Data IsEnabled="true" Value="Repositories/AgentCollection"/>
                     </AttributeInfo>
                     <AttributeInfo Id="SubscriptionManager" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="HttpServerFramework/SubscriptionManager"/>
+                        <Data IsEnabled="true" Value="WebSocketServerFramework/SubscriptionManager"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -318,7 +318,7 @@
                         <Data IsEnabled="true" Value="Repositories/AgentStatusCollection"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ApiClient" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="HttpServerFramework/SubscriptionManager"/>
+                        <Data IsEnabled="true" Value="WebSocketServerFramework/SubscriptionManager"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                         <Data IsEnabled="false"/>
@@ -336,7 +336,7 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="MessageConsumer" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="HttpServerFramework/BroadcastMessageConsumerSubscriber"/>
+                        <Data IsEnabled="true" Value="WebSocketServerFramework/BroadcastMessageConsumerSubscriber"/>
                     </AttributeInfo>
                     <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/RoleRepository"/>
@@ -370,6 +370,39 @@
                     </AttributeInfo>
                     <AttributeInfo Id="WebSocketUrl" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/WebSocketAgentinoServerUrl"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="WebSocketServerFramework" PackageId="ImtHttpServerVoce" ComponentId="WebSocketServerFramework">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="GqlRequestHandler" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="WebSocketAgentinoHandlers"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="GqlSubscriberControllers" Type="Reference[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>Subscribers/AgentRolesSubscriberProxyController</Value>
+                                <Value>Subscribers/AgentsLogSubscriberProxyController</Value>
+                                <Value>Subscribers/AgentServicesLogSubscriberProxyController</Value>
+                                <Value>Subscribers/ServiceCollectionSubscriberController</Value>
+                                <Value>Subscribers/UserGroupsSubscriberController</Value>
+                                <Value>Subscribers/UsersSubscriberController</Value>
+                                <Value>Subscribers/RolesSubscriberController</Value>
+                                <Value>Subscribers/ServiceStatusCollectionSubscriberController</Value>
+                                <Value>Subscribers/AgentStatusCollectionSubscriber</Value>
+                                <Value>Subscribers/AgentsSubscriberController</Value>
+                                <Value>Subscribers/TopologySubscriber</Value>
+                                <Value>ServiceStatusSubscriberController</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="WebSocketServerPort" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/WebSocketServerPort"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>

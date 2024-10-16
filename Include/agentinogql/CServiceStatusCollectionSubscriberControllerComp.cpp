@@ -47,7 +47,7 @@ void CServiceStatusCollectionSubscriberControllerComp::OnUpdate(const istd::ICha
 
 	agentinodata::IServiceStatusInfo::ServiceStatus status = m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceId);
 	QString data = QString("{ \"serviceId\": \"%1\", \"serviceStatus\": \"%2\", \"dependencyStatus\": %3}")
-					   .arg(qPrintable(serviceId)).arg(agentinodata::IServiceStatusInfo::ToString(status)).arg(qPrintable(dependencyData));
+					   .arg(qPrintable(serviceId)).arg(qPrintable(agentinodata::IServiceStatusInfo::ToString(status))).arg(qPrintable(dependencyData));
 
 	SetAllSubscriptions("OnServiceStatusChanged", data.toUtf8());
 }
