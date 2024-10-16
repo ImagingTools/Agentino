@@ -466,11 +466,13 @@
     </ExportedInterfaces>
     <ExportedComponents>
         <Component ExportedId="AutoPersistence" ComponentId="ServerSettings/AutoPersistence"/>
+        <Component ExportedId="HttpServerFramework" ComponentId="HttpServerFramework"/>
         <Component ExportedId="Preferences" ComponentId="ServerSettings/Preferences"/>
         <Component ExportedId="ServerSettings" ComponentId="ServerSettings"/>
         <Component ExportedId="ServiceCollection" ComponentId="Repositories/ServiceCollection"/>
         <Component ExportedId="ServiceCollectionAutoPersistence" ComponentId="Repositories/ServiceCollectionAutoPersistence"/>
         <Component ExportedId="ServiceController" ComponentId="ServiceController"/>
         <Component ExportedId="ServiceManagerSubscriptionClient" ComponentId="ServiceManagerSubscriptionClient"/>
+        <Component ExportedId="WebSocketServerFramework" ComponentId="WebSocketServerFramework"/>
     </ExportedComponents>
 </Acf>
