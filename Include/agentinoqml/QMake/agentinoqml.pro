@@ -26,6 +26,8 @@ copyToWebDir($$imtcoredir/Impl/ImtCoreLoc/Translations/, $$buildwebdir/Resources
 copyToWebDir($$imtcoredir/Include/imtstylecontrolsqml/Qml/Fonts/, $$buildwebdir/Resources)
 copyToWebDir($$imtcoredir/Include/imtstylecontrolsqml/Qml/Acf/, $$buildwebdir/src/Acf)
 
+copyToWebDir($$imtcoredir/../Agentino/$$AUXINCLUDEDIR/GeneratedFiles/agentinodata/Ddl/Qml/agentino, $$buildwebdir/src/agentino)
+
 copyToWebDir($$imtcoredir/../Agentino/$$AUXINCLUDEDIR/GeneratedFiles/agentinosdl/SDL/1.0/QML/agentinoAgentsSdl, $$buildwebdir/src/agentinoAgentsSdl)
 
 compyleWeb($$buildwebdir, "agentino")
