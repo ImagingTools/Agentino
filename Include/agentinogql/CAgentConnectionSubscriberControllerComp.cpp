@@ -23,11 +23,12 @@ bool CAgentConnectionSubscriberControllerComp::RegisterSubscription(
 	if (result){
 		QByteArray status;
 
-		int loginStatus = m_loginStatusProviderCompPtr->GetLoginStatus();
-		if (loginStatus == 0){
+		imtcom::IConnectionStatusProvider::ConnectionStatus loginStatus
+					= m_loginStatusProviderCompPtr->GetConnectionStatus();
+		if (loginStatus == imtcom::IConnectionStatusProvider::CS_DISCONNECTED){
 			status = "Disconnected";
 		}
-		else if (loginStatus == imtauth::ILoginStatusProvider::LSF_LOGGED_IN){
+		else if (loginStatus == imtcom::IConnectionStatusProvider::CS_CONNECTED){
 			status = "Connected";
 		}
 
@@ -49,14 +50,14 @@ void CAgentConnectionSubscriberControllerComp::OnUpdate(const istd::IChangeable:
 	}
 
 	QByteArray status;
-	if (changeSet.Contains(0)){
+	if (changeSet.Contains(imtcom::IConnectionStatusProvider::CS_DISCONNECTED)){
 		status = "Disconnected";
 	}
-	else if (changeSet.Contains(imtauth::ILoginStatusProvider::LSF_LOGGED_IN)){
+	else if (changeSet.Contains(imtcom::IConnectionStatusProvider::CS_CONNECTED)){
 		status = "Connected";
 	}
 
-	if (changeSet.Contains(0) || changeSet.Contains(imtauth::ILoginStatusProvider::LSF_LOGGED_IN)){
+	if (changeSet.Contains(0) || changeSet.Contains(imtcom::IConnectionStatusProvider::CS_CONNECTED)){
 		QString data = QString("{\"status\": \"%1\"}").arg(qPrintable(status));
 
 		SetAllSubscriptions("OnAgentConnectionChanged", data.toUtf8());

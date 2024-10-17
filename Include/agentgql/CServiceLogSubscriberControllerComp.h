@@ -1,15 +1,18 @@
 #pragma once
 
 
+// Qt includes
+#include <QtCore/QTimer>
+
 // ACF includes
+#include <imod/TSingleModelObserverBase.h>
 
 // ImtCore includes
 #include <imtbase/IObjectCollection.h>
 #include <imtgql/CGqlSubscriberControllerCompBase.h>
-#include <agentgql/CServiceLog.h>
 
-// Qt includes
-#include <QtCore/QTimer>
+// Agentino includes
+#include <agentgql/CServiceLog.h>
 
 
 namespace agentgql
@@ -49,6 +52,7 @@ private:
 		istd::TDelPtr<imtbase::IObjectCollection> messageCollectionPtr;
 		int messageCount;
 	};
+
 	QMap<QByteArray, MessageStatusInfo> m_servicesMessageInfo;
 	QTimer m_timer;
 

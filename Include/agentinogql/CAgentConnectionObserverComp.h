@@ -6,8 +6,8 @@
 #include <imod/TSingleModelObserverBase.h>
 
 // ImtCore includes
-#include <imtauth/ILoginStatusProvider.h>
 #include <imtbase/IObjectCollection.h>
+#include <imtcom/IConnectionStatusProvider.h>
 
 // Agentino includes
 #include <agentinodata/CAgentStatusInfo.h>
@@ -46,7 +46,7 @@ protected:
 	virtual void OnComponentDestroyed() override;
 
 protected:
-	I_REF(imtauth::ILoginStatusProvider, m_loginStatusProviderCompPtr);
+	I_REF(imtcom::IConnectionStatusProvider, m_loginStatusProviderCompPtr);
 	I_REF(imod::IModel, m_loginStatusModelCompPtr);
 	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);
 	I_REF(imtbase::IObjectCollection, m_agentStatusCollectionCompPtr);

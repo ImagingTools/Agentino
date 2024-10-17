@@ -2,12 +2,9 @@
 
 
 // ImtCore includes
+#include <imtcom/IConnectionController.h>
 #include <imtgql/CGqlRequestHandlerCompBase.h>
 #include <imtbase/IUrlParam.h>
-#include <imtauth/ILogin.h>
-
-// Agentino includes
-#include <agentinodata/IServiceController.h>
 
 
 namespace agentgql
@@ -30,7 +27,7 @@ protected:
 
 protected:
 	I_REF(imtbase::IUrlParam, m_agentinoUrlCompPtr);
-	I_REF(imtauth::ILogin, m_loginCompPtr);
+	I_REF(imtcom::IConnectionController, m_loginCompPtr);
 };
 
 

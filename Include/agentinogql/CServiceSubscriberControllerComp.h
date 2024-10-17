@@ -2,6 +2,7 @@
 
 
 // ACF includes
+#include <imod/TSingleModelObserverBase.h>
 
 // ImtCore includes
 #include <imtbase/IObjectCollection.h>

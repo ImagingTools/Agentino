@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5262" Description="ACF"/>
-            <Version Id="1" Number="2218" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="331522" Description="Qt Framework"/>
+            <Version Id="0" Number="5253" Description="ACF"/>
+            <Version Id="1" Number="2217" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
@@ -19,8 +19,8 @@
         <Element ComponentName="ServiceController" X="900" Y="350" Note=""/>
         <Element ComponentName="ServiceManagerSubscriptionClient" X="925" Y="725" Note=""/>
         <Element ComponentName="WebSocketAgentHandlers" X="325" Y="375" Note=""/>
-        <Element ComponentName="WebSocketClient" X="780" Y="620" Note=""/>
-        <Element ComponentName="WebSocketServerFramework" X="500" Y="775" Note=""/>
+        <Element ComponentName="WebSocketClient" X="775" Y="625" Note=""/>
+        <Element ComponentName="WebSocketServerFramework" X="497.171572875" Y="775" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
         <EmbededRegistry Id="Repositories">

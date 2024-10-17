@@ -1,10 +1,6 @@
 #include <agentgql/CAgentSettingsControllerComp.h>
 
 
-// Agentino includes
-#include <agentinodata/agentinodata.h>
-
-
 namespace agentgql
 {
 
@@ -69,7 +65,7 @@ imtbase::CTreeItemModel* CAgentSettingsControllerComp::CreateInternalResponse(
 			return nullptr;
 		}
 
-		m_loginCompPtr->Logout();
+		m_loginCompPtr->Disconnect();
 
 		if (m_agentinoUrlCompPtr->SetUrl(url)){
 			imtbase::CTreeItemModel* dataModelPtr = rootModelPtr->AddTreeModel("data");
@@ -78,7 +74,7 @@ imtbase::CTreeItemModel* CAgentSettingsControllerComp::CreateInternalResponse(
 			notificationModelPtr->SetData("Name", "Agent Settings");
 		}
 
-		m_loginCompPtr->Login("", "");
+		m_loginCompPtr->Connect();
 	}
 
 	return rootModelPtr.PopPtr();

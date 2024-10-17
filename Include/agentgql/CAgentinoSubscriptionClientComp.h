@@ -1,13 +1,8 @@
 #pragma once
 
 
-// Qt includes
-#include <QtCore/QByteArray>
-
 // ACF includes
-#include <istd/IChangeable.h>
 #include <ilog/TLoggerCompWrap.h>
-#include <ilog/CMessageContainer.h>
 #include <imod/TSingleModelObserverBase.h>
 #include <iprm/ITextParam.h>
 #include <ibase/IApplicationInfo.h>
@@ -15,8 +10,7 @@
 // ImtCore includes
 #include <imtclientgql/IGqlSubscriptionManager.h>
 #include <imtclientgql/IGqlClient.h>
-#include <imtauth/ILoginStatusProvider.h>
-#include <imtgql/IGqlResponse.h>
+#include <imtcom/IConnectionStatusProvider.h>
 
 
 namespace agentgql
@@ -55,7 +49,7 @@ protected:
 private:
 	I_REF(imtclientgql::IGqlSubscriptionManager, m_subscriptionManagerCompPtr);
 	I_REF(imtclientgql::IGqlClient, m_gqlClientCompPtr);
-	I_REF(imtauth::ILoginStatusProvider, m_loginStatusCompPtr);
+	I_REF(imtcom::IConnectionStatusProvider, m_loginStatusCompPtr);
 	I_REF(imod::IModel, m_webLoginStatusModelCompPtr);
 	I_REF(iprm::ITextParam, m_clientIdCompPtr);
 	I_REF(ibase::IApplicationInfo, m_applicationInfoCompPtr);

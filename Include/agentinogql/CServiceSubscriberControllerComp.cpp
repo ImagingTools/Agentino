@@ -1,9 +1,6 @@
 #include <agentinogql/CServiceSubscriberControllerComp.h>
 
 
-// ImtCore includes
-#include <imtrest/IProtocolEngine.h>
-
 // Agentino includes
 #include <agentinodata/IServiceController.h>
 #include <agentinodata/CServiceStatusInfo.h>
@@ -18,10 +15,6 @@ namespace agentinogql
 
 bool CServiceSubscriberControllerComp::SetSubscriptions()
 {
-	if (!m_requestManagerCompPtr.IsValid()){
-		return false;
-	}
-
 	return true;
 }
 

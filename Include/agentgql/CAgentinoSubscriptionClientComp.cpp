@@ -5,13 +5,8 @@
 #include <QtNetwork/QHostInfo>
 
 // ImtCore includes
-#include <imtbase/CTreeItemModel.h>
-#include <imtbase/ICollectionInfo.h>
 #include <imtgql/CGqlRequest.h>
 #include <imtgql/CGqlResponse.h>
-
-// Agentino includes
-#include <agentinodata/IServiceController.h>
 
 
 namespace agentgql
@@ -28,6 +23,8 @@ void CAgentinoSubscriptionClientComp::OnComponentCreated()
 }
 
 
+// reimplemented (imtclientgql::IGqlSubscriptionClient)
+
 void CAgentinoSubscriptionClientComp::OnResponseReceived(const QByteArray& /*subscriptionId*/, const QByteArray& /*subscriptionData*/)
 {
 }
@@ -38,14 +35,16 @@ void CAgentinoSubscriptionClientComp::OnSubscriptionStatusChanged(const QByteArr
 }
 
 
+// reimplemented (imod::CSingleModelObserverBase)
+
 void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSet& changeSet)
 {
 	if (!m_loginStatusCompPtr.IsValid() || !m_gqlClientCompPtr.IsValid() || !m_applicationInfoCompPtr.IsValid()){
 		return;
 	}
-	imtauth::ILoginStatusProvider::LoginStatusFlags loginStatus = (imtauth::ILoginStatusProvider::LoginStatusFlags)m_loginStatusCompPtr->GetLoginStatus();
 
-	if (loginStatus == imtauth::ILoginStatusProvider::LSF_LOGGED_IN){
+	imtcom::IConnectionStatusProvider::ConnectionStatus connectionStatus = m_loginStatusCompPtr->GetConnectionStatus();
+	if (connectionStatus == imtcom::IConnectionStatusProvider::CS_CONNECTED){
 		imtgql::CGqlRequest* gqlInitRequest = new imtgql::CGqlRequest(imtgql::IGqlRequest::RT_MUTATION, "AgentAdd");
 		imtgql::CGqlObject inputDataParams;
 		QString clientId;

@@ -21,6 +21,8 @@ void CAgentConnectionObserverComp::SetAgentStatus(
 		return;
 	}
 
+	qDebug() << "SetAgentStatus" << agentId << status;
+
 	istd::TDelPtr<agentinodata::CAgentStatusInfo> serviceStatusInfoPtr;
 	serviceStatusInfoPtr.SetPtr(new agentinodata::CAgentStatusInfo(agentId, status));
 
@@ -61,8 +63,14 @@ void CAgentConnectionObserverComp::OnUpdate(const istd::IChangeable::ChangeSet& 
 	}
 
 	QByteArray clientId = changeSet.GetChangeInfo("ClientId").toByteArray();
+	if (clientId.isEmpty()){
+		return;
+	}
 
-	if (changeSet.Contains(0)){
+	if (changeSet.Contains(imtcom::IConnectionStatusProvider::CS_CONNECTED)){
+		SetAgentStatus(clientId, agentinodata::IAgentStatusInfo::AS_CONNECTED);
+	}
+	else{
 		imtbase::IObjectCollection::DataPtr agentDataPtr;
 		if (m_agentCollectionCompPtr->GetObjectData(clientId, agentDataPtr)){
 			agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(agentDataPtr.GetPtr());
@@ -78,9 +86,6 @@ void CAgentConnectionObserverComp::OnUpdate(const istd::IChangeable::ChangeSet& 
 		}
 
 		SetAgentStatus(clientId, agentinodata::IAgentStatusInfo::AS_DISCONNECTED);
-	}
-	else if (changeSet.Contains(imtauth::ILoginStatusProvider::LSF_LOGGED_IN)){
-		SetAgentStatus(clientId, agentinodata::IAgentStatusInfo::AS_CONNECTED);
 	}
 }
 
