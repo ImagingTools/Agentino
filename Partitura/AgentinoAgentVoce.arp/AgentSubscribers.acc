@@ -23,7 +23,7 @@
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="LoginStatusProvider" Type="Reference" ExportId="WebSocketClient">
+                    <AttributeInfo Id="LoginStatusProvider" Type="Reference" ExportId="LoginStatusProvider">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="RequestManager" Type="Reference" ExportId="WebSocketServer">

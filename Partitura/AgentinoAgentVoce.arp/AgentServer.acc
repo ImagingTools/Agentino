@@ -73,6 +73,9 @@
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="LoginStatusProvider" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="WebSocketClient/ConnectionStatusProvider"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="MessageSqlRepository" Type="Reference" ExportId="MessageSqlRepository">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -219,7 +222,7 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="WebLoginStatus" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="WebSocketClient"/>
+                        <Data IsEnabled="true" Value="WebSocketClient/ConnectionStatusProvider"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
