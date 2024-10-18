@@ -177,14 +177,15 @@ ViewBase {
     }
 
     function getHeaders(){
-        let additionInputParams = {}
+        let headers = {}
 
         if(scheme.selectedIndex >= 0){
             let agentId = scheme.objectModel.getData("agentId", scheme.selectedIndex);
-            additionInputParams["clientId"] = agentId;
+            headers["clientId"] = agentId;
+            headers["serviceId"] = scheme.selectedService;
         }
 
-        return additionInputParams
+        return headers
     }
 
     Component {

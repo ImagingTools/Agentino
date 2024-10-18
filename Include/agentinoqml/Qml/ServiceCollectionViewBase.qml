@@ -97,10 +97,11 @@ RemoteCollectionView {
     }
 
     function getHeaders(){
-        let additionInputParams = {}
-        additionInputParams["clientId"] = root.clientId;
-        console.log("ServiceCollectionView getHeaders", additionInputParams)
-        return additionInputParams
+        let headers = {}
+        headers["clientId"] = root.clientId;
+        headers["serviceId"] = root.serviceId;
+        console.log("ServiceCollectionView getHeaders", headers)
+        return headers
     }
 
 
@@ -143,11 +144,7 @@ RemoteCollectionView {
             }
 
             function getHeaders(){
-                let additionalInputParams = root.getHeaders();
-                additionalInputParams["serviceId"] = root.serviceId;
-                console.log("ServiceEditor getHeaders", additionalInputParams)
-
-                return additionalInputParams;
+                return root.getHeaders();
             }
         }
     }

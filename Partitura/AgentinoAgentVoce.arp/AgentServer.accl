@@ -2,16 +2,15 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5253" Description="ACF"/>
-            <Version Id="1" Number="2217" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5262" Description="ACF"/>
+            <Version Id="1" Number="2218" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="331522" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
         <Element ComponentName="AgentHandlers" X="575" Y="200" Note=""/>
         <Element ComponentName="AgentSubscribers" X="925" Y="475" Note=""/>
         <Element ComponentName="AgentinoLocalization" X="275" Y="75" Note=""/>
-        <Element ComponentName="AgentsSubscriptionManager" X="375" Y="650" Note=""/>
         <Element ComponentName="DatabaseEngine" X="800" Y="125" Note=""/>
         <Element ComponentName="HttpServerFramework" X="500" Y="550" Note=""/>
         <Element ComponentName="Repositories" X="625" Y="300" Note=""/>
