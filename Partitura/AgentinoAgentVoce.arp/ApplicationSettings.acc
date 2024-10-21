@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5191" Description="ACF"/>
-            <Version Id="1" Number="2202" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5262" Description="ACF"/>
+            <Version Id="1" Number="2218" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -26,8 +26,14 @@
                             </Values>
                         </Data>
                     </AttributeInfo>
+                    <AttributeInfo Id="TableViewParamRepresentationController" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="TableViewParamRepresentationController"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserSettingsCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="UserSettingsCollection"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -149,16 +155,7 @@
                     <Interface InterfaceId="imtgql::IGqlRepresentationController" ComponentId="ServerSettingsController"/>
                     <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="ServerSettingsController"/>
                 </ExportedInterfaces>
-                <ExportedComponents>
-                    <Component ExportedId="BackupParamsSet" ComponentId="ServerSettings/BackupParamsSet"/>
-                    <Component ExportedId="BackupSettings" ComponentId="ServerSettings/BackupSettings"/>
-                    <Component ExportedId="DatabaseAccessSettings" ComponentId="ServerSettings/DatabaseAccessSettings"/>
-                    <Component ExportedId="LisaUrlConnection" ComponentId="ServerSettings/LisaUrlConnection"/>
-                    <Component ExportedId="Preferences" ComponentId="ServerSettings/Preferences"/>
-                    <Component ExportedId="PumaUrlConnection" ComponentId="ServerSettings/PumaUrlConnection"/>
-                    <Component ExportedId="ServerPort" ComponentId="ServerSettings/ServerPort"/>
-                    <Component ExportedId="WebSocketServerPort" ComponentId="ServerSettings/WebSocketServerPort"/>
-                </ExportedComponents>
+                <ExportedComponents/>
             </Data>
         </EmbeddedRegistry>
         <EmbeddedRegistry Id="UserSettingsController">
@@ -225,9 +222,6 @@
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="UserSettingsFactory" Type="Factory" ExportId="">
-                                    <Data IsEnabled="true" Value="UserSettings"/>
-                                </AttributeInfo>
                                 <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
@@ -269,14 +263,6 @@
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="ApplicationSettings"/>
     </ExportedInterfaces>
     <ExportedComponents>
-        <Component ExportedId="BackupParamsSet" ComponentId="ServerSettingsController/BackupParamsSet"/>
-        <Component ExportedId="BackupSettings" ComponentId="ServerSettingsController/BackupSettings"/>
-        <Component ExportedId="DatabaseAccessSettings" ComponentId="ServerSettingsController/DatabaseAccessSettings"/>
-        <Component ExportedId="LisaUrlConnection" ComponentId="ServerSettingsController/LisaUrlConnection"/>
-        <Component ExportedId="Preferences" ComponentId="ServerSettingsController/Preferences"/>
-        <Component ExportedId="PumaUrlConnection" ComponentId="ServerSettingsController/PumaUrlConnection"/>
-        <Component ExportedId="ServerPort" ComponentId="ServerSettingsController/ServerPort"/>
         <Component ExportedId="UserSettingsRepository" ComponentId="UserSettingsController/UserSettingsRepository"/>
-        <Component ExportedId="WebSocketServerPort" ComponentId="ServerSettingsController/WebSocketServerPort"/>
     </ExportedComponents>
 </Acf>

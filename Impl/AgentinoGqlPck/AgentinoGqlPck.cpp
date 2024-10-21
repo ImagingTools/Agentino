@@ -15,53 +15,6 @@ I_EXPORT_PACKAGE(
 			IM_PROJECT("Agentino") IM_COMPANY("ImagingTools") "Agentino");
 
 I_EXPORT_COMPONENT(
-			ServiceCollectionController,
-			"Service collection controller",
-			"GraphQl Service Collection Controller");
-
-I_EXPORT_COMPONENT(
-			ServiceController,
-			"Service controller for manage the service",
-			"GraphQl Service Controller");
-
-I_EXPORT_COMPONENT(
-			AgentinoSubscriptionClient,
-			"Service manager subscription client for agent",
-			"GraphQl Service  Subscription Client");
-
-I_EXPORT_COMPONENT(
-			ServiceLogController,
-			"Service log controller",
-			"Service Log Controller");
-
-I_EXPORT_COMPONENT(
-			MessageCollectionController,
-			"Message collection controller",
-			"Message Collection Controller");
-
-I_EXPORT_COMPONENT(
-			AgentMessageCollectionController,
-			"Agent message collection controller",
-			"Agent Message Collection Controller");
-
-
-I_EXPORT_COMPONENT(
-			AgentSettingsController,
-			"Agent settings controller",
-			"Agent Settings Controller");
-
-I_EXPORT_COMPONENT(
-			ServiceLogSubscriberController,
-			"Service log subscriber controller",
-			"Service Log Subscriber Controller");
-
-I_EXPORT_COMPONENT(
-			AgentGqlRemoteRepresentationController,
-			"Retranslate requests from argent to servicies",
-			"Agentino Retranslate Request Controller");
-
-
-I_EXPORT_COMPONENT(
 			ServiceSubscriberController,
 			"Service subscriber controller",
 			"GraphQl Service Subscriber Controller");
@@ -125,11 +78,6 @@ I_EXPORT_COMPONENT(
 			AgentConnectionObserver,
 			"Agent connection observer",
 			"Agent Connection Observer");
-
-I_EXPORT_COMPONENT(
-			AgentConnectionSubscriberController,
-			"Agent connection subscriber controller",
-			"Agent Connection Subscriber Controller");
 
 I_EXPORT_COMPONENT(
 			AgentsSubscriberProxyController,

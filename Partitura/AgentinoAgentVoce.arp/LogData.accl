@@ -2,17 +2,17 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5241" Description="ACF"/>
-            <Version Id="1" Number="2216" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5262" Description="ACF"/>
+            <Version Id="1" Number="2218" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
         <Element ComponentName="AgentMessageCollectionController" X="1025" Y="275" Note=""/>
         <Element ComponentName="CheckPermissionOr" X="600" Y="500" Note=""/>
         <Element ComponentName="Demultiplexer" X="625" Y="100" Note=""/>
-        <Element ComponentName="MessageCollectionController" X="275" Y="225" Note=""/>
         <Element ComponentName="MessageHeadersDataProvider" X="450" Y="400" Note=""/>
+        <Element ComponentName="ServiceMessageCollectionController" X="275" Y="225" Note=""/>
     </PositionMap>
     <EmbeddedRegistries/>
 </Acf>

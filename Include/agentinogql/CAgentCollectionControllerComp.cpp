@@ -355,6 +355,10 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 
 	QByteArray agentId = GetObjectIdFromInputParams(inputParams);
 
+	if (agentId.isEmpty()){
+		return nullptr;
+	}
+
 	imtbase::IObjectCollection::DataPtr dataPtr;
 	if (m_objectCollectionCompPtr->GetObjectData(agentId, dataPtr)){
 		agentinodata::CIdentifiableAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(dataPtr.GetPtr());

@@ -25,6 +25,10 @@ SUBDIRS += AgentinoGqlPck
 AgentinoGqlPck.file = ../../Impl/AgentinoGqlPck/QMake/AgentinoGqlPck.pro
 AgentinoGqlPck.depends = agentinogql
 
+SUBDIRS += AgentGqlPck
+AgentGqlPck.file = ../../Impl/AgentGqlPck/QMake/AgentGqlPck.pro
+AgentGqlPck.depends = agentgql
+
 SUBDIRS += AgentinoLoc
 AgentinoLoc.file = ../../Impl/AgentinoLoc/QMake/AgentinoLoc.pro
 

@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5253" Description="ACF"/>
-            <Version Id="1" Number="2217" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5262" Description="ACF"/>
+            <Version Id="1" Number="2218" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -35,9 +35,6 @@
                                 <Value>UserIds</Value>
                                 <Value>UserSubCollection</Value>
                                 <Value>UsersInfo</Value>
-                                <Value>UserAdd</Value>
-                                <Value>UserUpdate</Value>
-                                <Value>UserItem</Value>
                                 <Value>UsersRemove</Value>
                                 <Value>UsersList</Value>
                                 <Value>UsersMetaInfo</Value>
@@ -61,9 +58,6 @@
                                 <Value>RoleIds</Value>
                                 <Value>RoleSubCollection</Value>
                                 <Value>RolesInfo</Value>
-                                <Value>RoleItem</Value>
-                                <Value>RoleAdd</Value>
-                                <Value>RoleUpdate</Value>
                                 <Value>RolesList</Value>
                                 <Value>RolesRemove</Value>
                                 <Value>RolesMetaInfo</Value>
@@ -168,9 +162,6 @@
         <Element Id="Pages" PackageId="AgentinoVoce" ComponentId="Pages">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
-                    <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="AgentRepository" Type="Reference" ExportId="AgentRepository">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>

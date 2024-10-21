@@ -2,15 +2,15 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5253" Description="ACF"/>
-            <Version Id="1" Number="2217" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5262" Description="ACF"/>
+            <Version Id="1" Number="2218" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
     <Keywords></Keywords>
     <ElementsList>
-        <Element Id="AgentGqlRemoteRepresentationController" PackageId="AgentinoGqlPck" ComponentId="AgentGqlRemoteRepresentationController">
+        <Element Id="AgentGqlRemoteRepresentationController" PackageId="AgentGqlPck" ComponentId="AgentGqlRemoteRepresentationController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ApiClient" Type="Reference" ExportId="">
@@ -235,16 +235,6 @@
                     <AttributeInfo Id="GraphQlCommandId" Type="Id" ExportId="">
                         <Data IsEnabled="true" Value="Agent/graphql"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="HttpCommandIds" Type="Id[]" ExportId="">
-                        <Data IsEnabled="true">
-                            <Values>
-                                <Value>Agent/Views/*</Value>
-                                <Value></Value>
-                                <Value>Agent/graphql</Value>
-                                <Value>Agent/files/*</Value>
-                            </Values>
-                        </Data>
-                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -269,7 +259,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServiceController" PackageId="AgentinoGqlPck" ComponentId="ServiceController">
+        <Element Id="ServiceController" PackageId="AgentGqlPck" ComponentId="ServiceController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">

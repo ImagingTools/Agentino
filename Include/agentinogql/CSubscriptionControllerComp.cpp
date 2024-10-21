@@ -26,7 +26,7 @@ void CSubscriptionControllerComp::OnResponseReceived(const QByteArray & subscrip
 	istd::IChangeable::ChangeSet changeSet(istd::IChangeable::CF_ANY);
 	agentinodata::IServiceController::NotifierStatusInfo notifierInfo;
 	QJsonDocument document = QJsonDocument::fromJson(subscriptionData);
-	QJsonObject subscriptionObject = document.object().value("OnServiceStateChanged").toObject();
+	QJsonObject subscriptionObject = document.object().value("OnAgentServiceStatusChanged").toObject();
 	QList<QByteArray> subscriptionIds = m_registeredAgents.values();
 	if (subscriptionIds.contains(subscriptionId)){
 		notifierInfo.serviceId = subscriptionObject.value("serviceId").toString().toUtf8();
@@ -64,7 +64,7 @@ void CSubscriptionControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& /
 
 		for (const QByteArray& agentId: agentCollectionIds){
 			if(!m_registeredAgents.contains(agentId)){
-				imtgql::CGqlRequest gqlAddRequest(imtgql::IGqlRequest::RT_SUBSCRIPTION, "OnServiceStateChanged");
+				imtgql::CGqlRequest gqlAddRequest(imtgql::IGqlRequest::RT_SUBSCRIPTION, "OnAgentServiceStatusChanged");
 				imtgql::CGqlObject subscriptionInput;
 				gqlAddRequest.AddParam("input", subscriptionInput);
 

@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5262" Description="ACF"/>
-            <Version Id="1" Number="2218" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5272" Description="ACF"/>
+            <Version Id="1" Number="2220" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -279,7 +279,7 @@
                     <Element Id="ServerServiceCollectionController" PackageId="AgentinoGqlPck" ComponentId="ServerServiceCollectionController">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
-                                <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentCollection">
+                                <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
@@ -399,8 +399,6 @@
                                     <Data IsEnabled="true">
                                         <Values>
                                             <Value>ServicesSetDescription</Value>
-                                            <Value>ServiceStart</Value>
-                                            <Value>ServiceStop</Value>
                                             <Value>ServiceItem</Value>
                                             <Value>ServiceUpdate</Value>
                                             <Value>GetServiceLog</Value>
@@ -426,7 +424,7 @@
                     <Element Id="TopologyPage" PackageId="AgentinoVoce" ComponentId="TopologyPage">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
-                                <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentCollection">
+                                <AttributeInfo Id="AgentRepository" Type="Reference" ExportId="AgentRepository">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">

@@ -32,6 +32,7 @@
                                 <Value>Server/AgentinoLocalization</Value>
                                 <Value>Server/HttpServerFramework</Value>
                                 <Value>Server/WebSocketServerFramework</Value>
+                                <Value>Server/AgentConnectionObserver</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

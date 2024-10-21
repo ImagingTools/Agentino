@@ -54,6 +54,9 @@ add_subdirectory("${SDL_DIR}/agentino/CMake" "${AUX_INCLUDE_DIR}/agentinosdl")
 add_subdirectory("${IMPL_DIR}/AgentinoGqlPck/CMake" "${AUX_INCLUDE_DIR}/AgentinoGqlPck")
 add_dependencies(AgentinoGqlPck agentinogql)
 
+add_subdirectory("${IMPL_DIR}/AgentGqlPck/CMake" "${AUX_INCLUDE_DIR}/AgentGqlPck")
+add_dependencies(AgentGqlPck agentgql)
+
 add_subdirectory("${IMPL_DIR}/AgentinoDataPck/CMake" "${AUX_INCLUDE_DIR}/AgentinoDataPck")
 add_dependencies(AgentinoDataPck agentinodata)
 
@@ -62,6 +65,4 @@ add_subdirectory("${IMPL_DIR}/AgentinoLoc/CMake" "${AUX_INCLUDE_DIR}/AgentinoLoc
 add_subdirectory("${IMPL_DIR}/AgentinoServer/CMake" "${AUX_INCLUDE_DIR}/AgentinoServer")
 add_subdirectory("${IMPL_DIR}/AgentinoClient/CMake" "${AUX_INCLUDE_DIR}/AgentinoClient")
 add_subdirectory("${IMPL_DIR}/AgentinoAgent/CMake" "${AUX_INCLUDE_DIR}/AgentinoAgent")
-#add_subdirectory("${IMPL_DIR}/AgentinoDataPck/CMake" "${AUX_INCLUDE_DIR}/AgentinoDataPck")
-#add_subdirectory("${IMPL_DIR}/AgentinoServerConfigurator/CMake" "${AUX_INCLUDE_DIR}/AgentinoServerConfigurator")
 

@@ -41,7 +41,7 @@
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ApplicationName" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="AgentinoAgentServer"/>
+                        <Data IsEnabled="true" Value="AgentinoAgent Server"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ApplicationType" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="Server"/>
@@ -65,7 +65,7 @@
                         </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="LogPath" Type="String" ExportId="">
-                        <Data IsEnabled="true" Value="AgentinoAgentServerLog.txt"/>
+                        <Data IsEnabled="true" Value="AgentLog.txt"/>
                     </AttributeInfo>
                     <AttributeInfo Id="MainVersionId" Type="Integer" ExportId="">
                         <Data IsEnabled="true" Value="2022"/>

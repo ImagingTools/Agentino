@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5236" Description="ACF"/>
-            <Version Id="1" Number="2215" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5262" Description="ACF"/>
+            <Version Id="1" Number="2218" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -51,7 +51,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServiceCollectionController" PackageId="AgentinoGqlPck" ComponentId="ServiceCollectionController">
+        <Element Id="ServiceCollectionController" PackageId="AgentGqlPck" ComponentId="ServiceCollectionController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
@@ -145,7 +145,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServiceLogController" PackageId="AgentinoGqlPck" ComponentId="ServiceLogController">
+        <Element Id="ServiceLogController" PackageId="AgentGqlPck" ComponentId="ServiceLogController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">

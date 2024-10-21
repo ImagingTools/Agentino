@@ -2,15 +2,15 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5253" Description="ACF"/>
-            <Version Id="1" Number="2217" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5262" Description="ACF"/>
+            <Version Id="1" Number="2218" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
     <Keywords></Keywords>
     <ElementsList>
-        <Element Id="AgentConnectionSubscriberController" PackageId="AgentinoGqlPck" ComponentId="AgentConnectionSubscriberController">
+        <Element Id="AgentConnectionSubscriberController" PackageId="AgentGqlPck" ComponentId="AgentConnectionSubscriberController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
@@ -54,7 +54,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServiceLogSubscriberController" PackageId="AgentinoGqlPck" ComponentId="ServiceLogSubscriberController">
+        <Element Id="ServiceLogSubscriberController" PackageId="AgentGqlPck" ComponentId="ServiceLogSubscriberController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
@@ -82,7 +82,7 @@
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>OnServiceStateChanged</Value>
+                                <Value>OnAgentServiceStatusChanged</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

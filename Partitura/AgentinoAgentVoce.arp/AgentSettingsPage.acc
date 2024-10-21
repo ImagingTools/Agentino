@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5204" Description="ACF"/>
-            <Version Id="1" Number="2203" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5262" Description="ACF"/>
+            <Version Id="1" Number="2218" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -15,7 +15,7 @@
                 <AttributeInfoMap/>
             </Data>
         </Element>
-        <Element Id="AgentSettingsController" PackageId="AgentinoGqlPck" ComponentId="AgentSettingsController">
+        <Element Id="AgentSettingsController" PackageId="AgentGqlPck" ComponentId="AgentSettingsController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="AgentinoUrl" Type="Reference" ExportId="AgentinoUrl">
