@@ -11,7 +11,7 @@
         <Element ComponentName="AgentConnectionSubscriberController" X="625" Y="350" Note=""/>
         <Element ComponentName="AgentLogCollectionSubscriberController" X="625" Y="625" Note=""/>
         <Element ComponentName="ServiceLogSubscriberController" X="625" Y="450" Note=""/>
-        <Element ComponentName="ServiceStatusSubscriberController" X="600" Y="250" Note=""/>
+        <Element ComponentName="ServiceStatusSubscriberController" X="600" Y="250" Note="It should be created earlier than the model that the observatory"/>
         <Element ComponentName="ServicetCollectionSubscriberController" X="625" Y="550" Note=""/>
     </PositionMap>
     <EmbeddedRegistries/>

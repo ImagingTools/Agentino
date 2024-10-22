@@ -19,7 +19,6 @@ ViewBase {
     onAgentStatusChanged: {
         console.log("onAgentStatusChanged", agentStatus);
         loading.visible = false;
-        //        statusIcon.source = "";
         statusText.text = "";
         button.enabled = false;
 
@@ -205,10 +204,6 @@ ViewBase {
 
                             saveModel.save()
                         }
-
-                        decorator: Component {ButtonDecorator {
-                            font.pixelSize: Style.fontSize_subtitle;
-                        }}
                     }
                 }
             }//Column bodyColumn
@@ -225,7 +220,8 @@ ViewBase {
             queryFields.InsertField("Id");
             query.AddField(queryFields);
 
-            subscriptionManager.registerSubscription(query, subscriptionClient);
+            Events.sendEvent("RegisterSubscription", {"Query": query, "Client": subscriptionClient});
+            // subscriptionManager.registerSubscription(query, subscriptionClient);
         }
 
         onStateChanged: {
@@ -284,7 +280,6 @@ ViewBase {
         id: settingsModel
 
         function updateModel() {
-            console.log( "topologyPage updateModel", "GetAgentSettings");
             var query = Gql.GqlRequest("query", "GetAgentSettings");
             var queryFields = Gql.GqlObject("input");
             query.AddParam(queryFields);

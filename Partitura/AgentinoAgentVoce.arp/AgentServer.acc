@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5262" Description="ACF"/>
-            <Version Id="1" Number="2218" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394754" Description="Qt Framework"/>
+            <Version Id="0" Number="5270" Description="ACF"/>
+            <Version Id="1" Number="2220" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -68,7 +68,7 @@
             </Data>
         </Element>
         <Element Id="AgentSubscribers" PackageId="AgentinoAgentVoce" ComponentId="AgentSubscribers">
-            <Data IsEnabled="true" Flags="0">
+            <Data IsEnabled="true" Flags="1">
                 <AttributeInfoMap>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
@@ -147,7 +147,7 @@
             </Data>
         </Element>
         <Element Id="Repositories" PackageId="" ComponentId="Repositories">
-            <Data IsEnabled="true" Flags="0">
+            <Data IsEnabled="true" Flags="1">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                         <Data IsEnabled="false"/>
@@ -348,7 +348,7 @@
             <Data Description="" Keywords="">
                 <ElementsList>
                     <Element Id="FileAutoPersistence" PackageId="ImtCoreVoce" ComponentId="FileAutoPersistence">
-                        <Data IsEnabled="true" Flags="0">
+                        <Data IsEnabled="true" Flags="1">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                                     <Data IsEnabled="false"/>
@@ -423,6 +423,7 @@
                     <Interface InterfaceId="istd::IPolymorphic" ComponentId="FileAutoPersistence/AutoPersistence"/>
                 </ExportedInterfaces>
                 <ExportedComponents>
+                    <Component ExportedId="FileAutoPersistence" ComponentId="FileAutoPersistence"/>
                     <Component ExportedId="RoleRepository" ComponentId="UserLocalRepositories/RoleRepository"/>
                     <Component ExportedId="ServiceCollection" ComponentId="ServiceCollection"/>
                     <Component ExportedId="ServiceCollectionAutoPersistence" ComponentId="FileAutoPersistence/AutoPersistence"/>
@@ -438,11 +439,11 @@
     </ExportedInterfaces>
     <ExportedComponents>
         <Component ExportedId="AutoPersistence" ComponentId="ServerSettings/AutoPersistence"/>
+        <Component ExportedId="FileAutoPersistence" ComponentId="Repositories/FileAutoPersistence"/>
         <Component ExportedId="HttpServerFramework" ComponentId="HttpServerFramework"/>
         <Component ExportedId="Preferences" ComponentId="ServerSettings/Preferences"/>
         <Component ExportedId="ServerSettings" ComponentId="ServerSettings"/>
         <Component ExportedId="ServiceCollection" ComponentId="Repositories/ServiceCollection"/>
-        <Component ExportedId="ServiceCollectionAutoPersistence" ComponentId="Repositories/ServiceCollectionAutoPersistence"/>
         <Component ExportedId="ServiceController" ComponentId="ServiceController"/>
         <Component ExportedId="ServiceManagerSubscriptionClient" ComponentId="ServiceManagerSubscriptionClient"/>
         <Component ExportedId="WebSocketServerFramework" ComponentId="WebSocketServerFramework"/>

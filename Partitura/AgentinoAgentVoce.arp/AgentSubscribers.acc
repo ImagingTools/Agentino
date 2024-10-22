@@ -77,7 +77,7 @@
             </Data>
         </Element>
         <Element Id="ServiceStatusSubscriberController" PackageId="AgentinoGqlPck" ComponentId="ServiceSubscriberController">
-            <Data IsEnabled="true" Flags="0">
+            <Data IsEnabled="true" Flags="1">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">

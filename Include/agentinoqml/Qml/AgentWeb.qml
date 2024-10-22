@@ -26,5 +26,9 @@ Item {
 
             Style.topRightPanelDecorator = topRightPanelDecoratorComp;
         }
+
+        function getServerUrl(){
+            return context.location;
+        }
     }
 }
