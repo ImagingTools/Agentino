@@ -52,12 +52,6 @@ imtbase::CTreeItemModel* CServiceStatusControllerProxyComp::CreateInternalRespon
 
 	istd::TDelPtr<imtbase::CTreeItemModel> resultModelPtr = BaseClass::CreateInternalResponse(gqlRequest, errorMessage);
 	if (!resultModelPtr.IsValid() || (resultModelPtr.IsValid() && resultModelPtr->ContainsKey("errors"))){
-		imtbase::IObjectCollection::DataPtr dataPtr;
-		if (m_serviceStatusCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
-			agentinodata::CServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::CServiceStatusInfo*>(dataPtr.GetPtr());
-			m_serviceStatusCollectionCompPtr->SetObjectData(serviceId, *serviceStatusInfoPtr);
-		}
-
 		if (commandId == "ServiceStart"){
 			errorMessage = QString("The service cannot be started check the agent connection");
 		}

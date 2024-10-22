@@ -20,6 +20,7 @@ public:
 
 	I_BEGIN_COMPONENT(CServiceControllerProxyComp);
 		I_ASSIGN(m_serviceManagerCompPtr, "ServiceManager", "ServceManager", true, "ServiceManager");
+		I_ASSIGN(m_serviceStatusCollectionCompPtr, "ServiceStatusCollection", "Service status collection", false, "ServiceStatusCollection");
 	I_END_COMPONENT;
 
 protected:
@@ -28,6 +29,7 @@ protected:
 
 protected:
 	I_REF(agentinodata::IServiceManager, m_serviceManagerCompPtr);
+	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);
 
 private:
 	agentinodata::CServiceInfoRepresentationController m_serviceInfoRepresentationController;

@@ -4,6 +4,7 @@
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/CServiceInfo.h>
+#include <agentinodata/CServiceStatusInfo.h>
 
 
 namespace agentinogql
@@ -48,6 +49,23 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 					itemModel.Copy(dataModelPtr);
 
 					ok = true;
+
+					if (m_serviceStatusCollectionCompPtr.IsValid()){
+						if (dataModelPtr->ContainsKey("Id")){
+							QByteArray serviceId = dataModelPtr->GetData("Id").toByteArray();
+
+							istd::TDelPtr<agentinodata::CServiceStatusInfo> serviceStatusInfoPtr;
+							serviceStatusInfoPtr.SetPtr(new agentinodata::CServiceStatusInfo);
+
+							serviceStatusInfoPtr->SetServiceId(serviceId);
+							serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);
+
+							QByteArray retVal = m_serviceStatusCollectionCompPtr->InsertNewObject("ServiceStatusInfo", "", "", serviceStatusInfoPtr.PopPtr(), serviceId);
+							if (retVal.isEmpty()){
+								SendErrorMessage(0, QString("Unable to insert new status for service '%1'").arg(qPrintable(serviceId)), "CServiceControllerProxyComp");
+							}
+						}
+					}
 				}
 			}
 		}
