@@ -609,7 +609,6 @@ ViewBase {
                             id: content;
 
                             onRowIndexChanged: {
-                                console.log("Service editor width", width, rowIndex)
                                 if (rowIndex >= 0){
 
                                     let valueModel = getValue();
@@ -623,10 +622,6 @@ ViewBase {
                                         textLabel.text = values.join('\n')
                                     }
                                 }
-                            }
-
-                            onWidthChanged: {
-                                console.log("Service editor onWidthChanged", width, rowIndex)
                             }
 
                             Text {

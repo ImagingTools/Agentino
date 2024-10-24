@@ -142,10 +142,6 @@ Dialog {
                     id: comboBoxCellContentComp;
                     ComboBoxCellContentComp {
                         model: schemesModel;
-
-                        onCurrentIndexChanged: {
-                            model.getData();
-                        }
                     }
                 }
 
