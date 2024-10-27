@@ -20,8 +20,6 @@ Item {
 
         Component.onCompleted: {
             designProvider.applyDesignSchema("Light");
-            context.appName = "Agent"
-
             application.firstModelsInit();
 
             Style.topRightPanelDecorator = topRightPanelDecoratorComp;

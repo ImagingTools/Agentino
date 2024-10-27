@@ -11,27 +11,5 @@ ApplicationMain{
 
     canRecoveryPassword: false;
     authorizationServerConnected: true;
-
-    Component.onCompleted: {
-        context.appName = "Agentino"
-    }
-
-    Connections {
-        target: AuthorizationController;
-
-        function onLoginSuccessful(){
-            CachedGroupCollection.updateModel();
-            CachedUserCollection.updateModel();
-
-            CachedRoleCollection.productId = context.appName;
-            CachedRoleCollection.updateModel();
-        }
-
-        function onLogoutSignal(){
-            CachedGroupCollection.clearModel();
-            CachedUserCollection.clearModel();
-            CachedRoleCollection.clearModel();
-        }
-    }
 }
 
