@@ -16,7 +16,7 @@
 #include <agentgql/CServiceLogSubscriberControllerComp.h>
 #include <agentgql/CAgentGqlRemoteRepresentationControllerComp.h>
 #include <agentgql/CAgentConnectionSubscriberControllerComp.h>
-
+#include <agentgql/CAgentServicesRemoteSubscriberProxyComp.h>
 
 
 /**
@@ -36,7 +36,7 @@ typedef agentgql::CAgentSettingsControllerComp AgentSettingsController;
 typedef agentgql::CServiceLogSubscriberControllerComp ServiceLogSubscriberController;
 typedef agentgql::CAgentGqlRemoteRepresentationControllerComp AgentGqlRemoteRepresentationController;
 typedef agentgql::CAgentConnectionSubscriberControllerComp AgentConnectionSubscriberController;
-
+typedef agentgql::CAgentServicesRemoteSubscriberProxyComp AgentServicesRemoteSubscriberProxy;
 
 
 } // namespace AgentGqlPck

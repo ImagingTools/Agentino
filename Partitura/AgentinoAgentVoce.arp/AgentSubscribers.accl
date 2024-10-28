@@ -2,14 +2,15 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5270" Description="ACF"/>
+            <Version Id="0" Number="5272" Description="ACF"/>
             <Version Id="1" Number="2220" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
         <Element ComponentName="AgentConnectionSubscriberController" X="625" Y="350" Note=""/>
         <Element ComponentName="AgentLogCollectionSubscriberController" X="625" Y="625" Note=""/>
+        <Element ComponentName="AgentServicesRemoteSubscriberProxy" X="550" Y="750" Note=""/>
         <Element ComponentName="ServiceLogSubscriberController" X="625" Y="450" Note=""/>
         <Element ComponentName="ServiceStatusSubscriberController" X="600" Y="250" Note="It should be created earlier than the model that the observatory"/>
         <Element ComponentName="ServicetCollectionSubscriberController" X="625" Y="550" Note=""/>

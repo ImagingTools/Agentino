@@ -28,16 +28,6 @@ SplitView {
             console.log("onServiceIdChanged", serviceId)
             log.serviceId = serviceId
         }
-
-        // onSelectionChanged: {
-        //     if (selection.length > 0){
-        //         let index = selection[0];
-        //         log.serviceId = serviceCollectionView.table.elements.getData("Id", index);
-        //     }
-        //     else{
-        //         log.serviceId = ""
-        //     }
-        // }
     }
 
     MessageCollectionView {
@@ -45,7 +35,7 @@ SplitView {
 
         property string serviceId
 
-        collectionId: "ServiceLog";
+        collectionId: "";
 
         collectionFilter: MessageCollectionFilter {
 
@@ -53,12 +43,16 @@ SplitView {
 
         onServiceIdChanged: {
             dataController.elementsModel.clear()
-            if (dataController.collectionId !== log.collectionId){
+            if (collectionId == ""){
+                collectionId = "ServiceLog"
                 dataController.collectionId = log.collectionId
+
+                return;
             }
-            else{
-                dataController.updateModel()
-            }
+
+            dataController.updateModel()
+            unRegisterSubscription()
+            registerSubscription()
         }
 
         function getHeaders(){
@@ -70,6 +64,7 @@ SplitView {
         }
 
         function handleSubscription(dataModel){
+            console.log("ServiceCollectionView handleSubscription")
             if (!dataModel){
                 return;
             }
@@ -77,7 +72,7 @@ SplitView {
                 let body = dataModel.getData("OnServiceLogChanged");
                 if (body.containsKey("serviceId")){
                     let id = body.getData("serviceId")
-                    if (id  === container.serviceId){
+                    if (id  === log.serviceId){
                         dataController.elementsModel.clear()
                         dataController.updateModel()
                     }

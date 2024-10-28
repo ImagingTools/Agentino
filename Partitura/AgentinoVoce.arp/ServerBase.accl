@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5262" Description="ACF"/>
-            <Version Id="1" Number="2218" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5272" Description="ACF"/>
+            <Version Id="1" Number="2220" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -25,9 +25,9 @@
         <EmbededRegistry Id="Subscriptions">
             <PositionMap>
                 <Element ComponentName="AgentCollectionSubscriber" X="550" Y="75" Note=""/>
-                <Element ComponentName="AgentRolesSubscriberProxyController" X="925" Y="450" Note=""/>
                 <Element ComponentName="AgentServicesLogSubscriberProxyController" X="975" Y="250" Note=""/>
                 <Element ComponentName="AgentStatusCollectionSubscriber" X="525" Y="150" Note=""/>
+                <Element ComponentName="AgentSubscriberProxyController" X="925" Y="450" Note=""/>
                 <Element ComponentName="AgentsLogSubscriberProxyController" X="975" Y="175" Note=""/>
                 <Element ComponentName="RolesSubscriberController" X="525" Y="450" Note=""/>
                 <Element ComponentName="ServiceCollectionSubscriberController" X="550" Y="250" Note=""/>

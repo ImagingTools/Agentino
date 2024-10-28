@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5270" Description="ACF"/>
+            <Version Id="0" Number="5272" Description="ACF"/>
             <Version Id="1" Number="2220" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -70,6 +70,9 @@
         <Element Id="AgentSubscribers" PackageId="AgentinoAgentVoce" ComponentId="AgentSubscribers">
             <Data IsEnabled="true" Flags="1">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="ConnectionCollectionProvider" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServiceCollectionPropvider"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -190,6 +193,18 @@
                     </AttributeInfo>
                     <AttributeInfo Id="WebSocketDefaultPort" Type="Integer" ExportId="">
                         <Data IsEnabled="true" Value="7223"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="ServiceCollectionPropvider" PackageId="" ComponentId="ServiceCollectionController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ServiceController" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServiceController"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceRepository" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -330,6 +345,7 @@
                                 <Value>AgentSubscribers/AgentConnectionSubscriberController</Value>
                                 <Value>AgentSubscribers/ServiceLogSubscriberController</Value>
                                 <Value>AgentSubscribers/AgentLogCollectionSubscriberController</Value>
+                                <Value>AgentSubscribers/AgentServicesRemoteSubscriberProxy</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -430,6 +446,110 @@
                     <Component ExportedId="UserGroupRepository" ComponentId="UserLocalRepositories/UserGroupRepository"/>
                     <Component ExportedId="UserRepository" ComponentId="UserLocalRepositories/UserRepository"/>
                 </ExportedComponents>
+            </Data>
+        </EmbeddedRegistry>
+        <EmbeddedRegistry Id="ServiceCollectionController">
+            <Data Description="" Keywords="">
+                <ElementsList>
+                    <Element Id="CheckPermissionOr" PackageId="ImtAuthPck" ComponentId="CheckPermissionOr">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap/>
+                        </Data>
+                    </Element>
+                    <Element Id="RepresentationService" PackageId="AgentinoDataPck" ComponentId="ServiceInfo">
+                        <Data IsEnabled="true" Flags="2">
+                            <AttributeInfoMap/>
+                        </Data>
+                    </Element>
+                    <Element Id="ServiceCollectionController" PackageId="AgentGqlPck" ComponentId="ServiceCollectionController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>ServicesInfo</Value>
+                                            <Value>ServicesList</Value>
+                                            <Value>ServicesObjectView</Value>
+                                            <Value>ServicesRemove</Value>
+                                            <Value>ServicesSetDescription</Value>
+                                            <Value>ServiceItem</Value>
+                                            <Value>ServiceAdd</Value>
+                                            <Value>ServiceUpdate</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="HeadersProvider" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="ServiceHeadersDataProvider"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="ServiceRepository">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PermissionChecker" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="CheckPermissionOr"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ServiceController" Type="Reference" ExportId="ServiceController">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ServiceFactory" Type="Factory" ExportId="">
+                                    <Data IsEnabled="true" Value="RepresentationService"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="ServiceHeadersDataProvider" PackageId="ImtQmlPck" ComponentId="HeadersDataProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="HeadersIds" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Name</Value>
+                                            <Value>Description</Value>
+                                            <Value>StatusName</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="HeadersNames" Type="Text[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Name</Value>
+                                            <Value>Description</Value>
+                                            <Value>Status</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="SearchByFilterIds" Type="String[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Name</Value>
+                                            <Value>Description</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ShowComponentId" Type="Boolean" ExportId="">
+                                    <Data IsEnabled="true" Value="true"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                </ElementsList>
+                <EmbeddedRegistriesList/>
+                <ExportedInterfaces>
+                    <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="ServiceCollectionController"/>
+                    <Interface InterfaceId="imtservice::IConnectionCollectionProvider" ComponentId="ServiceCollectionController"/>
+                </ExportedInterfaces>
+                <ExportedComponents/>
             </Data>
         </EmbeddedRegistry>
     </EmbeddedRegistriesList>

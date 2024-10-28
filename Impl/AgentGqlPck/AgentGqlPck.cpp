@@ -65,6 +65,11 @@ I_EXPORT_COMPONENT(
 			"Agent connection subscriber controller",
 			"Agent Connection Subscriber Controller");
 
+I_EXPORT_COMPONENT(
+			AgentServicesRemoteSubscriberProxy,
+			"Agent services remote subscriber controller",
+			"Agent Services Remote Subscriber Controller");
+
 
 } // namespace AgentGqlPck
 

@@ -34,6 +34,12 @@ public:
 protected:
 	// reimplemented (imtgql::IGqlSubscriberController)
 	virtual bool IsRequestSupported(const imtgql::CGqlRequest& gqlRequest) const override;
+	virtual bool RegisterSubscription(
+				const QByteArray& subscriptionId,
+				const imtgql::CGqlRequest& gqlRequest,
+				const imtrest::IRequest& networkRequest,
+				QString& errorMessage) override;
+	virtual bool UnRegisterSubscription(const QByteArray& subscriptionId) override;
 
 	// reimplemented (imtclientgql::IGqlSubscriptionClient)
 	virtual void OnResponseReceived(const QByteArray& subscriptionId, const QByteArray& subscriptionData) override;
@@ -53,6 +59,7 @@ private:
 	I_REF(imtclientgql::IGqlClient, m_gqlClientCompPtr);
 
 	QMap<QByteArray, QByteArray> m_registeredAgents; // <agentId, subscriptionId>
+	QMap<QByteArray, QByteArray> m_remoteSubscriptions; // <remoteSubscriptionId, subscriptionId>
 };
 
 
