@@ -23,6 +23,8 @@ namespace agentinogql
 
 void CSubscriptionControllerComp::OnResponseReceived(const QByteArray & subscriptionId, const QByteArray & subscriptionData)
 {
+	qDebug() << "CSubscriptionControllerComp::OnResponseReceived" << subscriptionId << subscriptionData;
+
 	istd::IChangeable::ChangeSet changeSet(istd::IChangeable::CF_ANY);
 	agentinodata::IServiceController::NotifierStatusInfo notifierInfo;
 	QJsonDocument document = QJsonDocument::fromJson(subscriptionData);

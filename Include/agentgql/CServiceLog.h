@@ -4,9 +4,8 @@
 // ImtCore includes
 #include <imtbase/PluginInterface.h>
 #include <imtbase/IObjectCollection.h>
-#include <imtgql/CGqlRequestHandlerCompBase.h>
-#include <imtservice/IObjectCollectionPlugin.h>
 #include <imtbase/TPluginManager.h>
+#include <imtservice/IObjectCollectionPlugin.h>
 
 IMT_DECLARE_PLUGIN_INTERFACE(ServiceLog, imtservice::IObjectCollectionPlugin);
 
@@ -17,9 +16,7 @@ namespace agentgql
 
 class CServiceLog
 {
-
 protected:
-
 	class PluginManager: public imtbase::TPluginManager<
 				imtservice::IObjectCollectionPlugin,
 				IMT_CREATE_PLUGIN_FUNCTION(ServiceLog),

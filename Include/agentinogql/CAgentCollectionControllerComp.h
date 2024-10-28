@@ -6,8 +6,7 @@
 
 // ImtCore includes
 #include <imtbase/IObjectCollection.h>
-#include <imtgql/CObjectCollectionControllerCompBase.h>
-#include <imtclientgql/TClientRequestManagerCompWrap.h>
+#include <imtservergql/CObjectCollectionControllerCompBase.h>
 
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
@@ -21,11 +20,11 @@ namespace agentinogql
 {
 
 
-class CAgentCollectionControllerComp: public QObject, public imtgql::CObjectCollectionControllerCompBase
+class CAgentCollectionControllerComp: public QObject, public imtservergql::CObjectCollectionControllerCompBase
 {
 	Q_OBJECT
 public:
-	typedef imtgql::CObjectCollectionControllerCompBase BaseClass;
+	typedef imtservergql::CObjectCollectionControllerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CAgentCollectionControllerComp);
 		I_ASSIGN(m_agentFactCompPtr, "AgentFactory", "Factory used for creation of the new agent instance", true, "AgentFactory");

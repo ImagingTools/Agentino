@@ -5,7 +5,7 @@
 #include <iprm/ITextParam.h>
 
 // ImtCore includes
-#include <imtgql/CGqlRequestHandlerCompBase.h>
+#include <imtservergql/CGqlRequestHandlerCompBase.h>
 
 
 namespace agentinogql
@@ -13,10 +13,10 @@ namespace agentinogql
 
 
 class CGqlRepresentationAgentDataComp:
-			public imtgql::CGqlRequestHandlerCompBase
+			public imtservergql::CGqlRequestHandlerCompBase
 {
 public:
-	typedef imtgql::CGqlRequestHandlerCompBase BaseClass;
+	typedef imtservergql::CGqlRequestHandlerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CGqlRepresentationAgentDataComp);
 		I_ASSIGN(m_clientIdCompPtr, "ClientIdParam", "Parameter providing the client-ID that needs to be identified on the server", false, "ClientIdParam");

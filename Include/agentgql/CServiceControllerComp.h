@@ -2,7 +2,7 @@
 
 
 // ImtCore includes
-#include <imtgql/CGqlRequestHandlerCompBase.h>
+#include <imtservergql/CGqlRequestHandlerCompBase.h>
 
 // Agentino includes
 #include <agentinodata/IServiceController.h>
@@ -13,10 +13,10 @@ namespace agentgql
 {
 
 
-class CServiceControllerComp: public imtgql::CGqlRequestHandlerCompBase
+class CServiceControllerComp: public imtservergql::CGqlRequestHandlerCompBase
 {
 public:
-	typedef imtgql::CGqlRequestHandlerCompBase BaseClass;
+	typedef imtservergql::CGqlRequestHandlerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceControllerComp);
 		I_ASSIGN(m_serviceControllerCompPtr, "ServiceController", "Service controller used to manage services", true, "ServiceController");

@@ -2,7 +2,7 @@
 
 
 // ImtCore includes
-#include <imtgql/CObjectCollectionControllerCompBase.h>
+#include <imtservergql/CObjectCollectionControllerCompBase.h>
 
 
 #undef GetObject
@@ -12,10 +12,10 @@ namespace agentgql
 {
 
 
-class CAgentMessageCollectionControllerComp: public imtgql::CObjectCollectionControllerCompBase
+class CAgentMessageCollectionControllerComp: public imtservergql::CObjectCollectionControllerCompBase
 {
 public:
-	typedef imtgql::CObjectCollectionControllerCompBase BaseClass;
+	typedef imtservergql::CObjectCollectionControllerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CAgentMessageCollectionControllerComp);
 	I_END_COMPONENT;

@@ -19,9 +19,11 @@ target_link_libraries(${PROJECT_NAME}
 	imtgui
 	imtwidgets
 	imtauth
+	imtservergql
 	agentinodata
 	agentinosdl
-	agentgql)
+	agentgql
+)
 
 ADD_DEFINITIONS(-DUNICODE)
 ADD_DEFINITIONS(-D_UNICODE)

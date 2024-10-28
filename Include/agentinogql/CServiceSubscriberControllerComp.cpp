@@ -25,6 +25,8 @@ void CServiceSubscriberControllerComp::OnComponentCreated()
 {
 	BaseClass::OnComponentCreated();
 
+	qDebug() << "CServiceSubscriberControllerComp OnComponentCreated";
+
 	if (m_modelCompPtr.IsValid()) {
 		m_modelCompPtr->AttachObserver(this);
 	}
@@ -51,6 +53,9 @@ void CServiceSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeS
 
 	QByteArray serviceId = notifierStatusInfo.serviceId;
 
+	qDebug() << "CServiceSubscriberControllerComp::OnUpdate" << (notifierStatusInfo.serviceId) << status;
+	qDebug() << "serviceId" << changeSet.GetChangeInfo("serviceId").toByteArray();
+
 	if (serviceId.isEmpty()){
 		return;
 	}
@@ -64,7 +69,11 @@ void CServiceSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeS
 			agentinodata::CServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::CServiceStatusInfo*>(dataPtr.GetPtr());
 			if (serviceStatusInfoPtr != nullptr){
 				serviceStatusInfoPtr->SetServiceStatus(notifierStatusInfo.serviceStatus);
-				m_serviceStatusCollectionCompPtr->SetObjectData(serviceId, *serviceStatusInfoPtr);
+				if (!m_serviceStatusCollectionCompPtr->SetObjectData(serviceId, *serviceStatusInfoPtr)){
+					SendErrorMessage(0,
+									 QString("Unable to set status '%1' for service '%2'. Error: internal error").arg(status).arg(qPrintable(notifierStatusInfo.serviceId)),
+									 "CServiceSubscriberControllerComp");
+				}
 			}
 		}
 	}

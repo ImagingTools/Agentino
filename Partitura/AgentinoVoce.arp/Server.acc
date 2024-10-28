@@ -39,7 +39,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="GraphQLServlet" PackageId="ImtGqlPck" ComponentId="GraphQLServlet">
+		<Element Id="GraphQLServlet" PackageId="ImtServerGqlPck" ComponentId="GraphQLServlet">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandId" Type="Id" ExportId="">

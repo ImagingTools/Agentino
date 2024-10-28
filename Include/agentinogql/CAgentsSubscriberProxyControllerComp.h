@@ -9,7 +9,7 @@
 #include <imtclientgql/IGqlSubscriptionManager.h>
 #include <imtclientgql/IGqlClient.h>
 #include <imtbase/IObjectCollection.h>
-#include <imtgql/CGqlSubscriberControllerCompBase.h>
+#include <imtservergql/CGqlSubscriberControllerCompBase.h>
 
 
 namespace agentinogql
@@ -17,12 +17,12 @@ namespace agentinogql
 
 
 class CAgentsSubscriberProxyControllerComp:
-			public imtgql::CGqlSubscriberControllerCompBase,
+			public imtservergql::CGqlSubscriberControllerCompBase,
 			public imod::CSingleModelObserverBase,
 			virtual public imtclientgql::IGqlSubscriptionClient
 {
 public:
-	typedef imtgql::CGqlSubscriberControllerCompBase BaseClass;
+	typedef imtservergql::CGqlSubscriberControllerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CAgentsSubscriberProxyControllerComp);
 		I_REGISTER_INTERFACE(imtclientgql::IGqlSubscriptionClient);

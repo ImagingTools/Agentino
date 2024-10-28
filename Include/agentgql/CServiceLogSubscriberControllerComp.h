@@ -9,7 +9,7 @@
 
 // ImtCore includes
 #include <imtbase/IObjectCollection.h>
-#include <imtgql/CGqlSubscriberControllerCompBase.h>
+#include <imtservergql/CGqlSubscriberControllerCompBase.h>
 
 // Agentino includes
 #include <agentgql/CServiceLog.h>
@@ -21,13 +21,13 @@ namespace agentgql
 
 class CServiceLogSubscriberControllerComp:
 			public QObject,
-			public imtgql::CGqlSubscriberControllerCompBase,
+			public imtservergql::CGqlSubscriberControllerCompBase,
 			public imod::CSingleModelObserverBase,
 			public CServiceLog
 {
 	Q_OBJECT
 public:
-	typedef imtgql::CGqlSubscriberControllerCompBase BaseClass;
+	typedef imtservergql::CGqlSubscriberControllerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceLogSubscriberControllerComp);
 		I_ASSIGN(m_serviceCollectionCompPtr, "ServiceCollection", "Service collection used to manage services", true, "ServiceCollection");

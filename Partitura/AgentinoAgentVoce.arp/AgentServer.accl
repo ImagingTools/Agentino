@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5272" Description="ACF"/>
+            <Version Id="0" Number="5270" Description="ACF"/>
             <Version Id="1" Number="2220" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394754" Description="Qt Framework"/>
+            <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
@@ -23,21 +23,21 @@
         <Element ComponentName="WebSocketServerFramework" X="225" Y="725" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="Repositories">
-            <PositionMap>
-                <Element ComponentName="FileAutoPersistence" X="800" Y="200" Note=""/>
-                <Element ComponentName="ServiceCollection" X="525" Y="200" Note=""/>
-                <Element ComponentName="ServiceInfo" X="550" Y="300" Note=""/>
-                <Element ComponentName="UserLocalRepositories" X="525" Y="100" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
         <EmbededRegistry Id="ServiceCollectionController">
             <PositionMap>
                 <Element ComponentName="CheckPermissionOr" X="625" Y="550" Note=""/>
                 <Element ComponentName="RepresentationService" X="625" Y="125" Note=""/>
                 <Element ComponentName="ServiceCollectionController" X="650" Y="275" Note=""/>
                 <Element ComponentName="ServiceHeadersDataProvider" X="375" Y="400" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="Repositories">
+            <PositionMap>
+                <Element ComponentName="FileAutoPersistence" X="800" Y="200" Note=""/>
+                <Element ComponentName="ServiceCollection" X="525" Y="200" Note=""/>
+                <Element ComponentName="ServiceInfo" X="550" Y="300" Note=""/>
+                <Element ComponentName="UserLocalRepositories" X="525" Y="100" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

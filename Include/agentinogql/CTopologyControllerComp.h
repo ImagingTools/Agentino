@@ -1,7 +1,7 @@
 #pragma once
 
 // ImtCore includes
-#include <imtgql/CGqlRequestHandlerCompBase.h>
+#include <imtservergql/CGqlRequestHandlerCompBase.h>
 #include <imtbase/IObjectCollection.h>
 
 // Agentino includes
@@ -12,10 +12,10 @@ namespace agentinogql
 {
 
 
-class CTopologyControllerComp: public imtgql::CGqlRequestHandlerCompBase
+class CTopologyControllerComp: public imtservergql::CGqlRequestHandlerCompBase
 {
 public:
-	typedef imtgql::CGqlRequestHandlerCompBase BaseClass;
+	typedef imtservergql::CGqlRequestHandlerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CTopologyControllerComp);
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", true, "AgentCollection");
@@ -23,7 +23,7 @@ public:
 		I_ASSIGN(m_serviceCompositeInfoCompPtr, "ServiceCompositeInfo", "Service composite info", true, "ServiceCompositeInfo");
 	I_END_COMPONENT;
 
-	// reimplemented (imtgql::CGqlRequestHandlerCompBase)
+	// reimplemented (imtservergql::CGqlRequestHandlerCompBase)
 	virtual imtbase::CTreeItemModel* CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 
 private:

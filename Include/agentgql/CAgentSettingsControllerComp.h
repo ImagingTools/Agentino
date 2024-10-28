@@ -3,7 +3,7 @@
 
 // ImtCore includes
 #include <imtcom/IConnectionController.h>
-#include <imtgql/CGqlRequestHandlerCompBase.h>
+#include <imtservergql/CGqlRequestHandlerCompBase.h>
 #include <imtbase/IUrlParam.h>
 
 
@@ -11,10 +11,10 @@ namespace agentgql
 {
 
 
-class CAgentSettingsControllerComp: public imtgql::CGqlRequestHandlerCompBase
+class CAgentSettingsControllerComp: public imtservergql::CGqlRequestHandlerCompBase
 {
 public:
-	typedef imtgql::CGqlRequestHandlerCompBase BaseClass;
+	typedef imtservergql::CGqlRequestHandlerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CAgentSettingsControllerComp);
 		I_ASSIGN(m_agentinoUrlCompPtr, "AgentinoUrl", "Agentino URL to enable connectivity", true, "AgentinoUrl");

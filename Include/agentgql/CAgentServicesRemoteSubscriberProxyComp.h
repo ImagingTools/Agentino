@@ -6,7 +6,7 @@
 // ImtCore includes
 #include <imtclientgql/CGqlRemoteRepresentationControllerCompBase.h>
 #include <imtservice/IConnectionCollectionProvider.h>
-#include <imtgql/CGqlSubscriberControllerCompBase.h>
+#include <imtservergql/CGqlSubscriberControllerCompBase.h>
 
 // Qt includes
 #include <QtWebSockets/QWebSocket>
@@ -17,11 +17,11 @@ namespace agentgql
 {
 
 
-class CAgentServicesRemoteSubscriberProxyComp: public QObject, public imtgql::CGqlSubscriberControllerCompBase //, virtual public imtrest::IRequestServlet
+class CAgentServicesRemoteSubscriberProxyComp: public QObject, public imtservergql::CGqlSubscriberControllerCompBase //, virtual public imtrest::IRequestServlet
 {
 	Q_OBJECT
 public:
-	typedef imtgql::CGqlSubscriberControllerCompBase BaseClass;
+	typedef imtservergql::CGqlSubscriberControllerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CAgentServicesRemoteSubscriberProxyComp)
 		I_ASSIGN(m_connectionCollectionProviderCompPtr, "ConnectionCollectionProvider", "Application info", true, "ConnectionCollectionProvider");

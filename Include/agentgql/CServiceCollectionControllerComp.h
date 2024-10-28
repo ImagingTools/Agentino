@@ -2,7 +2,7 @@
 
 
 // ImtCore includes
-#include <imtgql/CObjectCollectionControllerCompBase.h>
+#include <imtservergql/CObjectCollectionControllerCompBase.h>
 #include <imtbase/PluginInterface.h>
 #include <imtservice/IConnectionCollectionPlugin.h>
 #include <imtservice/IConnectionCollectionProvider.h>
@@ -23,11 +23,11 @@ namespace agentgql
 
 
 class CServiceCollectionControllerComp:
-			public imtgql::CObjectCollectionControllerCompBase,
+			public imtservergql::CObjectCollectionControllerCompBase,
 			virtual public imtservice::IConnectionCollectionProvider
 {
 public:
-	typedef imtgql::CObjectCollectionControllerCompBase BaseClass;
+	typedef imtservergql::CObjectCollectionControllerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceCollectionControllerComp);
 		I_REGISTER_INTERFACE(imtservice::IConnectionCollectionProvider)
@@ -36,7 +36,7 @@ public:
 	I_END_COMPONENT;
 
 protected:
-	// reimplemented (imtgql::CObjectCollectionControllerCompBase)
+	// reimplemented (imtservergql::CObjectCollectionControllerCompBase)
 	virtual bool SetupGqlItem(
 				const imtgql::CGqlRequest& gqlRequest,
 				imtbase::CTreeItemModel& model,

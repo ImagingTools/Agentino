@@ -421,7 +421,6 @@ void CServiceControllerComp::OnTimeout()
 				agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
 				if (serviceInfoPtr != nullptr){
 					QByteArray servicePath = serviceInfoPtr->GetServicePath();
-
 				}
 			}
 		}
@@ -431,6 +430,8 @@ void CServiceControllerComp::OnTimeout()
 
 void CServiceControllerComp::EmitChangeSignal(const QByteArray& serviceId, IServiceStatusInfo::ServiceStatus serviceStatus)
 {
+	qDebug() << "EmitChangeSignal" << serviceId << serviceStatus;
+
 	istd::IChangeable::ChangeSet changeSet(istd::IChangeable::CF_ANY);
 
 	IServiceController::NotifierStatusInfo notifierStatusInfo;
@@ -438,6 +439,7 @@ void CServiceControllerComp::EmitChangeSignal(const QByteArray& serviceId, IServ
 	notifierStatusInfo.serviceStatus = serviceStatus;
 
 	changeSet.SetChangeInfo(IServiceController::CN_STATUS_CHANGED, QVariant::fromValue(notifierStatusInfo));
+	changeSet.SetChangeInfo("serviceId", serviceId);
 
 	istd::CChangeNotifier notifier(this, &changeSet);
 }

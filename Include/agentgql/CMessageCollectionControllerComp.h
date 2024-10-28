@@ -2,7 +2,7 @@
 
 
 // ImtCore includes
-#include <imtgql/CObjectCollectionControllerCompBase.h>
+#include <imtservergql/CObjectCollectionControllerCompBase.h>
 #include <imtbase/PluginInterface.h>
 #include <imtservice/IObjectCollectionPlugin.h>
 #include <imtbase/TPluginManager.h>
@@ -20,11 +20,11 @@ namespace agentgql
 
 
 class CMessageCollectionControllerComp:
-			public imtgql::CObjectCollectionControllerCompBase,
+			public imtservergql::CObjectCollectionControllerCompBase,
 			public CServiceLog
 {
 public:
-	typedef imtgql::CObjectCollectionControllerCompBase BaseClass;
+	typedef imtservergql::CObjectCollectionControllerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CMessageCollectionControllerComp);
 		I_ASSIGN(m_serviceInfoFactCompPtr, "ServiceFactory", "Factory used for creation of the new service instance", false, "ServiceFactory");

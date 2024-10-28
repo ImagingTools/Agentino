@@ -6,6 +6,7 @@
 
 // ImtCore includes
 #include <agentgql/CServiceLog.h>
+#include <imtservergql/CGqlRequestHandlerCompBase.h>
 
 
 namespace agentgql
@@ -13,18 +14,18 @@ namespace agentgql
 
 
 class CServiceLogControllerComp:
-			public imtgql::CGqlRequestHandlerCompBase,
+			public imtservergql::CGqlRequestHandlerCompBase,
 			public CServiceLog
 {
 public:
-	typedef imtgql::CGqlRequestHandlerCompBase BaseClass;
+	typedef imtservergql::CGqlRequestHandlerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceLogControllerComp);
 		I_ASSIGN(m_serviceCollectionCompPtr, "ServiceCollection", "Service collection", false, "ServiceCollection");
 	I_END_COMPONENT;
 
 protected:
-	// reimplemented (imtgql::CGqlRequestHandlerCompBase)
+	// reimplemented (imtservergql::CGqlRequestHandlerCompBase)
 	virtual imtbase::CTreeItemModel* CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 
 protected:

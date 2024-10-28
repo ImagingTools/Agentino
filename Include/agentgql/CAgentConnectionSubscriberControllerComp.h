@@ -6,7 +6,7 @@
 
 // ImtCore includes
 #include <imtcom/IConnectionStatusProvider.h>
-#include <imtgql/CGqlSubscriberControllerCompBase.h>
+#include <imtservergql/CGqlSubscriberControllerCompBase.h>
 
 
 namespace agentgql
@@ -14,11 +14,11 @@ namespace agentgql
 
 
 class CAgentConnectionSubscriberControllerComp:
-			public imtgql::CGqlSubscriberControllerCompBase,
+			public imtservergql::CGqlSubscriberControllerCompBase,
 			public imod::TSingleModelObserverBase<istd::IChangeable>
 {
 public:
-	typedef imtgql::CGqlSubscriberControllerCompBase BaseClass;
+	typedef imtservergql::CGqlSubscriberControllerCompBase BaseClass;
 	typedef imod::TSingleModelObserverBase<istd::IChangeable> BaseClass2;
 
 	I_BEGIN_COMPONENT(CAgentConnectionSubscriberControllerComp);

@@ -100,7 +100,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="PagesDemultiplexer" PackageId="ImtGqlPck" ComponentId="GraphQLDemultiplexer">
+        <Element Id="PagesDemultiplexer" PackageId="ImtServerGqlPck" ComponentId="GraphQLDemultiplexer">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="GqlRequestHandlers" Type="Reference[]" ExportId="">
@@ -231,7 +231,7 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="GraphQLDemultiplexer" PackageId="ImtGqlPck" ComponentId="GraphQLDemultiplexer">
+                    <Element Id="GraphQLDemultiplexer" PackageId="ImtServerGqlPck" ComponentId="GraphQLDemultiplexer">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="GqlRequestHandlers" Type="Reference[]" ExportId="">
@@ -318,7 +318,7 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="ServiceHeadersDataProvider" PackageId="ImtQmlPck" ComponentId="HeadersDataProvider">
+                    <Element Id="ServiceHeadersDataProvider" PackageId="ImtServerGqlPck" ComponentId="HeadersDataProvider">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="HeadersIds" Type="String[]" ExportId="">
