@@ -1,5 +1,6 @@
 TARGET = AgentinoClient
 
+include($(ACFDIR)/Config/QMake/ApplicationConfig.pri)
 include($(AGENTINODIR)/Config/QMake/Agentino.pri)
 
 # Set OS-specific build options:

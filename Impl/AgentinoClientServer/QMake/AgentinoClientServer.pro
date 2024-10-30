@@ -3,7 +3,7 @@ TARGET = LisaQmlExe
 include($(ACFDIR)/Config/QMake/ApplicationConfig.pri)
 include($(ACFDIR)/Config/QMake/QtBaseConfig.pri)
 include($(IMTCOREDIR)/Config/QMake/OpenSSL.pri)
-include($(LISADIR)/Config/QMake/Lisa.pri)
+include($(AGENTINODIR)/Config/QMake/Agentino.pri)
 
 HEADERS =
 QT += xml network sql quick qml

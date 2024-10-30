@@ -4,7 +4,6 @@ INCLUDEPATH += $(AGENTINODIR)/Include
 INCLUDEPATH += $(AGENTINODIR)/Impl
 INCLUDEPATH += $(AGENTINODIR)/$$AUXINCLUDEDIR
 
-include($(ACFDIR)/Config/QMake/ApplicationConfig.pri)
 include($(ACFDIR)/Config/QMake/QtBaseConfig.pri)
 include($(IMTCOREDIR)/Config/QMake/OpenSSL.pri)
 include($(IACFDIR)/Config/QMake/zlib.pri)
@@ -20,5 +19,5 @@ LIBS += -L$(ACFDIR)/Lib/$$COMPILER_DIR -lAcfLoc
 LIBS += -L$(ACFSLNDIR)/Lib/$$COMPILER_DIR -liauth -liservice -lAcfSlnLoc
 LIBS += -L$(IMTCOREDIR)/Lib/$$COMPILER_DIR -limtbase -limtauth -limtauthgui -limtgui -limtlicdb -limtlic -limtlicgui -lImtCoreLoc -limtwidgets -limtzip -limtrest -limtcrypt -limt3dgui -limtrepo -limtstyle -limtqml -limtdb -limtfile -limtlog -limtauthsdl -limtappsdl
 LIBS += -L$(IMTCOREDIR)/Lib/$$COMPILER_DIR -limtlicgql -limtguigql -limtgql -limtauthgql -limtauthdb -limtcom -limtapp -limtclientgql -limtservice
-LIBS += -L$(IMTCOREDIR)/Lib/$$COMPILER_DIR -limtcontrolsqml -limtstylecontrolsqml -limtguigqlqml -limtcolguiqml -limtdocguiqml -limtauthguiqml -limtlicguiqml -limtguiqml -lImtCoreLoc
+LIBS += -L$(IMTCOREDIR)/Lib/$$COMPILER_DIR -limtcontrolsqml -limtstylecontrolsqml -limtguigqlqml -limtcolguiqml -limtdocguiqml -limtauthguiqml -limtlicguiqml -limtguiqml -lImtCoreLoc -limtservergql -limtbasesdl
 LIBS += -L../../../Lib/$$COMPILER_DIR -lagentinoqml -lagentinogql -lagentgql -lagentinodata -lagentinosdl -lAgentinoLoc
