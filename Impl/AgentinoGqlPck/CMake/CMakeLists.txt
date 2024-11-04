@@ -8,6 +8,7 @@ include(${ACFDIR}/Config/CMake/AcfStdGui.cmake)
 target_link_libraries(${PROJECT_NAME}
 	imtbase
 	imtbasesdl
+	imtcol
 	imtgql
 	imtgui
 	imtwidgets
