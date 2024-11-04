@@ -70,6 +70,9 @@ list(APPEND webdirs ${buildwebdir}/src/imtauthUsersSdl)
 list(APPEND webdirs ${IMTCOREDIR}/AuxInclude/${TARGETNAME}/GeneratedFiles/imtauthsdl/SDL/1.0/QML/imtauthAuthorizationSdl)
 list(APPEND webdirs ${buildwebdir}/src/imtauthAuthorizationSdl)
 
+list(APPEND webdirs ${IMTCOREDIR}/AuxInclude/${TARGETNAME}/GeneratedFiles/imtauthsdl/SDL/1.0/QML/imtauthProfileSdl)
+list(APPEND webdirs ${buildwebdir}/src/imtauthProfileSdl)
+
 list(APPEND webdirs ${IMTCOREDIR}/AuxInclude/${TARGETNAME}/GeneratedFiles/imtlicsdl/SDL/1.0/QML/imtlicFeaturesSdl)
 list(APPEND webdirs ${buildwebdir}/src/imtlicFeaturesSdl)
 
