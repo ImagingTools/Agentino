@@ -1,86 +1,99 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Acf>
     <AcfHeader>
-        <VersionInfos/>
+        <VersionInfos>
+            <Version Id="0" Number="5270" Description="ACF"/>
+            <Version Id="1" Number="2220" Description="ACF-Solutions"/>
+            <Version Id="10" Number="915" Description="IACF"/>
+            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="1977" Number="11826" Description="ImtCore"/>
+            <Version Id="1983" Number="11809" Description="Lisa"/>
+        </VersionInfos>
     </AcfHeader>
-    <Features>
-        <ObjectsList>
-            <Object ID="ff13ac00-e869-4467-828c-ba4bc3fafa53" Description="" TypeId="FeatureInfo" Name="">
-                <Data FeatureId="AgentinoManagement" FeatureName="Agentino Management" FeatureDescription="" Optional="false">
-                    <Dependencies/>
-                    <SubFeatures>
-                        <Object FeatureId="ServiceManagement" FeatureName="Service Management" FeatureDescription="" Optional="false">
-                            <Dependencies/>
-                            <SubFeatures>
-                                <Object FeatureId="StopService" FeatureName="Stop Service" FeatureDescription="" Optional="false">
-                                    <Dependencies/>
-                                    <SubFeatures/>
-                                </Object>
-                                <Object FeatureId="StartService" FeatureName="Start Service" FeatureDescription="" Optional="false">
-                                    <Dependencies/>
-                                    <SubFeatures/>
-                                </Object>
-                                <Object FeatureId="ViewServices" FeatureName="View Services" FeatureDescription="" Optional="false">
-                                    <Dependencies/>
-                                    <SubFeatures/>
-                                </Object>
-                                <Object FeatureId="EditService" FeatureName="Edit Service" FeatureDescription="" Optional="false">
-                                    <Dependencies/>
-                                    <SubFeatures>
-                                        <Object FeatureId="ChangeService" FeatureName="Change Service" FeatureDescription="" Optional="false">
-                                            <Dependencies/>
-                                            <SubFeatures/>
-                                        </Object>
-                                        <Object FeatureId="RemoveService" FeatureName="Remove Service" FeatureDescription="" Optional="false">
-                                            <Dependencies/>
-                                            <SubFeatures/>
-                                        </Object>
-                                        <Object FeatureId="AddService" FeatureName="Add Service" FeatureDescription="" Optional="false">
-                                            <Dependencies/>
-                                            <SubFeatures/>
-                                        </Object>
-                                    </SubFeatures>
-                                </Object>
-                            </SubFeatures>
-                        </Object>
-                        <Object FeatureId="AgentManagement" FeatureName="Agent Management" FeatureDescription="" Optional="false">
-                            <Dependencies/>
-                            <SubFeatures>
-                                <Object FeatureId="EditAgent" FeatureName="Edit Agent" FeatureDescription="" Optional="false">
-                                    <Dependencies/>
-                                    <SubFeatures>
-                                        <Object FeatureId="RemoveAgent" FeatureName="Remove Agent" FeatureDescription="" Optional="false">
-                                            <Dependencies/>
-                                            <SubFeatures/>
-                                        </Object>
-                                        <Object FeatureId="AddAgent" FeatureName="Add Agent" FeatureDescription="" Optional="false">
-                                            <Dependencies/>
-                                            <SubFeatures/>
-                                        </Object>
-                                        <Object FeatureId="ChangeAgent" FeatureName="Change Agent" FeatureDescription="" Optional="false">
-                                            <Dependencies/>
-                                            <SubFeatures/>
-                                        </Object>
-                                    </SubFeatures>
-                                </Object>
-                                <Object FeatureId="ViewAgents" FeatureName="View Agents" FeatureDescription="" Optional="false">
-                                    <Dependencies/>
-                                    <SubFeatures/>
-                                </Object>
-                            </SubFeatures>
-                        </Object>
-                        <Object FeatureId="TopologyManagement" FeatureName="Topology Management" FeatureDescription="" Optional="false">
-                            <Dependencies/>
-                            <SubFeatures>
-                                <Object FeatureId="ViewTopology" FeatureName="View Topology" FeatureDescription="" Optional="false">
-                                    <Dependencies/>
-                                    <SubFeatures/>
-                                </Object>
-                            </SubFeatures>
-                        </Object>
-                    </SubFeatures>
-                </Data>
-            </Object>
-        </ObjectsList>
-    </Features>
+    <Uuid>29beb7a5-2e72-4c86-ae37-1806be8e4446</Uuid>
+    <ProductId>Agentino</ProductId>
+    <ProductName>Agentino</ProductName>
+    <ProductDescription></ProductDescription>
+    <CategoryId>Software</CategoryId>
+    <ObjectsList>
+        <Object ID="ff13ac00-e869-4467-828c-ba4bc3fafa53" Description="" TypeId="Feature" Name="">
+            <CollectionItemMeta>
+                <MetaInfoMap/>
+            </CollectionItemMeta>
+            <Data Uuid="ff13ac00-e869-4467-828c-ba4bc3fafa53" FeatureId="AgentinoManagement" FeatureName="Agentino Management" FeatureDescription="" Optional="false">
+                <Dependencies/>
+                <SubFeatures>
+                    <Object FeatureId="ServiceManagement" FeatureName="Service Management" FeatureDescription="" Optional="false">
+                        <Dependencies/>
+                        <SubFeatures>
+                            <Object FeatureId="StopService" FeatureName="Stop Service" FeatureDescription="" Optional="false">
+                                <Dependencies/>
+                                <SubFeatures/>
+                            </Object>
+                            <Object FeatureId="StartService" FeatureName="Start Service" FeatureDescription="" Optional="false">
+                                <Dependencies/>
+                                <SubFeatures/>
+                            </Object>
+                            <Object FeatureId="ViewServices" FeatureName="View Services" FeatureDescription="" Optional="false">
+                                <Dependencies/>
+                                <SubFeatures/>
+                            </Object>
+                            <Object FeatureId="EditService" FeatureName="Edit Service" FeatureDescription="" Optional="false">
+                                <Dependencies/>
+                                <SubFeatures>
+                                    <Object FeatureId="ChangeService" FeatureName="Change Service" FeatureDescription="" Optional="false">
+                                        <Dependencies/>
+                                        <SubFeatures/>
+                                    </Object>
+                                    <Object FeatureId="RemoveService" FeatureName="Remove Service" FeatureDescription="" Optional="false">
+                                        <Dependencies/>
+                                        <SubFeatures/>
+                                    </Object>
+                                    <Object FeatureId="AddService" FeatureName="Add Service" FeatureDescription="" Optional="false">
+                                        <Dependencies/>
+                                        <SubFeatures/>
+                                    </Object>
+                                </SubFeatures>
+                            </Object>
+                        </SubFeatures>
+                    </Object>
+                    <Object FeatureId="AgentManagement" FeatureName="Agent Management" FeatureDescription="" Optional="false">
+                        <Dependencies/>
+                        <SubFeatures>
+                            <Object FeatureId="EditAgent" FeatureName="Edit Agent" FeatureDescription="" Optional="false">
+                                <Dependencies/>
+                                <SubFeatures>
+                                    <Object FeatureId="RemoveAgent" FeatureName="Remove Agent" FeatureDescription="" Optional="false">
+                                        <Dependencies/>
+                                        <SubFeatures/>
+                                    </Object>
+                                    <Object FeatureId="AddAgent" FeatureName="Add Agent" FeatureDescription="" Optional="false">
+                                        <Dependencies/>
+                                        <SubFeatures/>
+                                    </Object>
+                                    <Object FeatureId="ChangeAgent" FeatureName="Change Agent" FeatureDescription="" Optional="false">
+                                        <Dependencies/>
+                                        <SubFeatures/>
+                                    </Object>
+                                </SubFeatures>
+                            </Object>
+                            <Object FeatureId="ViewAgents" FeatureName="View Agents" FeatureDescription="" Optional="false">
+                                <Dependencies/>
+                                <SubFeatures/>
+                            </Object>
+                        </SubFeatures>
+                    </Object>
+                    <Object FeatureId="TopologyManagement" FeatureName="Topology Management" FeatureDescription="" Optional="false">
+                        <Dependencies/>
+                        <SubFeatures>
+                            <Object FeatureId="ViewTopology" FeatureName="View Topology" FeatureDescription="" Optional="false">
+                                <Dependencies/>
+                                <SubFeatures/>
+                            </Object>
+                        </SubFeatures>
+                    </Object>
+                </SubFeatures>
+            </Data>
+        </Object>
+    </ObjectsList>
 </Acf>

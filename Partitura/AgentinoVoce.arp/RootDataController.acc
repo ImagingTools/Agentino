@@ -20,7 +20,7 @@
                                 <Value>SettingsController</Value>
                                 <Value>AuthorizationConcept</Value>
                                 <Value>AuthorizationOptions</Value>
-                                <Value>PermissionController</Value>
+                                <Value>SingleProductPermission</Value>
                                 <Value>UserGroupsPage</Value>
                                 <Value>UsersPage</Value>
                                 <Value>RolesPage</Value>
@@ -62,31 +62,6 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="UserCollection" Type="Reference" ExportId="UserCollection">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="PermissionController" PackageId="ImtLicenseGqlPck" ComponentId="ProductPermissionController">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
-                        <Data IsEnabled="true">
-                            <Values>
-                                <Value>ProductPermissions</Value>
-                            </Values>
-                        </Data>
-                    </AttributeInfo>
-                    <AttributeInfo Id="EnableVerbose" Type="Boolean" ExportId="EnableVerbose">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ProductProvider" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="SingleProductPermission"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
@@ -145,20 +120,6 @@
                     </AttributeInfo>
                     <AttributeInfo Id="PathToPermissionsFile" Type="Id" ExportId="">
                         <Data IsEnabled="true" Value=":/Features/AgentinoFeatures"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ProductId" Type="Id[]" ExportId="">
-                        <Data IsEnabled="true">
-                            <Values>
-                                <Value>Agentino</Value>
-                            </Values>
-                        </Data>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ProductName" Type="String[]" ExportId="">
-                        <Data IsEnabled="true">
-                            <Values>
-                                <Value>Agentino</Value>
-                            </Values>
-                        </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                         <Data IsEnabled="false"/>
