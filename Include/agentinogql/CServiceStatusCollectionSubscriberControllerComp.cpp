@@ -20,8 +20,8 @@ void CServiceStatusCollectionSubscriberControllerComp::OnUpdate(const istd::ICha
 		serviceId = changeSet.GetChangeInfo(imtbase::IObjectCollection::CN_ELEMENT_INSERTED).toByteArray();
 	}
 
-	if (changeIds.contains(imtbase::ICollectionInfo::CF_UPDATED)){
-		serviceId = changeSet.GetChangeInfo(imtbase::IObjectCollection::CN_ELEMENT_UPDATED).toByteArray();
+	if (changeIds.contains(imtbase::ICollectionInfo::CF_ELEMENT_STATE)){
+		serviceId = changeSet.GetChangeInfo(imtbase::IObjectCollection::CN_ELEMENT_STATE).toByteArray();
 	}
 
 	if (changeIds.contains(imtbase::ICollectionInfo::CF_REMOVED)){
