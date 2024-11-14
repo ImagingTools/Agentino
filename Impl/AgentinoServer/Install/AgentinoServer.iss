@@ -3,8 +3,6 @@
 
 #define MyAppName "AgentinoServer"
 #define MyAppVersion GetEnv('APP_VERSION')
-#define LisaVersion GetEnv('LISA_VERSION')
-#define PumaVersion GetEnv('PUMA_VERSION')
 #define MyAppPublisher "ImagingTools GmbH"
 #define MyAppURL "http://www.imagingtools.de"
 #define MyAppExeName "AgentinoServer.exe"
@@ -28,30 +26,19 @@ WizardStyle=modern
 
 [Components]
 Name: "server"; Description: "Agentino server"; Types: full compact custom; Flags: fixed
-Name: "postgresql"; Description: "PostgreSQL"; Types: full
-Name: "Lisa"; Description: "Lisa Server"; Types: full
-Name: "Puma"; Description: "Puma Server"; Types: full
-// LisaServerInstall_9835
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
-
-[Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: envPath; Description: "Add to PATH variable PostgreSQL"; Components: postgresql
   
 [Files]
 Source: "{#BasePath}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BasePath}\*"; Excludes: "*.exe,*.manifest,*.arp";  DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "../../../../Lisa/Impl/LisaServer/Install/Output/LisaServerInstall_{#LisaVersion}.exe"; DestDir: "{app}"; Components: Lisa
-Source: "../../../../Puma/Impl/PumaServer/Install/Output/PumaServerInstall_{#PumaVersion}.exe"; DestDir: "{app}"; Components: Puma
-//Source: "postgresql.exe"; DestDir: "{app}"; Flags: deleteafterinstall; Components: postgresql
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}";
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Parameters: "-u"; Flags: skipifsilent runascurrentuser;
@@ -59,26 +46,3 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 
 [UninstallRun]
 Filename: "{app}\{#MyAppExeName}"; Parameters: "-u"
-
-//[Registry]
-//Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; 
-//ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{pf64}\PostgreSQL\14\bin"; 
-//Tasks:  envPath; Check: NeedsAddPath('{pf64}\PostgreSQL\14\bin');
-
-[Code]
-function NeedsAddPath(Param: string): boolean;
-var
-  OrigPath: string;
-begin
-    if not RegQueryStringValue(HKEY_LOCAL_MACHINE,
-      'SYSTEM\CurrentControlSet\Control\Session Manager\Environment',
-      'Path', OrigPath)
-    then begin
-      Result := True;
-      exit;
-    end;
-    { look for the path with leading and trailing semicolon }
-    { Pos() returns 0 if not found }
-    Result := Pos(';' + Param + ';', ';' + OrigPath + ';') = 0;
-end;
-

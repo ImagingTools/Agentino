@@ -4,16 +4,8 @@ set OUTPUT_FILE=tempFile.txt
 set /p APP_VERSION=< %OUTPUT_FILE% 
 IF EXIST %OUTPUT_FILE% DEL /F %OUTPUT_FILE%
 
-set OUTPUT_FILE=tempFile.txt
-..\..\..\..\ImtCore\3rdParty\Python\3.8\python.exe ..\..\..\..\ImtCore\Build\GetSvnVersion.py -D ..\..\..\..\Lisa -F %OUTPUT_FILE%
-set /p LISA_VERSION=< %OUTPUT_FILE% 
-IF EXIST %OUTPUT_FILE% DEL /F %OUTPUT_FILE%
-
-set OUTPUT_FILE=tempFile.txt
-..\..\..\..\ImtCore\3rdParty\Python\3.8\python.exe ..\..\..\..\ImtCore\Build\GetSvnVersion.py -D ..\..\..\..\Puma -F %OUTPUT_FILE%
-set /p PUMA_VERSION=< %OUTPUT_FILE% 
-IF EXIST %OUTPUT_FILE% DEL /F %OUTPUT_FILE%
-
 set AGENTINO_SERVER_DIR=..\..\..\Bin\Release_Qt6_VC16_x64
 iscc AgentinoServer.iss
+
+pause
 

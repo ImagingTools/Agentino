@@ -25,7 +25,7 @@ include(${IMTCOREDIR}/Config/CMake/WebCompiler.cmake)
 include(${ACFDIR}/Config/CMake/CustomBuild.cmake)
 include(${ACFDIR}/Config/CMake/ApplicationConfig.cmake)
 
-target_link_libraries(${PROJECT_NAME} imtrest imtlicgui imtlicgql imtclientgql imtgql imtauthdb imtdb imtbase imtapp imtfile imtcom)
+target_link_libraries(${PROJECT_NAME} imtrest imtlicgui imtlicgql imtclientgql imtgql imtauthdb imtdb imtbase imtapp imtfile imtcom iser)
 target_link_libraries(${PROJECT_NAME} i2d idoc imtqml  imtstyle imtauthgui imtauthgql imtstylecontrolsqml imtgui imtguigql imtlic imtauth imtauthsdl imtappsdl)
 target_link_libraries(${PROJECT_NAME} ImtCoreLoc AgentinoLoc AcfLoc AcfSlnLoc)
 target_link_libraries(${PROJECT_NAME} agentinodata agentinogql agentgql agentinoqml agentinosdl)
