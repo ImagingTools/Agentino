@@ -212,7 +212,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="WebSocketRepresentationController" PackageId="ImtCorePck" ComponentId="UrlParamRepresentationController">
+        <Element Id="WebSocketRepresentationController" PackageId="ImtRestPck" ComponentId="UrlParamRepresentationController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">

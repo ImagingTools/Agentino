@@ -10,7 +10,7 @@ namespace agentinodata
 {
 
 
-// reimplemented (imtbase::IRepresentationController)
+// reimplemented (imtrest::IRepresentationController)
 
 QByteArray CServiceInfoRepresentationController::GetModelId() const
 {

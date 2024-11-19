@@ -461,7 +461,7 @@
         <EmbeddedRegistry Id="PagesPermissions">
             <Data Description="" Keywords="">
                 <ElementsList>
-                    <Element Id="AdministrationPermissions" PackageId="ImtCorePck" ComponentId="SingleCommandPermissionsProvider">
+                    <Element Id="AdministrationPermissions" PackageId="ImtRestPck" ComponentId="SingleCommandPermissionsProvider">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandId" Type="Id" ExportId="">
@@ -480,7 +480,7 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="AgentsPermissions" PackageId="ImtCorePck" ComponentId="SingleCommandPermissionsProvider">
+                    <Element Id="AgentsPermissions" PackageId="ImtRestPck" ComponentId="SingleCommandPermissionsProvider">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandId" Type="Id" ExportId="">
@@ -502,7 +502,7 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="PagePermissions" PackageId="ImtCorePck" ComponentId="CommandPermissionsProviderJoiner">
+                    <Element Id="PagePermissions" PackageId="ImtRestPck" ComponentId="CommandPermissionsProviderJoiner">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandPermissionsProvider" Type="Reference[]" ExportId="">
@@ -517,7 +517,7 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="TopologyPermissions" PackageId="ImtCorePck" ComponentId="SingleCommandPermissionsProvider">
+                    <Element Id="TopologyPermissions" PackageId="ImtRestPck" ComponentId="SingleCommandPermissionsProvider">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandId" Type="Id" ExportId="">
@@ -539,7 +539,7 @@
                 </ElementsList>
                 <EmbeddedRegistriesList/>
                 <ExportedInterfaces>
-                    <Interface InterfaceId="imtbase::ICommandPermissionsProvider" ComponentId="PagePermissions"/>
+                    <Interface InterfaceId="imtrest::ICommandPermissionsProvider" ComponentId="PagePermissions"/>
                 </ExportedInterfaces>
                 <ExportedComponents/>
             </Data>

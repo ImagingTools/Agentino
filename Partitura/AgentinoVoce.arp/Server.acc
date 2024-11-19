@@ -10,7 +10,7 @@
     <Description></Description>
     <Keywords></Keywords>
     <ElementsList>
-        <Element Id="BinaryDataProvider" PackageId="ImtCorePck" ComponentId="BinaryDataProvider">
+        <Element Id="BinaryDataProvider" PackageId="ImtRestPck" ComponentId="BinaryDataProvider">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="HomePath" Type="String" ExportId="">

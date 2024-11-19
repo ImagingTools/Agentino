@@ -2,7 +2,7 @@
 
 
 // ImtCore includes
-#include <imtbase/IRepresentationController.h>
+#include <imtrest/IRepresentationController.h>
 #include <imtservice/CUrlConnectionParamRepresentationController.h>
 
 // Agentino includes
@@ -14,10 +14,10 @@ namespace agentinodata
 {
 
 
-class CServiceInfoRepresentationController: public imtbase::IRepresentationController
+class CServiceInfoRepresentationController: public imtrest::IRepresentationController
 {
 public:
-	// reimplemented (imtbase::IRepresentationController)
+	// reimplemented (imtrest::IRepresentationController)
 	virtual QByteArray GetModelId() const override;
 	virtual bool IsModelSupported(const istd::IChangeable& dataModel) const override;
 	virtual bool GetRepresentationFromDataModel(

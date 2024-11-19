@@ -162,7 +162,7 @@
     <ExportedInterfaces>
         <Interface InterfaceId="imtgql::IGqlRepresentationController" ComponentId="CommandsController"/>
         <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="CommandsController"/>
-        <Interface InterfaceId="imtgui::IGuiElementContainer" ComponentId="CommandsController"/>
+        <Interface InterfaceId="imtrest::IGuiElementContainer" ComponentId="CommandsController"/>
     </ExportedInterfaces>
     <ExportedComponents/>
 </Acf>

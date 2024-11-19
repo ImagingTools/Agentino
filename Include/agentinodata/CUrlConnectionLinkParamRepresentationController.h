@@ -3,7 +3,7 @@
 
 // ImtCore includes
 #include <imtbase/IObjectCollection.h>
-#include <imtbase/IRepresentationController.h>
+#include <imtrest/IRepresentationController.h>
 #include <imtservice/CUrlConnectionLinkParam.h>
 
 
@@ -11,12 +11,12 @@ namespace agentinodata
 {
 
 
-class CUrlConnectionLinkParamRepresentationController: public imtbase::IRepresentationController
+class CUrlConnectionLinkParamRepresentationController: public imtrest::IRepresentationController
 {
 protected:
 	virtual QUrl GetDependantConnectionUrl(imtbase::IObjectCollection& objectCollection, const QByteArray& dependantId) const;
 public:
-	// reimplemented (imtbase::IRepresentationController)
+	// reimplemented (imtrest::IRepresentationController)
 	virtual QByteArray GetModelId() const override;
 	virtual bool IsModelSupported(const istd::IChangeable& dataModel) const override;
 	virtual bool GetRepresentationFromDataModel(

@@ -82,7 +82,7 @@ QUrl CUrlConnectionLinkParamRepresentationController::GetDependantConnectionUrl(
 
 // public methods
 
-// reimplemented (imtbase::IRepresentationController)
+// reimplemented (imtrest::IRepresentationController)
 
 QByteArray CUrlConnectionLinkParamRepresentationController::GetModelId() const
 {

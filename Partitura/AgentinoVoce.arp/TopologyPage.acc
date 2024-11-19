@@ -312,10 +312,10 @@
                 </ElementsList>
                 <EmbeddedRegistriesList/>
                 <ExportedInterfaces>
-                    <Interface InterfaceId="imtbase::IRepresentationController" ComponentId="CommandsController"/>
+                    <Interface InterfaceId="imtrest::IRepresentationController" ComponentId="CommandsController"/>
                     <Interface InterfaceId="imtgql::IGqlRepresentationController" ComponentId="CommandsController"/>
                     <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="CommandsController"/>
-                    <Interface InterfaceId="imtgui::IGuiElementContainer" ComponentId="CommandsController"/>
+                    <Interface InterfaceId="imtrest::IGuiElementContainer" ComponentId="CommandsController"/>
                 </ExportedInterfaces>
                 <ExportedComponents/>
             </Data>

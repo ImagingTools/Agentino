@@ -79,7 +79,7 @@
         <EmbeddedRegistry Id="ServerSettingsController">
             <Data Description="" Keywords="">
                 <ElementsList>
-                    <Element Id="Permission" PackageId="ImtCorePck" ComponentId="SingleCommandPermissionsProvider">
+                    <Element Id="Permission" PackageId="ImtRestPck" ComponentId="SingleCommandPermissionsProvider">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandId" Type="Id" ExportId="">

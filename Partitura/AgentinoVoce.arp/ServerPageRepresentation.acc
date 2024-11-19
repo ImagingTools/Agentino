@@ -28,7 +28,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="BackupSettingsRepresentation" PackageId="ImtCorePck" ComponentId="ParamSetRepresentationController">
+        <Element Id="BackupSettingsRepresentation" PackageId="ImtRestPck" ComponentId="ParamSetRepresentationController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ObjectId" Type="Id" ExportId="">
@@ -63,7 +63,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="CacheClearingIntervalRepresentation" PackageId="ImtCorePck" ComponentId="TextParamRepresentationController">
+        <Element Id="CacheClearingIntervalRepresentation" PackageId="ImtRestPck" ComponentId="TextParamRepresentationController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ObjectId" Type="Id" ExportId="">
@@ -81,7 +81,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="DatabaseAccessSettingsRepresentation" PackageId="ImtCorePck" ComponentId="DatabaseAccessSettingsRepresentationController">
+        <Element Id="DatabaseAccessSettingsRepresentation" PackageId="ImtRestPck" ComponentId="DatabaseAccessSettingsRepresentationController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="DatabaseNameSource" Type="Id" ExportId="">
@@ -114,7 +114,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="DatabaseSettingsRepresentation" PackageId="ImtCorePck" ComponentId="ParamSetRepresentationController">
+        <Element Id="DatabaseSettingsRepresentation" PackageId="ImtRestPck" ComponentId="ParamSetRepresentationController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ObjectId" Type="Id" ExportId="">
@@ -141,7 +141,7 @@
                 <AttributeInfoMap/>
             </Data>
         </Element>
-        <Element Id="PumaUrlRepresentation" PackageId="ImtCorePck" ComponentId="TextParamRepresentationController">
+        <Element Id="PumaUrlRepresentation" PackageId="ImtRestPck" ComponentId="TextParamRepresentationController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ObjectId" Type="Id" ExportId="">
@@ -177,7 +177,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServerPortRepresentation" PackageId="ImtCorePck" ComponentId="TextParamRepresentationController">
+        <Element Id="ServerPortRepresentation" PackageId="ImtRestPck" ComponentId="TextParamRepresentationController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ObjectId" Type="Id" ExportId="">
@@ -195,7 +195,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServerSettingsPermission" PackageId="ImtCorePck" ComponentId="SingleCommandPermissionsProvider">
+        <Element Id="ServerSettingsPermission" PackageId="ImtRestPck" ComponentId="SingleCommandPermissionsProvider">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandId" Type="Id" ExportId="">
@@ -214,7 +214,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServerSettingsRepresentation" PackageId="ImtCorePck" ComponentId="ParamSetRepresentationController">
+        <Element Id="ServerSettingsRepresentation" PackageId="ImtRestPck" ComponentId="ParamSetRepresentationController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandPermissionsProvider" Type="Reference" ExportId="">
@@ -244,7 +244,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="SettingsRepresentation" PackageId="ImtCorePck" ComponentId="ParamSetRepresentationController">
+        <Element Id="SettingsRepresentation" PackageId="ImtRestPck" ComponentId="ParamSetRepresentationController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ObjectId" Type="Id" ExportId="">
@@ -270,7 +270,7 @@
     </ElementsList>
     <EmbeddedRegistriesList/>
     <ExportedInterfaces>
-        <Interface InterfaceId="imtbase::IRepresentationController" ComponentId="SettingsRepresentation"/>
+        <Interface InterfaceId="imtrest::IRepresentationController" ComponentId="SettingsRepresentation"/>
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="SettingsRepresentation"/>
     </ExportedInterfaces>
     <ExportedComponents/>
