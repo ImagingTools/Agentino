@@ -100,7 +100,9 @@ bool CMessageCollectionControllerComp::SetupGqlItem(
 }
 
 
-imtbase::CTreeItemModel *CMessageCollectionControllerComp::ListObjects(const imtgql::CGqlRequest &gqlRequest, QString &errorMessage) const
+imtbase::CTreeItemModel* CMessageCollectionControllerComp::ListObjects(
+			const imtgql::CGqlRequest &gqlRequest,
+			QString &errorMessage) const
 {
 	const imtgql::CGqlObject& inputParams = gqlRequest.GetParams();
 
@@ -148,7 +150,8 @@ imtbase::CTreeItemModel *CMessageCollectionControllerComp::ListObjects(const imt
 	notificationModel->SetData("PagesCount", pagesCount);
 	notificationModel->SetData("TotalCount", elementsCount);
 
-	istd::TDelPtr<imtbase::IObjectCollectionIterator> iterator = messageCollectionPtr->CreateObjectCollectionIterator(offset, count, &filterParams);
+	istd::TDelPtr<imtbase::IObjectCollectionIterator> iterator = 
+				messageCollectionPtr->CreateObjectCollectionIterator(QByteArray(), offset, count, &filterParams);
 
 	while (iterator.IsValid() && iterator->Next()){
 		int itemIndex = itemsModel->InsertNewItem();
