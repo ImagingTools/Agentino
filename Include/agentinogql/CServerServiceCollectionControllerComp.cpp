@@ -2,7 +2,7 @@
 
 
 // ImtCore includes
-#include <imtbase/imtbase.h>
+#include <iqt/iqt.h>
 #include <imtservice/CUrlConnectionParam.h>
 #include <imtservice/CUrlConnectionLinkParam.h>
 
@@ -449,7 +449,7 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 			QString incomingConnectionStr = QT_TR_NOOP("Incoming Connections");
 
 			if (m_translationManagerCompPtr.IsValid()){
-				incomingConnectionStr = imtbase::GetTranslation(
+				incomingConnectionStr = iqt::GetTranslation(
 						m_translationManagerCompPtr.GetPtr(),
 						incomingConnectionStr.toUtf8(),
 						languageId,
@@ -489,7 +489,7 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 				QString dependantServicesStr = QT_TR_NOOP("Dependant services on port");
 
 				if (m_translationManagerCompPtr.IsValid()){
-					dependantServicesStr = imtbase::GetTranslation(
+					dependantServicesStr = iqt::GetTranslation(
 							m_translationManagerCompPtr.GetPtr(),
 							dependantServicesStr.toUtf8(),
 							languageId,
@@ -517,7 +517,7 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 			QString serviceDependsOnStr = QT_TR_NOOP("Service depends on");
 
 			if (m_translationManagerCompPtr.IsValid()){
-				serviceDependsOnStr = imtbase::GetTranslation(
+				serviceDependsOnStr = iqt::GetTranslation(
 						m_translationManagerCompPtr.GetPtr(),
 						serviceDependsOnStr.toUtf8(),
 						languageId,
@@ -554,7 +554,7 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 		QString serviceDependsOnStr = QT_TR_NOOP("Information");
 
 		if (m_translationManagerCompPtr.IsValid()){
-			serviceDependsOnStr = imtbase::GetTranslation(
+			serviceDependsOnStr = iqt::GetTranslation(
 				m_translationManagerCompPtr.GetPtr(),
 				serviceDependsOnStr.toUtf8(),
 				languageId,
