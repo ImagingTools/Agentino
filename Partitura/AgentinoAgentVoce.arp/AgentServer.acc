@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5288" Description="ACF"/>
-            <Version Id="1" Number="2223" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5303" Description="ACF"/>
+            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -77,7 +77,7 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="LoginStatusProvider" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="WebSocketClient/ConnectionStatusProvider"/>
+                        <Data IsEnabled="true" Value="WebSocketClient"/>
                     </AttributeInfo>
                     <AttributeInfo Id="MessageSqlRepository" Type="Reference" ExportId="MessageSqlRepository">
                         <Data IsEnabled="false"/>
@@ -252,94 +252,39 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="WebLoginStatus" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="WebSocketClient/ConnectionStatusProvider"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="WebSocketAgentHandlers" PackageId="AgentinoAgentVoce" ComponentId="Handlers">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="AgentMessageObjectCollection" Type="Reference" ExportId="AgentMessageObjectCollection">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="AgentinoUrl" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings/WebSocketAgentinoServerUrl"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="DatabaseEngine"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="LogPath" Type="Reference" ExportId="LogPath">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Login" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketClient"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/RoleRepository"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ServerSettings" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ServiceController" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServiceController"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ServiceRepository" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="UserCollection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/UserRepository"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="UserGroupRepository" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/UserGroupRepository"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="UserRepository" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/UserRepository"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="WebSocketUrl" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings/WebSocketServerPort"/>
-                    </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="WebSocketClient" PackageId="ImtClientGqlPck" ComponentId="WebSocketClient">
+        <Element Id="WebSocketClient" PackageId="" ComponentId="WebSocketClient">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
-                    <AttributeInfo Id="ClientId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="1111"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/ClientId2"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="ClientRequestHandler" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="WebSocketServlet"/>
+                    <AttributeInfo Id="GqlSubscriberControllers" Type="Reference[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>AgentSubscribers/ServiceStatusSubscriberController</Value>
+                                <Value>AgentSubscribers/AgentConnectionSubscriberController</Value>
+                                <Value>AgentSubscribers/ServiceLogSubscriberController</Value>
+                                <Value>AgentSubscribers/AgentLogCollectionSubscriberController</Value>
+                                <Value>AgentSubscribers/AgentServicesRemoteSubscriberProxy</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="HttpProtocolEngine" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="HttpServerFramework"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="ProtocolEngine" Type="Reference" ExportId="">
+                    <AttributeInfo Id="RequestHandler" Type="Factory" ExportId="">
+                        <Data IsEnabled="true" Value="AgentHandlers"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="WebSocketProtocolEngine" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketServerFramework"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ServerLoginParam" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="su"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ServerPasswordParam" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="1"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ServerRequestHandler" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="WebSocketServlet"/>
                     </AttributeInfo>
                     <AttributeInfo Id="WebSocketServerAddress" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/WebSocketAgentinoServerUrl"/>
@@ -369,56 +314,6 @@
                     </AttributeInfo>
                     <AttributeInfo Id="WebSocketServerPort" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/WebSocketServerPort"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="WebSocketServlet" PackageId="ImtServerGqlPck" ComponentId="WebSocketServlet">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="GqlRequestHandler" Type="Reference" ExportId="GqlRequestHandler">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="GqlSubscriberControllers" Type="Reference[]" ExportId="">
-                        <Data IsEnabled="true">
-                            <Values>
-                                <Value>AgentSubscribers/ServiceStatusSubscriberController</Value>
-                                <Value>AgentSubscribers/AgentConnectionSubscriberController</Value>
-                                <Value>AgentSubscribers/ServiceLogSubscriberController</Value>
-                                <Value>AgentSubscribers/AgentLogCollectionSubscriberController</Value>
-                                <Value>AgentSubscribers/AgentServicesRemoteSubscriberProxy</Value>
-                            </Values>
-                        </Data>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="WorkerManager" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="WorkerManager"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="WorkerManager" PackageId="ImtRestPck" ComponentId="WorkerManaqer">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="RequestHandler" Type="Factory" ExportId="">
-                        <Data IsEnabled="true" Value="AgentHandlers"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="RequestManager" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="WebSocketClient"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ThreadsLimit" Type="Integer" ExportId="ThreadsLimit">
-                        <Data IsEnabled="true" Value="100"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
-                        <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -613,6 +508,102 @@
                 <ExportedInterfaces>
                     <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="ServiceCollectionController"/>
                     <Interface InterfaceId="imtservice::IConnectionCollectionProvider" ComponentId="ServiceCollectionController"/>
+                </ExportedInterfaces>
+                <ExportedComponents/>
+            </Data>
+        </EmbeddedRegistry>
+        <EmbeddedRegistry Id="WebSocketClient">
+            <Data Description="" Keywords="">
+                <ElementsList>
+                    <Element Id="WebSocketClient" PackageId="ImtClientGqlPck" ComponentId="WebSocketClient">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ClientId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="1111"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="ClientIdParam">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ClientRequestHandler" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="WebSocketServlet"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="HttpProtocolEngine" Type="Reference" ExportId="HttpProtocolEngine">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ProductId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Agent"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ProtocolEngine" Type="Reference" ExportId="WebSocketProtocolEngine">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ServerLoginParam" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="su"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ServerPasswordParam" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="1"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ServerRequestHandler" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="WebSocketServlet"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="WebSocketServerAddress" Type="Reference" ExportId="WebSocketServerAddress">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="WebSocketServlet" PackageId="ImtServerGqlPck" ComponentId="WebSocketServlet">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="GqlSubscriberControllers" Type="Reference[]" ExportId="GqlSubscriberControllers">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="WorkerManager" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="WorkerManager"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="WorkerManager" PackageId="ImtRestPck" ComponentId="WorkerManaqer">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="RequestHandler" Type="Factory" ExportId="RequestHandler">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="RequestManager" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="WebSocketClient"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ThreadsLimit" Type="Integer" ExportId="ThreadsLimit">
+                                    <Data IsEnabled="true" Value="100"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                </ElementsList>
+                <EmbeddedRegistriesList/>
+                <ExportedInterfaces>
+                    <Interface InterfaceId="imod::IModel" ComponentId="WebSocketClient/ConnectionStatusProvider"/>
+                    <Interface InterfaceId="imtclientgql::IGqlClient" ComponentId="WebSocketClient"/>
+                    <Interface InterfaceId="imtcom::IConnectionController" ComponentId="WebSocketClient"/>
+                    <Interface InterfaceId="imtcom::IConnectionStatusProvider" ComponentId="WebSocketClient/ConnectionStatusProvider"/>
+                    <Interface InterfaceId="imtrest::IRequestManager" ComponentId="WebSocketClient"/>
+                    <Interface InterfaceId="imtrest::ISender" ComponentId="WebSocketClient"/>
+                    <Interface InterfaceId="istd::IChangeable" ComponentId="WebSocketClient/ConnectionStatusProvider"/>
+                    <Interface InterfaceId="istd::IPolymorphic" ComponentId="WebSocketClient"/>
                 </ExportedInterfaces>
                 <ExportedComponents/>
             </Data>

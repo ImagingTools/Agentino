@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5274" Description="ACF"/>
-            <Version Id="1" Number="2220" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5303" Description="ACF"/>
+            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -136,6 +136,9 @@
         <Element Id="DatabaseEngine" PackageId="ImtCoreVoce" ComponentId="SqLiteDatabaseEngine">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="DatabaseSqlFilePath" Type="String" ExportId="">
                         <Data IsEnabled="true" Value="agentino.sqlite"/>
                     </AttributeInfo>
@@ -275,69 +278,6 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="WebSocketAgentinoHandlers" PackageId="AgentinoVoce" ComponentId="Handlers">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="AgentRepository" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/AgentCollection"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="AgentStatusCollection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/AgentStatusCollection"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ApiClient" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="WebSocketServerFramework"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="DatabaseEngine"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="LanguageConstraints" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="LogPath" Type="Reference" ExportId="LogPath">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/RoleRepository"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ServerSettings" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/ServiceCompositeInfo"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="UserCollection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/UserRepository"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="UserGroupRepository" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/UserGroupRepository"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="UserRepository" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/UserRepository"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="WebSocketUrl" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings/WebSocketAgentinoServerUrl"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
         <Element Id="WebSocketServerFramework" PackageId="ImtHttpServerVoce" ComponentId="WebSocketServerFramework">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
@@ -356,6 +296,12 @@
                                 <Value>ServiceStatusSubscriberController</Value>
                             </Values>
                         </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="HttpProtocolEngine" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="HttpServerFramework"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ProductId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="Agentino"/>
                     </AttributeInfo>
                     <AttributeInfo Id="RequestHandler" Type="Factory" ExportId="">
                         <Data IsEnabled="true" Value="AgentinoHandlers"/>

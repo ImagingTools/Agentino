@@ -2,27 +2,24 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5288" Description="ACF"/>
-            <Version Id="1" Number="2223" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5303" Description="ACF"/>
+            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
-        <Element ComponentName="AgentHandlers" X="575" Y="200" Note=""/>
-        <Element ComponentName="AgentSubscribers" X="750" Y="450" Note=""/>
-        <Element ComponentName="AgentinoLocalization" X="275" Y="75" Note=""/>
-        <Element ComponentName="DatabaseEngine" X="800" Y="125" Note=""/>
-        <Element ComponentName="HttpServerFramework" X="325" Y="325" Note=""/>
-        <Element ComponentName="Repositories" X="625" Y="300" Note=""/>
-        <Element ComponentName="ServerSettings" X="100" Y="450" Note=""/>
-        <Element ComponentName="ServiceCollectionPropvider" X="925" Y="600" Note=""/>
-        <Element ComponentName="ServiceController" X="900" Y="350" Note=""/>
-        <Element ComponentName="ServiceManagerSubscriptionClient" X="375" Y="550" Note=""/>
-        <Element ComponentName="WebSocketAgentHandlers" X="125" Y="175" Note=""/>
-        <Element ComponentName="WebSocketClient" X="575" Y="650" Note=""/>
-        <Element ComponentName="WebSocketServerFramework" X="148.585786438" Y="776.414213562" Note=""/>
-        <Element ComponentName="WebSocketServlet" X="850" Y="750" Note=""/>
-        <Element ComponentName="WorkerManager" X="1100" Y="675" Note=""/>
+        <Element ComponentName="AgentHandlers" X="500" Y="325" Note=""/>
+        <Element ComponentName="AgentSubscribers" X="975" Y="600" Note=""/>
+        <Element ComponentName="AgentinoLocalization" X="200" Y="75" Note=""/>
+        <Element ComponentName="DatabaseEngine" X="475" Y="175" Note=""/>
+        <Element ComponentName="HttpServerFramework" X="350" Y="450" Note=""/>
+        <Element ComponentName="Repositories" X="775" Y="225" Note=""/>
+        <Element ComponentName="ServerSettings" X="125" Y="350" Note=""/>
+        <Element ComponentName="ServiceCollectionPropvider" X="1025" Y="125" Note=""/>
+        <Element ComponentName="ServiceController" X="825" Y="375" Note=""/>
+        <Element ComponentName="ServiceManagerSubscriptionClient" X="175" Y="650" Note=""/>
+        <Element ComponentName="WebSocketClient" X="600" Y="625" Note=""/>
+        <Element ComponentName="WebSocketServerFramework" X="725" Y="475" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
         <EmbededRegistry Id="Repositories">
@@ -40,6 +37,14 @@
                 <Element ComponentName="RepresentationService" X="625" Y="125" Note=""/>
                 <Element ComponentName="ServiceCollectionController" X="650" Y="275" Note=""/>
                 <Element ComponentName="ServiceHeadersDataProvider" X="375" Y="400" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="WebSocketClient">
+            <PositionMap>
+                <Element ComponentName="WebSocketClient" X="325" Y="275" Note=""/>
+                <Element ComponentName="WebSocketServlet" X="600" Y="350" Note=""/>
+                <Element ComponentName="WorkerManager" X="725" Y="200" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
