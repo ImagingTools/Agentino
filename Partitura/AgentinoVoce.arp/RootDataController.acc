@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5270" Description="ACF"/>
-            <Version Id="1" Number="2220" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5311" Description="ACF"/>
+            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -148,6 +148,9 @@
                     <AttributeInfo Id="RoleInfoProvider" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="RolesPage/RoleCollectionAdapter"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="RoleRepository">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -172,10 +175,16 @@
                     <AttributeInfo Id="RoleInfoProvider" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="RolesPage/RoleCollectionAdapter"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="RoleRepository">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="UserGroupInfoProvider" Type="Reference" ExportId="UserGroupInfoProvider">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserGroupRepository" Type="Reference" ExportId="UserGroupRepository">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="UserRepository" Type="Reference" ExportId="UserRepository">

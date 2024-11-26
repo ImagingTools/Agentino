@@ -2,7 +2,7 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5303" Description="ACF"/>
+            <Version Id="0" Number="5311" Description="ACF"/>
             <Version Id="1" Number="2230" Description="ACF-Solutions"/>
             <Version Id="1023" Number="394754" Description="Qt Framework"/>
         </VersionInfos>
@@ -342,40 +342,6 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="AgentServicesLogSubscriberProxyController" PackageId="AgentinoGqlPck" ComponentId="AgentsSubscriberProxyController">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
-                                <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>OnServiceLogCollectionChanged</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
-                                <AttributeInfo Id="GqlRequestHandler" Type="Reference" ExportId="GqlRequestHandler">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Model" Type="Reference" ExportId="AgentRepository">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="SubscriptionManager" Type="Reference" ExportId="SubscriptionManager">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
                     <Element Id="AgentStatusCollectionSubscriber" PackageId="ImtServerGqlPck" ComponentId="ModelSubscriberController">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
@@ -411,44 +377,10 @@
                                     <Data IsEnabled="true">
                                         <Values>
                                             <Value>OnAgentLogCollectionChanged</Value>
+                                            <Value>OnServiceLogCollectionChanged</Value>
                                             <Value>OnRolesCollectionChanged</Value>
                                             <Value>OnUsersCollectionChanged</Value>
                                             <Value>OnGroupsCollectionChanged</Value>
-                                            <Value>OnServiceLogCollectionChanged</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
-                                <AttributeInfo Id="GqlRequestHandler" Type="Reference" ExportId="GqlRequestHandler">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Model" Type="Reference" ExportId="AgentRepository">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="SubscriptionManager" Type="Reference" ExportId="SubscriptionManager">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="AgentsLogSubscriberProxyController" PackageId="AgentinoGqlPck" ComponentId="AgentsSubscriberProxyController">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
-                                <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>OnAgentLogCollectionChanged</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -627,10 +559,8 @@
                 <EmbeddedRegistriesList/>
                 <ExportedInterfaces/>
                 <ExportedComponents>
-                    <Component ExportedId="AgentServicesLogSubscriberProxyController" ComponentId="AgentServicesLogSubscriberProxyController"/>
                     <Component ExportedId="AgentStatusCollectionSubscriber" ComponentId="AgentStatusCollectionSubscriber"/>
                     <Component ExportedId="AgentSubscriberProxyController" ComponentId="AgentSubscriberProxyController"/>
-                    <Component ExportedId="AgentsLogSubscriberProxyController" ComponentId="AgentsLogSubscriberProxyController"/>
                     <Component ExportedId="AgentsSubscriberController" ComponentId="AgentCollectionSubscriber"/>
                     <Component ExportedId="RolesSubscriberController" ComponentId="RolesSubscriberController"/>
                     <Component ExportedId="ServiceCollectionSubscriberController" ComponentId="ServiceCollectionSubscriberController"/>

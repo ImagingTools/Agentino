@@ -92,7 +92,7 @@ imtbase::CTreeItemModel* CAgentGqlRemoteRepresentationControllerComp::CreateInte
 		urlParam.SetUrl(url);
 		imtclientgql::IGqlClient::GqlResponsePtr responsePtr = m_apiClientCompPtr->SendRequest(clientRequestPtr, &urlParam);
 		if (!responsePtr.isNull()){
-			return CreateTreeItemModelFromResponse(*responsePtr);
+			return CreateTreeItemModelFromResponse(gqlRequest.GetCommandId(), *responsePtr);
 		}
 	}
 

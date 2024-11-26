@@ -61,7 +61,9 @@ void CServiceSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeS
 	}
 
 	QString data = QString("{ \"serviceId\": \"%1\", \"serviceStatus\": \"%2\" }").arg(qPrintable(notifierStatusInfo.serviceId)).arg(status);
-	SetAllSubscriptions("OnAgentServiceStatusChanged", data.toUtf8());
+	if (m_commandIdsAttrPtr.GetCount() > 0){
+		SetAllSubscriptions(m_commandIdsAttrPtr[0], data.toUtf8());
+	}
 
 	if (m_serviceStatusCollectionCompPtr.IsValid()){
 		imtbase::IObjectCollection::DataPtr dataPtr;

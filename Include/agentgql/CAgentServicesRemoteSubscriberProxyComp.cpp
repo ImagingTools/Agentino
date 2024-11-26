@@ -97,7 +97,7 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 				networkOperation.timer.start();
 				resultCode = networkOperation.connectionLoop.exec(QEventLoop::ExcludeUserInputEvents);
 				QCoreApplication::processEvents();
-				if (resultCode == 1 && webSocketClientPtr->state() == QAbstractSocket::ConnectedState){
+				if (webSocketClientPtr->state() == QAbstractSocket::ConnectedState){
 					break;
 				}
 			}
@@ -120,7 +120,8 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 		}
 
 		if (m_webSocketClientMap.contains(serviceId)){
-			m_webSocketClientMap.value(serviceId)->sendTextMessage(networkRequest.GetBody());
+			QByteArray queryData = networkRequest.GetBody();
+			m_webSocketClientMap.value(serviceId)->sendTextMessage(queryData);
 		}
 	}
 
@@ -279,17 +280,17 @@ CAgentServicesRemoteSubscriberProxyComp::NetworkOperation::NetworkOperation(int 
 	timerFlag = false;
 
 	// If the network reply is finished, the internal event loop will be finished:
-	QObject::connect(parent, &CAgentServicesRemoteSubscriberProxyComp::EmitQueryDataReceived, &connectionLoop, &QEventLoop::exit, Qt::DirectConnection);
+	QObject::connect(parent, &CAgentServicesRemoteSubscriberProxyComp::EmitQueryDataReceived, &connectionLoop, &QEventLoop::exit);
 
 	// If the application will be finished, the internal event loop will be also finished:
-	QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, &connectionLoop, &QEventLoop::quit, Qt::DirectConnection);
+	QObject::connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, &connectionLoop, &QEventLoop::quit);
 
 	// If a timeout for the request was defined, start the timer:
 	if (timeout > 0){
 		timer.setSingleShot(true);
 
 		// If the timer is running out, the internal event loop will be finished:
-		QObject::connect(&timer, &QTimer::timeout, &connectionLoop, &QEventLoop::quit, Qt::DirectConnection);
+		QObject::connect(&timer, &QTimer::timeout, &connectionLoop, &QEventLoop::quit);
 
 		timer.start(timeout);
 	}

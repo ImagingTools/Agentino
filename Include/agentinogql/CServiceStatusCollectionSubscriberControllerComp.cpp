@@ -28,6 +28,10 @@ void CServiceStatusCollectionSubscriberControllerComp::OnUpdate(const istd::ICha
 		serviceId = changeSet.GetChangeInfo(imtbase::IObjectCollection::CN_ELEMENT_REMOVED).toByteArray();
 	}
 
+	if (changeIds.contains(imtbase::IObjectCollection::CF_OBJECT_DATA_CHANGED)){
+		serviceId = changeSet.GetChangeInfo(imtbase::IObjectCollection::CN_OBJECT_DATA_CHANGED).toByteArray();
+	}
+
 	QString dependencyData;
 	QByteArrayList dependencyServices = m_serviceCompositeInfoCompPtr->GetDependencyServices(serviceId);
 	dependencyData = "[{\"id\":\"";
