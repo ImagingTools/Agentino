@@ -180,7 +180,7 @@ ViewBase {
         let headers = {}
 
         if(scheme.selectedIndex >= 0){
-            let agentId = scheme.objectModel.getData("agentid", scheme.selectedIndex);
+            let agentId = scheme.objectModel.getData("agentId", scheme.selectedIndex);
             headers["clientid"] = agentId;
             headers["serviceid"] = scheme.selectedService;
         }
@@ -215,7 +215,7 @@ ViewBase {
             }}
 
             Component.onCompleted: {
-                let agentId = scheme.objectModel.getData("agentid", scheme.selectedIndex);
+                let agentId = scheme.objectModel.getData("agentId", scheme.selectedIndex);
                 serviceEditor.agentId = agentId;
             }
 

@@ -129,7 +129,7 @@ void CServiceLogSubscriberControllerComp::TimerUpdate()
 		if (messageCollection != nullptr){
 			int messageCount = messageCollection->GetElementsCount();
 			if (m_servicesMessageInfo[serviceId].messageCount != messageCount){
-				QString data = QString("{\"serviceId\": \"%1\"}").arg(qPrintable(serviceId));
+				QString data = QString("{\"serviceid\": \"%1\"}").arg(qPrintable(serviceId));
 
 				SetAllSubscriptions("OnServiceLogChanged", data.toUtf8());
 				m_servicesMessageInfo[serviceId].messageCount = messageCount;

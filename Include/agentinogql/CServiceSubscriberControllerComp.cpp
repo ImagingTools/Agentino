@@ -60,7 +60,7 @@ void CServiceSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeS
 		return;
 	}
 
-	QString data = QString("{ \"serviceId\": \"%1\", \"serviceStatus\": \"%2\" }").arg(qPrintable(notifierStatusInfo.serviceId)).arg(status);
+	QString data = QString("{ \"serviceid\": \"%1\", \"serviceStatus\": \"%2\" }").arg(qPrintable(notifierStatusInfo.serviceId)).arg(status);
 	if (m_commandIdsAttrPtr.GetCount() > 0){
 		SetAllSubscriptions(m_commandIdsAttrPtr[0], data.toUtf8());
 	}
