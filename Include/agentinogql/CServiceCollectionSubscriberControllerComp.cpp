@@ -24,13 +24,13 @@ void CServiceCollectionSubscriberControllerComp::OnUpdate(const istd::IChangeabl
 			changeSet.Contains(agentinodata::IServiceManager::CF_SERVICE_ADDED) ||
 			changeSet.Contains(agentinodata::IServiceManager::CF_SERVICE_UPDATED) ||
 			changeSet.Contains(agentinodata::IServiceManager::CF_SERVICE_REMOVED)){
-		QByteArray agentId = changeSet.GetChangeInfo("agentId").toByteArray();
-		QByteArray serviceId = changeSet.GetChangeInfo("serviceId").toByteArray();
+		QByteArray agentId = changeSet.GetChangeInfo("agentid").toByteArray();
+		QByteArray serviceId = changeSet.GetChangeInfo("serviceid").toByteArray();
 
 		for (const RequestNetworks& requestNetworks: m_registeredSubscribers){
 			for (const QByteArray& id: requestNetworks.networkRequests.keys()){
 				const imtrest::IRequest* networkRequest = requestNetworks.networkRequests[id];
-				QByteArray body = QString(R"({"type": "data", "id": "%1", "payload": {"data": {"agentId": "%2", "serviceId": "%3"}}})")
+				QByteArray body = QString(R"({"type": "data", "id": "%1", "payload": {"data": {"agentid": "%2", "serviceid": "%3"}}})")
 							.arg(qPrintable(id))
 							.arg(qPrintable(agentId))
 							.arg(qPrintable(serviceId)).toUtf8();

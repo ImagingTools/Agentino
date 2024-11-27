@@ -439,7 +439,7 @@ void CServiceControllerComp::EmitChangeSignal(const QByteArray& serviceId, IServ
 	notifierStatusInfo.serviceStatus = serviceStatus;
 
 	changeSet.SetChangeInfo(IServiceController::CN_STATUS_CHANGED, QVariant::fromValue(notifierStatusInfo));
-	changeSet.SetChangeInfo("serviceId", serviceId);
+	changeSet.SetChangeInfo("serviceid", serviceId);
 
 	istd::CChangeNotifier notifier(this, &changeSet);
 }

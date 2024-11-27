@@ -98,8 +98,8 @@ RemoteCollectionView {
 
     function getHeaders(){
         let headers = {}
-        headers["clientId"] = root.clientId;
-        headers["serviceId"] = root.serviceId;
+        headers["clientid"] = root.clientId;
+        headers["serviceid"] = root.serviceId;
         console.log("ServiceCollectionView getHeaders", headers)
         return headers
     }
@@ -276,7 +276,7 @@ RemoteCollectionView {
                     if (dataModel.containsKey("OnServiceStatusChanged")){
                         dataModel = dataModel.getData("OnServiceStatusChanged")
 
-                        let serviceId = dataModel.getData("serviceId")
+                        let serviceId = dataModel.getData("serviceid")
                         let serviceStatus = dataModel.getData("serviceStatus")
 
                         let elementsModel = root.table.elements;

@@ -24,7 +24,7 @@ namespace agentgql
 // reimplemented (imtgql::IGqlRequestHandler)
 bool CAgentServicesRemoteSubscriberProxyComp::IsRequestSupported(const imtgql::CGqlRequest& gqlRequest) const
 {
-	QByteArray serviceId = gqlRequest.GetHeader("serviceId");
+	QByteArray serviceId = gqlRequest.GetHeader("serviceid");
 	if (!serviceId.isEmpty()){
 		return true;
 	}
@@ -39,7 +39,7 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 			const imtrest::IRequest& networkRequest,
 			QString& errorMessage)
 {
-	QByteArray serviceId = gqlRequest.GetHeader("serviceId");
+	QByteArray serviceId = gqlRequest.GetHeader("serviceid");
 	if (!IsRequestSupported(gqlRequest) || !m_connectionCollectionProviderCompPtr.IsValid()){
 		return false;
 	}
@@ -51,7 +51,7 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 
 	imtclientgql::IGqlClient::GqlRequestPtr clientRequestPtr(dynamic_cast<imtgql::IGqlRequest*>(gqlRequestPtr));
 	if (!clientRequestPtr.isNull()){
-		QByteArray serviceId = gqlRequest.GetHeader("serviceId");
+		QByteArray serviceId = gqlRequest.GetHeader("serviceid");
 		QByteArray token = gqlRequest.GetHeader("token");
 		QUrl url;
 		QByteArray serviceTypeName;

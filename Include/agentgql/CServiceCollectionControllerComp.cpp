@@ -36,7 +36,7 @@ bool CServiceCollectionControllerComp::SetupGqlItem(
 	const QByteArray& collectionId,
 	QString& errorMessage) const
 {
-	QByteArray agentId = gqlRequest.GetHeader("clientId");
+	QByteArray agentId = gqlRequest.GetHeader("clientid");
 
 	istd::TDelPtr<imtbase::IObjectCollection> collectionPtr = GetObjectCollection(agentId);
 	if (!collectionPtr.IsValid()){
@@ -151,7 +151,7 @@ imtbase::CTreeItemModel *CServiceCollectionControllerComp::ListObjects(const imt
 	imtbase::CTreeItemModel* itemsModel = dataModel->AddTreeModel("items");
 	imtbase::CTreeItemModel* notificationModel = dataModel->AddTreeModel("notification");
 
-	QByteArray agentId = gqlRequest.GetHeader("clientId");
+	QByteArray agentId = gqlRequest.GetHeader("clientid");
 	const imtgql::CGqlObject* viewParamsGql = nullptr;
 	const imtgql::CGqlObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
 	if (inputObject != nullptr){

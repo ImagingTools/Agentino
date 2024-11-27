@@ -176,7 +176,7 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 		return false;
 	}
 
-	QByteArray agentId = gqlRequest.GetHeader("clientId");
+	QByteArray agentId = gqlRequest.GetHeader("clientid");
 
 	imtbase::IObjectCollection* serviceCollectionPtr = nullptr;
 	imtbase::IObjectCollection::DataPtr dataPtr;
@@ -330,7 +330,7 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::ListObjects(
 		if (inputObject != nullptr){
 			viewParamsGql = inputObject->GetFieldArgumentObjectPtr("viewParams");
 		}
-		QByteArray agentId = gqlRequest.GetHeader("clientId");
+		QByteArray agentId = gqlRequest.GetHeader("clientid");
 
 		imtbase::IObjectCollection* serviceCollectionPtr = nullptr;
 		imtbase::IObjectCollection::DataPtr dataPtr;
@@ -399,7 +399,7 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 		return nullptr;
 	}
 
-	QByteArray agentId = gqlRequest.GetHeader("clientId");
+	QByteArray agentId = gqlRequest.GetHeader("clientid");
 
 	QByteArray serviceId;
 	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");

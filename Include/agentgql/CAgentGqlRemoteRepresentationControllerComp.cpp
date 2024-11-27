@@ -20,7 +20,7 @@ bool CAgentGqlRemoteRepresentationControllerComp::IsRequestSupported(const imtgq
 {
 	bool retVal = BaseClass::IsRequestSupported(gqlRequest);
 	if (retVal){
-		QByteArray agentId = gqlRequest.GetHeader("clientId");
+		QByteArray agentId = gqlRequest.GetHeader("clientid");
 		if (!agentId.isEmpty()){
 			return true;
 		}
@@ -42,7 +42,7 @@ imtbase::CTreeItemModel* CAgentGqlRemoteRepresentationControllerComp::CreateInte
 	if (gqlRequestPtr == nullptr){
 		return nullptr;
 	}
-	QByteArray serviceId = gqlRequestPtr->GetHeader("serviceId");
+	QByteArray serviceId = gqlRequestPtr->GetHeader("serviceid");
 	QByteArray token = gqlRequestPtr->GetHeader("token");
 	imtgql::IGqlContext* gqlContext = const_cast<imtgql::IGqlContext*>(gqlRequestPtr->GetRequestContext());
 	if (gqlContext != nullptr){

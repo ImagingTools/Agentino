@@ -27,7 +27,7 @@ imtbase::CTreeItemModel* CGetServiceControllerProxyComp::CreateInternalResponse(
 	if (m_agentCollectionCompPtr.IsValid()){
 		const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParamObject("input");
 
-		QByteArray agentId = gqlRequest.GetHeader("clientId");
+		QByteArray agentId = gqlRequest.GetHeader("clientid");
 		QByteArray objectId;
 		if (inputParamPtr != nullptr){
 			objectId = inputParamPtr->GetFieldArgumentValue("Id").toByteArray();

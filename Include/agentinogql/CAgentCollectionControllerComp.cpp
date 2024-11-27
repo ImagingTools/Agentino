@@ -540,7 +540,7 @@ void CAgentCollectionControllerComp::UpdateAgentService(
 
 	imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
 	imtgql::IGqlContext::Headers headers;
-	headers.insert("clientId",agentId);
+	headers.insert("clientid",agentId);
 	gqlContextPtr->SetHeaders(headers);
 	request.SetGqlContext(gqlContextPtr);
 
@@ -595,7 +595,7 @@ void CAgentCollectionControllerComp::OnTimeout()
 
 							imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
 							imtgql::IGqlContext::Headers headers;
-							headers.insert("clientId",agentId);
+							headers.insert("clientid",agentId);
 							gqlContextPtr->SetHeaders(headers);
 							request.SetGqlContext(gqlContextPtr);
 

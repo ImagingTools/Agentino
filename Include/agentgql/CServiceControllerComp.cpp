@@ -29,7 +29,7 @@ imtbase::CTreeItemModel* CServiceControllerComp::CreateInternalResponse(const im
 		return nullptr;
 	}
 
-	QByteArray serviceId = inputParamPtr->GetFieldArgumentValue("serviceId").toByteArray();
+	QByteArray serviceId = inputParamPtr->GetFieldArgumentValue("serviceid").toByteArray();
 	if (serviceId.isEmpty()){
 		errorMessage = QString("Unable to create response for command '%1'. Error: Service ID is empty");
 		return nullptr;
@@ -56,7 +56,7 @@ imtbase::CTreeItemModel* CServiceControllerComp::CreateInternalResponse(const im
 
 	imtbase::CTreeItemModel* statusModel = dataModelPtr->AddTreeModel("serviceStatus");
 
-	statusModel->SetData("serviceId", serviceId);
+	statusModel->SetData("serviceid", serviceId);
 	statusModel->SetData("status", processStateEnum.id);
 	statusModel->SetData("statusName", processStateEnum.name);
 

@@ -58,8 +58,8 @@ SplitView {
         function getHeaders(){
             console.log("getHeaders", container.clientId)
             let additionInputParams = {}
-            additionInputParams["clientId"] = container.clientId;
-            additionInputParams["serviceId"] = log.serviceId;
+            additionInputParams["clientid"] = container.clientId;
+            additionInputParams["serviceid"] = log.serviceId;
             return additionInputParams
         }
 
@@ -70,8 +70,8 @@ SplitView {
             }
             if (dataModel.containsKey("OnServiceLogChanged")){
                 let body = dataModel.getData("OnServiceLogChanged");
-                if (body.containsKey("serviceId")){
-                    let id = body.getData("serviceId")
+                if (body.containsKey("serviceid")){
+                    let id = body.getData("serviceid")
                     if (id  === log.serviceId){
                         dataController.elementsModel.clear()
                         dataController.updateModel()

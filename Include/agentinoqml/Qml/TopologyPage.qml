@@ -180,9 +180,9 @@ ViewBase {
         let headers = {}
 
         if(scheme.selectedIndex >= 0){
-            let agentId = scheme.objectModel.getData("agentId", scheme.selectedIndex);
-            headers["clientId"] = agentId;
-            headers["serviceId"] = scheme.selectedService;
+            let agentId = scheme.objectModel.getData("agentid", scheme.selectedIndex);
+            headers["clientid"] = agentId;
+            headers["serviceid"] = scheme.selectedService;
         }
 
         return headers
@@ -215,7 +215,7 @@ ViewBase {
             }}
 
             Component.onCompleted: {
-                let agentId = scheme.objectModel.getData("agentId", scheme.selectedIndex);
+                let agentId = scheme.objectModel.getData("agentid", scheme.selectedIndex);
                 serviceEditor.agentId = agentId;
             }
 
@@ -307,7 +307,7 @@ ViewBase {
                     let dataModel = subscriptionClient.getData("data")
                     if (dataModel.containsKey("OnServiceStatusChanged")){
                         dataModel = dataModel.getData("OnServiceStatusChanged")
-                        let serviceId = dataModel.getData("serviceId")
+                        let serviceId = dataModel.getData("serviceid")
                         let serviceStatus = dataModel.getData(ServiceStatus.s_Key)
                         let dependencyStatus
                         console.log(ServiceStatus.s_Key, serviceStatus)

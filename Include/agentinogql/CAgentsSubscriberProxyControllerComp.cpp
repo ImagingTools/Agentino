@@ -23,7 +23,7 @@ namespace agentinogql
 bool CAgentsSubscriberProxyControllerComp::IsRequestSupported(const imtgql::CGqlRequest& gqlRequest) const
 {
 	bool retVal = BaseClass::IsRequestSupported(gqlRequest);
-	QByteArray agentId = gqlRequest.GetHeader("clientId");
+	QByteArray agentId = gqlRequest.GetHeader("clientid");
 
 	return retVal && !agentId.isEmpty();
 }

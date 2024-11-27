@@ -19,7 +19,7 @@ imtbase::CTreeItemModel* CRemoveServiceControllerProxyComp::CreateInternalRespon
 			QString& errorMessage) const
 {
 	if (m_serviceManagerCompPtr.IsValid()){
-		QByteArray agentId = gqlRequest.GetHeader("clientId");
+		QByteArray agentId = gqlRequest.GetHeader("clientid");
 		QByteArray serviceId;
 
 		const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParamObject("input");

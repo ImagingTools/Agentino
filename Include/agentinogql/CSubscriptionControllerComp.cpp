@@ -31,7 +31,7 @@ void CSubscriptionControllerComp::OnResponseReceived(const QByteArray & subscrip
 	QJsonObject subscriptionObject = document.object().value("OnAgentServiceStatusChanged").toObject();
 	QList<QByteArray> subscriptionIds = m_registeredAgents.values();
 	if (subscriptionIds.contains(subscriptionId)){
-		notifierInfo.serviceId = subscriptionObject.value("serviceId").toString().toUtf8();
+		notifierInfo.serviceId = subscriptionObject.value("serviceid").toString().toUtf8();
 
 		QString status = subscriptionObject.value(agentino::ServiceStatus::s_Key).toString();
 		
@@ -77,7 +77,7 @@ void CSubscriptionControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& /
 
 				imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
 				imtgql::IGqlContext::Headers headers;
-				headers.insert("clientId",agentId);
+				headers.insert("clientid",agentId);
 				gqlContextPtr->SetHeaders(headers);
 				gqlAddRequest.SetGqlContext(gqlContextPtr);
 

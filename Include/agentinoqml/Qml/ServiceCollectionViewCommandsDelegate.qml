@@ -84,11 +84,11 @@ DocumentCollectionViewDelegate {
         var query = Gql.GqlRequest("mutation", "Service" + commandId);
 
         let inputParams = Gql.GqlObject("input");
-        inputParams.InsertField("serviceId", serviceId);
+        inputParams.InsertField("serviceid", serviceId);
         query.AddParam(inputParams);
 
         var queryField = Gql.GqlObject("serviceStatus");
-        queryField.InsertField("serviceId");
+        queryField.InsertField("serviceid");
         queryField.InsertField("status");
         query.AddField(queryField);
 

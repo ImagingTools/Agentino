@@ -27,8 +27,8 @@ bool CAgentCollectionComp::AddService(
 				QByteArray objectId = serviceCollectionPtr->InsertNewObject("ServiceInfo", serviceName, serviceDescription, &serviceInfo, serviceId);
 				if (!objectId.isEmpty()){
 					ChangeSet changeSet(agentinodata::IServiceManager::CF_SERVICE_ADDED);
-					changeSet.SetChangeInfo("agentId", agentId);
-					changeSet.SetChangeInfo("serviceId", objectId);
+					changeSet.SetChangeInfo("agentid", agentId);
+					changeSet.SetChangeInfo("serviceid", objectId);
 
 					istd::CChangeNotifier changeNotifier(this, &changeSet);
 				}
@@ -53,8 +53,8 @@ bool CAgentCollectionComp::RemoveService(const QByteArray& agentId, const QByteA
 				bool result = serviceCollectionPtr->RemoveElement(serviceId);
 				if (result){
 					ChangeSet changeSet(agentinodata::IServiceManager::CF_SERVICE_REMOVED);
-					changeSet.SetChangeInfo("agentId", agentId);
-					changeSet.SetChangeInfo("serviceId", serviceId);
+					changeSet.SetChangeInfo("agentid", agentId);
+					changeSet.SetChangeInfo("serviceid", serviceId);
 
 					istd::CChangeNotifier changeNotifier(this, &changeSet);
 				}
@@ -87,8 +87,8 @@ bool CAgentCollectionComp::SetService(
 					serviceCollectionPtr->SetElementDescription(serviceId, serviceDescription);
 
 					ChangeSet changeSet(agentinodata::IServiceManager::CF_SERVICE_UPDATED);
-					changeSet.SetChangeInfo("agentId", agentId);
-					changeSet.SetChangeInfo("serviceId", serviceId);
+					changeSet.SetChangeInfo("agentid", agentId);
+					changeSet.SetChangeInfo("serviceid", serviceId);
 
 					istd::CChangeNotifier changeNotifier(this, &changeSet);
 				}

@@ -60,7 +60,7 @@ SplitView {
 
         function getHeaders(){
             let additionInputParams = {}
-            additionInputParams["clientId"] = log.agentId;
+            additionInputParams["clientid"] = log.agentId;
 
             return additionInputParams
         }

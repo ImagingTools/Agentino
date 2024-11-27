@@ -19,7 +19,7 @@ imtbase::CTreeItemModel* CServiceStatusControllerProxyComp::CreateInternalRespon
 	if (m_serviceStatusCollectionCompPtr.IsValid()){
 		const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParamObject("input");
 		if (inputParamPtr != nullptr){
-			serviceId = inputParamPtr->GetFieldArgumentValue("serviceId").toByteArray();
+			serviceId = inputParamPtr->GetFieldArgumentValue("serviceid").toByteArray();
 		}
 
 		agentinodata::IServiceStatusInfo::ServiceStatus status = agentinodata::IServiceStatusInfo::SS_UNDEFINED;

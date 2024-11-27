@@ -33,8 +33,8 @@ imtbase::CTreeItemModel* CGqlRepresentationAgentDataComp::CreateInternalResponse
 		if (m_clientIdCompPtr.IsValid()){
 			clientId = m_clientIdCompPtr->GetText();
 		}
-		representationPtr->SetData("clientId", clientId);
-		representationPtr->SetData("computerName", "COMPUTER-NAME");
+		representationPtr->SetData("clientid", clientId);
+		representationPtr->SetData("computername", "COMPUTER-NAME");
 
 		return rootModelPtr.PopPtr();
 	}

@@ -16,7 +16,7 @@ bool CAgentinoGqlRemoteRepresentationControllerComp::IsRequestSupported(const im
 {
 	bool retVal = BaseClass::IsRequestSupported(gqlRequest);
 	if (retVal){
-		QByteArray agentId = gqlRequest.GetHeader("clientId");
+		QByteArray agentId = gqlRequest.GetHeader("clientid");
 
 		if (!agentId.isEmpty()){
 			return true;

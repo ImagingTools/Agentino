@@ -35,7 +35,7 @@ bool CMessageCollectionControllerComp::SetupGqlItem(
 			const imtbase::IObjectCollectionIterator* objectCollectionIterator,
 			QString& errorMessage) const
 {
-	QByteArray agentId = gqlRequest.GetHeader("clientId");
+	QByteArray agentId = gqlRequest.GetHeader("clientid");
 
 	istd::TDelPtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(gqlRequest, errorMessage);
 	if (!messageCollectionPtr.IsValid()){
@@ -116,7 +116,7 @@ imtbase::CTreeItemModel* CMessageCollectionControllerComp::ListObjects(
 	rootModelPtr->SetExternTreeModel("data", dataModel);
 	itemsModel->SetIsArray(true);
 
-	QByteArray agentId = gqlRequest.GetHeader("clientId");
+	QByteArray agentId = gqlRequest.GetHeader("clientid");
 	const imtgql::CGqlObject* viewParamsGql = nullptr;
 	const imtgql::CGqlObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
 	if (inputObject != nullptr){
@@ -229,7 +229,7 @@ imtbase::IObjectCollection* CMessageCollectionControllerComp::GetMessageCollecti
 		return nullptr;
 	}
 
-	QByteArray serviceId = gqlRequest.GetHeader("serviceId");
+	QByteArray serviceId = gqlRequest.GetHeader("serviceid");
 	const imtgql::CGqlObject& inputParams = gqlRequest.GetParams();
 
 	imtbase::IObjectCollection::DataPtr dataPtr;

@@ -54,7 +54,7 @@ void CServiceSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeS
 	QByteArray serviceId = notifierStatusInfo.serviceId;
 
 	qDebug() << "CServiceSubscriberControllerComp::OnUpdate" << (notifierStatusInfo.serviceId) << status;
-	qDebug() << "serviceId" << changeSet.GetChangeInfo("serviceId").toByteArray();
+	qDebug() << "serviceid" << changeSet.GetChangeInfo("serviceid").toByteArray();
 
 	if (serviceId.isEmpty()){
 		return;
