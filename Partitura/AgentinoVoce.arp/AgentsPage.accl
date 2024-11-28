@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5270" Description="ACF"/>
-            <Version Id="1" Number="2220" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5323" Description="ACF"/>
+            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
             <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -16,23 +16,9 @@
         <Element ComponentName="CheckPermissionOr" X="200" Y="600" Note=""/>
         <Element ComponentName="Demultiplexer" X="625" Y="100" Note=""/>
         <Element ComponentName="ServiceCollectionCommands" X="850" Y="250" Note=""/>
-        <Element ComponentName="ServiceCommands" X="1100" Y="150" Note=""/>
+        <Element ComponentName="ServiceCommands" X="1075" Y="150" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="ServiceCollectionCommands">
-            <PositionMap>
-                <Element ComponentName="CommandsController" X="550" Y="75" Note=""/>
-                <Element ComponentName="Services" X="600" Y="225" Note=""/>
-                <Element ComponentName="StandardCollectionCommands" X="225" Y="200" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
-        <EmbededRegistry Id="AgentCommands">
-            <PositionMap>
-                <Element ComponentName="StandardDocumentCommandsController" X="575" Y="350" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
         <EmbededRegistry Id="ServiceCommands">
             <PositionMap>
                 <Element ComponentName="CheckPermissionOr" X="700" Y="225" Note=""/>
@@ -49,6 +35,20 @@
                 <Element ComponentName="SavePermissions" X="1025" Y="300" Note=""/>
                 <Element ComponentName="Undo" X="100" Y="500" Note=""/>
                 <Element ComponentName="UndoPermissions" X="1025" Y="550" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="AgentCommands">
+            <PositionMap>
+                <Element ComponentName="StandardDocumentCommandsController" X="575" Y="350" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="ServiceCollectionCommands">
+            <PositionMap>
+                <Element ComponentName="CommandsController" X="550" Y="75" Note=""/>
+                <Element ComponentName="Services" X="600" Y="225" Note=""/>
+                <Element ComponentName="StandardCollectionCommands" X="225" Y="200" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
