@@ -12,8 +12,8 @@ namespace agentinogql
 
 
 imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
-			const imtgql::CGqlRequest& gqlRequest,
-			QString& errorMessage) const
+	const imtgql::CGqlRequest& gqlRequest,
+	QString& errorMessage) const
 {
 	istd::TDelPtr<imtbase::CTreeItemModel> resultModelPtr = BaseClass::CreateInternalResponse(gqlRequest, errorMessage);
 	if (resultModelPtr.IsValid()){
@@ -49,23 +49,19 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 					itemModel.Copy(dataModelPtr);
 
 					ok = true;
+				}
+			}
 
-					if (m_serviceStatusCollectionCompPtr.IsValid()){
-						if (dataModelPtr->ContainsKey("Id")){
-							QByteArray serviceId = dataModelPtr->GetData("Id").toByteArray();
+			if (m_serviceStatusCollectionCompPtr.IsValid()){
+				istd::TDelPtr<agentinodata::CServiceStatusInfo> serviceStatusInfoPtr;
+				serviceStatusInfoPtr.SetPtr(new agentinodata::CServiceStatusInfo);
 
-							istd::TDelPtr<agentinodata::CServiceStatusInfo> serviceStatusInfoPtr;
-							serviceStatusInfoPtr.SetPtr(new agentinodata::CServiceStatusInfo);
+				serviceStatusInfoPtr->SetServiceId(objectId);
+				serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);
 
-							serviceStatusInfoPtr->SetServiceId(serviceId);
-							serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);
-
-							QByteArray retVal = m_serviceStatusCollectionCompPtr->InsertNewObject("ServiceStatusInfo", "", "", serviceStatusInfoPtr.PopPtr(), serviceId);
-							if (retVal.isEmpty()){
-								SendErrorMessage(0, QString("Unable to insert new status for service '%1'").arg(qPrintable(serviceId)), "CServiceControllerProxyComp");
-							}
-						}
-					}
+				QByteArray retVal = m_serviceStatusCollectionCompPtr->InsertNewObject("ServiceStatusInfo", "", "", serviceStatusInfoPtr.PopPtr(), objectId);
+				if (retVal.isEmpty()){
+					SendErrorMessage(0, QString("Unable to insert new status for service '%1'").arg(qPrintable(objectId)), "CServiceControllerProxyComp");
 				}
 			}
 		}

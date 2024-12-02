@@ -60,7 +60,6 @@ QByteArray CServiceCompositeInfoComp::GetServiceId(const QUrl& url) const
 					}
 					imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
 					for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-						qDebug() << "connectionElementId" << connectionElementId;
 						imtbase::IObjectCollection::DataPtr connectionDataPtr;
 						if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
 							imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
@@ -123,7 +122,6 @@ QByteArray CServiceCompositeInfoComp::GetServiceId(const QByteArray& dependantSe
 					}
 					imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
 					for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-						qDebug() << "connectionElementId" << connectionElementId;
 						if (connectionElementId == dependantServiceConnectionId){
 							return serviceElementId;
 						}

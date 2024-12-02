@@ -96,6 +96,10 @@ RemoteCollectionView {
     }
     }
 
+    function handleSubscription(dataModel){
+        root.doUpdateGui();
+    }
+
     function getHeaders(){
         let headers = {}
         headers["clientid"] = root.clientId;
@@ -271,17 +275,6 @@ RemoteCollectionView {
             if (state === "Ready"){
                 console.log("OnServiceStatusChanged Ready", subscriptionClient.toJson());
                 if (subscriptionClient.containsKey("data")){
-
-                    let dataModel = subscriptionClient.getData("data")
-                    if (dataModel.containsKey("OnServiceStatusChanged")){
-                        dataModel = dataModel.getData("OnServiceStatusChanged")
-
-                        let serviceId = dataModel.getData("serviceid")
-                        let serviceStatus = dataModel.getData("serviceStatus")
-
-                        let elementsModel = root.table.elements;
-                    }
-
                     root.doUpdateGui();
                 }
             }
