@@ -233,10 +233,14 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 		return nullptr;
 	}
 
-	sdl::agentino::Agents::V1_0::CAgentItemGqlRequest agentItemGqlRequest(gqlRequest);
-	sdl::agentino::Agents::V1_0::CAgentDataPayload agentDataPayload;
+	sdl::agentino::Agents::V1_0::CAgentItemGqlRequest agentItemGqlRequest(gqlRequest, false);
+	sdl::agentino::Agents::CAgentDataPayload::V1_0 agentDataPayload;
 	sdl::agentino::Agents::V1_0::AgentItemRequestArguments agentItemRequestArguments = agentItemGqlRequest.GetRequestedArguments();
-	QByteArray agentId = agentItemRequestArguments.input.GetId();
+
+	QByteArray agentId;
+	if (agentItemRequestArguments.input.Id){
+		agentId = *agentItemRequestArguments.input.Id;
+	}
 
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
 	imtbase::CTreeItemModel* dataModel = rootModelPtr->AddTreeModel("data");
@@ -249,17 +253,17 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 			QString description = m_objectCollectionCompPtr->GetElementInfo(agentId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
 			QDateTime lastConnection = agentPtr->GetLastConnection();
 
-			sdl::agentino::Agents::V1_0::CAgentData agentData;
-			agentData.SetId(agentId);
-			agentData.SetName(name);
-			agentData.SetDescription(description);
-			agentData.SetLastConnection(lastConnection.toString("dd.MM.yyyy"));
-			agentData.SetTracingLevel(agentPtr->GetTracingLevel());
-			agentDataPayload.SetItem(agentData);
+			sdl::agentino::Agents::CAgentData::V1_0 agentData;
+			agentData.Id = std::make_unique<QByteArray>(agentId);
+			agentData.Name = std::make_unique<QString>(name);
+			agentData.Description = std::make_unique<QString>(description);
+			agentData.LastConnection = std::make_unique<QString>(lastConnection.toString("dd.MM.yyyy"));
+			agentData.TracingLevel = std::make_unique<int>(agentPtr->GetTracingLevel());
+			agentDataPayload.item = std::make_unique<sdl::agentino::Agents::CAgentData::V1_0>(agentData);
 		}
 	}
 
-	if (!agentDataPayload.WriteToModel(*dataModel)){
+	if (!sdl::agentino::Agents::CAgentDataPayload::WriteToModel(agentDataPayload, *dataModel)){
 		errorMessage = QString("Unable to setup gql item. Unable to write model.");
 		SendCriticalMessage(0, errorMessage, "CSpotColorCollectionControllerComp");
 		Q_ASSERT(0);

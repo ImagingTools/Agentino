@@ -2,15 +2,13 @@ project(agentinosdl)
 
 include(${ACFDIR}/Config/CMake/StaticConfig.cmake)
 include(${IMTCOREDIR}/Config/CMake/ImtCore.cmake)
-include(${IMTCOREDIR}/Config/CMake/ImtCoreSdlAutoConfig.cmake)
+include(${IMTCOREDIR}/Config/CMake/ImtCoreSdlCustomConfig.cmake)
 
 add_custom_target(${PROJECT_NAME}-SDL-related-files SOURCES
 	${CMAKE_CURRENT_LIST_DIR}/../1.0/Agents.sdl)
 
-ImtCoreAutoConfigureSdlCppQml(
-			SDL_SOURCES "${CMAKE_CURRENT_LIST_DIR}/../1.0/Agents.sdl"
-			CUSTOM_TARGETS_DEPS ON
-			CUSTOM_HEADER_DEP "1.0/CPP/Agents.h"
-			CUSTOM_SOURCE_DEP "1.0/CPP/Agents.cpp"
-			CUSTOM_QML_RES_DEP "1.0/QML/agentinoAgentsSdl/agentinoAgentsSdl.qrc")
-
+ImtCoreCustomConfigureSdlCppQml(
+			SCHEMA_PATH	"${CMAKE_CURRENT_LIST_DIR}/../1.0/Agents.sdl"
+			VERSION		"1.0"
+			SOURCE_NAME	"Agents"
+			QML_NAME	"agentinoAgentsSdl")
