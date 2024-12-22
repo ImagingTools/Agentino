@@ -41,7 +41,7 @@ void CAgentConnectionObserverComp::SetAgentStatus(
 
 void CAgentConnectionObserverComp::SetServiceStatus(
 			const QByteArray& serviceId,
-			agentinodata::IServiceStatusInfo::ServiceStatus status) const
+			agentinodata::IServiceStatusInfo::ServiceStatus /*status*/) const
 {
 	if (!m_serviceStatusCollectionCompPtr.IsValid()){
 		return;

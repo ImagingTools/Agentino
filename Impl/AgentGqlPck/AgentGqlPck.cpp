@@ -44,7 +44,6 @@ I_EXPORT_COMPONENT(
 			"Agent message collection controller",
 			"Agent Message Collection Controller");
 
-
 I_EXPORT_COMPONENT(
 			AgentSettingsController,
 			"Agent settings controller",
