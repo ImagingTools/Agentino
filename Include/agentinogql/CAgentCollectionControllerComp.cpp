@@ -263,7 +263,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 		}
 	}
 
-	if (!sdl::agentino::Agents::CAgentDataPayload::WriteToModel(agentDataPayload, *dataModel)){
+	if (!agentDataPayload.WriteToModel(*dataModel)){
 		errorMessage = QString("Unable to setup gql item. Unable to write model.");
 		SendCriticalMessage(0, errorMessage, "CSpotColorCollectionControllerComp");
 		Q_ASSERT(0);
