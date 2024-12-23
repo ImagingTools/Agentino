@@ -254,12 +254,12 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 			QDateTime lastConnection = agentPtr->GetLastConnection();
 
 			sdl::agentino::Agents::CAgentData::V1_0 agentData;
-			agentData.Id = std::make_unique<QByteArray>(agentId);
-			agentData.Name = std::make_unique<QString>(name);
-			agentData.Description = std::make_unique<QString>(description);
-			agentData.LastConnection = std::make_unique<QString>(lastConnection.toString("dd.MM.yyyy"));
-			agentData.TracingLevel = std::make_unique<int>(agentPtr->GetTracingLevel());
-			agentDataPayload.item = std::make_unique<sdl::agentino::Agents::CAgentData::V1_0>(agentData);
+			agentData.Id = std::make_optional<QByteArray>(agentId);
+			agentData.Name = std::make_optional<QString>(name);
+			agentData.Description = std::make_optional<QString>(description);
+			agentData.LastConnection = std::make_optional<QString>(lastConnection.toString("dd.MM.yyyy"));
+			agentData.TracingLevel = std::make_optional<int>(agentPtr->GetTracingLevel());
+			agentDataPayload.item = std::make_optional<sdl::agentino::Agents::CAgentData::V1_0>(agentData);
 		}
 	}
 
