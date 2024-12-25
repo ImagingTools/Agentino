@@ -276,8 +276,6 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 istd::IChangeable* CAgentCollectionControllerComp::CreateObjectFromRequest(
 	const imtgql::CGqlRequest& gqlRequest,
 	QByteArray& objectId,
-	QString& name,
-	QString& description,
 	QString& errorMessage) const
 {
 	if (!m_agentFactCompPtr.IsValid() || !m_objectCollectionCompPtr.IsValid()){
@@ -315,6 +313,9 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObjectFromRequest(
 	}
 
 	agentPtr->SetObjectUuid(objectId);
+
+	QString name;
+	QString description;
 
 	if (itemModel.ContainsKey("Name")){
 		name = itemModel.GetData("Name").toString();
@@ -386,7 +387,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 		QString description;
 
 		istd::TDelPtr<agentinodata::CIdentifiableAgentInfo> agentInfoPtr;
-		agentInfoPtr.SetCastedOrRemove(CreateObjectFromRequest(gqlRequest, agentId, name, description, errorMessage));
+		agentInfoPtr.SetCastedOrRemove(CreateObjectFromRequest(gqlRequest, agentId, errorMessage));
 		if (!agentInfoPtr.IsValid()){
 			return nullptr;
 		}

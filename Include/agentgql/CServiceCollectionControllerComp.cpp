@@ -459,7 +459,7 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 	name = params.GetFieldArgumentValue("name").toByteArray();
 	description = params.GetFieldArgumentValue("description").toString();
 
-	istd::TDelPtr<istd::IChangeable> savedObject = CreateObjectFromRequest(gqlRequest, objectId, name, description, errorMessage);
+	istd::TDelPtr<istd::IChangeable> savedObject = CreateObjectFromRequest(gqlRequest, objectId, errorMessage);
 	agentinodata::CServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::CServiceInfo*>(savedObject.GetPtr());
 	if (serviceInfoPtr == nullptr){
 		if (errorMessage.isEmpty()){
@@ -645,8 +645,6 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 istd::IChangeable* CServiceCollectionControllerComp::CreateObjectFromRequest(
 	const imtgql::CGqlRequest& gqlRequest,
 	QByteArray& objectId,
-	QString& name,
-	QString& description,
 	QString& errorMessage) const
 {
 	if (!m_serviceInfoFactCompPtr.IsValid() || !m_objectCollectionCompPtr.IsValid()){
@@ -694,6 +692,9 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObjectFromRequest(
 		}
 
 		serviceInfoPtr->SetObjectUuid(objectId);
+
+		QString name;
+		QString description;
 
 		if (itemModel.ContainsKey("Name")){
 			name = itemModel.GetData("Name").toString();
