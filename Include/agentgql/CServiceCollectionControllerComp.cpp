@@ -39,6 +39,7 @@ sdl::imtbase::ImtCollection::CVisualStatus::V1_0 CServiceCollectionControllerCom
 {
 	sdl::imtbase::ImtCollection::CVisualStatus::V1_0 response = BaseClass::OnGetObjectVisualStatus(getObjectVisualStatusRequest, gqlRequest, errorMessage);
 
+
 	if (response.ObjectId){
 		imtbase::IObjectCollection::Ids elementIds = m_objectCollectionCompPtr->GetElementIds();
 		for (const imtbase::IObjectCollection::Id& elementId : elementIds){
@@ -46,13 +47,20 @@ sdl::imtbase::ImtCollection::CVisualStatus::V1_0 CServiceCollectionControllerCom
 			if (m_objectCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
 				agentinodata::IAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::IAgentInfo*>(agentDataPtr.GetPtr());
 				if (agentInfoPtr != nullptr){
+					QString agentName = m_objectCollectionCompPtr->GetElementInfo(elementId, imtbase::ICollectionInfo::EIT_NAME).toString();
+
 					imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+					if (serviceCollectionPtr != nullptr){
+						if (serviceCollectionPtr->GetElementIds().contains(*response.ObjectId)){
+							QString serviceName = serviceCollectionPtr->GetElementInfo(*response.ObjectId, imtbase::ICollectionInfo::EIT_NAME).toString();
+							QString description = serviceCollectionPtr->GetElementInfo(*response.ObjectId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
 
-					QString name = serviceCollectionPtr->GetElementInfo(*response.ObjectId, imtbase::ICollectionInfo::EIT_NAME).toString();
-					QString description = serviceCollectionPtr->GetElementInfo(*response.ObjectId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
+							response.Text = serviceName + "@" + agentName;
+							response.Description = description;
 
-					response.Text = name;
-					response.Description = description;
+							break;
+						}
+					}
 				}
 			}
 		}
