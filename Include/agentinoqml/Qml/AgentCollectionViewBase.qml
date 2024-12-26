@@ -18,6 +18,23 @@ RemoteCollectionView {
 
     commandsDelegateComp: Component {AgentCollectionViewCommandsDelegate {
         collectionView: root
+
+		onCommandActivated: {
+			if (commandId === "Services"){
+				let itemId = root.table.getSelectedIds()[0];
+
+				let indexes = root.table.getSelectedIndexes();
+				if (indexes.length > 0){
+					let index = indexes[0];
+					let name = root.table.elements.getData("ComputerName", index);
+					let documentManagerPtr = MainDocumentManager.getDocumentManager("Agents")
+					if (documentManagerPtr){
+						let view = documentManagerPtr.getActiveView();
+						view.addFixedView(singleDocumentWorkspaceView, name, true);
+					}
+				}
+			}
+		}
     }
     }
 
@@ -25,9 +42,6 @@ RemoteCollectionView {
         let documentManagerPtr = MainDocumentManager.getDocumentManager(root.collectionId)
         if (documentManagerPtr){
             root.commandsDelegate.documentManager = documentManagerPtr
-
-            documentManagerPtr.registerDocumentView("Agent", "AgentView", singleDocumentWorkspaceView);
-            documentManagerPtr.registerDocumentDataController("Agent", agentDataControllerComp);
         }
     }
 
@@ -70,16 +84,6 @@ RemoteCollectionView {
             Component.onCompleted: {
                 clientId = root.table.getSelectedIds()[0];
                 clientName = root.table.getSelectedNames()[0];
-            }
-        }
-    }
-
-    Component {
-        id: agentDataControllerComp
-
-        DocumentDataController {
-            function getDocumentName() {
-                return root.table.getSelectedNames()[0];
             }
         }
     }

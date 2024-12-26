@@ -23,10 +23,43 @@
 // Agentino includes
 #include <agentinodata/agentinodata.h>
 #include <agentinodata/CServiceInfo.h>
+#include <agentinodata/IAgentInfo.h>
 
 
 namespace agentgql
 {
+
+
+// reimplemented (sdl::imtbase::ImtCollection::V1_0::CGraphQlHandlerCompBase)
+
+sdl::imtbase::ImtCollection::CVisualStatus::V1_0 CServiceCollectionControllerComp::OnGetObjectVisualStatus(
+			const sdl::imtbase::ImtCollection::V1_0::CGetObjectVisualStatusGqlRequest& getObjectVisualStatusRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
+{
+	sdl::imtbase::ImtCollection::CVisualStatus::V1_0 response = BaseClass::OnGetObjectVisualStatus(getObjectVisualStatusRequest, gqlRequest, errorMessage);
+
+	if (response.ObjectId){
+		imtbase::IObjectCollection::Ids elementIds = m_objectCollectionCompPtr->GetElementIds();
+		for (const imtbase::IObjectCollection::Id& elementId : elementIds){
+			imtbase::IObjectCollection::DataPtr agentDataPtr;
+			if (m_objectCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
+				agentinodata::IAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::IAgentInfo*>(agentDataPtr.GetPtr());
+				if (agentInfoPtr != nullptr){
+					imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+
+					QString name = serviceCollectionPtr->GetElementInfo(*response.ObjectId, imtbase::ICollectionInfo::EIT_NAME).toString();
+					QString description = serviceCollectionPtr->GetElementInfo(*response.ObjectId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
+
+					response.Text = name;
+					response.Description = description;
+				}
+			}
+		}
+	}
+
+	return response;
+}
 
 
 bool CServiceCollectionControllerComp::SetupGqlItem(
@@ -617,22 +650,10 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::UpdateObject(const im
 	}
 
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
+	imtbase::CTreeItemModel* dataModel = rootModelPtr->AddTreeModel("data");
 
-	imtbase::CTreeItemModel* dataModel = nullptr;
-	imtbase::CTreeItemModel* notificationModel = nullptr;
+	dataModel->SetData("Id", objectId);
 
-	if (!errorMessage.isEmpty()){
-		imtbase::CTreeItemModel* errorsModel = rootModelPtr->AddTreeModel("errors");
-		errorsModel->SetData("message", errorMessage);
-	}
-	else{
-		dataModel = new imtbase::CTreeItemModel();
-		notificationModel = new imtbase::CTreeItemModel();
-		notificationModel->SetData("Id", objectId);
-		notificationModel->SetData("Name", name);
-		dataModel->SetExternTreeModel("updatedNotification", notificationModel);
-	}
-	rootModelPtr->SetExternTreeModel("data", dataModel);
 	imtbase::CTreeItemModel* objectRepresentationDataModelPtr = GetObject(gqlRequest, errorMessage);
 	if (objectRepresentationDataModelPtr != nullptr){
 		rootModelPtr->SetExternTreeModel("item", objectRepresentationDataModelPtr->GetTreeItemModel("data"));

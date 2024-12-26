@@ -87,8 +87,8 @@ QUrl CServerServiceCollectionControllerComp::GetUrlByDependantId(const QByteArra
 
 
 QStringList CServerServiceCollectionControllerComp::GetConnectionInfoAboutDependOnService(
-			const QUrl& url,
-			const QByteArray& connectionId) const
+	const QUrl& url,
+	const QByteArray& connectionId) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		return QStringList();
@@ -164,11 +164,11 @@ QStringList CServerServiceCollectionControllerComp::GetConnectionInfoAboutServic
 // reimplemented (imtgql::CObjectCollectionControllerCompBase)
 
 bool CServerServiceCollectionControllerComp::SetupGqlItem(
-			const imtgql::CGqlRequest& gqlRequest,
-			imtbase::CTreeItemModel& model,
-			int itemIndex,
-			const QByteArray& collectionId,
-			QString& errorMessage) const
+	const imtgql::CGqlRequest& gqlRequest,
+	imtbase::CTreeItemModel& model,
+	int itemIndex,
+	const QByteArray& collectionId,
+	QString& errorMessage) const
 {
 	if (!m_agentCollectionCompPtr.IsValid() || !m_serviceCompositeInfoCompPtr.IsValid()){
 		Q_ASSERT(0);
@@ -305,87 +305,73 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 
 
 imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::ListObjects(
-			const imtgql::CGqlRequest& gqlRequest,
-			QString& errorMessage) const
+	const imtgql::CGqlRequest& gqlRequest,
+	QString& errorMessage) const
 {
 	const imtgql::CGqlObject& inputParams = gqlRequest.GetParams();
 
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
 
-	imtbase::CTreeItemModel* dataModel = nullptr;
-	imtbase::CTreeItemModel* itemsModel = nullptr;
-	imtbase::CTreeItemModel* notificationModel = nullptr;
+	imtbase::CTreeItemModel* dataModel = rootModelPtr->AddTreeModel("data");
+	imtbase::CTreeItemModel* itemsModel = dataModel->AddTreeModel("items");
+	imtbase::CTreeItemModel* notificationModel = dataModel->AddTreeModel("notification");
 
-	if (!errorMessage.isEmpty()){
-		imtbase::CTreeItemModel* errorsItemModel = rootModelPtr->AddTreeModel("errors");
-		errorsItemModel->SetData("message", errorMessage);
-	}
-	else{
-		dataModel = new imtbase::CTreeItemModel();
-		itemsModel = new imtbase::CTreeItemModel();
-		notificationModel = new imtbase::CTreeItemModel();
-
-		const imtgql::CGqlObject* viewParamsGql = nullptr;
-		const imtgql::CGqlObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
-		if (inputObject != nullptr){
-			viewParamsGql = inputObject->GetFieldArgumentObjectPtr("viewParams");
-		}
-		QByteArray agentId = gqlRequest.GetHeader("clientid");
-
-		imtbase::IObjectCollection* serviceCollectionPtr = nullptr;
-		imtbase::IObjectCollection::DataPtr dataPtr;
-		if (m_objectCollectionCompPtr->GetObjectData(agentId, dataPtr)){
-			agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(dataPtr.GetPtr());
-			if (agentInfoPtr != nullptr){
-				serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-			}
-		}
-
-		if (serviceCollectionPtr == nullptr){
-			errorMessage = QString("Unable to get list objects. Internal error.");
-			SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
-
-			return nullptr;
-		}
-
-		iprm::CParamsSet filterParams;
-
-		int offset = 0, count = -1;
-
-		if (viewParamsGql != nullptr){
-			offset = viewParamsGql->GetFieldArgumentValue("Offset").toInt();
-			count = viewParamsGql->GetFieldArgumentValue("Count").toInt();
-			PrepareFilters(gqlRequest, *viewParamsGql, filterParams);
-		}
-
-		int elementsCount = serviceCollectionPtr->GetElementsCount(&filterParams);
-
-		int pagesCount = std::ceil(elementsCount / (double)count);
-		if (pagesCount <= 0){
-			pagesCount = 1;
-		}
-
-		notificationModel->SetData("PagesCount", pagesCount);
-		notificationModel->SetData("TotalCount", elementsCount);
-
-		imtbase::ICollectionInfo::Ids ids = serviceCollectionPtr->GetElementIds(offset, count, &filterParams);
-
-		for (imtbase::ICollectionInfo::Id& id: ids){
-			int itemIndex = itemsModel->InsertNewItem();
-			if (itemIndex >= 0){
-				if (!SetupGqlItem(gqlRequest, *itemsModel, itemIndex, id, errorMessage)){
-					SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
-
-					return nullptr;
-				}
-			}
-		}
-		itemsModel->SetIsArray(true);
-		dataModel->SetExternTreeModel("items", itemsModel);
-		dataModel->SetExternTreeModel("notification", notificationModel);
+	const imtgql::CGqlObject* viewParamsGql = nullptr;
+	const imtgql::CGqlObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
+	if (inputObject != nullptr){
+		viewParamsGql = inputObject->GetFieldArgumentObjectPtr("viewParams");
 	}
 
-	rootModelPtr->SetExternTreeModel("data", dataModel);
+	QByteArray agentId = gqlRequest.GetHeader("clientid");
+
+	imtbase::IObjectCollection* serviceCollectionPtr = nullptr;
+	imtbase::IObjectCollection::DataPtr dataPtr;
+	if (m_objectCollectionCompPtr->GetObjectData(agentId, dataPtr)){
+		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(dataPtr.GetPtr());
+		if (agentInfoPtr != nullptr){
+			serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+		}
+	}
+
+	if (serviceCollectionPtr == nullptr){
+		errorMessage = QString("Unable to get list objects. Internal error.");
+		SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
+
+		return nullptr;
+	}
+
+	iprm::CParamsSet filterParams;
+
+	int offset = 0, count = -1;
+
+	if (viewParamsGql != nullptr){
+		offset = viewParamsGql->GetFieldArgumentValue("Offset").toInt();
+		count = viewParamsGql->GetFieldArgumentValue("Count").toInt();
+		PrepareFilters(gqlRequest, *viewParamsGql, filterParams);
+	}
+
+	int elementsCount = serviceCollectionPtr->GetElementsCount(&filterParams);
+
+	int pagesCount = std::ceil(elementsCount / (double)count);
+	if (pagesCount <= 0){
+		pagesCount = 1;
+	}
+
+	notificationModel->SetData("PagesCount", pagesCount);
+	notificationModel->SetData("TotalCount", elementsCount);
+
+	imtbase::ICollectionInfo::Ids ids = serviceCollectionPtr->GetElementIds(offset, count, &filterParams);
+
+	for (imtbase::ICollectionInfo::Id& id: ids){
+		int itemIndex = itemsModel->InsertNewItem();
+		if (itemIndex >= 0){
+			if (!SetupGqlItem(gqlRequest, *itemsModel, itemIndex, id, errorMessage)){
+				SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
+
+				return nullptr;
+			}
+		}
+	}
 
 	return rootModelPtr.PopPtr();
 }
@@ -450,10 +436,10 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 
 			if (m_translationManagerCompPtr.IsValid()){
 				incomingConnectionStr = iqt::GetTranslation(
-						m_translationManagerCompPtr.GetPtr(),
-						incomingConnectionStr.toUtf8(),
-						languageId,
-						"agentinogql::CServerServiceCollectionControllerComp"
+					m_translationManagerCompPtr.GetPtr(),
+					incomingConnectionStr.toUtf8(),
+					languageId,
+					"agentinogql::CServerServiceCollectionControllerComp"
 					);
 			}
 
@@ -490,10 +476,10 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 
 				if (m_translationManagerCompPtr.IsValid()){
 					dependantServicesStr = iqt::GetTranslation(
-							m_translationManagerCompPtr.GetPtr(),
-							dependantServicesStr.toUtf8(),
-							languageId,
-							"agentinogql::CServerServiceCollectionControllerComp"
+						m_translationManagerCompPtr.GetPtr(),
+						dependantServicesStr.toUtf8(),
+						languageId,
+						"agentinogql::CServerServiceCollectionControllerComp"
 						);
 				}
 				dataModelPtr->SetData("Name", dependantServicesStr, index);
@@ -518,10 +504,10 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 
 			if (m_translationManagerCompPtr.IsValid()){
 				serviceDependsOnStr = iqt::GetTranslation(
-						m_translationManagerCompPtr.GetPtr(),
-						serviceDependsOnStr.toUtf8(),
-						languageId,
-						"agentinogql::CServerServiceCollectionControllerComp"
+					m_translationManagerCompPtr.GetPtr(),
+					serviceDependsOnStr.toUtf8(),
+					languageId,
+					"agentinogql::CServerServiceCollectionControllerComp"
 					);
 			}
 			dataModelPtr->SetData(	"Name", serviceDependsOnStr, index);

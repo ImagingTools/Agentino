@@ -52,9 +52,9 @@ RemoteCollectionView {
         if (documentManagerPtr){
             root.commandsDelegate.documentManager = documentManagerPtr
 
-            documentManagerPtr.registerDocumentView("Service" + root.clientId, "ServiceEditor", serviceEditorComp);
-            documentManagerPtr.registerDocumentDataController("Service" + root.clientId, serviceDataControllerComp);
-            documentManagerPtr.registerDocumentValidator("Service" + root.clientId, serviceValidatorComp);
+			documentManagerPtr.registerDocumentView("Service"/* + root.clientId*/, "ServiceEditor", serviceEditorComp);
+			documentManagerPtr.registerDocumentDataController("Service"/* + root.clientId*/, serviceDataControllerComp);
+			documentManagerPtr.registerDocumentValidator("Service"/* + root.clientId*/, serviceValidatorComp);
         }
     }
 
@@ -70,7 +70,7 @@ RemoteCollectionView {
     commandsDelegateComp: Component {ServiceCollectionViewCommandsDelegate {
         id: serviceCommandsDelegate
         collectionView: root
-        documentTypeId: "Service" + root.clientId
+		documentTypeId: "Service"/* + root.clientId*/
 
         onCommandActivated: {
             if (commandId == "Start" || commandId == "Stop"){

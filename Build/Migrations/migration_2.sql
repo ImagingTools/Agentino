@@ -6,5 +6,8 @@ CREATE TABLE "UserGroups"
     "RevisionNumber" bigint,
     "LastModified" text,
     "Checksum" bigint,
-    "IsActive" boolean
+    "IsActive" boolean,
+    "OwnerId" text,
+    "OwnerName" text,
+    "OperationDescription" text
 );

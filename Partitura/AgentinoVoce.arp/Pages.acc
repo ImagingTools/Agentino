@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5270" Description="ACF"/>
-            <Version Id="1" Number="2220" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5323" Description="ACF"/>
+            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
             <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -285,6 +285,13 @@
                                 <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="CollectionObjectFactory" Type="Factory[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>ServiceInfo</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
                                 <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
@@ -302,6 +309,13 @@
                                 </AttributeInfo>
                                 <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="AgentRepository">
                                     <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ObjectTypeIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Service</Value>
+                                        </Values>
+                                    </Data>
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="ServiceCompositeInfo">
                                     <Data IsEnabled="false"/>

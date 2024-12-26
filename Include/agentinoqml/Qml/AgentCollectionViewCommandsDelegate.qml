@@ -13,18 +13,6 @@ DocumentCollectionViewDelegate {
     removeDialogTitle: qsTr("Deleting an agent");
     removeMessage: qsTr("Delete the selected agent ?");
 
-    onCommandActivated: {
-        if (commandId === "Services"){
-            let itemId = container.collectionView.table.getSelectedIds()[0];
-            let itemName = container.collectionView.table.getSelectedNames()[0];
-
-            let documentManagerPtr = MainDocumentManager.getDocumentManager("Agents")
-            if (documentManagerPtr){
-                documentManagerPtr.openDocument(itemId, documentTypeId, viewTypeId);
-            }
-        }
-    }
-
     function updateItemSelection(selectedItems){
         if (container.collectionView && container.collectionView.commandsController){
             let isEnabled = selectedItems.length > 0;

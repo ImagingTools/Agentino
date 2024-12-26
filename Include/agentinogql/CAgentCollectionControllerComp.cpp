@@ -164,63 +164,48 @@ imtbase::CTreeItemModel *CAgentCollectionControllerComp::ListObjects(const imtgq
 
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
 
-	imtbase::CTreeItemModel* dataModel = nullptr;
-	imtbase::CTreeItemModel* itemsModel = nullptr;
-	imtbase::CTreeItemModel* notificationModel = nullptr;
+	imtbase::CTreeItemModel* dataModel = rootModelPtr->AddTreeModel("data");
+	imtbase::CTreeItemModel* itemsModel = dataModel->AddTreeModel("items");
+	imtbase::CTreeItemModel* notificationModel = dataModel->AddTreeModel("notification");
 
-	if (!errorMessage.isEmpty()){
-		imtbase::CTreeItemModel* errorsItemModel = rootModelPtr->AddTreeModel("errors");
-		errorsItemModel->SetData("message", errorMessage);
+	const imtgql::CGqlObject* viewParamsGql = nullptr;
+	const imtgql::CGqlObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
+	if (inputObject != nullptr){
+		viewParamsGql = inputObject->GetFieldArgumentObjectPtr("viewParams");
 	}
-	else{
-		dataModel = new imtbase::CTreeItemModel();
-		itemsModel = new imtbase::CTreeItemModel();
-		notificationModel = new imtbase::CTreeItemModel();
 
-		const imtgql::CGqlObject* viewParamsGql = nullptr;
-		const imtgql::CGqlObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
-		if (inputObject != nullptr){
-			viewParamsGql = inputObject->GetFieldArgumentObjectPtr("viewParams");
-		}
+	iprm::CParamsSet filterParams;
 
-		iprm::CParamsSet filterParams;
+	int offset = 0, count = -1;
 
-		int offset = 0, count = -1;
+	if (viewParamsGql != nullptr){
+		offset = viewParamsGql->GetFieldArgumentValue("Offset").toInt();
+		count = viewParamsGql->GetFieldArgumentValue("Count").toInt();
+		PrepareFilters(gqlRequest, *viewParamsGql, filterParams);
+	}
 
-		if (viewParamsGql != nullptr){
-			offset = viewParamsGql->GetFieldArgumentValue("Offset").toInt();
-			count = viewParamsGql->GetFieldArgumentValue("Count").toInt();
-			PrepareFilters(gqlRequest, *viewParamsGql, filterParams);
-		}
+	int elementsCount = m_objectCollectionCompPtr->GetElementsCount(&filterParams);
 
-		int elementsCount = m_objectCollectionCompPtr->GetElementsCount(&filterParams);
+	int pagesCount = std::ceil(elementsCount / (double)count);
+	if (pagesCount <= 0){
+		pagesCount = 1;
+	}
 
-		int pagesCount = std::ceil(elementsCount / (double)count);
-		if (pagesCount <= 0){
-			pagesCount = 1;
-		}
+	notificationModel->SetData("PagesCount", pagesCount);
+	notificationModel->SetData("TotalCount", elementsCount);
 
-		notificationModel->SetData("PagesCount", pagesCount);
-		notificationModel->SetData("TotalCount", elementsCount);
+	imtbase::ICollectionInfo::Ids ids = m_objectCollectionCompPtr->GetElementIds(offset, count, &filterParams);
 
-		imtbase::ICollectionInfo::Ids ids = m_objectCollectionCompPtr->GetElementIds(offset, count, &filterParams);
+	for (const imtbase::ICollectionInfo::Id& id: ids){
+		int itemIndex = itemsModel->InsertNewItem();
+		if (itemIndex >= 0){
+			if (!SetupGqlItem(gqlRequest, *itemsModel, itemIndex, id, errorMessage)){
+				SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
 
-		for (const imtbase::ICollectionInfo::Id& id: ids){
-			int itemIndex = itemsModel->InsertNewItem();
-			if (itemIndex >= 0){
-				if (!SetupGqlItem(gqlRequest, *itemsModel, itemIndex, id, errorMessage)){
-					SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
-
-					return nullptr;
-				}
+				return nullptr;
 			}
 		}
-		itemsModel->SetIsArray(true);
-		dataModel->SetExternTreeModel("items", itemsModel);
-		dataModel->SetExternTreeModel("notification", notificationModel);
 	}
-
-	rootModelPtr->SetExternTreeModel("data", dataModel);
 
 	return rootModelPtr.PopPtr();
 }
@@ -314,22 +299,6 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObjectFromRequest(
 
 	agentPtr->SetObjectUuid(objectId);
 
-	QString name;
-	QString description;
-
-	if (itemModel.ContainsKey("Name")){
-		name = itemModel.GetData("Name").toString();
-	}
-
-	if (name.isEmpty()){
-		errorMessage = QT_TR_NOOP("Service name can't be empty");
-		return nullptr;
-	}
-
-	if (itemModel.ContainsKey("Description")){
-		description = itemModel.GetData("Description").toString();
-	}
-
 	if (itemModel.ContainsKey("ComputerName")){
 		QString computerName = itemModel.GetData("ComputerName").toString();
 		agentPtr->SetComputerName(computerName);
@@ -383,18 +352,17 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 		}
 	}
 	else{
-		QString name;
-		QString description;
-
 		istd::TDelPtr<agentinodata::CIdentifiableAgentInfo> agentInfoPtr;
 		agentInfoPtr.SetCastedOrRemove(CreateObjectFromRequest(gqlRequest, agentId, errorMessage));
 		if (!agentInfoPtr.IsValid()){
 			return nullptr;
 		}
 
+		QString name = agentInfoPtr->GetComputerName();
+
 		agentInfoPtr->SetLastConnection(QDateTime::currentDateTimeUtc());
 
-		m_objectCollectionCompPtr->InsertNewObject("DocumentInfo", name, description, agentInfoPtr.GetPtr(), agentId);
+		m_objectCollectionCompPtr->InsertNewObject("DocumentInfo", name, "", agentInfoPtr.GetPtr(), agentId);
 	}
 
 	m_connectedAgents.append(agentId);
@@ -411,16 +379,28 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtg
 		return nullptr;
 	}
 
-	const imtgql::CGqlObject& inputParams = gqlRequest.GetParams();
-	if (inputParams.GetFieldIds().size() == 0){
-		errorMessage = QString("Unable to update model. Error: GraphQL input params is invalid.");
-		SendErrorMessage(0, errorMessage);
+	const imtgql::CGqlObject* inputParamObjectPtr = gqlRequest.GetParamObject("input");
+	if (inputParamObjectPtr == nullptr){
+		Q_ASSERT(false);
+		return nullptr;
+	}
+
+	const imtgql::CGqlObject* itemObjectPtr = inputParamObjectPtr->GetFieldArgumentObjectPtr("Item");
+	if (itemObjectPtr == nullptr){
+		Q_ASSERT(false);
+		return nullptr;
+	}
+
+	sdl::agentino::Agents::CAgentData::V1_0 agentData;
+
+	if (!agentData.ReadFromGraphQlObject(*itemObjectPtr)){
+		errorMessage = QString("Unable to update agent. Error: Read from GraphQL object failed");
+		SendErrorMessage(0, errorMessage, "CAgentCollectionControllerComp");
 
 		return nullptr;
 	}
 
-	imtbase::CTreeItemModel* retVal = nullptr;
-	QByteArray objectId = GetObjectIdFromInputParams(inputParams);
+	QByteArray objectId = inputParamObjectPtr->GetFieldArgumentValue("Id").toByteArray();
 
 	imtbase::IObjectCollection::DataPtr agentDataPtr;
 	if (m_objectCollectionCompPtr->GetObjectData(objectId, agentDataPtr)){
@@ -429,50 +409,30 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtg
 			QDateTime dateTime = QDateTime::currentDateTimeUtc();
 			agentInfoPtr->SetLastConnection(dateTime);
 
-			QByteArray itemData = inputParams.GetFieldArgumentValue("Item").toByteArray();
-			QString name;
+			if (agentData.TracingLevel){
+				agentInfoPtr->SetTracingLevel(*agentData.TracingLevel);
+			}
 
-			if (!itemData.isEmpty()){
-				imtbase::CTreeItemModel itemModel;
-				if (!itemModel.CreateFromJson(itemData)){
-					errorMessage = QString("Unable to create model from JSON. Error: invalid JSON: '%1'.").arg(qPrintable(itemData));
-					SendErrorMessage(0, errorMessage);
+			if (agentData.Name){
+				m_objectCollectionCompPtr->SetElementName(objectId, *agentData.Name);
+			}
 
-					return nullptr;
-				}
-
-				if (itemModel.ContainsKey("TracingLevel")){
-					int tracingLevel = itemModel.GetData("TracingLevel").toInt();
-					agentInfoPtr->SetTracingLevel(tracingLevel);
-				}
-
-				if (itemModel.ContainsKey("Name")){
-					name = itemModel.GetData("Name").toString();
-					m_objectCollectionCompPtr->SetElementName(objectId, name);
-				}
-
-				if (itemModel.ContainsKey("Description")){
-					QString description = itemModel.GetData("Description").toString();
-					m_objectCollectionCompPtr->SetElementDescription(objectId, description);
-				}
+			if (agentData.Description){
+				m_objectCollectionCompPtr->SetElementDescription(objectId, *agentData.Description);
 			}
 
 			if (!m_objectCollectionCompPtr->SetObjectData(objectId, *agentInfoPtr)){
 				qDebug() << QString("Unable to set data to the collection object with ID: '%1'.").arg(qPrintable(objectId));
 			}
-			else{
-				retVal = new imtbase::CTreeItemModel();
-				imtbase::CTreeItemModel* dataModel = new imtbase::CTreeItemModel();
-				imtbase::CTreeItemModel* notificationModel = new imtbase::CTreeItemModel();
-				notificationModel->SetData("Id", objectId);
-				notificationModel->SetData("Name", name);
-				dataModel->SetExternTreeModel("updatedNotification", notificationModel);
-				retVal->SetExternTreeModel("data", dataModel);
-			}
 		}
 	}
 
-	return retVal;
+	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
+	imtbase::CTreeItemModel* dataModel = rootModelPtr->AddTreeModel("data");
+
+	dataModel->SetData("Id", objectId);
+
+	return rootModelPtr.PopPtr();
 }
 
 
