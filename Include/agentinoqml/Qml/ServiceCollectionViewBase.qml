@@ -235,7 +235,7 @@ RemoteCollectionView {
                 }
             }
 
-			onDraw: {
+			onReused: {
                 if (rowIndex >= 0){
                     let status = root.table.elements.getData("Status", rowIndex);
                     let dependencyStatus = cellDelegate.rowDelegate.tableItem.elements.getData("DependencyStatus", rowIndex);
