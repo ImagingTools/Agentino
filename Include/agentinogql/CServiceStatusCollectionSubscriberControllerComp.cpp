@@ -53,7 +53,7 @@ void CServiceStatusCollectionSubscriberControllerComp::OnUpdate(const istd::ICha
 	QString data = QString("{ \"serviceid\": \"%1\", \"serviceStatus\": \"%2\", \"dependencyStatus\": %3}")
 					   .arg(qPrintable(serviceId)).arg(qPrintable(agentinodata::IServiceStatusInfo::ToString(status))).arg(qPrintable(dependencyData));
 
-	SetAllSubscriptions("OnServiceStatusChanged", data.toUtf8());
+	PublishData("OnServiceStatusChanged", data.toUtf8());
 }
 
 

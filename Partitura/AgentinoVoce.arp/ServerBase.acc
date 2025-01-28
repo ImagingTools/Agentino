@@ -329,7 +329,7 @@
         <EmbeddedRegistry Id="Subscriptions">
             <Data Description="" Keywords="">
                 <ElementsList>
-                    <Element Id="AgentCollectionSubscriber" PackageId="ImtServerGqlPck" ComponentId="ModelSubscriberController">
+                    <Element Id="AgentCollectionSubscriber" PackageId="ImtServerGqlPck" ComponentId="ModelChangeNotifier">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
@@ -354,7 +354,7 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="AgentStatusCollectionSubscriber" PackageId="ImtServerGqlPck" ComponentId="ModelSubscriberController">
+                    <Element Id="AgentStatusCollectionSubscriber" PackageId="ImtServerGqlPck" ComponentId="ModelChangeNotifier">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
@@ -417,7 +417,7 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="RolesSubscriberController" PackageId="ImtServerGqlPck" ComponentId="ModelSubscriberController">
+                    <Element Id="RolesSubscriberController" PackageId="ImtServerGqlPck" ComponentId="ModelChangeNotifier">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
@@ -492,7 +492,7 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="TopologySubscriber" PackageId="ImtServerGqlPck" ComponentId="ModelSubscriberController">
+                    <Element Id="TopologySubscriber" PackageId="ImtServerGqlPck" ComponentId="ModelChangeNotifier">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
@@ -517,7 +517,7 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="UserGroupsSubscriberController" PackageId="ImtServerGqlPck" ComponentId="ModelSubscriberController">
+                    <Element Id="UserGroupsSubscriberController" PackageId="ImtServerGqlPck" ComponentId="ModelChangeNotifier">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
@@ -542,7 +542,7 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="UsersSubscriberController" PackageId="ImtServerGqlPck" ComponentId="ModelSubscriberController">
+                    <Element Id="UsersSubscriberController" PackageId="ImtServerGqlPck" ComponentId="ModelChangeNotifier">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">

@@ -130,9 +130,9 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 }
 
 
-bool CAgentServicesRemoteSubscriberProxyComp::UnRegisterSubscription(const QByteArray& subscriptionId)
+bool CAgentServicesRemoteSubscriberProxyComp::UnregisterSubscription(const QByteArray& subscriptionId)
 {
-	BaseClass::UnRegisterSubscription(subscriptionId);
+	BaseClass::UnregisterSubscription(subscriptionId);
 	if (m_requestMap.contains(subscriptionId)){
 		QByteArray serviceId = m_requestMap.value(subscriptionId).first;
 
@@ -200,7 +200,7 @@ void CAgentServicesRemoteSubscriberProxyComp::OnWebSocketDisconnected()
 			for (QByteArray& subscriptionId : m_requestMap.keys()){
 				if (m_requestMap.value(subscriptionId).first == serviceId){
 					m_requestMap.remove(subscriptionId);
-					UnRegisterSubscription(subscriptionId);
+					UnregisterSubscription(subscriptionId);
 				}
 			}
 			m_webSocketClientMap.remove(serviceId);

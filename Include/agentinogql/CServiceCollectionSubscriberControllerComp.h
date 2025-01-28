@@ -2,17 +2,17 @@
 
 
 // ImtCore includes
-#include <imtservergql/CObjectCollectionSubscriberControllerComp.h>
+#include <imtservergql/CObjectCollectionChangeNotifierComp.h>
 
 
 namespace agentinogql
 {
 
 
-class CServiceCollectionSubscriberControllerComp: public imtservergql::CObjectCollectionSubscriberControllerComp
+class CServiceCollectionSubscriberControllerComp: public imtservergql::CObjectCollectionChangeNotifierComp
 {
 public:
-	typedef imtservergql::CObjectCollectionSubscriberControllerComp BaseClass;
+	typedef imtservergql::CObjectCollectionChangeNotifierComp BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceCollectionSubscriberControllerComp);
 	I_END_COMPONENT;

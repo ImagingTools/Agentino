@@ -5,7 +5,7 @@
 
 // ImtCore includes
 // #include <imtbase/IObjectCollection.h>
-#include <imtservergql/CObjectCollectionSubscriberControllerComp.h>
+#include <imtservergql/CObjectCollectionChangeNotifierComp.h>
 
 // Agentino includes
 #include <agentinodata/CServiceCompositeInfoComp.h>
@@ -15,10 +15,10 @@ namespace agentinogql
 {
 
 
-class CServiceStatusCollectionSubscriberControllerComp: public imtservergql::CObjectCollectionSubscriberControllerComp
+class CServiceStatusCollectionSubscriberControllerComp: public imtservergql::CObjectCollectionChangeNotifierComp
 {
 public:
-	typedef imtservergql::CObjectCollectionSubscriberControllerComp BaseClass;
+	typedef imtservergql::CObjectCollectionChangeNotifierComp BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceStatusCollectionSubscriberControllerComp);
 		I_ASSIGN(m_serviceCompositeInfoCompPtr, "ServiceCompositeInfo", "Service composite info", true, "ServiceCompositeInfo");

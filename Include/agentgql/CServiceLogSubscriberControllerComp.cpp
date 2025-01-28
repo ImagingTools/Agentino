@@ -15,16 +15,6 @@ namespace agentgql
 
 // protected methods
 
-bool CServiceLogSubscriberControllerComp::SetSubscriptions()
-{
-	if (!m_requestManagerCompPtr.IsValid()){
-		return false;
-	}
-
-	return true;
-}
-
-
 // reimplemented (icomp::CComponentBase)
 
 void CServiceLogSubscriberControllerComp::OnComponentCreated()
@@ -131,13 +121,13 @@ void CServiceLogSubscriberControllerComp::TimerUpdate()
 			if (m_servicesMessageInfo[serviceId].messageCount != messageCount){
 				QString data = QString("{\"serviceid\": \"%1\"}").arg(qPrintable(serviceId));
 
-				SetAllSubscriptions("OnServiceLogChanged", data.toUtf8());
+				PublishData("OnServiceLogChanged", data.toUtf8());
+
 				m_servicesMessageInfo[serviceId].messageCount = messageCount;
 			}
 		}
 	}
 }
-
 
 
 } // namespace agentgql

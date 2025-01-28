@@ -9,7 +9,7 @@
 
 // ImtCore includes
 #include <imtbase/IObjectCollection.h>
-#include <imtservergql/CGqlSubscriberControllerCompBase.h>
+#include <imtservergql/CGqlPublisherCompBase.h>
 
 // Agentino includes
 #include <agentgql/CServiceLog.h>
@@ -21,13 +21,13 @@ namespace agentgql
 
 class CServiceLogSubscriberControllerComp:
 			public QObject,
-			public imtservergql::CGqlSubscriberControllerCompBase,
+			public imtservergql::CGqlPublisherCompBase,
 			public imod::CSingleModelObserverBase,
 			public CServiceLog
 {
 	Q_OBJECT
 public:
-	typedef imtservergql::CGqlSubscriberControllerCompBase BaseClass;
+	typedef imtservergql::CGqlPublisherCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceLogSubscriberControllerComp);
 		I_ASSIGN(m_serviceCollectionCompPtr, "ServiceCollection", "Service collection used to manage services", true, "ServiceCollection");
@@ -35,8 +35,6 @@ public:
 	I_END_COMPONENT;
 
 protected:
-	virtual bool SetSubscriptions() override;
-
 	// reimplemented (icomp::CComponentBase)
 	virtual void OnComponentCreated() override;
 	virtual void OnComponentDestroyed() override;

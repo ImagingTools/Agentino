@@ -11,7 +11,7 @@ namespace agentgql
 
 // protected methods
 
-// reimplemented (imtgql::CGqlSubscriberControllerCompBase)
+// reimplemented (imtgql::CGqlPublisherCompBase)
 
 bool CAgentConnectionSubscriberControllerComp::RegisterSubscription(
 			const QByteArray& subscriptionId,
@@ -34,7 +34,7 @@ bool CAgentConnectionSubscriberControllerComp::RegisterSubscription(
 
 		QString data = QString("{\"status\": \"%1\"}").arg(qPrintable(status));
 
-		SetData(subscriptionId, "OnAgentConnectionChanged", data.toUtf8(), networkRequest);
+		PushDataToSubscriber(subscriptionId, "OnAgentConnectionChanged", data.toUtf8(), networkRequest);
 	}
 
 	return result;
@@ -60,7 +60,7 @@ void CAgentConnectionSubscriberControllerComp::OnUpdate(const istd::IChangeable:
 	if (changeSet.Contains(0) || changeSet.Contains(imtcom::IConnectionStatusProvider::CS_CONNECTED)){
 		QString data = QString("{\"status\": \"%1\"}").arg(qPrintable(status));
 
-		SetAllSubscriptions("OnAgentConnectionChanged", data.toUtf8());
+		PublishData("OnAgentConnectionChanged", data.toUtf8());
 	}
 }
 

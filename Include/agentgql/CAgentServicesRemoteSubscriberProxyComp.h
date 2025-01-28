@@ -6,7 +6,7 @@
 // ImtCore includes
 #include <imtclientgql/CGqlRemoteRepresentationControllerCompBase.h>
 #include <imtservice/IConnectionCollectionProvider.h>
-#include <imtservergql/CGqlSubscriberControllerCompBase.h>
+#include <imtservergql/CGqlPublisherCompBase.h>
 
 // Qt includes
 #include <QtWebSockets/QWebSocket>
@@ -17,11 +17,11 @@ namespace agentgql
 {
 
 
-class CAgentServicesRemoteSubscriberProxyComp: public QObject, public imtservergql::CGqlSubscriberControllerCompBase //, virtual public imtrest::IRequestServlet
+class CAgentServicesRemoteSubscriberProxyComp: public QObject, public imtservergql::CGqlPublisherCompBase //, virtual public imtrest::IRequestServlet
 {
 	Q_OBJECT
 public:
-	typedef imtservergql::CGqlSubscriberControllerCompBase BaseClass;
+	typedef imtservergql::CGqlPublisherCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CAgentServicesRemoteSubscriberProxyComp)
 		I_ASSIGN(m_connectionCollectionProviderCompPtr, "ConnectionCollectionProvider", "Application info", true, "ConnectionCollectionProvider");
@@ -35,7 +35,7 @@ protected:
 				const imtgql::CGqlRequest& gqlRequest,
 				const imtrest::IRequest& networkRequest,
 				QString& errorMessage) override;
-	virtual bool UnRegisterSubscription(const QByteArray& subscriptionId) override;
+	virtual bool UnregisterSubscription(const QByteArray& subscriptionId) override;
 
 	// reimplemented (imtrest::IRequestEventHandler)
 	virtual void OnRequestDestroyed(imtrest::IRequest* request) override;

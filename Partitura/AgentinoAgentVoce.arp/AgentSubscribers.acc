@@ -32,7 +32,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="AgentLogCollectionSubscriberController" PackageId="ImtServerGqlPck" ComponentId="ObjectCollectionSubscriberController">
+        <Element Id="AgentLogCollectionSubscriberController" PackageId="ImtServerGqlPck" ComponentId="ObjectCollectionChangeNotifier">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
@@ -113,7 +113,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServicetCollectionSubscriberController" PackageId="ImtServerGqlPck" ComponentId="ObjectCollectionSubscriberController">
+        <Element Id="ServicetCollectionSubscriberController" PackageId="ImtServerGqlPck" ComponentId="ObjectCollectionChangeNotifier">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">

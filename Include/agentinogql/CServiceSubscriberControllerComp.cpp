@@ -13,12 +13,6 @@ namespace agentinogql
 
 // protected methods
 
-bool CServiceSubscriberControllerComp::SetSubscriptions()
-{
-	return true;
-}
-
-
 // reimplemented (icomp::CComponentBase)
 
 void CServiceSubscriberControllerComp::OnComponentCreated()
@@ -62,7 +56,7 @@ void CServiceSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeS
 
 	QString data = QString("{ \"serviceid\": \"%1\", \"serviceStatus\": \"%2\" }").arg(qPrintable(notifierStatusInfo.serviceId)).arg(status);
 	if (m_commandIdsAttrPtr.GetCount() > 0){
-		SetAllSubscriptions(m_commandIdsAttrPtr[0], data.toUtf8());
+		PublishData(m_commandIdsAttrPtr[0], data.toUtf8());
 	}
 
 	if (m_serviceStatusCollectionCompPtr.IsValid()){

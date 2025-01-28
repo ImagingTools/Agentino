@@ -51,14 +51,14 @@ bool CAgentsSubscriberProxyControllerComp::RegisterSubscription(
 }
 
 
-bool CAgentsSubscriberProxyControllerComp::UnRegisterSubscription(const QByteArray& subscriptionId)
+bool CAgentsSubscriberProxyControllerComp::UnregisterSubscription(const QByteArray& subscriptionId)
 {
 	if (!m_subscriptionManagerCompPtr.IsValid()){
 
 		return false;
 	}
 
-	bool retVal = BaseClass::UnRegisterSubscription(subscriptionId);
+	bool retVal = BaseClass::UnregisterSubscription(subscriptionId);
 	if (retVal){
 		for (QByteArray remoteSubscriptionId: m_remoteSubscriptions){
 			if (m_remoteSubscriptions.value(remoteSubscriptionId) == subscriptionId){
@@ -98,7 +98,8 @@ void CAgentsSubscriberProxyControllerComp::OnResponseReceived(const QByteArray &
 				documentBody.setObject(jsonData);
 
 				QByteArray body = documentBody.toJson(QJsonDocument::Compact);
-				SetAllSubscriptions(subscriptionTypeId, body);
+
+				PublishData(subscriptionTypeId, body);
 			}
 		}
 	}

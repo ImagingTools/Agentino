@@ -9,7 +9,7 @@
 #include <imtclientgql/IGqlSubscriptionManager.h>
 #include <imtclientgql/IGqlClient.h>
 #include <imtbase/IObjectCollection.h>
-#include <imtservergql/CGqlSubscriberControllerCompBase.h>
+#include <imtservergql/CGqlPublisherCompBase.h>
 
 
 namespace agentinogql
@@ -17,11 +17,11 @@ namespace agentinogql
 
 
 class CAgentsSubscriberProxyControllerComp:
-			public imtservergql::CGqlSubscriberControllerCompBase,
+			public imtservergql::CGqlPublisherCompBase,
 			virtual public imtclientgql::IGqlSubscriptionClient
 {
 public:
-	typedef imtservergql::CGqlSubscriberControllerCompBase BaseClass;
+	typedef imtservergql::CGqlPublisherCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CAgentsSubscriberProxyControllerComp);
 		I_REGISTER_INTERFACE(imtclientgql::IGqlSubscriptionClient);
@@ -37,7 +37,7 @@ protected:
 				const imtgql::CGqlRequest& gqlRequest,
 				const imtrest::IRequest& networkRequest,
 				QString& errorMessage) override;
-	virtual bool UnRegisterSubscription(const QByteArray& subscriptionId) override;
+	virtual bool UnregisterSubscription(const QByteArray& subscriptionId) override;
 
 	// reimplemented (imtclientgql::IGqlSubscriptionClient)
 	virtual void OnResponseReceived(const QByteArray& subscriptionId, const QByteArray& subscriptionData) override;

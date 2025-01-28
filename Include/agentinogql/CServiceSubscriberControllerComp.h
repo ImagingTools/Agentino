@@ -6,7 +6,7 @@
 
 // ImtCore includes
 #include <imtbase/IObjectCollection.h>
-#include <imtservergql/CGqlSubscriberControllerCompBase.h>
+#include <imtservergql/CGqlPublisherCompBase.h>
 
 
 namespace agentinogql
@@ -14,11 +14,11 @@ namespace agentinogql
 
 
 class CServiceSubscriberControllerComp:
-			public imtservergql::CGqlSubscriberControllerCompBase,
+			public imtservergql::CGqlPublisherCompBase,
 			public imod::TSingleModelObserverBase<istd::IChangeable>
 {
 public:
-	typedef imtservergql::CGqlSubscriberControllerCompBase BaseClass;
+	typedef imtservergql::CGqlPublisherCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceSubscriberControllerComp);
 		I_ASSIGN(m_modelCompPtr, "Model", "Model", true, "Model");
@@ -26,8 +26,6 @@ public:
 	I_END_COMPONENT;
 
 protected:
-	virtual bool SetSubscriptions() override;
-
 	// reimplemented (icomp::CComponentBase)
 	virtual void OnComponentCreated() override;
 	virtual void OnComponentDestroyed() override;
