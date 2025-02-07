@@ -113,14 +113,22 @@ ViewBase {
         property string selectedService: ""
 
         onAutoFitChanged: {
-            topologyPage.commandsController.setToggled("AutoFit", scheme.autoFit);
+			if (topologyPage.commandsController){
+				topologyPage.commandsController.setToggled("AutoFit", scheme.autoFit);
+			}
         }
 
         onModelDataChanged: {
-            topologyPage.commandsController.setCommandIsEnabled("Save", true)
+			if (topologyPage.commandsController){
+				topologyPage.commandsController.setCommandIsEnabled("Save", true)
+			}
         }
 
         onSelectedIndexChanged: {
+			if (!topologyPage.commandsController){
+				return;
+			}
+
             if(objectModel.getItemsCount() > selectedIndex && selectedIndex >= 0){
                 selectedService = objectModel.getData("id", selectedIndex);
                 let status = objectModel.getData(ServiceStatus.s_Key, selectedIndex);
@@ -263,102 +271,69 @@ ViewBase {
 
     SubscriptionClient {
         id: topologySubscriptionClient;
-
-        Component.onCompleted: {
-            console.log("topologySubscriptionClient onCompleted", topologySubscriptionClient);
-
-            let subscriptionRequestId = "OnTopologyChanged"
-            var query = Gql.GqlRequest("subscription", subscriptionRequestId);
-            var queryFields = Gql.GqlObject("notification");
-            queryFields.InsertField("id");
-            query.AddField(queryFields);
-
-            Events.sendEvent("RegisterSubscription", {"Query": query, "Client": topologySubscriptionClient});
-        }
-
-        onStateChanged: {
-            if (state === "Ready"){
-                console.log("OnTopologyChanged Ready", topologySubscriptionClient.toJson());
-
-                if (topologySubscriptionClient.containsKey("data")){
-                    topologyPage.itemsTopologyModel.updateModel()
-                }
-            }
-        }
+		gqlCommandId: "OnTopologyChanged";
+		onMessageReceived: {
+			topologyPage.itemsTopologyModel.updateModel()
+		}
     }
 
     SubscriptionClient {
         id: subscriptionClient;
+		gqlCommandId: "OnServiceStatusChanged";
 
-        Component.onCompleted: {
-            let subscriptionRequestId = "OnServiceStatusChanged"
-            var query = Gql.GqlRequest("subscription", subscriptionRequestId);
-            var queryFields = Gql.GqlObject("notification");
-            queryFields.InsertField("id");
-            query.AddField(queryFields);
+		onMessageReceived: {
+			if (data.containsKey("OnServiceStatusChanged")){
+				let dataModel = data.getData("OnServiceStatusChanged")
+				let serviceId = dataModel.getData("serviceid")
+				let serviceStatus = dataModel.getData(ServiceStatus.s_Key)
+				let dependencyStatus
+				console.log(ServiceStatus.s_Key, serviceStatus)
 
-            Events.sendEvent("RegisterSubscription", {"Query": query, "Client": subscriptionClient});
-        }
+				let index = scheme.findModelIndex(serviceId);
+				scheme.objectModel.setData(ServiceStatus.s_Key, serviceStatus, index);
+				if (serviceStatus === ServiceStatus.s_Running){
+					scheme.objectModel.setData(TopologyModel.s_IconUrl_1, "Icons/Running", index);
+				}
+				else if (serviceStatus === ServiceStatus.s_NotRunning || serviceStatus === ServiceStatus.s_Stopping || serviceStatus === ServiceStatus.s_Starting){
+					scheme.objectModel.setData(TopologyModel.s_IconUrl_1, "Icons/Stopped", index);
+				}
+				else{
+					scheme.objectModel.setData(TopologyModel.s_IconUrl_1, "Icons/Alert", index);
+				}
+				if (index === scheme.selectedIndex){
+					topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus === ServiceStatus.s_NotRunning);
+					topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === ServiceStatus.s_Running);
+				}
+				let dependencyStatusModel = dataModel.getData(DependencyStatus.s_Key)
+				for (let i = 0; i < dependencyStatusModel.getItemsCount(); i++){
+					serviceId = dependencyStatusModel.getData("id", i);
+					index = scheme.findModelIndex(serviceId);
+					serviceStatus = scheme.objectModel.getData(ServiceStatus.s_Key, index);
+					dependencyStatus = dependencyStatusModel.getData(DependencyStatus.s_Key, i)
+					index = scheme.findModelIndex(serviceId);
 
-        onStateChanged: {
-            if (state === "Ready"){
-                console.log("TopologyPage OnServiceStatusChanged Ready", subscriptionClient.toJson());
-                if (subscriptionClient.containsKey("data")){
-                    let dataModel = subscriptionClient.getData("data")
-                    if (dataModel.containsKey("OnServiceStatusChanged")){
-                        dataModel = dataModel.getData("OnServiceStatusChanged")
-                        let serviceId = dataModel.getData("serviceid")
-                        let serviceStatus = dataModel.getData(ServiceStatus.s_Key)
-                        let dependencyStatus
-                        console.log(ServiceStatus.s_Key, serviceStatus)
+					if (dependencyStatus === DependencyStatus.s_NotRunning){
+						scheme.objectModel.setData(TopologyModel.s_IconUrl_2, "Icons/Error", index);
+					}
+					else if (dependencyStatus === DependencyStatus.s_Undefined) {
+						scheme.objectModel.setData(TopologyModel.s_IconUrl_2, "Icons/Warning", index);
+					}
+					else {
+						scheme.objectModel.setData(TopologyModel.s_IconUrl_2, "", index);
+					}
 
-                        let index = scheme.findModelIndex(serviceId);
-                        scheme.objectModel.setData(ServiceStatus.s_Key, serviceStatus, index);
-                        if (serviceStatus === ServiceStatus.s_Running){
-                            scheme.objectModel.setData(TopologyModel.s_IconUrl_1, "Icons/Running", index);
-                        }
-                        else if (serviceStatus === ServiceStatus.s_NotRunning || serviceStatus === ServiceStatus.s_Stopping || serviceStatus === ServiceStatus.s_Starting){
-                            scheme.objectModel.setData(TopologyModel.s_IconUrl_1, "Icons/Stopped", index);
-                        }
-                        else{
-                            scheme.objectModel.setData(TopologyModel.s_IconUrl_1, "Icons/Alert", index);
-                        }
-                        if (index === scheme.selectedIndex){
-                            topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus === ServiceStatus.s_NotRunning);
-                            topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === ServiceStatus.s_Running);
-                        }
-                        let dependencyStatusModel = dataModel.getData(DependencyStatus.s_Key)
-                        for (let i = 0; i < dependencyStatusModel.getItemsCount(); i++){
-                            serviceId = dependencyStatusModel.getData("id", i);
-                            index = scheme.findModelIndex(serviceId);
-                            serviceStatus = scheme.objectModel.getData(ServiceStatus.s_Key, index);
-                            dependencyStatus = dependencyStatusModel.getData(DependencyStatus.s_Key, i)
-                            index = scheme.findModelIndex(serviceId);
+					if (serviceStatus !== ServiceStatus.s_Running){
+						scheme.objectModel.setData(TopologyModel.s_IconUrl_2, "", index);
+					}
 
-                            if (dependencyStatus === DependencyStatus.s_NotRunning){
-                                scheme.objectModel.setData(TopologyModel.s_IconUrl_2, "Icons/Error", index);
-                            }
-                            else if (dependencyStatus === DependencyStatus.s_Undefined) {
-                                scheme.objectModel.setData(TopologyModel.s_IconUrl_2, "Icons/Warning", index);
-                            }
-                            else {
-                                scheme.objectModel.setData(TopologyModel.s_IconUrl_2, "", index);
-                            }
+					if (serviceId === scheme.selectedService){
+						metaInfoProvider.getMetaInfo(scheme.selectedService);
+					}
+				}
 
-                            if (serviceStatus !== ServiceStatus.s_Running){
-                                scheme.objectModel.setData(TopologyModel.s_IconUrl_2, "", index);
-                            }
-
-                            if (serviceId === scheme.selectedService){
-                                metaInfoProvider.getMetaInfo(scheme.selectedService);
-                            }
-                        }
-
-                        scheme.requestPaint()
-                    }
-                }
-            }
-        }
+				scheme.requestPaint()
+			}
+		}
     }
 
     property GqlModel topologySaveModel: GqlModel {

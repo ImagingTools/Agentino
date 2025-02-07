@@ -26,11 +26,12 @@ RemoteCollectionView {
 				let indexes = root.table.getSelectedIndexes();
 				if (indexes.length > 0){
 					let index = indexes[0];
+					let id = root.table.elements.getData("Id", index);
 					let name = root.table.elements.getData("ComputerName", index);
 					let documentManagerPtr = MainDocumentManager.getDocumentManager("Agents")
 					if (documentManagerPtr){
 						let view = documentManagerPtr.getActiveView();
-						view.addFixedView(singleDocumentWorkspaceView, name, true);
+						view.addFixedView(singleDocumentWorkspaceView, name, id, true);
 					}
 				}
 			}
@@ -40,7 +41,7 @@ RemoteCollectionView {
 
     Component.onCompleted: {
         let documentManagerPtr = MainDocumentManager.getDocumentManager(root.collectionId)
-        if (documentManagerPtr){
+		if (documentManagerPtr && root.commandsDelegate){
             root.commandsDelegate.documentManager = documentManagerPtr
         }
     }
@@ -122,7 +123,7 @@ RemoteCollectionView {
                 elide: Text.ElideRight;
             }
 
-            onRowIndexChanged: {
+			onReused: {
                 if (rowIndex >= 0){
                     let status = root.table.elements.getData("Status", rowIndex);
 
@@ -147,25 +148,10 @@ RemoteCollectionView {
 
     SubscriptionClient {
         id: subscriptionClient;
+		gqlCommandId: "OnAgentStatusChanged";
 
-        Component.onCompleted: {
-            let subscriptionRequestId = "OnAgentStatusChanged"
-            var query = Gql.GqlRequest("subscription", subscriptionRequestId);
-            var queryFields = Gql.GqlObject("notification");
-            queryFields.InsertField("Id");
-            query.AddField(queryFields);
-
-            Events.sendEvent("RegisterSubscription", {"Query": query, "Client": subscriptionClient});
-        }
-
-        onStateChanged: {
-            console.log("OnAgentStatusChanged", state);
-
-            if (state === "Ready"){
-                if (subscriptionClient.containsKey("data")){
-                    root.doUpdateGui();
-                }
-            }
-        }
+		onMessageReceived: {
+			root.doUpdateGui();
+		}
     }
 }

@@ -26,34 +26,40 @@ SplitView {
 
         onServiceIdChanged: {
             console.log("onServiceIdChanged", serviceId)
-            log.serviceId = serviceId
+			log.serviceId = serviceId
+
+			// log.doUpdateGui();
         }
     }
 
     MessageCollectionView {
         id: log
 
+		width: parent.width
+		height: 500;
+
         property string serviceId
 
-        collectionId: "";
+		// collectionId: "ServiceLog";
 
         collectionFilter: MessageCollectionFilter {
-
         }
 
-        onServiceIdChanged: {
-            dataController.elementsModel.clear()
-            if (collectionId == ""){
-                collectionId = "ServiceLog"
-                dataController.collectionId = log.collectionId
+		onServiceIdChanged: {
+			dataController.elementsModel.clear()
+			if (collectionId == ""){
+				collectionId = "ServiceLog"
+				dataController.collectionId = log.collectionId
 
-                return;
-            }
+				return;
+			}
 
-            dataController.updateModel()
+			console.log("onServiceIdChanged", serviceId);
+
+			dataController.updateModel();
 			// unRegisterSubscription()
 			// registerSubscription()
-        }
+		}
 
         function getHeaders(){
             console.log("getHeaders", container.clientId)
