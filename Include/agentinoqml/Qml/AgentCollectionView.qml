@@ -54,8 +54,8 @@ SplitView {
             }
             console.log("onAgentIdChanged collectionId", dataController.collectionId);
 
-            unRegisterSubscription()
-            registerSubscription()
+			// unRegisterSubscription()
+			// registerSubscription()
         }
 
         function getHeaders(){

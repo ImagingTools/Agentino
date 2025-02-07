@@ -54,11 +54,11 @@ public:
 	virtual void OnComponentCreated() override;
 
 public	Q_SLOTS:
-	void stateChanged(QProcess::ProcessState newState);
 	void OnReadyReadStandardError();
 	void OnReadyReadStandardOutput();
 
 private:
+	QByteArray GetModuleName(QByteArray servicePath) const;
 	void SetupProcess(QProcess& process, const QByteArray& programPath, const QStringList& arguments) const;
 	void updateServiceVersion(const QByteArray& serviceId);
 	void OnTimeout();
@@ -66,7 +66,8 @@ private:
 
 	struct ServiceProcess
 	{
-		QProcess* m_processPtr = nullptr;
+		IServiceStatusInfo::ServiceStatus lastStatus = IServiceStatusInfo::SS_UNDEFINED;
+		int countOfStarting = 0;
 	};
 
 	class PluginManager: public imtbase::TPluginManager<
@@ -93,8 +94,8 @@ private:
 	I_REF(imtbase::IObjectCollection, m_serviceCollectionCompPtr);
 
 	QMap<QByteArray, ServiceProcess> m_processMap;
-	mutable QList<QByteArray> m_restartProcessing;
 	QTimer m_timer;
+	QByteArray m_activeServiceId;
 };
 
 

@@ -51,8 +51,8 @@ SplitView {
             }
 
             dataController.updateModel()
-            unRegisterSubscription()
-            registerSubscription()
+			// unRegisterSubscription()
+			// registerSubscription()
         }
 
         function getHeaders(){

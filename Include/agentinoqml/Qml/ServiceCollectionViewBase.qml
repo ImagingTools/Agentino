@@ -52,9 +52,9 @@ RemoteCollectionView {
         if (documentManagerPtr){
             root.commandsDelegate.documentManager = documentManagerPtr
 
-			documentManagerPtr.registerDocumentView("Service"/* + root.clientId*/, "ServiceEditor", serviceEditorComp);
-			documentManagerPtr.registerDocumentDataController("Service"/* + root.clientId*/, serviceDataControllerComp);
-			documentManagerPtr.registerDocumentValidator("Service"/* + root.clientId*/, serviceValidatorComp);
+			documentManagerPtr.registerDocumentView("Service", "ServiceEditor", serviceEditorComp);
+			documentManagerPtr.registerDocumentDataController("Service", serviceDataControllerComp);
+			documentManagerPtr.registerDocumentValidator("Service", serviceValidatorComp);
         }
     }
 
@@ -70,8 +70,7 @@ RemoteCollectionView {
     commandsDelegateComp: Component {ServiceCollectionViewCommandsDelegate {
         id: serviceCommandsDelegate
         collectionView: root
-		documentTypeId: "Service"/* + root.clientId*/
-
+		documentTypeId: "Service"
         onCommandActivated: {
             if (commandId == "Start" || commandId == "Stop"){
                 root.commandsController.setCommandIsEnabled("Start", false);
@@ -197,7 +196,7 @@ RemoteCollectionView {
         id: stateColumnContentComp;
         TableCellIconTextDelegate {
             icon.width: icon.visible ? 9 : 0;
-            onRowIndexChanged: {
+			onReused: {
                 if (rowIndex >= 0){
                     let status = root.table.elements.getData("Status", rowIndex);
                     console.log("status" ,status);
