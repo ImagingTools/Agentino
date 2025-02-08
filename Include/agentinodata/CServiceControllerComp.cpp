@@ -7,11 +7,11 @@
 // Agentino includes
 #include <agentinodata/CServiceInfo.h>
 
-
+#if defined Q_OS_WIN32
 #include <windows.h>
-// #include <stdio.h>
 #include <tchar.h>
 #include <psapi.h>
+#endif
 
 
 namespace agentinodata
