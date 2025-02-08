@@ -30,15 +30,21 @@ namespace agentgql
 {
 
 
-// reimplemented (sdl::imtbase::ImtCollection::V1_0::CGraphQlHandlerCompBase)
+// reimplemented (sdl::imtbase::ImtCollection::CGraphQlHandlerCompBase)
 
-sdl::imtbase::ImtCollection::CVisualStatus::V1_0 CServiceCollectionControllerComp::OnGetObjectVisualStatus(
-			const sdl::imtbase::ImtCollection::V1_0::CGetObjectVisualStatusGqlRequest& getObjectVisualStatusRequest,
+sdl::imtbase::ImtCollection::CVisualStatus CServiceCollectionControllerComp::OnGetObjectVisualStatus(
+			const sdl::imtbase::ImtCollection::CGetObjectVisualStatusGqlRequest& getObjectVisualStatusRequest,
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	sdl::imtbase::ImtCollection::CVisualStatus::V1_0 response = BaseClass::OnGetObjectVisualStatus(getObjectVisualStatusRequest, gqlRequest, errorMessage);
+	sdl::imtbase::ImtCollection::CVisualStatus retVal = BaseClass::OnGetObjectVisualStatus(getObjectVisualStatusRequest, gqlRequest, errorMessage);
+	if (!retVal.Version_1_0){
+		I_CRITICAL();
 
+		return retVal;
+	}
+
+	sdl::imtbase::ImtCollection::CVisualStatus::V1_0& response = *retVal.Version_1_0;
 
 	if (response.ObjectId){
 		imtbase::IObjectCollection::Ids elementIds = m_objectCollectionCompPtr->GetElementIds();
@@ -66,7 +72,7 @@ sdl::imtbase::ImtCollection::CVisualStatus::V1_0 CServiceCollectionControllerCom
 		}
 	}
 
-	return response;
+	return retVal;
 }
 
 

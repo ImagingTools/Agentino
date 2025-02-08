@@ -218,13 +218,20 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql:
 		return nullptr;
 	}
 
-	sdl::agentino::Agents::V1_0::CAgentItemGqlRequest agentItemGqlRequest(gqlRequest, false);
+	sdl::agentino::Agents::CAgentItemGqlRequest agentItemGqlRequest(gqlRequest, false);
 	sdl::agentino::Agents::CAgentDataPayload::V1_0 agentDataPayload;
-	sdl::agentino::Agents::V1_0::AgentItemRequestArguments agentItemRequestArguments = agentItemGqlRequest.GetRequestedArguments();
+	sdl::agentino::Agents::AgentItemRequestArguments agentItemRequestArguments = agentItemGqlRequest.GetRequestedArguments();
+
+	if (!agentItemRequestArguments.input.Version_1_0){
+		I_CRITICAL();
+
+		return nullptr;
+	}
+
 
 	QByteArray agentId;
-	if (agentItemRequestArguments.input.Id){
-		agentId = *agentItemRequestArguments.input.Id;
+	if (agentItemRequestArguments.input.Version_1_0->Id){
+		agentId = *agentItemRequestArguments.input.Version_1_0->Id;
 	}
 
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
