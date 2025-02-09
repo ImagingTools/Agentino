@@ -17,7 +17,9 @@
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/IServiceController.h>
 
+
 IMT_DECLARE_PLUGIN_INTERFACE(ServiceSettings, imtservice::IConnectionCollectionPlugin);
+
 
 namespace agentinodata
 {
@@ -60,7 +62,7 @@ public	Q_SLOTS:
 private:
 	QByteArray GetModuleName(QByteArray servicePath) const;
 	void SetupProcess(QProcess& process, const QByteArray& programPath, const QStringList& arguments) const;
-	void updateServiceVersion(const QByteArray& serviceId);
+	void UpdateServiceVersion(const QByteArray& serviceId);
 	void OnTimeout();
 	void EmitChangeSignal(const QByteArray& serviceId, IServiceStatusInfo::ServiceStatus serviceStatus);
 
@@ -71,9 +73,9 @@ private:
 	};
 
 	class PluginManager: public imtbase::TPluginManager<
-							imtservice::IConnectionCollectionPlugin,
-							IMT_CREATE_PLUGIN_FUNCTION(ServiceSettings),
-							IMT_DESTROY_PLUGIN_FUNCTION(ServiceSettings)>
+				imtservice::IConnectionCollectionPlugin,
+				IMT_CREATE_PLUGIN_FUNCTION(ServiceSettings),
+				IMT_DESTROY_PLUGIN_FUNCTION(ServiceSettings)>
 	{
 	public:
 		PluginManager(

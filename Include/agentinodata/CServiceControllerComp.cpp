@@ -7,10 +7,11 @@
 // Agentino includes
 #include <agentinodata/CServiceInfo.h>
 
-#if defined Q_OS_WIN32
-#include <windows.h>
-#include <tchar.h>
-#include <psapi.h>
+// Windows includes
+#if defined Q_OS_WIN
+	#include <windows.h>
+	#include <tchar.h>
+	#include <psapi.h>
 #endif
 
 
@@ -62,7 +63,7 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 		return false;
 	}
 
-	updateServiceVersion(serviceId);
+	UpdateServiceVersion(serviceId);
 
 	agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = nullptr;
 	imtbase::IObjectCollection::DataPtr serviceDataPtr;
@@ -80,7 +81,7 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 
 	QStringList arguments;
 	for (const QByteArray& argument: serviceArguments){
-		if (!argument.isEmpty()) {
+		if (!argument.isEmpty()){
 			arguments << QString(argument);
 		}
 	}
@@ -162,7 +163,7 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 
 	QByteArray servicePath = serviceInfoPtr->GetServicePath();
 
-#ifdef WIN32
+#ifdef Q_OS_WIN
 	QByteArray moduleName = GetModuleName(servicePath);
 
 	if (!moduleName.isEmpty()){
@@ -288,58 +289,44 @@ QByteArray CServiceControllerComp::GetModuleName(QByteArray servicePath) const
 {
 	QByteArray retVal;
 
-#ifdef WIN32
+#ifdef Q_OS_WIN
+	DWORD processList[10000];
+	DWORD bytesNeeded;
+
 	// Get the list of process identifiers.
-
-	DWORD aProcesses[1024], cbNeeded, cProcesses;
-	TCHAR filename[MAX_PATH];
-
-	unsigned int i;
-
-	if ( EnumProcesses( aProcesses, sizeof(aProcesses), &cbNeeded ) )
-	{
+	if (EnumProcesses(processList, sizeof(processList), &bytesNeeded)){
 		// Calculate how many process identifiers were returned.
-
-		cProcesses = cbNeeded / sizeof(DWORD);
+		DWORD processCount = bytesNeeded / sizeof(DWORD);
 
 		// Print the name and process identifier for each process.
+		for (DWORD i = 0; i < processCount; i++){
+			if (processList[i] != 0){
+				DWORD processID = processList[i];
 
-		for ( i = 0; i < cProcesses; i++ )
-		{
-			if( aProcesses[i] != 0 )
-			{
-				DWORD processID = aProcesses[i];
-
-				TCHAR szProcessName[MAX_PATH] = TEXT("<unknown>");
+				TCHAR processName[MAX_PATH] = TEXT("<unknown>");
 
 				// Get a handle to the process.
-
-				HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION |
-												  PROCESS_VM_READ,
-											  FALSE, processID );
+				HANDLE processHandle = OpenProcess(
+							PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
+							FALSE,
+							processID);
 
 				// Get the process name.
+				if (nullptr != processHandle){
+					HMODULE moduleHandle;
+					DWORD byteCount;
 
-				if (NULL != hProcess )
-				{
-					HMODULE hMod;
-					DWORD cbNeeded;
-
-					if ( EnumProcessModules( hProcess, &hMod, sizeof(hMod),
-										   &cbNeeded) )
-					{
-
-
-						if (GetModuleFileNameEx(hProcess, NULL, filename, MAX_PATH)) {
-							QByteArray modulePath = QString::fromStdWString(filename).toUtf8();
+					if (EnumProcessModules(processHandle, &moduleHandle, sizeof(moduleHandle),&byteCount)){
+						TCHAR processModuleFileName[MAX_PATH];
+						if (GetModuleFileNameEx(processHandle, nullptr, processModuleFileName, MAX_PATH)){
+							QByteArray modulePath = QString::fromStdWString(processModuleFileName).toUtf8();
 							if (servicePath.toLower() == modulePath.toLower()){
 
-								GetModuleBaseName( hProcess, hMod, szProcessName,
-												  sizeof(szProcessName)/sizeof(TCHAR) );
-								retVal = QString::fromStdWString(szProcessName).toUtf8();
+								GetModuleBaseName(processHandle, moduleHandle, processName, sizeof(processName) / sizeof(TCHAR));
+								retVal = QString::fromStdWString(processName).toUtf8();
 
 								// Release the handle to the process.
-								CloseHandle( hProcess );
+								CloseHandle(processHandle);
 
 								return retVal;
 							}
@@ -348,8 +335,7 @@ QByteArray CServiceControllerComp::GetModuleName(QByteArray servicePath) const
 				}
 
 				// Release the handle to the process.
-
-				CloseHandle( hProcess );
+				CloseHandle(processHandle);
 			}
 		}
 	}
@@ -358,6 +344,7 @@ QByteArray CServiceControllerComp::GetModuleName(QByteArray servicePath) const
 
 	return retVal;
 }
+
 
 void CServiceControllerComp::SetupProcess(QProcess& process, const QByteArray& programPath, const QStringList& arguments) const
 {
@@ -369,7 +356,7 @@ void CServiceControllerComp::SetupProcess(QProcess& process, const QByteArray& p
 }
 
 
-void CServiceControllerComp::updateServiceVersion(const QByteArray& serviceId)
+void CServiceControllerComp::UpdateServiceVersion(const QByteArray& serviceId)
 {
 	if (!m_serviceCollectionCompPtr.IsValid()){
 		Q_ASSERT(0);
@@ -389,7 +376,7 @@ void CServiceControllerComp::updateServiceVersion(const QByteArray& serviceId)
 			istd::TDelPtr<PluginManager>& pluginManagerPtr = m_pluginMap[serviceId];
 			pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), nullptr));
 
-			if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")) {
+			if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")){
 				SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(qPrintable(serviceName)), "CServiceControllerComp");
 				m_pluginMap.remove(serviceId);
 
