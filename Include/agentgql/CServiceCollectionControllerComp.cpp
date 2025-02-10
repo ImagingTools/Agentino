@@ -321,8 +321,11 @@ imtbase::CTreeItemModel* CServiceCollectionControllerComp::GetObject(const imtgq
 						break;
 					}
 				}
-				Q_ASSERT(connectionCollectionFactoryPtr != nullptr);
-				istd::TDelPtr<imtservice::IConnectionCollection> connectionCollection = connectionCollectionFactoryPtr->CreateInstance();
+                // Q_ASSERT(connectionCollectionFactoryPtr != nullptr);
+                istd::TDelPtr<imtservice::IConnectionCollection> connectionCollection = nullptr;
+                if (connectionCollectionFactoryPtr != nullptr){
+                    connectionCollection = connectionCollectionFactoryPtr->CreateInstance();
+                }
 				if (connectionCollection != nullptr){
 					serviceVersion = connectionCollection->GetServiceVersion();
 					dataModel->SetData("Version", serviceVersion);

@@ -7,12 +7,24 @@
 // Agentino includes
 #include <agentinodata/CServiceInfo.h>
 
-// Windows includes
-#if defined Q_OS_WIN
+#ifdef Q_OS_WIN
 	#include <windows.h>
 	#include <tchar.h>
 	#include <psapi.h>
+#elif defined(Q_OS_LINUX)
+	#include <stdlib.h>
+	#include <stdio.h>
+	#include <string.h>
+	#include <unistd.h>
+	#include <dirent.h>
+	#include <sys/types.h>
 #endif
+
+// Qt includes
+#include<QFileInfo>
+
+// #include <stdio.h>
+
 
 
 namespace agentinodata
@@ -81,7 +93,7 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 
 	QStringList arguments;
 	for (const QByteArray& argument: serviceArguments){
-		if (!argument.isEmpty()){
+		if (!argument.isEmpty()) {
 			arguments << QString(argument);
 		}
 	}
@@ -162,10 +174,9 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 	}
 
 	QByteArray servicePath = serviceInfoPtr->GetServicePath();
+    QByteArray moduleName = GetModuleName(servicePath);
 
-#ifdef Q_OS_WIN
-	QByteArray moduleName = GetModuleName(servicePath);
-
+#ifdef WIN32
 	if (!moduleName.isEmpty()){
 		QByteArray data = "taskkill /f /im " + moduleName;
 
@@ -179,13 +190,20 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 
 		retVal = true;
 	}
+
+#elif defined(Q_OS_LINUX)
+	if (!moduleName.isEmpty()){
+		EmitChangeSignal(serviceId, IServiceStatusInfo::SS_STOPPING);
+		QByteArray data = "pkill -9 -f " + moduleName;
+		system(data.data());
+		SendInfoMessage(0, QString("Service '%1' stopped").arg(serviceName), serviceName);
+
+		EmitChangeSignal(serviceId, IServiceStatusInfo::SS_NOT_RUNNING);
+
+		retVal = true;
+	}
 #endif
 
-#ifdef UNIX
-	kill(pid, SIGSTOP); // Stop parent process
-	usleep(3000000);    // Delay 3 seconds
-	kill(pid, SIGCONT); // Resume parent process
-#endif
 
 	return retVal;
 }
@@ -307,9 +325,9 @@ QByteArray CServiceControllerComp::GetModuleName(QByteArray servicePath) const
 
 				// Get a handle to the process.
 				HANDLE processHandle = OpenProcess(
-							PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
-							FALSE,
-							processID);
+					PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
+					FALSE,
+					processID);
 
 				// Get the process name.
 				if (nullptr != processHandle){
@@ -340,11 +358,53 @@ QByteArray CServiceControllerComp::GetModuleName(QByteArray servicePath) const
 		}
 	}
 
+#elif defined(Q_OS_LINUX)
+	DIR* dir;
+	struct dirent* ent;
+	char* endptr;
+	char buf[512];
+
+	if (!(dir = opendir("/proc"))){
+		perror("can't open /proc");
+		return "";
+	}
+
+	while((ent = readdir(dir)) != NULL){
+		/* if endptr is not a null character, the directory is not
+		 * entirely numeric, so ignore it */
+		long lpid = strtol(ent->d_name, &endptr, 10);
+		if (*endptr != '\0') {
+			continue;
+		}
+
+		/* try to open the cmdline file */
+		snprintf(buf, sizeof(buf), "/proc/%ld/cmdline", lpid);
+		FILE* fp = fopen(buf, "r");
+
+		if (fp) {
+			if (fgets(buf, sizeof(buf), fp) != NULL){
+				/* check the first token in the file, the program name */
+				QByteArray modulePath = QString::fromStdString(buf).toUtf8();
+				if (servicePath.toLower() == modulePath.toLower()){
+					closedir(dir);
+					char* first = strtok(buf, " ");
+					retVal = QString::fromStdString(first).toUtf8();
+					QFileInfo fileInfo(retVal);
+					retVal = fileInfo.fileName().toUtf8();
+
+					return retVal;
+				}
+			}
+			fclose(fp);
+		}
+
+	}
+
+	closedir(dir);
 #endif
 
 	return retVal;
 }
-
 
 void CServiceControllerComp::SetupProcess(QProcess& process, const QByteArray& programPath, const QStringList& arguments) const
 {
@@ -393,8 +453,10 @@ void CServiceControllerComp::UpdateServiceVersion(const QByteArray& serviceId)
 						break;
 					}
 				}
-				Q_ASSERT(connectionCollectionFactoryPtr != nullptr);
-				istd::TDelPtr<imtservice::IConnectionCollection> connectionCollection = connectionCollectionFactoryPtr->CreateInstance();
+                istd::TDelPtr<imtservice::IConnectionCollection> connectionCollection = nullptr;
+                if (connectionCollectionFactoryPtr != nullptr){
+                    connectionCollection = connectionCollectionFactoryPtr->CreateInstance();
+                }
 				if (connectionCollection != nullptr){
 					QString serviceVersion = connectionCollection->GetServiceVersion();
 					if (serviceInfoPtr->GetServiceVersion() != serviceVersion){
@@ -423,23 +485,41 @@ void CServiceControllerComp::OnTimeout()
 					continue;
 				}
 				IServiceStatusInfo::ServiceStatus lastStatus = m_processMap[serviceId].lastStatus;
-				if (moduleName.isEmpty() && lastStatus != IServiceStatusInfo::SS_NOT_RUNNING && lastStatus != IServiceStatusInfo::SS_STARTING && lastStatus != IServiceStatusInfo::SS_STOPPING){
-					if (serviceInfoPtr->IsAutoStart()){
-						if (m_processMap[serviceId].countOfStarting > 3){
-							EmitChangeSignal(serviceId, IServiceStatusInfo::SS_RUNNING_IMPOSSIBLE);
-
-							continue;
-						}
-						else{
-							StartService(serviceId);
+				if (moduleName.isEmpty() && lastStatus != IServiceStatusInfo::SS_NOT_RUNNING){
+					if (lastStatus == IServiceStatusInfo::SS_STARTING){
+						m_processMap[serviceId].countOfStarting++;
+						if (m_processMap[serviceId].countOfStarting > 4){
+							m_processMap[serviceId].countOfStarting = 0;
+							EmitChangeSignal(serviceId, IServiceStatusInfo::SS_NOT_RUNNING);
 						}
 					}
 					else{
-						EmitChangeSignal(serviceId, IServiceStatusInfo::SS_NOT_RUNNING);
+						if (serviceInfoPtr->IsAutoStart()){
+							if (m_processMap[serviceId].countOfStarting > 3){
+								EmitChangeSignal(serviceId, IServiceStatusInfo::SS_RUNNING_IMPOSSIBLE);
+
+								continue;
+							}
+							else{
+								StartService(serviceId);
+							}
+						}
+						else{
+							EmitChangeSignal(serviceId, IServiceStatusInfo::SS_NOT_RUNNING);
+						}
 					}
 				}
-				else if (!moduleName.isEmpty() && lastStatus != IServiceStatusInfo::SS_RUNNING && lastStatus != IServiceStatusInfo::SS_STARTING && lastStatus != IServiceStatusInfo::SS_STOPPING){
-					EmitChangeSignal(serviceId, IServiceStatusInfo::SS_RUNNING);
+				else if (!moduleName.isEmpty() && lastStatus != IServiceStatusInfo::SS_RUNNING){
+					if (lastStatus == IServiceStatusInfo::SS_STOPPING){
+						m_processMap[serviceId].countOfStarting++;
+						if (m_processMap[serviceId].countOfStarting > 4){
+							m_processMap[serviceId].countOfStarting = 0;
+							EmitChangeSignal(serviceId, IServiceStatusInfo::SS_RUNNING);
+						}
+					}
+					else{
+						EmitChangeSignal(serviceId, IServiceStatusInfo::SS_RUNNING);
+					}
 				}
 			}
 		}
