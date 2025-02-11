@@ -259,25 +259,10 @@ RemoteCollectionView {
 
     SubscriptionClient {
         id: subscriptionClient;
-
-        Component.onCompleted: {
-            let subscriptionRequestId = "OnServiceStatusChanged"
-            var query = Gql.GqlRequest("subscription", subscriptionRequestId);
-            var queryFields = Gql.GqlObject("notification");
-            queryFields.InsertField("Id");
-            query.AddField(queryFields);
-
-            Events.sendEvent("RegisterSubscription", {"Query": query, "Client": subscriptionClient});
-        }
-
-        onStateChanged: {
-            if (state === "Ready"){
-                console.log("OnServiceStatusChanged Ready", subscriptionClient.toJson());
-                if (subscriptionClient.containsKey("data")){
-                    root.doUpdateGui();
-                }
-            }
-        }
+		gqlCommandId: "OnServiceStatusChanged";
+		onMessageReceived: {
+			root.doUpdateGui();
+		}
     }
 }
 

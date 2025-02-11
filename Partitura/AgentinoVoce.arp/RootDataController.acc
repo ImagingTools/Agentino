@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5311" Description="ACF"/>
+            <Version Id="0" Number="5332" Description="ACF"/>
             <Version Id="1" Number="2230" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394754" Description="Qt Framework"/>
+            <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -49,6 +49,9 @@
                     <AttributeInfo Id="UserCollection" Type="Reference" ExportId="UserCollection">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
         </Element>
@@ -59,9 +62,6 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="UserCollection" Type="Reference" ExportId="UserCollection">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
@@ -236,10 +236,12 @@
     </ElementsList>
     <EmbeddedRegistriesList/>
     <ExportedInterfaces>
+        <Interface InterfaceId="imtauth::IJwtSessionController" ComponentId="AuthorizationConcept/JwtSessionController"/>
         <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="ApplicationController"/>
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="ApplicationController"/>
     </ExportedInterfaces>
     <ExportedComponents>
+        <Component ExportedId="JwtSessionController" ComponentId="AuthorizationConcept/JwtSessionController"/>
         <Component ExportedId="UserSessionRepository" ComponentId="AuthorizationConcept/UserSessionRepository"/>
         <Component ExportedId="UserSettingsRepository" ComponentId="SettingsController/UserSettingsRepository"/>
     </ExportedComponents>

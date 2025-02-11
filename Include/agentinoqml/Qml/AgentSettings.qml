@@ -212,34 +212,18 @@ ViewBase {
 
     SubscriptionClient {
         id: subscriptionClient;
+		gqlCommandId: "OnAgentConnectionChanged";
 
-        Component.onCompleted: {
-            let subscriptionRequestId = "OnAgentConnectionChanged"
-            var query = Gql.GqlRequest("subscription", subscriptionRequestId);
-            var queryFields = Gql.GqlObject("notification");
-            queryFields.InsertField("Id");
-            query.AddField(queryFields);
+		onMessageReceived: {
+			if (data.containsKey("OnAgentConnectionChanged")){
+				let dataModel = data.getData("OnAgentConnectionChanged");
 
-            Events.sendEvent("RegisterSubscription", {"Query": query, "Client": subscriptionClient});
-            // subscriptionManager.registerSubscription(query, subscriptionClient);
-        }
-
-        onStateChanged: {
-            if (state === "Ready"){
-                console.log("OnAgentConnectionChanged Ready", subscriptionClient.toJson());
-                if (subscriptionClient.containsKey("data")){
-                    let dataModel = subscriptionClient.getData("data");
-                    if (dataModel.containsKey("OnAgentConnectionChanged")){
-                        dataModel = dataModel.getData("OnAgentConnectionChanged");
-
-                        if (dataModel.containsKey("status")){
-                            let status = dataModel.getData("status");
-                            agentSettingsContainer.agentStatus = status;
-                        }
-                    }
-                }
-            }
-        }
+				if (dataModel.containsKey("status")){
+					let status = dataModel.getData("status");
+					agentSettingsContainer.agentStatus = status;
+				}
+			}
+		}
     }
 
     property GqlModel settingsSaveModel: GqlModel {
