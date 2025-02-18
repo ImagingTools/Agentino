@@ -14,185 +14,182 @@
 // Agentino includes
 #include <agentinodata/IAgentInfo.h>
 #include <agentinodata/IServiceInfo.h>
-#include <GeneratedFiles/agentinodata/Ddl/Cpp/Globals.h>
-
 
 
 namespace agentinogql
 {
 
 
-// reimplemented (imtgql::CGqlRequestHandlerCompBase)
+// reimplemented (sdl::agentino::Topology::CGraphQlHandlerCompBase)
 
-imtbase::CTreeItemModel* CTopologyControllerComp::CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+sdl::agentino::Topology::CTopology CTopologyControllerComp::OnGetTopology(
+			const sdl::agentino::Topology::CGetTopologyGqlRequest& /*getTopologyRequest*/,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
 {
-	QByteArray commandId = gqlRequest.GetCommandId();
-
-	imtgql::IGqlRequest::RequestType requestType = gqlRequest.GetRequestType();
-
-	if (requestType == imtgql::IGqlRequest::RT_QUERY){
-		if (commandId == "GetTopology"){
-			return CreateTopologyModel();
-		}
-	}
-	else{
-		if (commandId == "SaveTopology"){
-			return SaveTopologyModel(gqlRequest, errorMessage);
-		}
-	}
-
-	errorMessage = QString("Unable to create internal response with command %1").arg(qPrintable(commandId));
-
-	SendErrorMessage(0, errorMessage);
-
-	Q_ASSERT(false);
-
-	return nullptr;
-}
-
-
-imtbase::CTreeItemModel* CTopologyControllerComp::CreateTopologyModel() const
-{
-	if (!m_agentCollectionCompPtr.IsValid() || !m_serviceCompositeInfoCompPtr.IsValid()){
-		return nullptr;
-	}
-
-	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
-
-	imtbase::CTreeItemModel* representationPtr = rootModelPtr->AddTreeModel("data");
-	Q_ASSERT(representationPtr != nullptr);
-	imtbase::CTreeItemModel* itemsModel = representationPtr->AddTreeModel("items");
-	Q_ASSERT(itemsModel != nullptr);
-
+	sdl::agentino::Topology::CTopology response;
+	
+	response.Version_1_0.emplace();
+	
+	QList<sdl::agentino::Topology::CService::V1_0> services;
+		
 	imtbase::ICollectionInfo::Ids elementIds = m_agentCollectionCompPtr->GetElementIds();
 	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
 		imtbase::IObjectCollection::DataPtr agentDataPtr;
 		if (m_agentCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
 			agentinodata::IAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::IAgentInfo*>(agentDataPtr.GetPtr());
-			QString agentName = m_agentCollectionCompPtr->GetElementInfo(elementId, imtbase::ICollectionInfo::EIT_NAME).toString();
 			if (agentInfoPtr != nullptr){
-				// Get Services
+				QString agentName = m_agentCollectionCompPtr->GetElementInfo(elementId, imtbase::ICollectionInfo::EIT_NAME).toString();
+				
 				imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-				if (serviceCollectionPtr != nullptr){
-					imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
-					for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
-						imtbase::IObjectCollection::DataPtr serviceDataPtr;
-						serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr);
-						agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
-						if (serviceInfoPtr == nullptr){
-							continue;
-						}
-						int index = itemsModel->InsertNewItem();
-						QPoint point = GetServiceCoordinate(serviceElementId);
-						itemsModel->SetData(agentino::TopologyModel::s_Id, serviceElementId, index);
-						itemsModel->SetData(agentino::TopologyModel::s_AgentId, elementId, index);
-						itemsModel->SetData(agentino::TopologyModel::s_X, point.x(), index);
-						itemsModel->SetData(agentino::TopologyModel::s_Y, point.y(), index);
-						QString name = serviceCollectionPtr->GetElementInfo(serviceElementId, imtbase::ICollectionInfo::EIT_NAME).toString();
-						QString description = serviceCollectionPtr->GetElementInfo(serviceElementId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
-						QString typeName = serviceInfoPtr->GetServiceTypeName();
-						itemsModel->SetData(agentino::TopologyModel::s_MainText, name + "@" + agentName, index);
-						itemsModel->SetData(agentino::TopologyModel::s_SecondText, description, index);
-						itemsModel->SetData(agentino::TopologyModel::s_ThirdText, typeName, index);
-						agentinodata::IServiceStatusInfo::ServiceStatus serviceStatus = m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceElementId);
-						itemsModel->SetData(agentino::ServiceStatus::s_Key, agentinodata::IServiceStatusInfo::ToString(serviceStatus), index);
-						if (serviceStatus == agentinodata::IServiceStatusInfo::SS_RUNNING){
-							itemsModel->SetData(agentino::TopologyModel::s_IconUrl_1, "Icons/Running", index);
-						}
-						else if (serviceStatus == agentinodata::IServiceStatusInfo::SS_NOT_RUNNING){
-							itemsModel->SetData(agentino::TopologyModel::s_IconUrl_1, "Icons/Stopped", index);
-						}
-						else{
-							itemsModel->SetData(agentino::TopologyModel::s_IconUrl_1, "Icons/Alert", index);
-						}
+				Q_ASSERT (serviceCollectionPtr != nullptr);
+				
+				imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
+				for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
+					agentinodata::IServiceInfo* serviceInfoPtr = nullptr;
+					imtbase::IObjectCollection::DataPtr serviceDataPtr;
+					if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
+						serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+					}
+					
+					if (serviceInfoPtr == nullptr){
+						continue;
+					}
+					
+					sdl::agentino::Topology::CService::V1_0 service;
+					
+					service.Id = serviceElementId;
+					service.AgentId = elementId;
+					
+					QPoint point = GetServiceCoordinate(serviceElementId);
+					
+					service.X = point.x();
+					service.Y = point.y();
+					
+					QString serviceTypeName = serviceInfoPtr->GetServiceTypeName();
+					QString serviceName = serviceInfoPtr->GetServiceName();
+					QString description = serviceInfoPtr->GetServiceDescription();
 
-						agentinodata::IServiceCompositeInfo::StateOfRequiredServices stateOfRequiredServices = m_serviceCompositeInfoCompPtr->GetStateOfRequiredServices(serviceElementId);
-						itemsModel->SetData(agentino::StateOfRequiredServices::s_Key, agentinodata::IServiceCompositeInfo::ToString(stateOfRequiredServices), index);
-						
-						if (serviceStatus == agentinodata::IServiceStatusInfo::SS_NOT_RUNNING
-									|| serviceStatus == agentinodata::IServiceStatusInfo::SS_UNDEFINED
-									|| stateOfRequiredServices == agentinodata::IServiceCompositeInfo::SORS_RUNNING){
-							itemsModel->SetData(agentino::TopologyModel::s_IconUrl_2, "", index);
-						}
-						else if (stateOfRequiredServices == agentinodata::IServiceCompositeInfo::SORS_NOT_RUNNING){
-							itemsModel->SetData(agentino::TopologyModel::s_IconUrl_2, "Icons/Error", index);
-						}
-						else if (stateOfRequiredServices == agentinodata::IServiceCompositeInfo::SORS_UNDEFINED){
-							itemsModel->SetData(agentino::TopologyModel::s_IconUrl_2, "Icons/Warning", index);
-						}
+					service.MainText = serviceName + "@" + agentName;
+					service.SecondText = description;
+					
+					QString typeName = serviceInfoPtr->GetServiceTypeName();
+					service.ThirdText = serviceTypeName;
+					
+					agentinodata::IServiceStatusInfo::ServiceStatus serviceStatus = m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceElementId);
+					if (serviceStatus == agentinodata::IServiceStatusInfo::SS_RUNNING){
+						service.Status = sdl::agentino::Topology::ServiceStatus::RUNNING;
+						service.Icon1 = "Icons/Running";
+					}
+					else if (serviceStatus == agentinodata::IServiceStatusInfo::SS_NOT_RUNNING){
+						service.Status = sdl::agentino::Topology::ServiceStatus::NOT_RUNNING;
+						service.Icon1 = "Icons/Stopped";
+					}
+					else{
+						service.Status = sdl::agentino::Topology::ServiceStatus::UNDEFINED;
+						service.Icon1 = "Icons/Alert";
+					}
+					
+					agentinodata::IServiceCompositeInfo::StateOfRequiredServices stateOfRequiredServices = m_serviceCompositeInfoCompPtr->GetStateOfRequiredServices(serviceElementId);
+					if (serviceStatus == agentinodata::IServiceStatusInfo::SS_NOT_RUNNING
+						|| serviceStatus == agentinodata::IServiceStatusInfo::SS_UNDEFINED
+						|| stateOfRequiredServices == agentinodata::IServiceCompositeInfo::SORS_RUNNING){
+						service.Icon2 = "";
+					}
+					else if (stateOfRequiredServices == agentinodata::IServiceCompositeInfo::SORS_NOT_RUNNING){
+						service.Icon2 = "Icons/Error";
+					}
+					else if (stateOfRequiredServices == agentinodata::IServiceCompositeInfo::SORS_UNDEFINED){
+						service.Icon2 = "Icons/Warning";
+					}
 
+					QList<sdl::agentino::Topology::CLink::V1_0> linkList;
+					
+					// Get Connections
+					imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
+					if (connectionCollectionPtr != nullptr){
+						imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
+						for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
+							imtbase::IObjectCollection::DataPtr connectionDataPtr;
+							if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
+								imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
+								if (connectionLinkParamPtr != nullptr){
+									sdl::agentino::Topology::CLink::V1_0 linkData;
+									QByteArray serviceId =  m_serviceCompositeInfoCompPtr->GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
 
-						// Get Connections
-						imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
-						if (connectionCollectionPtr != nullptr){
-							imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
-							for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-								imtbase::IObjectCollection::DataPtr connectionDataPtr;
-								if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
-									imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
-									if (connectionLinkParamPtr != nullptr){
-										QByteArray serviceId =  m_serviceCompositeInfoCompPtr->GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
-										imtbase::CTreeItemModel* linkModel = itemsModel->GetTreeItemModel(agentino::TopologyModel::s_Links, index);
-										if (linkModel == nullptr){
-											linkModel = itemsModel->AddTreeModel(agentino::TopologyModel::s_Links, index);
-										}
-										int linkIndex = linkModel->InsertNewItem();
-										linkModel->SetData(agentino::TopologyModel::s_ObjectId, serviceId, linkIndex);
-									}
+									linkData.Id = serviceId;
+									
+									linkList << linkData;
 								}
 							}
-
 						}
 					}
+					
+					service.Links = linkList;
+					
+					services << service;
 				}
 			}
 		}
 	}
-
-	return rootModelPtr.PopPtr();
+	
+	response.Version_1_0->Services = services;
+	
+	return response;
 }
 
 
-imtbase::CTreeItemModel* CTopologyControllerComp::SaveTopologyModel(const imtgql::CGqlRequest& gqlRequest, QString& /*errorMessage*/) const
+sdl::agentino::Topology::CSaveTopologyResponse CTopologyControllerComp::OnSaveTopology(
+			const sdl::agentino::Topology::CSaveTopologyGqlRequest& saveTopologyRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
 {
-	const imtgql::CGqlObject* inputParams = gqlRequest.GetParamObject("input");
-	if (inputParams == nullptr || !m_topologyCollectionCompPtr.IsValid()){
-		return nullptr;
+	sdl::agentino::Topology::CSaveTopologyResponse response;
+	response.Version_1_0.emplace();
+	response.Version_1_0->Successful = false;
+	
+	if (!m_topologyCollectionCompPtr.IsValid()){
+		Q_ASSERT_X(false, "Attribute 'TopologyCollection' was not set", "CTopologyControllerComp");
+		return response;
 	}
-	QByteArray itemData = inputParams->GetFieldArgumentValue("Item").toByteArray();
-	if (!itemData.isEmpty()){
-		imtbase::CTreeItemModel itemModel;
-		itemModel.CreateFromJson(itemData);
-
-		m_topologyCollectionCompPtr->ResetData();
-		for (int index = 0; index < itemModel.GetItemsCount(); index++){
-			int x = itemModel.GetData(agentino::TopologyModel::s_X, index).toInt();
-			int y = itemModel.GetData(agentino::TopologyModel::s_Y, index).toInt();
-			QByteArray id = itemModel.GetData(agentino::TopologyModel::s_Id, index).toByteArray();
-			QPoint point(x,y);
-			SetServiceCoordinate(id, point);
+		
+	sdl::agentino::Topology::SaveTopologyRequestArguments arguments = saveTopologyRequest.GetRequestedArguments();
+	if (!arguments.input.Version_1_0.has_value()){
+		errorMessage = QString("Unable to save topology. Error: GraphQL version 1.0 is invalid");
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+		return response;
+	}
+	
+	m_topologyCollectionCompPtr->ResetData();
+	
+	QList<sdl::agentino::Topology::CService::V1_0> serviceList = *arguments.input.Version_1_0->Services;
+	for (const sdl::agentino::Topology::CService::V1_0& service : serviceList){
+		int x = *service.X;
+		int y = *service.Y;
+		QByteArray id = *service.Id;
+		QPoint point(x,y);
+		
+		if (!SetServiceCoordinate(id, point)){
+			response.Version_1_0->Successful = false;
+			return response;
 		}
-
-		istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
-		imtbase::CTreeItemModel* representationPtr = rootModelPtr->AddTreeModel("data");
-		Q_ASSERT(representationPtr != nullptr);
-		imtbase::CTreeItemModel* notificationModel = representationPtr->AddTreeModel("notification");
-		Q_ASSERT(notificationModel != nullptr);
-		notificationModel->SetData("successful", "true");
-		return rootModelPtr.PopPtr();
 	}
-	return nullptr;
+	
+	response.Version_1_0->Successful = true;
+	
+	return response;
 }
 
 
 QPoint CTopologyControllerComp::GetServiceCoordinate(const QByteArray& serviceId) const
 {
 	QPoint retVal;
-
+	
 	if (!m_topologyCollectionCompPtr.IsValid()){
+		Q_ASSERT_X(false, "Attribute 'TopologyCollection' was not set", "CTopologyControllerComp");
 		return retVal;
 	}
-
+	
 	imtbase::IObjectCollection::DataPtr dataPtr;
 	if (m_topologyCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
 		i2d::CPosition2d* position2dPtr = dynamic_cast<i2d::CPosition2d*>(dataPtr.GetPtr());
@@ -202,7 +199,7 @@ QPoint CTopologyControllerComp::GetServiceCoordinate(const QByteArray& serviceId
 			retVal.setY(position.GetY());
 		}
 	}
-
+	
 	return retVal;
 }
 
@@ -210,19 +207,19 @@ QPoint CTopologyControllerComp::GetServiceCoordinate(const QByteArray& serviceId
 bool CTopologyControllerComp::SetServiceCoordinate(const QByteArray& serviceId, const QPoint& point) const
 {
 	if (!m_topologyCollectionCompPtr.IsValid()){
+		Q_ASSERT_X(false, "Attribute 'TopologyCollection' was not set", "CTopologyControllerComp");
 		return false;
 	}
-
+	
 	i2d::CPosition2d position2d;
 	i2d::CVector2d position;
-
+	
 	position.SetX(point.x());
 	position.SetY(point.y());
 	position2d.SetPosition(position);
-
-	m_topologyCollectionCompPtr->InsertNewObject("Topology", "", "", &position2d, serviceId);
-
-	return true;
+	
+	QByteArray retVal = m_topologyCollectionCompPtr->InsertNewObject("Topology", "", "", &position2d, serviceId);
+	return !retVal.isEmpty();
 }
 
 

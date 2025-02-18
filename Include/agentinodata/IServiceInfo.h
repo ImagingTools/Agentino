@@ -40,7 +40,17 @@ public:
 		*/
 		ST_PLUGIN
 	};
-
+	
+	/**
+		Get name of the service.
+	*/
+	virtual QString GetServiceName() const = 0;
+	
+	/**
+		Get description of the service.
+	*/
+	virtual QString GetServiceDescription() const = 0;
+	
 	/**
 		Get type of the service.
 	*/

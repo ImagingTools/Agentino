@@ -1,30 +1,28 @@
 #include <agentinodata/CServiceControllerComp.h>
 
 
-// ACF includes
-#include <istd/TDelPtr.h>
-
-// Agentino includes
-#include <agentinodata/CServiceInfo.h>
-
+// Windows includes
 #ifdef Q_OS_WIN
-	#include <windows.h>
-	#include <tchar.h>
-	#include <psapi.h>
+#include <windows.h>
+#include <tchar.h>
+#include <psapi.h>
 #elif defined(Q_OS_LINUX)
-	#include <stdlib.h>
-	#include <stdio.h>
-	#include <string.h>
-	#include <unistd.h>
-	#include <dirent.h>
-	#include <sys/types.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <sys/types.h>
 #endif
 
 // Qt includes
 #include<QFileInfo>
 
-// #include <stdio.h>
+// ACF includes
+#include <istd/TDelPtr.h>
 
+// Agentino includes
+#include <agentinodata/CServiceInfo.h>
 
 
 namespace agentinodata
@@ -42,10 +40,10 @@ IServiceStatusInfo::ServiceStatus  CServiceControllerComp::GetServiceStatus(cons
 		return IServiceStatusInfo::ServiceStatus::SS_UNDEFINED;
 	}
 
-	agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = nullptr;
+	agentinodata::IServiceInfo* serviceInfoPtr = nullptr;
 	imtbase::IObjectCollection::DataPtr serviceDataPtr;
 	if (m_serviceCollectionCompPtr->GetObjectData(serviceId, serviceDataPtr)){
-		serviceInfoPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(serviceDataPtr.GetPtr());
+		serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
 	}
 
 	if (serviceInfoPtr == nullptr){

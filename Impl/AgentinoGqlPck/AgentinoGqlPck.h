@@ -8,16 +8,13 @@
 // Agentino includes
 #include <agentinogql/CServiceSubscriberControllerComp.h>
 #include <agentinogql/CServiceControllerProxyComp.h>
-#include <agentinogql/CGetServiceControllerProxyComp.h>
 #include <agentinogql/CAgentCollectionControllerComp.h>
 #include <agentinogql/CSubscriptionControllerComp.h>
 #include <agentinogql/CGqlRepresentationAgentDataComp.h>
 #include <agentinogql/CTopologyControllerComp.h>
 #include <agentinogql/CServiceCollectionSubscriberControllerComp.h>
 #include <agentinogql/CServerServiceCollectionControllerComp.h>
-#include <agentinogql/CRemoveServiceControllerProxyComp.h>
 #include <agentinogql/CServiceStatusCollectionSubscriberControllerComp.h>
-#include <agentinogql/CServiceStatusControllerProxyComp.h>
 #include <agentinogql/CAgentConnectionObserverComp.h>
 #include <agentinogql/CAgentsSubscriberProxyControllerComp.h>
 #include <agentinogql/CAgentinoGqlRemoteRepresentationControllerComp.h>
@@ -32,16 +29,13 @@ namespace AgentinoGqlPck
 
 typedef agentinogql::CServiceSubscriberControllerComp ServiceSubscriberController;
 typedef agentinogql::CServiceControllerProxyComp ServiceControllerProxy;
-typedef agentinogql::CGetServiceControllerProxyComp GetServiceControllerProxy;
 typedef agentinogql::CAgentCollectionControllerComp AgentCollectionController;
 typedef icomp::TModelCompWrap<agentinogql::CSubscriptionControllerComp> SubscriptionController;
 typedef agentinogql::CGqlRepresentationAgentDataComp GqlRepresentationAgentData;
 typedef agentinogql::CTopologyControllerComp TopologyController;
 typedef agentinogql::CServiceCollectionSubscriberControllerComp ServiceCollectionSubscriberController;
 typedef agentinogql::CServerServiceCollectionControllerComp ServerServiceCollectionController;
-typedef agentinogql::CRemoveServiceControllerProxyComp RemoveServiceControllerProxy;
 typedef agentinogql::CServiceStatusCollectionSubscriberControllerComp ServiceStatusCollectionSubscriberController;
-typedef agentinogql::CServiceStatusControllerProxyComp ServiceStatusControllerProxy;
 typedef agentinogql::CAgentConnectionObserverComp AgentConnectionObserver;
 typedef agentinogql::CAgentsSubscriberProxyControllerComp AgentsSubscriberProxyController;
 typedef agentinogql::CAgentinoGqlRemoteRepresentationControllerComp AgentinoGqlRemoteRepresentationController;

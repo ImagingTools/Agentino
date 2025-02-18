@@ -6,6 +6,7 @@ import imtcontrols 1.0
 import imtdocgui 1.0
 import imtguigql 1.0
 import agentino 1.0
+import agentinoServicesSdl 1.0
 
 DocumentCollectionViewDelegate {
     id: container;
@@ -56,6 +57,17 @@ DocumentCollectionViewDelegate {
             onStop();
         }
     }
+	
+	function startService(serviceId){
+		serviceInput.m_serviceId = serviceId;
+		startServiceRequestSender.send(serviceInput);
+	}
+	
+	
+	function stopService(serviceId){
+		serviceInput.m_serviceId = serviceId;
+		stopServiceRequestSender.send(serviceInput);
+	}
 
     function onStart(){
         let elements = container.collectionView.table.elements;
@@ -63,8 +75,8 @@ DocumentCollectionViewDelegate {
         if (indexes.length > 0){
             let index = indexes[0];
             let serviceId = elements.getData("Id", index)
-
-            setServiceCommand("Start", serviceId);
+			
+			startService(serviceId);
         }
     }
 
@@ -75,26 +87,8 @@ DocumentCollectionViewDelegate {
             let index = indexes[0];
             let serviceId = elements.getData("Id", index)
 
-            setServiceCommand("Stop", serviceId);
+			stopService(serviceId)
         }
-    }
-
-    function setServiceCommand(commandId, serviceId){
-        console.log( "ServiceCollectionView setServiceCommand", commandId, serviceId);
-        var query = Gql.GqlRequest("mutation", "Service" + commandId);
-
-        let inputParams = Gql.GqlObject("input");
-        inputParams.InsertField("serviceid", serviceId);
-        query.AddParam(inputParams);
-
-        var queryField = Gql.GqlObject("serviceStatus");
-        queryField.InsertField("serviceid");
-        queryField.InsertField("status");
-        query.AddField(queryField);
-
-        var gqlData = query.GetQuery();
-        console.log("ServiceCollectionView setServiceCommand query ", gqlData);
-        serviceGqlModel.setGqlQuery(gqlData, container.getHeaders());
     }
 
     function setupContextMenu(){
@@ -124,43 +118,45 @@ DocumentCollectionViewDelegate {
             container.contextMenuModel.refresh();
         }
     }
-
-    property GqlModel servicesController: GqlModel {
-        id: serviceGqlModel
-        onStateChanged: {
-            console.log("State:", this.state);
-            if (this.state === "Ready"){
-
-                console.log("servicesController: ", this.toJson());
-                var dataModelLocal;
-
-                if (this.containsKey("errors")){
-                    dataModelLocal = this.getData("errors");
-
-                    if (dataModelLocal.containsKey("ServiceStart")){
-                        dataModelLocal = dataModelLocal.getData("ServiceStart");
-                    }
-                    else if (dataModelLocal.containsKey("ServiceStop")){
-                        dataModelLocal = dataModelLocal.getData("ServiceStop");
-                    }
-
-                    let message = ""
-                    if (dataModelLocal.containsKey("message")){
-                        message = dataModelLocal.getData("message");
-                    }
-
-                    ModalDialogManager.showWarningDialog(message)
-
-                    return;
-                }
-
-                dataModelLocal = this.getData("data");
-
-                if(!dataModelLocal)
-                    return;
-            }
-        }
-    }
-
+	
+	ServiceInput {
+		id: serviceInput;
+	}
+	
+	GqlSdlRequestSender {
+		id: startServiceRequestSender;
+		requestType: 1;
+		gqlCommandId: AgentinoServicesSdlCommandIds.s_startService;
+		
+		sdlObjectComp: Component {
+			ServiceStatusResponse {
+				onFinished: {
+					console.log("ServiceStatusResponse", m_status);
+				}
+			}
+		}
+		
+		function getHeaders(){
+			return container.getHeaders()
+		}
+	}
+	
+	GqlSdlRequestSender {
+		id: stopServiceRequestSender;
+		requestType: 1;
+		gqlCommandId: AgentinoServicesSdlCommandIds.s_stopService;
+		
+		sdlObjectComp: Component {
+			ServiceStatusResponse {
+				onFinished: {
+					console.log("ServiceStatusResponse", m_status);
+				}
+			}
+		}
+		
+		function getHeaders(){
+			return container.getHeaders()
+		}
+	}
 }
 

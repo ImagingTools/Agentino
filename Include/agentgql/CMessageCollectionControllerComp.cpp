@@ -236,7 +236,7 @@ imtbase::IObjectCollection* CMessageCollectionControllerComp::GetMessageCollecti
 	if (m_objectCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
 		const agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = dynamic_cast<const agentinodata::CIdentifiableServiceInfo*>(dataPtr.GetPtr());
 		if (serviceInfoPtr != nullptr){
-			QByteArray serviceName = m_objectCollectionCompPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_NAME).toByteArray();
+			QByteArray serviceName = serviceInfoPtr->GetServiceTypeName().toUtf8();
 			QString servicePath = serviceInfoPtr->GetServicePath();
 			QByteArray serviceTypeName = serviceInfoPtr->GetServiceTypeName().toUtf8();
 

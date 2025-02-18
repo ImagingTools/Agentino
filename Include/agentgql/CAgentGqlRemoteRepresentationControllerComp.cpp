@@ -61,12 +61,12 @@ imtbase::CTreeItemModel* CAgentGqlRemoteRepresentationControllerComp::CreateInte
 			if (objectCollection != nullptr){
 				imtbase::ICollectionInfo::Ids ids = collectionInfo->GetElementIds();
 				for (const QByteArray& id: ids){
-					const imtservice::IServiceConnectionParam* connectionParamPtr = connectionCollection->GetConnectionMetaInfo(id);
+					const imtservice::IServiceConnectionInfo* connectionParamPtr = connectionCollection->GetConnectionMetaInfo(id);
 					if (connectionParamPtr == nullptr){
 						continue;
 					}
 
-					if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionParam::CT_INPUT){
+					if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT){
 						QString connectionName = objectCollection->GetElementInfo(id, imtbase::IObjectCollection::EIT_NAME).toString();
 						QString connectionDescription = collectionInfo->GetElementInfo(id, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
 						serviceTypeName = connectionCollection->GetServiceTypeName().toUtf8();

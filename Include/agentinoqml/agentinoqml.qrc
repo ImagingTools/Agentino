@@ -24,6 +24,7 @@
 	<file alias="TopologyPage.qml">Qml/TopologyPage.qml</file>
 	<file alias="ServiceLogProvider.qml">Qml/ServiceLogProvider.qml</file>
 	<file alias="AgentTopRightPanelDecorator.qml">Qml/AgentTopRightPanelDecorator.qml</file>
+	<file alias="ServiceDocumentDataController.qml">Qml/ServiceDocumentDataController.qml</file>
     </qresource>
     <qresource prefix="/Features">
         <file alias="AgentinoFeatures">Resources/Features/AgentinoFeatures.xml</file>

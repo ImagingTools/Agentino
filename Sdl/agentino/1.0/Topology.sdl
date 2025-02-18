@@ -1,0 +1,52 @@
+schema {
+	query: Query
+	mutation: Mutation
+	name: Topology
+	namespace: agentino
+	version: 1.0
+}
+
+type Link {
+	Id: ID!
+}
+
+enum ServiceStatus {
+	UNDEFINED
+	RUNNING
+	NOT_RUNNING
+}
+
+type Service {
+	Id: ID!
+	AgentId: ID!
+	X: Integer
+	Y: Integer
+	Width: Integer
+	MainText: String
+	SecondText: String
+	ThirdText: String
+	Icon1: String
+	Icon2: String
+	Status: ServiceStatus
+	Links: [Link]
+	Selected: Boolean
+	HasError: Boolean
+	IsComposite: Boolean
+}
+
+type Topology {
+	Services: [Service]
+}
+
+type SaveTopologyResponse {
+	Successful: Boolean!
+}
+
+type Query {
+	GetTopology: Topology!
+}
+
+type Mutation {
+	SaveTopology (input: Topology): SaveTopologyResponse!
+}
+

@@ -8,9 +8,7 @@
 #include <iprm/CParamsSet.h>
 
 // ImtCore includes
-#include <imtbase/CCollectionFilter.h>
 #include <imtbase/IObjectCollectionIterator.h>
-#include <imtdb/CSqlDatabaseObjectCollectionComp.h>
 #include <imtservice/CUrlConnectionParam.h>
 #include <imtservice/CUrlConnectionLinkParam.h>
 #include <imtgql/CGqlContext.h>
@@ -20,7 +18,7 @@
 #include <agentinodata/CServiceInfo.h>
 #include <agentinodata/CServiceStatusInfo.h>
 #include <agentinodata/CAgentStatusInfo.h>
-#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Agents.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
 
 
 namespace agentinogql
@@ -37,233 +35,207 @@ void CAgentCollectionControllerComp::OnComponentCreated()
 }
 
 
-// reimplemented (imtgql::CObjectCollectionControllerCompBase)
+// reimplemented (sdl::agentino::Agents::CAgentCollectionControllerCompBase)
 
-bool CAgentCollectionControllerComp::SetupGqlItem(
-	const imtgql::CGqlRequest& gqlRequest,
-	imtbase::CTreeItemModel& model,
-	int itemIndex,
-	const QByteArray& collectionId,
+bool CAgentCollectionControllerComp::CreateRepresentationFromObject(
+	const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
+	const sdl::agentino::Agents::CAgentsListGqlRequest& agentsListRequest,
+	sdl::agentino::Agents::CAgentItem::V1_0& representationObject,
 	QString& errorMessage) const
 {
-	qDebug("Test log qDebug()");
-	SendErrorMessage(0, "Test log", "CObjectCollectionControllerCompBase");
-
 	if (!m_objectCollectionCompPtr.IsValid()){
-		errorMessage = QString("Unable to get list objects. Internal error.");
-		SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
-
+		Q_ASSERT_X(false, "Attribute 'ObjectCollection' was not set", "CDeviceCollectionControllerComp");
 		return false;
 	}
-
-	bool retVal = true;
-
-	QByteArrayList informationIds = GetInformationIds(gqlRequest, "items");
-
-	if (!informationIds.isEmpty() && m_objectCollectionCompPtr.IsValid()){
-		agentinodata::CIdentifiableAgentInfo* agentPtr = nullptr;
-		imtbase::IObjectCollection::DataPtr agentDataPtr;
-		if (m_objectCollectionCompPtr->GetObjectData(collectionId, agentDataPtr)){
-			agentPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(agentDataPtr.GetPtr());
-		}
-
-		if (agentPtr != nullptr){
-			for (QByteArray informationId : informationIds){
-				QVariant elementInformation;
-
-				if(informationId == "Id"){
-					elementInformation = agentPtr->GetObjectUuid();
-				}
-				else if(informationId == "Name"){
-					QString name = m_objectCollectionCompPtr->GetElementInfo(collectionId, imtbase::ICollectionInfo::EIT_NAME).toString();
-					elementInformation = name;
-				}
-				else if(informationId == "Description"){
-					QString description = m_objectCollectionCompPtr->GetElementInfo(collectionId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
-
-					elementInformation = description;
-				}
-				else if(informationId == "ComputerName"){
-					elementInformation = agentPtr->GetComputerName();
-				}
-				else if(informationId == "Services"){
-					imtbase::IObjectCollection* serviceCollectionPtr = agentPtr->GetServiceCollection();
-					if (serviceCollectionPtr != nullptr){
-						imtbase::ICollectionInfo::Ids ids = serviceCollectionPtr->GetElementIds();
-						QStringList result;
-						for (const imtbase::ICollectionInfo::Id& id : ids){
-							QString name = serviceCollectionPtr->GetElementInfo(id, imtbase::ICollectionInfo::EIT_NAME).toString();
-							result << name;
-						}
-
-						elementInformation = result.join(';');
-					}
-				}
-				else if(informationId == "Status"){
-					elementInformation = "Disconnected";
-
-					if (m_agentStatusCollectionCompPtr.IsValid()){
-						imtbase::IObjectCollection::DataPtr dataPtr;
-						if (m_agentStatusCollectionCompPtr->GetObjectData(collectionId, dataPtr)){
-							const agentinodata::CAgentStatusInfo* agentStatusInfoPtr = dynamic_cast<const agentinodata::CAgentStatusInfo*>(dataPtr.GetPtr());
-							if (agentStatusInfoPtr != nullptr){
-								agentinodata::IAgentStatusInfo::AgentStatus status = agentStatusInfoPtr->GetAgentStatus();
-								switch(status){
-								case agentinodata::IAgentStatusInfo::AS_CONNECTED:
-									elementInformation = "Connected";
-									break;
-								case agentinodata::IAgentStatusInfo::AS_DISCONNECTED:
-									elementInformation = "Disconnected";
-									break;
-								default:
-									elementInformation = "Undefined";
-								}
-							}
-						}
-					}
-				}
-				else if(informationId == "LastConnection"){
-					QDateTime lastConnection = agentPtr->GetLastConnection();
-					if (!lastConnection.isNull()){
-						lastConnection.setTimeSpec(Qt::UTC);
-
-						elementInformation = lastConnection.toLocalTime().toString("dd.MM.yyyy hh:mm:ss");
-					}
-				}
-				else if(informationId == "Version"){
-					elementInformation = agentPtr->GetVersion();
-				}
-
-				if (elementInformation.isNull()){
-					elementInformation = "";
-				}
-
-				retVal = retVal && model.SetData(informationId, elementInformation, itemIndex);
-			}
-
-			return true;
-		}
-
+	
+	QByteArray objectId = objectCollectionIterator.GetObjectId();
+	
+	agentinodata::CIdentifiableAgentInfo* agentPtr = nullptr;
+	imtbase::IObjectCollection::DataPtr agentDataPtr;
+	if (objectCollectionIterator.GetObjectData(agentDataPtr)){
+		agentPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(agentDataPtr.GetPtr());
 	}
-	errorMessage = "Unable to get object data from object collection";
-
-	return false;
+	
+	sdl::agentino::Agents::AgentsListRequestInfo requestInfo = agentsListRequest.GetRequestInfo();
+	if (requestInfo.items.isIdRequested){
+		representationObject.Id = objectId;
+	}
+	
+	if (requestInfo.items.isTypeIdRequested){
+		QByteArray typeId = m_objectCollectionCompPtr->GetObjectTypeId(objectId);
+		representationObject.TypeId = typeId;
+	}
+	
+	if (requestInfo.items.isNameRequested){
+		QString name = m_objectCollectionCompPtr->GetElementInfo(objectId, imtbase::ICollectionInfo::EIT_NAME).toString();
+		representationObject.Name = name;
+	}
+	
+	if (requestInfo.items.isDescriptionRequested){
+		QString description = m_objectCollectionCompPtr->GetElementInfo(objectId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
+		representationObject.Description = description;
+	}
+	
+	if (requestInfo.items.isComputerNameRequested){
+		QString computerName = agentPtr->GetComputerName();
+		representationObject.ComputerName = computerName;
+	}
+	
+	if (requestInfo.items.isServicesRequested){
+		imtbase::IObjectCollection* serviceCollectionPtr = agentPtr->GetServiceCollection();
+		if (serviceCollectionPtr != nullptr){
+			imtbase::ICollectionInfo::Ids ids = serviceCollectionPtr->GetElementIds();
+			QStringList result;
+			for (const imtbase::ICollectionInfo::Id& id : ids){
+				imtbase::IObjectCollection::DataPtr dataPtr;
+				if (serviceCollectionPtr->GetObjectData(id, dataPtr)){
+					const agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<const agentinodata::IServiceInfo*>(dataPtr.GetPtr());
+					if (serviceInfoPtr != nullptr){
+						QString name = serviceInfoPtr->GetServiceName();
+						result << name;
+					}
+				}
+			}
+			
+			representationObject.Services = result.join(';');
+		}
+	}
+	
+	if (requestInfo.items.isStatusRequested){
+		QString statusStr = "Disconnected";
+		
+		if (m_agentStatusCollectionCompPtr.IsValid()){
+			imtbase::IObjectCollection::DataPtr dataPtr;
+			if (m_agentStatusCollectionCompPtr->GetObjectData(objectId, dataPtr)){
+				const agentinodata::CAgentStatusInfo* agentStatusInfoPtr = dynamic_cast<const agentinodata::CAgentStatusInfo*>(dataPtr.GetPtr());
+				if (agentStatusInfoPtr != nullptr){
+					agentinodata::IAgentStatusInfo::AgentStatus status = agentStatusInfoPtr->GetAgentStatus();
+					switch(status){
+					case agentinodata::IAgentStatusInfo::AS_CONNECTED:
+						statusStr = "Connected";
+						break;
+					case agentinodata::IAgentStatusInfo::AS_DISCONNECTED:
+						statusStr = "Disconnected";
+						break;
+					default:
+						statusStr = "Undefined";
+					}
+				}
+			}
+		}
+		
+		representationObject.Status = statusStr;
+	}
+	
+	if (requestInfo.items.isVersionRequested){
+		representationObject.Version = agentPtr->GetVersion();
+	}
+	
+	if (requestInfo.items.isLastConnectionRequested){
+		QDateTime lastConnection = agentPtr->GetLastConnection().toUTC();
+		if (!lastConnection.isNull()){
+			representationObject.LastConnection = lastConnection.toLocalTime().toString("dd.MM.yyyy hh:mm:ss");
+		}
+	}
+	
+	if (requestInfo.items.isAddedRequested){
+		QDateTime addedTime = objectCollectionIterator.GetElementInfo("Added").toDateTime().toUTC();
+		QString added = addedTime.toLocalTime().toString("dd.MM.yyyy hh:mm:ss");
+		representationObject.Added = added;
+	}
+	
+	return true;
 }
 
 
-imtbase::CTreeItemModel *CAgentCollectionControllerComp::ListObjects(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+bool CAgentCollectionControllerComp::CreateRepresentationFromObject(
+	const istd::IChangeable& data,
+	const sdl::agentino::Agents::CGetAgentGqlRequest& agentItemRequest,
+	sdl::agentino::Agents::CAgentDataPayload::V1_0& representationPayload,
+	QString& errorMessage) const
 {
-	if (!m_objectCollectionCompPtr.IsValid()){
-		errorMessage = QString("Unable to get list objects. Internal error.");
-		SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
-
-		return nullptr;
+	const agentinodata::CAgentInfo* agentPtr = dynamic_cast<const agentinodata::CAgentInfo*>(&data);
+	if (agentPtr == nullptr){
+		errorMessage = QString("Unable to create representation for the agent object. Error: Object is invalid");
+		SendErrorMessage(0, errorMessage, "CAgentCollectionControllerComp");
+		return false; 
 	}
-
-	const imtgql::CGqlObject& inputParams = gqlRequest.GetParams();
-
-	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
-
-	imtbase::CTreeItemModel* dataModel = rootModelPtr->AddTreeModel("data");
-	imtbase::CTreeItemModel* itemsModel = dataModel->AddTreeModel("items");
-	imtbase::CTreeItemModel* notificationModel = dataModel->AddTreeModel("notification");
-
-	const imtgql::CGqlObject* viewParamsGql = nullptr;
-	const imtgql::CGqlObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
-	if (inputObject != nullptr){
-		viewParamsGql = inputObject->GetFieldArgumentObjectPtr("viewParams");
+	
+	sdl::agentino::Agents::GetAgentRequestArguments arguments = agentItemRequest.GetRequestedArguments();
+	if (!arguments.input.Version_1_0.has_value()){
+		Q_ASSERT(false);
+		return false;
 	}
-
-	iprm::CParamsSet filterParams;
-
-	int offset = 0, count = -1;
-
-	if (viewParamsGql != nullptr){
-		offset = viewParamsGql->GetFieldArgumentValue("Offset").toInt();
-		count = viewParamsGql->GetFieldArgumentValue("Count").toInt();
-		PrepareFilters(gqlRequest, *viewParamsGql, filterParams);
-	}
-
-	int elementsCount = m_objectCollectionCompPtr->GetElementsCount(&filterParams);
-
-	int pagesCount = std::ceil(elementsCount / (double)count);
-	if (pagesCount <= 0){
-		pagesCount = 1;
-	}
-
-	notificationModel->SetData("PagesCount", pagesCount);
-	notificationModel->SetData("TotalCount", elementsCount);
-
-	imtbase::ICollectionInfo::Ids ids = m_objectCollectionCompPtr->GetElementIds(offset, count, &filterParams);
-
-	for (const imtbase::ICollectionInfo::Id& id: ids){
-		int itemIndex = itemsModel->InsertNewItem();
-		if (itemIndex >= 0){
-			if (!SetupGqlItem(gqlRequest, *itemsModel, itemIndex, id, errorMessage)){
-				SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
-
-				return nullptr;
-			}
-		}
-	}
-
-	return rootModelPtr.PopPtr();
-}
-
-
-imtbase::CTreeItemModel* CAgentCollectionControllerComp::GetObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
-{
-	if (!m_objectCollectionCompPtr.IsValid()){
-		errorMessage = QString("Internal error").toUtf8();
-		return nullptr;
-	}
-
-	sdl::agentino::Agents::CAgentItemGqlRequest agentItemGqlRequest(gqlRequest, false);
-	sdl::agentino::Agents::CAgentDataPayload::V1_0 agentDataPayload;
-	sdl::agentino::Agents::AgentItemRequestArguments agentItemRequestArguments = agentItemGqlRequest.GetRequestedArguments();
-
-	if (!agentItemRequestArguments.input.Version_1_0){
-		I_CRITICAL();
-
-		return nullptr;
-	}
-
-
+	
 	QByteArray agentId;
-	if (agentItemRequestArguments.input.Version_1_0->Id){
-		agentId = *agentItemRequestArguments.input.Version_1_0->Id;
+	if (arguments.input.Version_1_0->Id){
+		agentId = *arguments.input.Version_1_0->Id;
 	}
-
-	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
-	imtbase::CTreeItemModel* dataModel = rootModelPtr->AddTreeModel("data");
-
-	imtbase::IObjectCollection::DataPtr dataPtr;
-	if (m_objectCollectionCompPtr->GetObjectData(agentId, dataPtr)){
-		const agentinodata::CAgentInfo* agentPtr = dynamic_cast<const agentinodata::CAgentInfo*>(dataPtr.GetPtr());
-		if (agentPtr != nullptr){
-			QString name = m_objectCollectionCompPtr->GetElementInfo(agentId, imtbase::ICollectionInfo::EIT_NAME).toString();
-			QString description = m_objectCollectionCompPtr->GetElementInfo(agentId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
-			QDateTime lastConnection = agentPtr->GetLastConnection();
-
-			sdl::agentino::Agents::CAgentData::V1_0 agentData;
-			agentData.Id = std::make_optional<QByteArray>(agentId);
-			agentData.Name = std::make_optional<QString>(name);
-			agentData.Description = std::make_optional<QString>(description);
-			agentData.LastConnection = std::make_optional<QString>(lastConnection.toString("dd.MM.yyyy"));
-			agentData.TracingLevel = std::make_optional<int>(agentPtr->GetTracingLevel());
-			agentDataPayload.item = std::make_optional<sdl::agentino::Agents::CAgentData::V1_0>(agentData);
-		}
-	}
-
-	if (!agentDataPayload.WriteToModel(*dataModel)){
-		errorMessage = QString("Unable to setup gql item. Unable to write model.");
-		SendCriticalMessage(0, errorMessage, "CSpotColorCollectionControllerComp");
-		Q_ASSERT(0);
-	}
-
-	return rootModelPtr.PopPtr();
+	
+	QString name = m_objectCollectionCompPtr->GetElementInfo(agentId, imtbase::ICollectionInfo::EIT_NAME).toString();
+	QString description = m_objectCollectionCompPtr->GetElementInfo(agentId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
+	
+	sdl::agentino::Agents::CAgentData::V1_0 agentData;
+	
+	agentData.Id = agentId;
+	agentData.Name = name;
+	agentData.Description = description;
+	agentData.LastConnection = agentPtr->GetLastConnection().toString("dd.MM.yyyy");
+	agentData.TracingLevel = agentPtr->GetTracingLevel();
+	
+	representationPayload.item = agentData;
+	
+	return true;
 }
 
+
+bool CAgentCollectionControllerComp::UpdateObjectFromRepresentationRequest(
+	const ::imtgql::CGqlRequest& /*rawGqlRequest*/,
+	const sdl::agentino::Agents::CUpdateAgentGqlRequest& agentUpdateRequest,
+	istd::IChangeable& object,
+	QString& errorMessage) const
+{
+	sdl::agentino::Agents::UpdateAgentRequestArguments inputArguments = agentUpdateRequest.GetRequestedArguments();
+	if (!inputArguments.input.Version_1_0){
+		I_CRITICAL();
+		return false;
+	}
+	
+	if (!inputArguments.input.Version_1_0->Id.has_value()){
+		I_CRITICAL();
+		return false;
+	}
+	
+	QByteArray objectId;
+	if (inputArguments.input.Version_1_0->Id){
+		objectId = *inputArguments.input.Version_1_0->Id;
+	}
+	
+	sdl::agentino::Agents::CAgentData::V1_0 agentData;
+	if (inputArguments.input.Version_1_0->Item){
+		agentData = *inputArguments.input.Version_1_0->Item;
+	}
+
+	agentinodata::CAgentInfo* agentPtr = dynamic_cast<agentinodata::CAgentInfo*>(&object);
+	if (agentPtr == nullptr){
+		errorMessage = QString("Unable to create representation for the agent object. Error: Object is invalid");
+		SendErrorMessage(0, errorMessage, "CAgentCollectionControllerComp");
+		return false; 
+	}
+	
+	if (agentData.Name){
+		m_objectCollectionCompPtr->SetElementName(objectId, *agentData.Name);
+	}
+	
+	if (agentData.Description){
+		m_objectCollectionCompPtr->SetElementDescription(objectId, *agentData.Description);
+	}
+	
+	return true;
+}
+
+
+// reimplemented (imtgql::CObjectCollectionControllerCompBase)
 
 istd::IChangeable* CAgentCollectionControllerComp::CreateObjectFromRequest(
 	const imtgql::CGqlRequest& gqlRequest,
@@ -274,53 +246,53 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObjectFromRequest(
 		Q_ASSERT(false);
 		return nullptr;
 	}
-
+	
 	const imtgql::CGqlObject* inputDataPtr = gqlRequest.GetParamObject("input");
 	if (inputDataPtr == nullptr) {
 		Q_ASSERT(false);
-
+		
 		return nullptr;
 	}
-
+	
 	objectId = inputDataPtr->GetFieldArgumentValue("Id").toByteArray();
 	if (objectId.isEmpty()){
 		objectId = QUuid::createUuid().toString(QUuid::WithoutBraces).toUtf8();
 	}
-
+	
 	QByteArray itemData = inputDataPtr->GetFieldArgumentValue("Item").toByteArray();
 	if (itemData.isEmpty()){
 		return nullptr;
 	}
-
+	
 	istd::TDelPtr<agentinodata::CIdentifiableAgentInfo> agentPtr;
 	agentPtr.SetCastedOrRemove(m_agentFactCompPtr.CreateInstance());
 	if (!agentPtr.IsValid()){
 		errorMessage = QT_TR_NOOP("Unable to get an service info!");
 		return nullptr;
 	}
-
+	
 	imtbase::CTreeItemModel itemModel;
 	if (!itemModel.CreateFromJson(itemData)){
 		return nullptr;
 	}
-
+	
 	agentPtr->SetObjectUuid(objectId);
-
+	
 	if (itemModel.ContainsKey("ComputerName")){
 		QString computerName = itemModel.GetData("ComputerName").toString();
 		agentPtr->SetComputerName(computerName);
 	}
-
+	
 	if (itemModel.ContainsKey("Version")){
 		QString version = itemModel.GetData("Version").toString();
 		agentPtr->SetVersion(version);
 	}
-
+	
 	if (itemModel.ContainsKey("TracingLevel")){
 		int tracingLevel = itemModel.GetData("TracingLevel").toInt();
 		agentPtr->SetTracingLevel(tracingLevel);
 	}
-
+	
 	return agentPtr.PopPtr();
 }
 
@@ -331,28 +303,28 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 		Q_ASSERT(false);
 		return nullptr;
 	}
-
+	
 	const imtgql::CGqlObject& inputParams = gqlRequest.GetParams();
-
+	
 	QByteArray agentId = GetObjectIdFromInputParams(inputParams);
-
+	
 	if (agentId.isEmpty()){
 		return nullptr;
 	}
-
+	
 	imtbase::IObjectCollection::DataPtr dataPtr;
 	if (m_objectCollectionCompPtr->GetObjectData(agentId, dataPtr)){
 		agentinodata::CIdentifiableAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(dataPtr.GetPtr());
 		if (agentInfoPtr != nullptr){
 			agentInfoPtr->SetLastConnection(QDateTime::currentDateTimeUtc());
-
+			
 			QByteArray item = inputParams.GetFieldArgumentValue("Item").toByteArray();
 			QJsonDocument itemDoc = QJsonDocument::fromJson(item);
 			if (itemDoc.object().contains("Version")){
 				QString version = itemDoc.object().value("Version").toString();
 				agentInfoPtr->SetVersion(version);
 			}
-
+			
 			if (!m_objectCollectionCompPtr->SetObjectData(agentId, *agentInfoPtr)){
 				qDebug() << QString("Unable to set data to the collection object with ID: '%1'.").arg(qPrintable(agentId));
 			}
@@ -364,82 +336,18 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 		if (!agentInfoPtr.IsValid()){
 			return nullptr;
 		}
-
+		
 		QString name = agentInfoPtr->GetComputerName();
-
+		
 		agentInfoPtr->SetLastConnection(QDateTime::currentDateTimeUtc());
-
+		
 		m_objectCollectionCompPtr->InsertNewObject("DocumentInfo", name, "", agentInfoPtr.GetPtr(), agentId);
 	}
-
+	
 	m_connectedAgents.append(agentId);
 	m_timer.start();
-
+	
 	return nullptr;
-}
-
-
-imtbase::CTreeItemModel* CAgentCollectionControllerComp::UpdateObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
-{
-	if (!m_agentFactCompPtr.IsValid() || !m_objectCollectionCompPtr.IsValid()){
-		Q_ASSERT(false);
-		return nullptr;
-	}
-
-	const imtgql::CGqlObject* inputParamObjectPtr = gqlRequest.GetParamObject("input");
-	if (inputParamObjectPtr == nullptr){
-		Q_ASSERT(false);
-		return nullptr;
-	}
-
-	const imtgql::CGqlObject* itemObjectPtr = inputParamObjectPtr->GetFieldArgumentObjectPtr("Item");
-	if (itemObjectPtr == nullptr){
-		Q_ASSERT(false);
-		return nullptr;
-	}
-
-	sdl::agentino::Agents::CAgentData::V1_0 agentData;
-
-	if (!agentData.ReadFromGraphQlObject(*itemObjectPtr)){
-		errorMessage = QString("Unable to update agent. Error: Read from GraphQL object failed");
-		SendErrorMessage(0, errorMessage, "CAgentCollectionControllerComp");
-
-		return nullptr;
-	}
-
-	QByteArray objectId = inputParamObjectPtr->GetFieldArgumentValue("Id").toByteArray();
-
-	imtbase::IObjectCollection::DataPtr agentDataPtr;
-	if (m_objectCollectionCompPtr->GetObjectData(objectId, agentDataPtr)){
-		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(agentDataPtr.GetPtr());
-		if (agentInfoPtr != nullptr){
-			QDateTime dateTime = QDateTime::currentDateTimeUtc();
-			agentInfoPtr->SetLastConnection(dateTime);
-
-			if (agentData.TracingLevel){
-				agentInfoPtr->SetTracingLevel(*agentData.TracingLevel);
-			}
-
-			if (agentData.Name){
-				m_objectCollectionCompPtr->SetElementName(objectId, *agentData.Name);
-			}
-
-			if (agentData.Description){
-				m_objectCollectionCompPtr->SetElementDescription(objectId, *agentData.Description);
-			}
-
-			if (!m_objectCollectionCompPtr->SetObjectData(objectId, *agentInfoPtr)){
-				qDebug() << QString("Unable to set data to the collection object with ID: '%1'.").arg(qPrintable(objectId));
-			}
-		}
-	}
-
-	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
-	imtbase::CTreeItemModel* dataModel = rootModelPtr->AddTreeModel("data");
-
-	dataModel->SetData("Id", objectId);
-
-	return rootModelPtr.PopPtr();
 }
 
 
@@ -447,80 +355,164 @@ void CAgentCollectionControllerComp::UpdateAgentService(
 	const QByteArray& agentId,
 	const QByteArray& serviceId) const
 {
-	if (!m_requestHandlerCompPtr.IsValid()){
-		return;
-	}
-
 	if (!m_objectCollectionCompPtr.IsValid()){
 		return;
 	}
-
+	
 	agentinodata::CAgentInfo* agentInfoPtr = nullptr;
 	imtbase::IObjectCollection::DataPtr agentDataPtr;
 	if (m_objectCollectionCompPtr->GetObjectData(agentId, agentDataPtr)){
 		agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(agentDataPtr.GetPtr());
 	}
-
+	
 	if (agentInfoPtr == nullptr){
 		return;
 	}
-
+	
 	imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 	if (serviceCollectionPtr == nullptr){
 		return;
 	}
-
+	
 	agentinodata::CServiceInfo* serviceInfoPtr = nullptr;
 	imtbase::IObjectCollection::DataPtr serviceDataPtr;
 	if (serviceCollectionPtr->GetObjectData(serviceId, serviceDataPtr)){
 		serviceInfoPtr = dynamic_cast<agentinodata::CServiceInfo*>(serviceDataPtr.GetPtr());
 	}
-
+	
 	if (serviceInfoPtr == nullptr){
 		return;
 	}
-
+	
 	istd::TDelPtr<iprm::CParamsSet> paramsPtr = new iprm::CParamsSet;
-
+	
 	iser::ISerializable* objectCollectionPtr = dynamic_cast<iser::ISerializable*>(m_objectCollectionCompPtr.GetPtr());
 	if (objectCollectionPtr != nullptr){
 		paramsPtr->SetEditableParameter("AgentCollection", objectCollectionPtr);
 	}
-
+	
 	imtbase::CTreeItemModel serviceRepresentationModel;
 	bool ok = m_serviceInfoRepresentationController.GetRepresentationFromDataModel(*serviceInfoPtr, serviceRepresentationModel, paramsPtr.GetPtr());
 	if (!ok){
 		return;
 	}
-
+	
 	QString serviceName = serviceCollectionPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_NAME).toString();
 	QString description = serviceCollectionPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
-
+	
 	serviceRepresentationModel.SetData("Name", serviceName);
 	serviceRepresentationModel.SetData("Description", description);
-
+	
 	imtgql::CGqlRequest request(imtgql::CGqlRequest::RT_MUTATION, "ServiceUpdate");
 	imtgql::CGqlObject inputObject;
 	inputObject.InsertField(QByteArray("Id"), QVariant(serviceId));
 	inputObject.InsertField(QByteArray("Item"), QVariant(serviceRepresentationModel.ToJson()));
-
+	
 	request.AddParam("input", inputObject);
-
+	
 	imtgql::CGqlObject updatedObject;
 	updatedObject.InsertField("Id");
 	request.AddField("updatedNotification", updatedObject);
-
+	
 	imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
 	imtgql::IGqlContext::Headers headers;
 	headers.insert("clientid",agentId);
 	gqlContextPtr->SetHeaders(headers);
 	request.SetGqlContext(gqlContextPtr);
+	
+	// QString errorMessage;
+	// istd::TDelPtr<imtbase::CTreeItemModel> responseModelPtr = m_requestHandlerCompPtr->CreateResponse(request, errorMessage);
+	// if (!responseModelPtr.IsValid()){
+	// 	SendErrorMessage(0, QString("Unable to update service on the agent"));
+	// }
+}
 
-	QString errorMessage;
-	istd::TDelPtr<imtbase::CTreeItemModel> responseModelPtr = m_requestHandlerCompPtr->CreateResponse(request, errorMessage);
-	if (!responseModelPtr.IsValid()){
-		SendErrorMessage(0, QString("Unable to update service on the agent"));
+
+bool CAgentCollectionControllerComp::UpdateServiceStatusFromAgent(const QByteArray& agentId, const QByteArray& serviceId) const
+{
+	if (!m_serviceStatusCollectionCompPtr.IsValid()){
+		Q_ASSERT_X(false, "Attribute 'ServiceStatusCollection' was not set", "CAgentCollectionControllerComp");
+		return false;
 	}
+	
+	namespace servicessdl = sdl::agentino::Services;
+	
+	servicessdl::GetServiceStatusRequestArguments arguments;
+	arguments.input.Version_1_0 = sdl::imtbase::ImtCollection::CInputId::V1_0();
+	arguments.input.Version_1_0->Id = serviceId;
+	
+	imtgql::CGqlRequest gqlRequest;
+	
+	imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
+	imtgql::IGqlContext::Headers headers;
+	headers.insert("clientid", agentId);
+	gqlContextPtr->SetHeaders(headers);
+	gqlRequest.SetGqlContext(gqlContextPtr);
+	
+	if (!servicessdl::CGetServiceStatusGqlRequest::SetupGqlRequest(gqlRequest, arguments)){
+		SendErrorMessage(0, QString("Unable to update status for service '%1'. Error: Setup GraphQL request failed").arg(qPrintable(serviceId)), "CAgentCollectionControllerComp");
+		return false;
+	}
+	
+	servicessdl::CServiceStatusResponse::V1_0 response;
+	if (!SendModelRequest<servicessdl::CServiceStatusResponse::V1_0, servicessdl::CServiceStatusResponse>(gqlRequest, response)){
+		SendErrorMessage(0, QString("Unable to update status for service '%1'. Error: Request sending failed").arg(qPrintable(serviceId)), "CAgentCollectionControllerComp");
+		return false;
+	}
+	
+	istd::TDelPtr<agentinodata::CServiceStatusInfo> serviceStatusInfoPtr;
+	serviceStatusInfoPtr.SetPtr(new agentinodata::CServiceStatusInfo);
+	
+	serviceStatusInfoPtr->SetServiceId(serviceId);
+	
+	servicessdl::ServiceStatus status = *response.Status;
+	switch (status) {
+	case servicessdl::ServiceStatus::NOT_RUNNING:
+		serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);
+		break;
+	case servicessdl::ServiceStatus::RUNNING:
+		serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_RUNNING);
+		break;
+	case servicessdl::ServiceStatus::STARTING:
+		serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_STARTING);
+		break;
+	case servicessdl::ServiceStatus::STOPPING:
+		serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_STOPPING);
+		break;
+	case servicessdl::ServiceStatus::RUNNING_IMPOSSIBLE:
+		serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_RUNNING_IMPOSSIBLE);
+		break;
+	case servicessdl::ServiceStatus::UNDEFINED:
+		serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_UNDEFINED);
+		break;
+	default:
+		return false;
+	}
+	
+	QStringList statuses = serviceStatusInfoPtr->ServiceStatusGetStrings();
+	
+	QByteArrayList serviceIds = m_serviceStatusCollectionCompPtr->GetElementIds();
+	if (serviceIds.contains(serviceId)){
+		if (!m_serviceStatusCollectionCompPtr->SetObjectData(serviceId, *serviceStatusInfoPtr.PopPtr())){
+			SendErrorMessage(0,
+							 QString("Unable to set status '%1' for service '%2'. Error: Set object to status collection failed")
+								 .arg(statuses[serviceStatusInfoPtr->GetServiceStatus()], qPrintable(serviceId)),
+							 "CAgentCollectionControllerComp");
+			return false;
+		}
+	}
+	else{
+		QByteArray retVal = m_serviceStatusCollectionCompPtr->InsertNewObject("ServiceStatusInfo", "", "", serviceStatusInfoPtr.PopPtr(), serviceId);
+		if (retVal.isEmpty()){
+			SendErrorMessage(0,
+							 QString("Unable to set status '%1' for service '%2'. Error: Insert to status collection failed")
+								 .arg(statuses[serviceStatusInfoPtr->GetServiceStatus()], qPrintable(serviceId)),
+							 "CAgentCollectionControllerComp");
+			return false;
+		}
+	}
+	
+	return true;
 }
 
 
@@ -529,153 +521,43 @@ void CAgentCollectionControllerComp::OnTimeout()
 	while (!m_connectedAgents.isEmpty()){
 		QByteArray agentId = m_connectedAgents.at(0);
 		m_connectedAgents.removeFirst();
+		
+		agentinodata::CAgentInfo* agentInfoPtr = nullptr;
 		imtbase::IObjectCollection::DataPtr dataPtr;
 		if (m_objectCollectionCompPtr->GetObjectData(agentId, dataPtr)){
-			agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(dataPtr.GetPtr());
-			if (agentInfoPtr != nullptr){
-				imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-				if (serviceCollectionPtr != nullptr){
-					imtbase::ICollectionInfo::Ids ids = serviceCollectionPtr->GetElementIds();
-					for (const imtbase::ICollectionInfo::Id& id : ids){
-						agentinodata::CServiceInfo* serviceInfoInfoPtr = nullptr;
-						imtbase::IObjectCollection::DataPtr serviceDataPtr;
-						if (serviceCollectionPtr->GetObjectData(id, serviceDataPtr)){
-							serviceInfoInfoPtr = dynamic_cast<agentinodata::CServiceInfo*>(serviceDataPtr.GetPtr());
-						}
-
-						if (serviceInfoInfoPtr == nullptr){
-							continue;
-						}
-
-						UpdateAgentService(agentId, id);
-
-						if (m_requestHandlerCompPtr.IsValid()){
-							istd::TDelPtr<agentinodata::CServiceStatusInfo> serviceStatusInfoPtr;
-							serviceStatusInfoPtr.SetPtr(new agentinodata::CServiceStatusInfo);
-
-							serviceStatusInfoPtr->SetServiceId(id);
-							serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_UNDEFINED);
-
-							imtgql::CGqlRequest request(imtgql::CGqlRequest::RT_QUERY, "ServiceItem");
-							imtgql::CGqlObject inputObject;
-							inputObject.InsertField(QByteArray("Id"), QVariant(id));
-							request.AddParam("input", inputObject);
-
-							imtgql::CGqlObject itemObject;
-							itemObject.InsertField("Id");
-							request.AddField("item", itemObject);
-
-							imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
-							imtgql::IGqlContext::Headers headers;
-							headers.insert("clientid",agentId);
-							gqlContextPtr->SetHeaders(headers);
-							request.SetGqlContext(gqlContextPtr);
-
-							// Service representaton model from Agent
-							QString errorMessage;
-							istd::TDelPtr<imtbase::CTreeItemModel> responseModelPtr = m_requestHandlerCompPtr->CreateResponse(request, errorMessage);
-							if (responseModelPtr.IsValid()){
-								if (responseModelPtr->ContainsKey("data")){
-									imtbase::CTreeItemModel* dataModelPtr = responseModelPtr->GetTreeItemModel("data");
-									if (dataModelPtr != nullptr){
-										if (dataModelPtr->ContainsKey("Status")){
-											QByteArray statusId = dataModelPtr->GetData("Status").toByteArray();
-
-											if (statusId == "running"){
-												serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_RUNNING);
-											}
-											else if (statusId == "notRunning"){
-												serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);
-											}
-
-											if (m_serviceStatusCollectionCompPtr.IsValid()){
-												if (m_serviceStatusCollectionCompPtr->GetElementIds().contains(id)){
-													m_serviceStatusCollectionCompPtr->SetObjectData(id, *serviceStatusInfoPtr.PopPtr());
-												}
-												else{
-													m_serviceStatusCollectionCompPtr->InsertNewObject("ServiceStatusInfo", "", "", serviceStatusInfoPtr.PopPtr(), id);
-												}
-											}
-										}
-										if (dataModelPtr->ContainsKey("Version")){
-											QByteArray serviceVersion = dataModelPtr->GetData("Version").toByteArray();
-											serviceInfoInfoPtr->SetServiceVersion(serviceVersion);
-										}
-
-										// Если на сервере есть сервис без input портов то берем из агента
-										imtbase::IObjectCollection* inputConnectionCollectionPtr = serviceInfoInfoPtr->GetInputConnections();
-										if (inputConnectionCollectionPtr != nullptr){
-											if (inputConnectionCollectionPtr->GetElementIds().isEmpty()){
-												if (dataModelPtr->ContainsKey("InputConnections")){
-													imtbase::CTreeItemModel* agentInputConnectionsModelPtr = dataModelPtr->GetTreeItemModel("InputConnections");
-													if (agentInputConnectionsModelPtr != nullptr){
-														for (int i = 0; i < agentInputConnectionsModelPtr->GetItemsCount(); i++){
-															QByteArray inputConnectionId = agentInputConnectionsModelPtr->GetData("Id", i).toByteArray();
-															Q_UNUSED(inputConnectionId); // CHECK!!!
-
-															QString usageId = agentInputConnectionsModelPtr->GetData("UsageId", i).toString();
-															QString serviceTypeName = agentInputConnectionsModelPtr->GetData("ServiceTypeName", i).toString();
-															QString description = agentInputConnectionsModelPtr->GetData("Description", i).toString();
-															QString host = agentInputConnectionsModelPtr->GetData("Host", i).toString();
-															int port = agentInputConnectionsModelPtr->GetData("Port", i).toInt();
-
-															QUrl connectionUrl;
-															connectionUrl.setHost(host);
-															connectionUrl.setPort(port);
-
-															istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
-															urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam(
-																serviceTypeName.toUtf8(),
-																usageId.toUtf8(),
-																imtservice::IServiceConnectionParam::CT_INPUT,
-																connectionUrl));
-
-															inputConnectionCollectionPtr->InsertNewObject("ConnectionInfo", serviceTypeName, description, urlConnectionParamPtr.PopPtr()/*,inputConnectionId*/);
-														}
-													}
-												}
-											}
-										}
-
-										// Если на сервере есть сервис без output портов то берем из агента
-										imtbase::IObjectCollection* dependantConnectionCollectionPtr = serviceInfoInfoPtr->GetDependantServiceConnections();
-										if (dependantConnectionCollectionPtr != nullptr){
-											if (dependantConnectionCollectionPtr->GetElementIds().isEmpty()){
-												if (dataModelPtr->ContainsKey("OutputConnections")){
-													imtbase::CTreeItemModel* agentOutputConnectionsModelPtr = dataModelPtr->GetTreeItemModel("OutputConnections");
-													if (agentOutputConnectionsModelPtr != nullptr){
-														for (int i = 0; i < agentOutputConnectionsModelPtr->GetItemsCount(); i++){
-															QByteArray outputConnnectionId = agentOutputConnectionsModelPtr->GetData("Id", i).toByteArray();
-
-															QString serviceTypeName = agentOutputConnectionsModelPtr->GetData("ServiceTypeName", i).toString();
-															QString usageId = agentOutputConnectionsModelPtr->GetData("UsageId", i).toString();
-															QString description = agentOutputConnectionsModelPtr->GetData("Description", i).toString();
-															QString dependantServiceConnectionId = agentOutputConnectionsModelPtr->GetData("DependantConnectionId", i).toString();
-
-															istd::TDelPtr<imtservice::CUrlConnectionLinkParam> urlConnectionLinkParamPtr;
-															urlConnectionLinkParamPtr.SetPtr(new imtservice::CUrlConnectionLinkParam(
-																serviceTypeName.toUtf8(),
-																usageId.toUtf8(),
-																dependantServiceConnectionId.toUtf8()));
-
-															dependantConnectionCollectionPtr->InsertNewObject("ConnectionLink", serviceTypeName, description, urlConnectionLinkParamPtr.PopPtr(), outputConnnectionId);
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-
-						serviceCollectionPtr->SetObjectData(id, *serviceInfoInfoPtr);
-					}
-				}
-
-				m_objectCollectionCompPtr->SetObjectData(agentId, *agentInfoPtr);
+			agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(dataPtr.GetPtr());
+		}
+		
+		if (agentInfoPtr == nullptr){
+			SendErrorMessage(0, QString("Unable to update services for agent '%1'. Error: Agent is invalid"), "CAgentCollectionControllerComp");
+			return;
+		}
+		
+		imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+		Q_ASSERT(serviceCollectionPtr != nullptr);
+		if (agentInfoPtr == nullptr){
+			return;
+		}
+		
+		imtbase::ICollectionInfo::Ids ids = serviceCollectionPtr->GetElementIds();
+		for (const imtbase::ICollectionInfo::Id& id : ids){
+			agentinodata::CServiceInfo* serviceInfoInfoPtr = nullptr;
+			imtbase::IObjectCollection::DataPtr serviceDataPtr;
+			if (serviceCollectionPtr->GetObjectData(id, serviceDataPtr)){
+				serviceInfoInfoPtr = dynamic_cast<agentinodata::CServiceInfo*>(serviceDataPtr.GetPtr());
+			}
+			
+			if (serviceInfoInfoPtr == nullptr){
+				continue;
+			}
+			
+			if (!UpdateServiceStatusFromAgent(agentId, id)){
+				SendErrorMessage(0, QString("Unable to update service status"), "CAgentCollectionControllerComp");
+				return;
 			}
 		}
+		
+		// m_objectCollectionCompPtr->SetObjectData(agentId, *agentInfoPtr);
 	}
 }
 

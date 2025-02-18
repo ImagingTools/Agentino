@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5270" Description="ACF"/>
-            <Version Id="1" Number="2220" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5332" Description="ACF"/>
+            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
@@ -16,18 +16,9 @@
         <Element ComponentName="PagesPermissions" X="725" Y="450" Note=""/>
         <Element ComponentName="PagesRepresentation" X="525" Y="325" Note=""/>
         <Element ComponentName="PagesVisualStatusController" X="325" Y="200" Note=""/>
-        <Element ComponentName="ServicesPage" X="275" Y="525" Note=""/>
         <Element ComponentName="SettingsPage" X="125" Y="450" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="Repositories">
-            <PositionMap>
-                <Element ComponentName="FileAutoPersistence" X="800" Y="200" Note=""/>
-                <Element ComponentName="RepresentationService" X="550" Y="300" Note=""/>
-                <Element ComponentName="ServiceCollection" X="525" Y="200" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
         <EmbededRegistry Id="PageData">
             <PositionMap>
                 <Element ComponentName="AgentSettingsPage" X="500" Y="225" Note=""/>
@@ -40,6 +31,14 @@
             <PositionMap>
                 <Element ComponentName="DevicesPermissions" X="550" Y="400" Note=""/>
                 <Element ComponentName="PagePermissions" X="575" Y="150" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="Repositories">
+            <PositionMap>
+                <Element ComponentName="FileAutoPersistence" X="800" Y="200" Note=""/>
+                <Element ComponentName="RepresentationService" X="550" Y="300" Note=""/>
+                <Element ComponentName="ServiceCollection" X="525" Y="200" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

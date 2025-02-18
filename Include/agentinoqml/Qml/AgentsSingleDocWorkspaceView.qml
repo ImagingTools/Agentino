@@ -29,11 +29,6 @@ SingleDocumentWorkspaceView {
         AgentEditor {
             id: agentEditor;
 
-            commandsDelegateComp: Component {ViewCommandsDelegateBase {
-                view: agentEditor;
-            }
-            }
-
             commandsControllerComp: Component {CommandsPanelController {
                 commandId: "Agent";
                 uuid: agentEditor.viewId;
@@ -71,9 +66,9 @@ SingleDocumentWorkspaceView {
                  }
              }
 
-            gqlGetCommandId: "AgentItem";
-            gqlUpdateCommandId: "AgentUpdate";
-            gqlAddCommandId: "AgentAdd";
+            gqlGetCommandId: AgentinoAgentsSdlCommandIds.s_getAgent;
+            gqlUpdateCommandId: AgentinoAgentsSdlCommandIds.s_updateAgent;
+            gqlAddCommandId: AgentinoAgentsSdlCommandIds.s_addAgent;
         }
     }
 }

@@ -206,22 +206,20 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 		}
 
 		if (serviceInfoPtr != nullptr){
-			QByteArray serviceId;
-			for (QByteArray informationId : informationIds){
+			for (const QByteArray& informationId : informationIds){
 				QVariant elementInformation;
 
 				if(informationId == "TypeId"){
 					elementInformation = serviceCollectionPtr->GetObjectTypeId(collectionId);
 				}
 				else if(informationId == "Id"){
-					serviceId = collectionId;
-					elementInformation = serviceId;
+					elementInformation = collectionId;
 				}
 				else if(informationId == "Name"){
-					elementInformation = serviceCollectionPtr->GetElementInfo(collectionId, imtbase::IObjectCollection::EIT_NAME).toString();
+					elementInformation = serviceInfoPtr->GetServiceName();
 				}
 				else if(informationId == "Description"){
-					elementInformation = serviceCollectionPtr->GetElementInfo(collectionId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
+					elementInformation = serviceInfoPtr->GetServiceDescription();
 				}
 				else if(informationId == "Path"){
 					elementInformation = serviceInfoPtr->GetServicePath();

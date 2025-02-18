@@ -1,0 +1,162 @@
+schema {
+	query: Query
+	mutation: Mutation
+	subscription: Subscription
+	name: Services
+	namespace: agentino
+	version: 1.0
+}
+
+import {
+	"../../../../ImtCore/Sdl/imtbase/1.0/ImtCollection.sdl"
+}
+
+type ServiceListInputViewParams {
+	Count: Int
+	Offset: Int
+	FilterModel: String
+}
+
+input ServiceListInput {
+	viewParams: ServiceListInputViewParams
+}
+
+type ServiceItem {
+	Id: ID!
+	TypeId: ID!
+	Name: String!
+	Description: String
+	Path: String
+	Status: String
+	Version: String
+}
+
+type ServiceListPayload{
+	items: [ServiceItem]!
+}
+
+type UrlParam {
+	Host: String
+	Port: Integer
+	Scheme: String
+}
+
+type ExternPort {
+	Id: ID
+	Name: String
+	Description: String
+	Url: UrlParam
+}
+
+type InputConnection {
+	Id: ID
+	UsageId: String
+	ConnectionName: String
+	Description: String
+	ServiceName: String
+	ServiceTypeName: String
+	ExternPorts: [ExternPort]
+	Url: UrlParam
+}
+
+type Element {
+	Id: ID
+	Name: String
+	Url: UrlParam
+}
+
+type OutputConnection {
+	Id: ID
+	UsageId: String
+	ConnectionName: String
+	Description: String
+	ServiceName: String
+	ServiceTypeName: String
+	DependantConnectionId: String
+	Elements: [Element]
+	Url: UrlParam
+}
+
+type ServiceData {
+	Id: ID!
+	Name: String!
+	Description: String
+	Path: String
+	Arguments: String
+	ServiceTypeName: String
+	EnableVerbose: Boolean
+	IsAutoStart: Boolean
+	TracingLevel: Integer
+	StartScript: String
+	StopScript: String
+	Version: String
+	Status: String
+	InputConnections: [InputConnection]
+	OutputConnections: [OutputConnection]
+}
+
+input ServiceDataInput {
+	Id: ID!
+	Item: ServiceData!
+}
+
+input ConnectionUrlInput {
+	ServiceId: ID!
+	ConnectionId: ID!
+	Url: UrlParam!
+}
+
+type UpdateConnectionUrlResponse {
+	Succesful: Boolean
+}
+
+enum ServiceStatus {
+	UNDEFINED
+	STARTING
+	STOPPING
+	RUNNING
+	NOT_RUNNING
+	RUNNING_IMPOSSIBLE
+}
+
+type ServiceInput {
+	ServiceId: ID!
+}
+
+type ServiceStatusResponse {
+	Status: ServiceStatus!
+}
+
+type Query {
+	ServicesList (input: ServiceListInput): ServiceListPayload!
+	GetService (input: InputId): ServiceData!
+	GetServiceStatus (input: InputId): ServiceStatusResponse!
+}
+
+type Mutation {
+	UpdateService (input: ServiceDataInput): UpdatedNotificationPayload!
+	AddService (input: ServiceDataInput): AddedNotificationPayload!
+	
+	StartService (input: ServiceInput): ServiceStatusResponse!
+	StopService (input: ServiceInput): ServiceStatusResponse!
+	
+	ServicesRemove (input: InputId): RemovedNotificationPayload!
+	UpdateConnectionUrl (input: ConnectionUrlInput): UpdateConnectionUrlResponse!
+}
+
+collectionSchema {
+	type Service {
+		ref: ServiceItem
+		operations {
+			list: ServicesList
+		}
+		subtype Service {
+			ref: ServiceData
+			operations {
+				get: GetService
+				update: UpdateService
+				insert: AddService
+			}
+		}
+	}
+}

@@ -9,58 +9,183 @@ namespace agentgql
 {
 
 
-imtbase::CTreeItemModel* CServiceControllerComp::CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+// protected methods
+
+// reimplemented (sdl::agentino::Services::CGraphQlHandlerCompBase)
+
+sdl::imtbase::ImtCollection::CVisualStatus CServiceControllerComp::OnGetObjectVisualStatus(
+			const sdl::agentino::Services::CGetObjectVisualStatusGqlRequest& /*getObjectVisualStatusRequest*/,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& /*errorMessage*/) const
 {
+	return sdl::imtbase::ImtCollection::CVisualStatus();
+}
+
+
+sdl::agentino::Services::CServiceStatusResponse CServiceControllerComp::OnStartService(
+			const sdl::agentino::Services::CStartServiceGqlRequest& startServiceRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	sdl::agentino::Services::CServiceStatusResponse response;
+	
 	if (!m_serviceControllerCompPtr.IsValid()){
-		Q_ASSERT(false);
-		return nullptr;
+		Q_ASSERT_X(false, "Attribute 'ServiceController' was not set", "CServiceControllerComp");
+		return response;
 	}
+	
+	sdl::agentino::Services::StartServiceRequestArguments arguments = startServiceRequest.GetRequestedArguments();
+	
+	if (!arguments.input.Version_1_0.has_value()){
+		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
+		return response;
+	}
+	
+	response.Version_1_0.emplace();
+	
+	response.Version_1_0->Status = sdl::agentino::Services::ServiceStatus::UNDEFINED;
 
-	QByteArray commandId = gqlRequest.GetCommandId();
-
-	if (m_commandIdsAttrPtr.FindValue(commandId) < 0){
-		Q_ASSERT(false);
-		return nullptr;
+	if (!arguments.input.Version_1_0->ServiceId.has_value()){
+		errorMessage = QString("Unable to start service with empty ID");
+		SendErrorMessage(0, errorMessage, "CServiceControllerComp");
+		return response;
 	}
-
-	const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParamObject("input");
-	if (inputParamPtr == nullptr){
-		errorMessage = QString("Unable to create response for command '%1'. Error: GraphQL input parameters is invalid").arg(qPrintable(commandId));
-		return nullptr;
-	}
-
-	QByteArray serviceId = inputParamPtr->GetFieldArgumentValue("serviceid").toByteArray();
-	if (serviceId.isEmpty()){
-		errorMessage = QString("Unable to create response for command '%1'. Error: Service ID is empty");
-		return nullptr;
-	}
-
-	if (commandId == "ServiceStart"){
-		if (!m_serviceControllerCompPtr->StartService(serviceId)){
-			errorMessage = QString("Unable to create response for command '%1'. Error when trying to start the service");
-			return nullptr;
-		}
-	}
-	else if (commandId == "ServiceStop"){
-		if (!m_serviceControllerCompPtr->StopService(serviceId)){
-			errorMessage = QString("Unable to create response for command '%1'. Error when trying to stop the service");
-			return nullptr;
-		}
-	}
+	
+	QByteArray serviceId = *arguments.input.Version_1_0->ServiceId;
+	
+	m_serviceControllerCompPtr->StartService(serviceId);
 
 	agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
-	agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
+	
+	response.Version_1_0->Status = (sdl::agentino::Services::ServiceStatus) state;
+	
+	return response;
+}
 
-	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
-	imtbase::CTreeItemModel* dataModelPtr = rootModelPtr->AddTreeModel("data");
 
-	imtbase::CTreeItemModel* statusModel = dataModelPtr->AddTreeModel("serviceStatus");
+sdl::agentino::Services::CServiceStatusResponse CServiceControllerComp::OnStopService(
+			const sdl::agentino::Services::CStopServiceGqlRequest& stopServiceRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	sdl::agentino::Services::CServiceStatusResponse response;
+	
+	if (!m_serviceControllerCompPtr.IsValid()){
+		Q_ASSERT_X(false, "Attribute 'ServiceController' was not set", "CServiceControllerComp");
+		return response;
+	}
+	
+	sdl::agentino::Services::StopServiceRequestArguments arguments = stopServiceRequest.GetRequestedArguments();
+	
+	if (!arguments.input.Version_1_0.has_value()){
+		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
+		return response;
+	}
+	
+	response.Version_1_0.emplace();
+	response.Version_1_0->Status = sdl::agentino::Services::ServiceStatus::UNDEFINED;
+	
+	if (!arguments.input.Version_1_0->ServiceId.has_value()){
+		errorMessage = QString("Unable to start service with empty ID");
+		return response;
+	}
+	
+	QByteArray serviceId = *arguments.input.Version_1_0->ServiceId;
+	
+	m_serviceControllerCompPtr->StopService(serviceId);
 
-	statusModel->SetData("serviceid", serviceId);
-	statusModel->SetData("status", processStateEnum.id);
-	statusModel->SetData("statusName", processStateEnum.name);
+	agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
+	
+	response.Version_1_0->Status = (sdl::agentino::Services::ServiceStatus) state;
 
-	return rootModelPtr.PopPtr();
+	return response;
+}
+
+
+sdl::imtbase::ImtCollection::CRemovedNotificationPayload CServiceControllerComp::OnServicesRemove(
+	const sdl::agentino::Services::CServicesRemoveGqlRequest& /*removeServiceRequest*/,
+	const ::imtgql::CGqlRequest& /*gqlRequest*/,
+	QString& /*errorMessage*/) const
+{
+	return sdl::imtbase::ImtCollection::CRemovedNotificationPayload();
+}
+
+
+sdl::agentino::Services::CServiceStatusResponse CServiceControllerComp::OnGetServiceStatus(
+	const sdl::agentino::Services::CGetServiceStatusGqlRequest& getServiceStatusRequest,
+	const ::imtgql::CGqlRequest& gqlRequest,
+	QString& errorMessage) const
+{
+	sdl::agentino::Services::CServiceStatusResponse response;
+	if (!m_serviceControllerCompPtr.IsValid()){
+		Q_ASSERT_X(false, "Attribute 'ServiceController' was not set", "CServiceControllerComp");
+		return response;
+	}
+	
+	sdl::agentino::Services::GetServiceStatusRequestArguments arguments = getServiceStatusRequest.GetRequestedArguments();
+	if (!arguments.input.Version_1_0.has_value()){
+		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
+		return response;
+	}
+	
+	if (!arguments.input.Version_1_0->Id.has_value()){
+		errorMessage = QString("Unable to start service with empty ID");
+		return response;
+	}
+	
+	response.Version_1_0.emplace();
+	
+	QByteArray serviceId = *arguments.input.Version_1_0->Id;
+	agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
+	response.Version_1_0->Status = (sdl::agentino::Services::ServiceStatus) state;
+	
+	return response;
+}
+
+
+sdl::agentino::Services::CUpdateConnectionUrlResponse CServiceControllerComp::OnUpdateConnectionUrl(
+	const sdl::agentino::Services::CUpdateConnectionUrlGqlRequest& updateConnectionUrlRequest,
+	const ::imtgql::CGqlRequest& gqlRequest,
+	QString& errorMessage) const
+{
+	sdl::agentino::Services::CUpdateConnectionUrlResponse response;
+	
+	if (!m_connectionCollectionProviderCompPtr.IsValid()){
+		return response;
+	}
+	
+	response.Version_1_0.emplace();
+	response.Version_1_0->Succesful = false;
+	
+	sdl::agentino::Services::UpdateConnectionUrlRequestArguments arguments = updateConnectionUrlRequest.GetRequestedArguments();
+	if (!arguments.input.Version_1_0.has_value()){
+		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
+		return response;
+	}
+	
+	if (!arguments.input.Version_1_0->ServiceId.has_value()){
+		errorMessage = QString("Unable to start service with empty ID");
+		return response;
+	}
+	
+	QByteArray serviceId = *arguments.input.Version_1_0->ServiceId;
+	QByteArray connectionId = *arguments.input.Version_1_0->ConnectionId;
+	sdl::agentino::Services::CUrlParam::V1_0 urlParam = *arguments.input.Version_1_0->Url;
+	
+	QUrl url;
+	if (!agentinodata::GetUrlParamFromRepresentation(url, urlParam)){
+		errorMessage = QString("Unable to start service with empty ID");
+		return response;
+	}
+	
+	std::shared_ptr<imtservice::IConnectionCollection> connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollection(serviceId);
+	if (connectionCollectionPtr != nullptr){
+		bool ok = connectionCollectionPtr->SetUrl(connectionId, url);
+		
+		response.Version_1_0->Succesful = ok;
+	}
+	
+	return response;
 }
 
 

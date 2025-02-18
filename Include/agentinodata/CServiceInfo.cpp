@@ -37,6 +37,26 @@ CServiceInfo::CServiceInfo(const QString &typeName, SettingsType settingsType):
 }
 
 
+void CServiceInfo::SetServiceName(const QString& name)
+{
+	if (m_serviceName != name){
+		istd::CChangeNotifier changeNotifier(this);
+		
+		m_serviceName = name;
+	}
+}
+
+
+void CServiceInfo::SetServiceDescription(const QString& description)
+{
+	if (m_serviceDescription != description){
+		istd::CChangeNotifier changeNotifier(this);
+		
+		m_serviceDescription = description;
+	}
+}
+
+
 void CServiceInfo::SetServicePath(const QByteArray& servicePath)
 {
 	if (m_path != servicePath){
@@ -106,6 +126,18 @@ void CServiceInfo::SetServiceVersion(const QString& serviceVersion)
 
 		m_serviceVersion = serviceVersion;
 	}
+}
+
+
+QString CServiceInfo::GetServiceName() const
+{
+	return m_serviceName;
+}
+
+
+QString CServiceInfo::GetServiceDescription() const
+{
+	return m_serviceDescription;
 }
 
 
@@ -285,6 +317,17 @@ bool CServiceInfo::Serialize(iser::IArchive &archive)
 		retVal = retVal && archive.Process(m_tracingLevel);
 		retVal = retVal && archive.EndTag(tracingLevelTag);
 	}
+	if (identifiableVersion >= 12968){
+		iser::CArchiveTag nameTag("Name", "Service Name", iser::CArchiveTag::TT_LEAF);
+		retVal = retVal && archive.BeginTag(nameTag);
+		retVal = retVal && archive.Process(m_serviceName);
+		retVal = retVal && archive.EndTag(nameTag);
+		
+		iser::CArchiveTag descriptionTag("Description", "Service Description", iser::CArchiveTag::TT_LEAF);
+		retVal = retVal && archive.BeginTag(descriptionTag);
+		retVal = retVal && archive.Process(m_serviceDescription);
+		retVal = retVal && archive.EndTag(descriptionTag);
+	}
 
 	return retVal;
 }
@@ -305,6 +348,8 @@ bool CServiceInfo::CopyFrom(const IChangeable &object, CompatibilityMode /*mode*
 		istd::CChangeNotifier changeNotifier(this);
 
 		m_settingsType = sourcePtr->m_settingsType;
+		m_serviceName = sourcePtr->m_serviceName;
+		m_serviceDescription = sourcePtr->m_serviceDescription;
 		m_serviceTypeName = sourcePtr->m_serviceTypeName;
 		m_path = sourcePtr->m_path;
 		m_startScriptPath =sourcePtr->m_startScriptPath;
@@ -344,6 +389,8 @@ bool CServiceInfo::ResetData(CompatibilityMode /*mode*/)
 	istd::CChangeNotifier changeNotifier(this);
 
 	m_path.clear();
+	m_serviceName.clear();
+	m_serviceDescription.clear();
 	m_serviceTypeName.clear();
 	m_settingsPath = nullptr;
 	m_arguments.clear();

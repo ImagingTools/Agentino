@@ -64,7 +64,7 @@ QByteArray CServiceCompositeInfoComp::GetServiceId(const QUrl& url) const
 						if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
 							imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
 							if (connectionParamPtr != nullptr){
-								if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionParam::CT_INPUT){
+								if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT){
 									if (connectionParamPtr->GetUrl() == url){
 										return serviceElementId;
 									}
@@ -282,9 +282,13 @@ QString CServiceCompositeInfoComp::GetServiceName(const QByteArray& serviceId) c
 				if (serviceCollectionPtr != nullptr){
 					imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
 					if (serviceElementIds.contains(serviceId)){
-						QString serviceName = serviceCollectionPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_NAME).toString();
-
-						return serviceName;
+						imtbase::IObjectCollection::DataPtr dataPtr;
+						if (serviceCollectionPtr->GetObjectData(serviceId, dataPtr)){
+							agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(dataPtr.GetPtr());
+							if (serviceInfoPtr != nullptr){
+								return serviceInfoPtr->GetServiceName();
+							}
+						}
 					}
 				}
 			}

@@ -40,11 +40,6 @@ I_EXPORT_COMPONENT(
 			"Service Controller Proxy");
 
 I_EXPORT_COMPONENT(
-			GetServiceControllerProxy,
-			"Get service controller proxy",
-			"Get Service Controller Proxy");
-
-I_EXPORT_COMPONENT(
 			TopologyController,
 			"Topology controller",
 			"Topology controller");
@@ -60,19 +55,9 @@ I_EXPORT_COMPONENT(
 			"Service Collection Subscriber Controller");
 
 I_EXPORT_COMPONENT(
-			RemoveServiceControllerProxy,
-			"Remove service controller proxy",
-			"Remove Service Controller Proxy");
-
-I_EXPORT_COMPONENT(
 			ServiceStatusCollectionSubscriberController,
 			"Service status collection subscriber controller",
 			"Service Status Collection Subscriber Controller");
-
-I_EXPORT_COMPONENT(
-			ServiceStatusControllerProxy,
-			"Service status controller proxy",
-			"Service Status Controller Proxy");
 
 I_EXPORT_COMPONENT(
 			AgentConnectionObserver,

@@ -50,6 +50,7 @@ public:
 				const QString& serviceName = QString(),
 				const QString& serviceDescription = QString()) = 0;
 	virtual bool ServiceExists(const QByteArray& agentId, const QByteArray& serviceId) const = 0;
+	virtual IServiceInfo* GetService(const QByteArray& agentId, const QByteArray& serviceId) const = 0;
 };
 
 

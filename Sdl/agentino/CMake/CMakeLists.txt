@@ -5,8 +5,22 @@ include(${IMTCOREDIR}/Config/CMake/ImtCore.cmake)
 include(${IMTCOREDIR}/Config/CMake/ImtCoreSdlCustomConfig.cmake)
 
 add_custom_target(${PROJECT_NAME}-SDL-related-files SOURCES
-	${CMAKE_CURRENT_LIST_DIR}/../1.0/Agents.sdl)
+	${CMAKE_CURRENT_LIST_DIR}/../1.0/Agents.sdl
+	${CMAKE_CURRENT_LIST_DIR}/../1.0/Services.sdl
+	${CMAKE_CURRENT_LIST_DIR}/../1.0/Topology.sdl
+)
 
-ImtCoreCustomConfigureSdlCppQml(CXX QML
+ImtCoreCustomConfigureSdlCppQml(CXX
 			SCHEMA_PATH	"${CMAKE_CURRENT_LIST_DIR}/../1.0/Agents.sdl"
-			VERSION		"1.0")
+			VERSION		"1.0"
+			QML_NAME	"agentinoAgentsSdl")
+			
+ImtCoreCustomConfigureSdlCppQml(CXX
+			SCHEMA_PATH	"${CMAKE_CURRENT_LIST_DIR}/../1.0/Services.sdl"
+			VERSION		"1.0"
+			QML_NAME	"agentinoServicesSdl")
+			
+ImtCoreCustomConfigureSdlCppQml(CXX
+			SCHEMA_PATH	"${CMAKE_CURRENT_LIST_DIR}/../1.0/Topology.sdl"
+			VERSION		"1.0"
+			QML_NAME	"agentinoTopologySdl")

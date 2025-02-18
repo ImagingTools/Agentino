@@ -7,6 +7,10 @@ schema {
 	version: 1.0
 }
 
+import {
+	"../../../../ImtCore/Sdl/imtbase/1.0/ImtCollection.sdl"
+}
+
 type AgentListInputViewParams {
 	Count: Int
 	Offset: Int
@@ -19,6 +23,7 @@ input AgentListInput {
 
 type AgentItem {
 	Id: ID!
+	TypeId: ID!
 	Name: String!
 	Description: String
 	Added: String
@@ -45,19 +50,33 @@ type AgentDataPayload{
 	item: AgentData!
 }
 
-input IdInput {
+input AgentDataInput {
 	Id: ID!
-}
-
-type UpdatedNotificationPayload{
-	updatedNotification: String!
+	Item: AgentData!
 }
 
 type Query {
 	AgentsList (input: AgentListInput): AgentListPayload!
-	AgentItem (input: IdInput): AgentDataPayload!
+	GetAgent (input: InputId): AgentDataPayload!
 }
 
 type Mutation {
-	AgentUpdate (input: AgentData): UpdatedNotificationPayload!
+	UpdateAgent (input: AgentDataInput): UpdatedNotificationPayload!
+	AddAgent (input: AgentDataInput): AddedNotificationPayload!
+}
+
+collectionSchema {
+	type Agent {
+		ref: AgentItem
+		operations {
+			list: AgentsList
+		}
+		subtype Agent {
+			ref: AgentData
+			operations {
+				get: GetAgent
+				update: UpdateAgent
+			}
+		}
+	}
 }

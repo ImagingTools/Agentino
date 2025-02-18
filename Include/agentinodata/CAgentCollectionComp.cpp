@@ -12,11 +12,11 @@ namespace agentinodata
 // reimplemented (agentinodata::IServiceManager)
 
 bool CAgentCollectionComp::AddService(
-			const QByteArray& agentId,
-			const IServiceInfo& serviceInfo,
-			const QByteArray& serviceId,
-			const QString& serviceName,
-			const QString& serviceDescription)
+	const QByteArray& agentId,
+	const IServiceInfo& serviceInfo,
+	const QByteArray& serviceId,
+	const QString& serviceName,
+	const QString& serviceDescription)
 {
 	ObjectInfo* objectInfoPtr = GetObjectInfo(agentId);
 	if (objectInfoPtr != nullptr){
@@ -29,15 +29,15 @@ bool CAgentCollectionComp::AddService(
 					ChangeSet changeSet(agentinodata::IServiceManager::CF_SERVICE_ADDED);
 					changeSet.SetChangeInfo("agentid", agentId);
 					changeSet.SetChangeInfo("serviceid", objectId);
-
+					
 					istd::CChangeNotifier changeNotifier(this, &changeSet);
 				}
-
+				
 				return !objectId.isEmpty();
 			}
 		}
 	}
-
+	
 	return false;
 }
 
@@ -55,25 +55,25 @@ bool CAgentCollectionComp::RemoveService(const QByteArray& agentId, const QByteA
 					ChangeSet changeSet(agentinodata::IServiceManager::CF_SERVICE_REMOVED);
 					changeSet.SetChangeInfo("agentid", agentId);
 					changeSet.SetChangeInfo("serviceid", serviceId);
-
+					
 					istd::CChangeNotifier changeNotifier(this, &changeSet);
 				}
-
+				
 				return result;
 			}
 		}
 	}
-
+	
 	return false;
 }
 
 
 bool CAgentCollectionComp::SetService(
-			const QByteArray& agentId,
-			const QByteArray& serviceId,
-			const IServiceInfo& serviceInfo,
-			const QString& serviceName,
-			const QString& serviceDescription)
+	const QByteArray& agentId,
+	const QByteArray& serviceId,
+	const IServiceInfo& serviceInfo,
+	const QString& serviceName,
+	const QString& serviceDescription)
 {
 	ObjectInfo* objectInfoPtr = GetObjectInfo(agentId);
 	if (objectInfoPtr != nullptr){
@@ -85,19 +85,19 @@ bool CAgentCollectionComp::SetService(
 				if (result){
 					serviceCollectionPtr->SetElementName(serviceId, serviceName);
 					serviceCollectionPtr->SetElementDescription(serviceId, serviceDescription);
-
+					
 					ChangeSet changeSet(agentinodata::IServiceManager::CF_SERVICE_UPDATED);
 					changeSet.SetChangeInfo("agentid", agentId);
 					changeSet.SetChangeInfo("serviceid", serviceId);
-
+					
 					istd::CChangeNotifier changeNotifier(this, &changeSet);
 				}
-
+				
 				return result;
 			}
 		}
 	}
-
+	
 	return false;
 }
 
@@ -114,8 +114,39 @@ bool CAgentCollectionComp::ServiceExists(const QByteArray& agentId, const QByteA
 			}
 		}
 	}
-
+	
 	return false;
+}
+
+
+IServiceInfo* CAgentCollectionComp::GetService(const QByteArray& agentId, const QByteArray& serviceId) const
+{
+	ObjectInfo* objectInfoPtr = GetObjectInfo(agentId);
+	if (objectInfoPtr == nullptr){
+		return nullptr;
+	}
+	
+	agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(objectInfoPtr->objectPtr.GetPtr());
+	if (agentInfoPtr == nullptr){
+		return nullptr;
+	}
+	
+	imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+	if (serviceCollectionPtr == nullptr){
+		return nullptr;
+	}
+
+	imtbase::IObjectCollection::DataPtr dataPtr;
+	if (!serviceCollectionPtr->GetObjectData(serviceId, dataPtr)){
+		return nullptr;
+	}
+	
+	istd::TDelPtr<IServiceInfo> serviceInfoPtr;
+	if (!serviceInfoPtr.SetCastedOrRemove(dataPtr.GetPtr()->CloneMe())){
+		return nullptr;
+	}
+	
+	return serviceInfoPtr.PopPtr();
 }
 
 

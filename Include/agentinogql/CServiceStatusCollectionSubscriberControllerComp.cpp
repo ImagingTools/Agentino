@@ -1,6 +1,10 @@
 #include <agentinogql/CServiceStatusCollectionSubscriberControllerComp.h>
 
 
+// Agentino includes
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
+
+
 namespace agentinogql
 {
 
@@ -38,22 +42,56 @@ void CServiceStatusCollectionSubscriberControllerComp::OnUpdate(const istd::ICha
 	dependencyData += serviceId + "\",";
 	dependencyData += "\"dependencyStatus\":\"";
 	agentinodata::IServiceCompositeInfo::StateOfRequiredServices state = m_serviceCompositeInfoCompPtr->GetStateOfRequiredServices(serviceId);
-	dependencyData += agentinodata::IServiceCompositeInfo::ToString(state) + "\"}";
+	dependencyData += GetDependencyStatus(state) + "\"}";
 	for (int index = 0; index < dependencyServices.count(); index++){
 		dependencyData += ",";
 		dependencyData += "{\"id\":\"";
 		dependencyData += dependencyServices[index] + "\",";
 		dependencyData += "\"dependencyStatus\":\"";
+
 		state = m_serviceCompositeInfoCompPtr->GetStateOfRequiredServices(dependencyServices[index]);
-		dependencyData += agentinodata::IServiceCompositeInfo::ToString(state) + "\"}";
+		QString statusStr = GetDependencyStatus(state);
+		
+		dependencyData += statusStr + "\"}";
 	}
 	dependencyData += "]";
-
+	
+	QString statusStr;
 	agentinodata::IServiceStatusInfo::ServiceStatus status = m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceId);
+	if (status == agentinodata::IServiceStatusInfo::ServiceStatus::SS_RUNNING){
+		statusStr = "RUNNING";
+	}
+	else if (status == agentinodata::IServiceStatusInfo::ServiceStatus::SS_NOT_RUNNING){
+		statusStr = "NOT_RUNNING";
+	}
+	else{
+		statusStr = "UNDEFINED";
+	}
+	
 	QString data = QString("{ \"serviceid\": \"%1\", \"serviceStatus\": \"%2\", \"dependencyStatus\": %3}")
-					   .arg(qPrintable(serviceId)).arg(qPrintable(agentinodata::IServiceStatusInfo::ToString(status))).arg(qPrintable(dependencyData));
+					   .arg(qPrintable(serviceId)).arg(statusStr).arg(qPrintable(dependencyData));
 
 	PublishData("OnServiceStatusChanged", data.toUtf8());
+}
+
+
+// private methods
+
+QString CServiceStatusCollectionSubscriberControllerComp::GetDependencyStatus(agentinodata::IServiceCompositeInfo::StateOfRequiredServices status) const
+{
+	QString statusStr;
+	
+	if (status == agentinodata::IServiceCompositeInfo::StateOfRequiredServices::SORS_RUNNING){
+		statusStr = "RUNNING";
+	}
+	else if (status == agentinodata::IServiceCompositeInfo::StateOfRequiredServices::SORS_NOT_RUNNING){
+		statusStr = "NOT_RUNNING";
+	}
+	else{
+		statusStr = "UNDEFINED";
+	}
+	
+	return statusStr;
 }
 
 

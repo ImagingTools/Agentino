@@ -9,8 +9,9 @@
 #include <imtbase/TPluginManager.h>
 
 // Agentino includes
-#include <agentinodata/IServiceInfo.h>
+#include <agentinodata/CServiceInfo.h>
 #include <agentinodata/IServiceController.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
 
 IMT_DECLARE_PLUGIN_INTERFACE(ServiceSettings, imtservice::IConnectionCollectionPlugin);
 
@@ -20,14 +21,14 @@ IMT_DECLARE_PLUGIN_INTERFACE(ServiceSettings, imtservice::IConnectionCollectionP
 
 namespace agentgql
 {
-
+ 
 
 class CServiceCollectionControllerComp:
-			public imtservergql::CObjectCollectionControllerCompBase,
+			public sdl::agentino::Services::CServiceCollectionControllerCompBase,
 			virtual public imtservice::IConnectionCollectionProvider
 {
 public:
-	typedef imtservergql::CObjectCollectionControllerCompBase BaseClass;
+	typedef sdl::agentino::Services::CServiceCollectionControllerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceCollectionControllerComp);
 		I_REGISTER_INTERFACE(imtservice::IConnectionCollectionProvider)
@@ -41,19 +42,27 @@ protected:
 		const sdl::imtbase::ImtCollection::CGetObjectVisualStatusGqlRequest& getObjectVisualStatusRequest,
 		const ::imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage) const override;
-
-	// reimplemented (imtservergql::CObjectCollectionControllerCompBase)
-	virtual bool SetupGqlItem(
-				const imtgql::CGqlRequest& gqlRequest,
-				imtbase::CTreeItemModel& model,
-				int itemIndex,
-				const QByteArray& collectionId,
+	
+	// reimplemented (sdl::agentino::Services::CServiceCollectionControllerCompBase)
+	virtual bool CreateRepresentationFromObject(
+				const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
+				const sdl::agentino::Services::CServicesListGqlRequest& servicesListRequest,
+				sdl::agentino::Services::CServiceItem::V1_0& representationObject,
 				QString& errorMessage) const override;
-	virtual imtbase::CTreeItemModel* ListObjects(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
-	virtual imtbase::CTreeItemModel* GetObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
-	virtual imtbase::CTreeItemModel* InsertObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
-	virtual imtbase::CTreeItemModel* UpdateObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
-	virtual istd::IChangeable* CreateObjectFromRequest(const imtgql::CGqlRequest& gqlRequest, QByteArray &objectId, QString& errorMessage) const override;
+	virtual bool CreateRepresentationFromObject(
+				const istd::IChangeable& data,
+				const sdl::agentino::Services::CGetServiceGqlRequest& getServiceRequest,
+				sdl::agentino::Services::CServiceData::V1_0& representationPayload,
+				QString& errorMessage) const override;
+	virtual istd::IChangeable* CreateObjectFromRepresentation(
+				const sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation,
+				QByteArray& newObjectId,
+				QString& errorMessage) const override;
+	virtual bool UpdateObjectFromRepresentationRequest(
+				const ::imtgql::CGqlRequest& rawGqlRequest,
+				const sdl::agentino::Services::CUpdateServiceGqlRequest& updateServiceRequest,
+				istd::IChangeable& object,
+				QString& errorMessage) const override;
 
 	// reimplemented (imtservice::IConnectionCollectionProvider)
 	virtual std::shared_ptr<imtservice::IConnectionCollection> GetConnectionCollection(const QByteArray& serviceId) const override;
@@ -62,11 +71,16 @@ protected:
 	virtual void OnComponentDestroyed() override;
 
 	virtual imtbase::IObjectCollection* GetObjectCollection(const QByteArray& id = QByteArray()) const;
-
+	
+private:
+	bool CheckInputPortsUpdated(agentinodata::IServiceInfo& serviceInfo, const imtservice::IConnectionCollection& connectionCollection) const;
+	bool UpdateConnectionCollectionFromService(agentinodata::IServiceInfo& serviceInfo, imtservice::IConnectionCollection& connectionCollection) const;
+	std::shared_ptr<imtservice::IConnectionCollection> GetConnectionCollection(const QByteArray& serviceTypeId, const QString& servicePath) const;
+	
 protected:
 	I_FACT(agentinodata::IServiceInfo, m_serviceInfoFactCompPtr);
 	I_REF(agentinodata::IServiceController, m_serviceControllerCompPtr);
-
+	
 	class PluginManager: public imtbase::TPluginManager<
 							  imtservice::IConnectionCollectionPlugin,
 							  IMT_CREATE_PLUGIN_FUNCTION(ServiceSettings),

@@ -18,6 +18,8 @@ class CServiceInfo: virtual public IServiceInfo
 
 public:
 	CServiceInfo(const QString& typeName = QString(), SettingsType settingsType = ST_PLUGIN);
+	virtual void SetServiceName(const QString& name);
+	virtual void SetServiceDescription(const QString& description);
 	virtual void SetServicePath(const QByteArray& servicePath);
 	virtual void SetServiceSettingsPath(const QByteArray& serviceSettingsPath);
 	virtual void SetStartScriptPath(const QByteArray& startScriptPath);
@@ -28,6 +30,8 @@ public:
 	virtual void SetServiceVersion(const QString& serviceVersion);
 
 	// reimplemented (agentinodata::IServiceInfo)
+	virtual QString GetServiceName() const override;
+	virtual QString GetServiceDescription() const override;
 	virtual SettingsType GetSettingsType() const override;
 	virtual QString GetServiceVersion() const override;
 	virtual QString GetServiceTypeName() const override;
@@ -56,6 +60,8 @@ public:
 protected:
 	SettingsType m_settingsType;
 	QString m_serviceVersion;
+	QString m_serviceName;
+	QString m_serviceDescription;
 	QString m_serviceTypeName;
 	QByteArray m_path;
 	QByteArray m_settingsPath;

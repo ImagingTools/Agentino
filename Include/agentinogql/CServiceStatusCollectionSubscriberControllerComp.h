@@ -27,6 +27,9 @@ public:
 protected:
 	// reimplemented (imod::CSingleModelObserverBase)
 	virtual void OnUpdate(const istd::IChangeable::ChangeSet& changeSet) override;
+	
+private:
+	QString GetDependencyStatus(agentinodata::IServiceCompositeInfo::StateOfRequiredServices status) const;
 
 private:
 	I_REF(agentinodata::IServiceCompositeInfo, m_serviceCompositeInfoCompPtr);
