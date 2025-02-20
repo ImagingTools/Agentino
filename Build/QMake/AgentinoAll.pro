@@ -4,15 +4,19 @@ TEMPLATE = subdirs
 # Libraries
 SUBDIRS += agentgql
 agentgql.file = ../../Include/agentgql/QMake/agentgql.pro
+agentgql.depends = agentinosdl
 
 SUBDIRS += agentinodata
 agentinodata.file = ../../Include/agentinodata/QMake/agentinodata.pro
+agentinodata.depends = agentinosdl
 
 SUBDIRS += agentinogql
 agentinogql.file = ../../Include/agentinogql/QMake/agentinogql.pro
+agentinogql.depends = agentinosdl
 
 SUBDIRS += agentinoqml
 agentinoqml.file = ../../Include/agentinoqml/QMake/agentinoqml.pro
+agentinoqml.depends = agentinosdl
 
 SUBDIRS += agentinosdl
 agentinosdl.file = ../../Sdl/agentino/QMake/agentinosdl.pro
@@ -23,7 +27,7 @@ AgentinoServer.depends = agentinodata
 
 SUBDIRS += AgentinoGqlPck
 AgentinoGqlPck.file = ../../Impl/AgentinoGqlPck/QMake/AgentinoGqlPck.pro
-AgentinoGqlPck.depends = agentinogql
+AgentinoGqlPck.depends = agentinogql agentinosdl
 
 SUBDIRS += AgentGqlPck
 AgentGqlPck.file = ../../Impl/AgentGqlPck/QMake/AgentGqlPck.pro
