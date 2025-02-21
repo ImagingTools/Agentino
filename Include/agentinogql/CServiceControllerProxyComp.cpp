@@ -266,14 +266,6 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 
 // reimplemented (sdl::agentino::Services::CGraphQlHandlerCompBase)
 
-sdl::imtbase::ImtCollection::CVisualStatus CServiceControllerProxyComp::OnGetObjectVisualStatus(
-	const sdl::agentino::Services::CGetObjectVisualStatusGqlRequest& /*getObjectVisualStatusRequest*/,
-	const ::imtgql::CGqlRequest& /*gqlRequest*/,
-	QString& /*errorMessage*/) const
-{
-	return sdl::imtbase::ImtCollection::CVisualStatus();
-}
-
 
 sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnStartService(
 	const sdl::agentino::Services::CStartServiceGqlRequest& startServiceRequest,

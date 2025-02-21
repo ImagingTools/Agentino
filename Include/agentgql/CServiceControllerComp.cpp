@@ -13,14 +13,6 @@ namespace agentgql
 
 // reimplemented (sdl::agentino::Services::CGraphQlHandlerCompBase)
 
-sdl::imtbase::ImtCollection::CVisualStatus CServiceControllerComp::OnGetObjectVisualStatus(
-			const sdl::agentino::Services::CGetObjectVisualStatusGqlRequest& /*getObjectVisualStatusRequest*/,
-			const ::imtgql::CGqlRequest& /*gqlRequest*/,
-			QString& /*errorMessage*/) const
-{
-	return sdl::imtbase::ImtCollection::CVisualStatus();
-}
-
 
 sdl::agentino::Services::CServiceStatusResponse CServiceControllerComp::OnStartService(
 			const sdl::agentino::Services::CStartServiceGqlRequest& startServiceRequest,

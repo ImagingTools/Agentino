@@ -45,10 +45,6 @@ protected:
 		QString& errorMessage) const;
 	
 	// reimplemented (sdl::agentino::Services::CGraphQlHandlerCompBase)
-	virtual sdl::imtbase::ImtCollection::CVisualStatus OnGetObjectVisualStatus(
-		const sdl::agentino::Services::CGetObjectVisualStatusGqlRequest& getObjectVisualStatusRequest,
-		const ::imtgql::CGqlRequest& gqlRequest,
-		QString& errorMessage) const override;
 	virtual sdl::agentino::Services::CServiceStatusResponse OnStartService(
 		const sdl::agentino::Services::CStartServiceGqlRequest& startServiceRequest,
 		const ::imtgql::CGqlRequest& gqlRequest,
