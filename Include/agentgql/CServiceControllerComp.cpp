@@ -104,9 +104,9 @@ sdl::imtbase::ImtCollection::CRemovedNotificationPayload CServiceControllerComp:
 
 
 sdl::agentino::Services::CServiceStatusResponse CServiceControllerComp::OnGetServiceStatus(
-	const sdl::agentino::Services::CGetServiceStatusGqlRequest& getServiceStatusRequest,
-	const ::imtgql::CGqlRequest& gqlRequest,
-	QString& errorMessage) const
+			const sdl::agentino::Services::CGetServiceStatusGqlRequest& getServiceStatusRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
 {
 	sdl::agentino::Services::CServiceStatusResponse response;
 	if (!m_serviceControllerCompPtr.IsValid()){
@@ -136,9 +136,9 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerComp::OnGetSer
 
 
 sdl::agentino::Services::CUpdateConnectionUrlResponse CServiceControllerComp::OnUpdateConnectionUrl(
-	const sdl::agentino::Services::CUpdateConnectionUrlGqlRequest& updateConnectionUrlRequest,
-	const ::imtgql::CGqlRequest& gqlRequest,
-	QString& errorMessage) const
+			const sdl::agentino::Services::CUpdateConnectionUrlGqlRequest& updateConnectionUrlRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
 {
 	sdl::agentino::Services::CUpdateConnectionUrlResponse response;
 	

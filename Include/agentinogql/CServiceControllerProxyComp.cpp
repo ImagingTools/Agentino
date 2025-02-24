@@ -155,15 +155,17 @@ sdl::imtbase::ImtCollection::CUpdatedNotificationPayload CServiceControllerProxy
 		for (const QByteArray& connectionId : connectionIds){
 			sdl::agentino::Services::CUrlParam::V1_0 newUrlParam = GetUrlParam(serviceData, connectionId);
 			QByteArrayList dependentServiceIds = GetServiceIdsByDependantId(connectionId);
-			for (const QByteArray& serviceId : dependentServiceIds){
-				UpdateConnectionUrlForService(serviceId, agentId, connectionId, newUrlParam);
+			for (const QByteArray& dependantServiceId : dependentServiceIds){
+				UpdateConnectionUrlForService(dependantServiceId, agentId, connectionId, newUrlParam);
 			}
 		}
 	}
 	
 	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr.GetPtr(), serviceData)){
 		errorMessage = QString("Unable to get service from representation");
+
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
+
 		return sdl::imtbase::ImtCollection::CUpdatedNotificationPayload();
 	}
 	
@@ -668,11 +670,9 @@ QList<sdl::agentino::Services::CElement::V1_0> CServiceControllerProxyComp::GetC
 							incomingElement.Id = incomingConnection.id;
 							incomingElement.Name = incommingUrlStr;
 							
-							QUrl url = incomingConnection.url;
-							
 							sdl::agentino::Services::CUrlParam::V1_0 urlRepresentation;
 							
-							if (agentinodata::GetRepresentationFromUrlParam(url, urlRepresentation)){
+							if (agentinodata::GetRepresentationFromUrlParam(incomingConnection.url, urlRepresentation)){
 								incomingElement.Url = urlRepresentation;
 								
 								retVal << incomingElement;

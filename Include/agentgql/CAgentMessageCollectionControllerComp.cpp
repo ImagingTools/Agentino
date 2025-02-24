@@ -89,19 +89,19 @@ bool CAgentMessageCollectionControllerComp::SetupGqlItem(
 }
 
 
-imtbase::CTreeItemModel* CAgentMessageCollectionControllerComp::GetObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+imtbase::CTreeItemModel* CAgentMessageCollectionControllerComp::GetObject(const imtgql::CGqlRequest& /*gqlRequest*/, QString& /*errorMessage*/) const
 {
 	return nullptr;
 }
 
 
-imtbase::CTreeItemModel* CAgentMessageCollectionControllerComp::InsertObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+imtbase::CTreeItemModel* CAgentMessageCollectionControllerComp::InsertObject(const imtgql::CGqlRequest& /*gqlRequest*/, QString& /*errorMessage*/) const
 {
 	return nullptr;
 }
 
 
-imtbase::CTreeItemModel* CAgentMessageCollectionControllerComp::UpdateObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+imtbase::CTreeItemModel* CAgentMessageCollectionControllerComp::UpdateObject(const imtgql::CGqlRequest& /*gqlRequest*/, QString& /*errorMessage*/) const
 {
 	return nullptr;
 }

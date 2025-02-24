@@ -278,10 +278,10 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObjectFromRepresentat
 
 
 bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
-	const ::imtgql::CGqlRequest& rawGqlRequest,
-	const sdl::agentino::Services::CUpdateServiceGqlRequest& updateServiceRequest,
-	istd::IChangeable& object,
-	QString& errorMessage) const
+			const ::imtgql::CGqlRequest& /*rawGqlRequest*/,
+			const sdl::agentino::Services::CUpdateServiceGqlRequest& updateServiceRequest,
+			istd::IChangeable& object,
+			QString& errorMessage) const
 {
 	if (!m_serviceControllerCompPtr.IsValid()){
 		Q_ASSERT_X(0, "Attribute 'ServiceController' was not set", "CServiceCollectionControllerComp");

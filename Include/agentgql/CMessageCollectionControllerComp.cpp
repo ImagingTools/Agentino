@@ -230,7 +230,6 @@ imtbase::IObjectCollection* CMessageCollectionControllerComp::GetMessageCollecti
 	}
 
 	QByteArray serviceId = gqlRequest.GetHeader("serviceid");
-	const imtgql::CGqlObject& inputParams = gqlRequest.GetParams();
 
 	imtbase::IObjectCollection::DataPtr dataPtr;
 	if (m_objectCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
