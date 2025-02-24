@@ -38,10 +38,10 @@ void CAgentCollectionControllerComp::OnComponentCreated()
 // reimplemented (sdl::agentino::Agents::CAgentCollectionControllerCompBase)
 
 bool CAgentCollectionControllerComp::CreateRepresentationFromObject(
-	const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
-	const sdl::agentino::Agents::CAgentsListGqlRequest& agentsListRequest,
-	sdl::agentino::Agents::CAgentItem::V1_0& representationObject,
-	QString& errorMessage) const
+			const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
+			const sdl::agentino::Agents::CAgentsListGqlRequest& agentsListRequest,
+			sdl::agentino::Agents::CAgentItem::V1_0& representationObject,
+			QString& /*errorMessage*/) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		Q_ASSERT_X(false, "Attribute 'ObjectCollection' was not set", "CDeviceCollectionControllerComp");

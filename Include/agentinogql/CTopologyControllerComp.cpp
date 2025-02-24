@@ -25,7 +25,7 @@ namespace agentinogql
 sdl::agentino::Topology::CTopology CTopologyControllerComp::OnGetTopology(
 			const sdl::agentino::Topology::CGetTopologyGqlRequest& /*getTopologyRequest*/,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,
-			QString& errorMessage) const
+			QString& /*errorMessage*/) const
 {
 	sdl::agentino::Topology::CTopology response;
 	
