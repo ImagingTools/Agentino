@@ -50,7 +50,7 @@ add_subdirectory("${INCLUDE_DIR}/agentinoqml/CMake" "${AUX_INCLUDE_DIR}/agentino
 add_dependencies(agentinoqml agentinosdl)
 
 # Sdl
-include("${CMAKE_CURRENT_LIST_DIR}/../../../ImtCore/Config/CMake/ImtCoreSdlCustomConfig.cmake")
+include("${IMTCOREDIR}/Config/CMake/ImtCoreSdlCustomConfig.cmake")
 # initialize SDL
 if (NOT IMT_DevAll_BUILD)
 	get_filename_component(CACHE_BASE_DIR_PATH "${IMTCOREDIR}/AuxInclude/${TARGETNAME}" ABSOLUTE)
