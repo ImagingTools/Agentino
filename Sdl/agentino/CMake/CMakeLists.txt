@@ -13,11 +13,9 @@ add_custom_target(${PROJECT_NAME}-SDL-related-files SOURCES
 ImtCoreCustomConfigureSdlCppQml(CXX QML
 			SCHEMA_PATH	"${CMAKE_CURRENT_LIST_DIR}/../1.0/Agents.sdl"
 			VERSION		"1.0")
-
 ImtCoreCustomConfigureSdlCppQml(CXX QML
 			SCHEMA_PATH	"${CMAKE_CURRENT_LIST_DIR}/../1.0/Services.sdl"
 			VERSION		"1.0")
-		   
 ImtCoreCustomConfigureSdlCppQml(CXX QML
 			SCHEMA_PATH	"${CMAKE_CURRENT_LIST_DIR}/../1.0/Topology.sdl"
 			VERSION		"1.0")
