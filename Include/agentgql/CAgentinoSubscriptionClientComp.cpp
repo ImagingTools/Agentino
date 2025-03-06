@@ -37,7 +37,7 @@ void CAgentinoSubscriptionClientComp::OnSubscriptionStatusChanged(const QByteArr
 
 // reimplemented (imod::CSingleModelObserverBase)
 
-void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSet& changeSet)
+void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSet& /*changeSet*/)
 {
 	if (!m_loginStatusCompPtr.IsValid() || !m_gqlClientCompPtr.IsValid() || !m_applicationInfoCompPtr.IsValid()){
 		return;

@@ -37,7 +37,7 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 			const QByteArray& subscriptionId,
 			const imtgql::CGqlRequest& gqlRequest,
 			const imtrest::IRequest& networkRequest,
-			QString& errorMessage)
+			QString& /*errorMessage*/)
 {
 	QByteArray serviceId = gqlRequest.GetHeader("serviceid");
 	if (!IsRequestSupported(gqlRequest) || !m_connectionCollectionProviderCompPtr.IsValid()){
@@ -213,10 +213,9 @@ void CAgentServicesRemoteSubscriberProxyComp::OnWebSocketDisconnected()
 }
 
 
-void CAgentServicesRemoteSubscriberProxyComp::OnWebSocketError(QAbstractSocket::SocketError error)
+void CAgentServicesRemoteSubscriberProxyComp::OnWebSocketError(QAbstractSocket::SocketError /*error*/)
 {
 	QWebSocket* webSocket = dynamic_cast<QWebSocket*>(sender());
-
 	if (webSocket != nullptr){
 		QString errorText = webSocket->errorString();
 
