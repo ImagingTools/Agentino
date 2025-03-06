@@ -5,7 +5,7 @@ include(${ACFDIR}/Config/CMake/StaticConfig.cmake)
 include(${IMTCOREDIR}/Config/CMake/ImtSdlConfig.cmake)
 
 if(QT_VERSION_MAJOR EQUAL 6)
-	target_link_libraries(${PROJECT_NAME}  Qt${QT_VERSION_MAJOR}::Core5Compat)
+	target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Core5Compat)
 endif()
 
 set(buildwebdir ${BUILDDIR}/Agentino/Bin/web)
@@ -46,7 +46,7 @@ set(QML_IMPORT_PATH ${QML_IMPORT_DIRS}
 	FORCE
 )
 
-if(DEFINED WEB_COMPILE AND  WEB_COMPILE)
+if(DEFINED WEB_COMPILE AND WEB_COMPILE)
 	add_compile_definitions(WEB_COMPILE)
 	set(resname "agentino")
 	jqml_compile_web2("${webdirs}" "${buildwebdir}" "${resname}" "${sdldependency}")
