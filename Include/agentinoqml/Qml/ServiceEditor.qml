@@ -387,14 +387,7 @@ ViewBase {
 					CheckBox {
 						id: startScriptChecked
 						text: qsTr("Start script")
-						onClicked: {
-							if(startScriptChecked.checkState !== Qt.Checked){
-								startScriptChecked.checkState = Qt.Checked;
-							}
-							else{
-								startScriptChecked.checkState = Qt.Unchecked;
-							}
-							
+						onCheckStateChanged: {
 							serviceEditorContainer.doUpdateModel();
 						}
 					}
@@ -418,14 +411,7 @@ ViewBase {
 					CheckBox {
 						id: stopScriptChecked
 						text: qsTr("Stop script")
-						onClicked: {
-							if(stopScriptChecked.checkState !== Qt.Checked){
-								stopScriptChecked.checkState = Qt.Checked;
-							}
-							else {
-								stopScriptChecked.checkState = Qt.Unchecked;
-							}
-							
+						onCheckStateChanged: {
 							serviceEditorContainer.doUpdateModel();
 						}
 					}
