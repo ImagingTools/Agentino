@@ -24,7 +24,7 @@ ViewBase {
         nameInput.text = agentData.m_name
         descriptionInput.text = agentData.m_description
 
-        switchVerboseMessage.setChecked(agentData.m_tracingLevel > -1);
+		switchVerboseMessage.checked = (agentData.m_tracingLevel > -1);
 
         if (agentData.m_tracingLevel > -1){
             tracingLevelInput.currentIndex = agentData.m_tracingLevel;

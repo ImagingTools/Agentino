@@ -79,13 +79,13 @@ ViewBase {
 				descriptionInput.text = serviceEditorContainer.serviceData.m_description; 
 				pathInput.text = serviceEditorContainer.serviceData.m_path;
 				argumentsInput.text = serviceEditorContainer.serviceData.m_arguments;
-				switchAutoStart.setChecked(serviceEditorContainer.serviceData.m_isAutoStart);
+				switchAutoStart.checked = serviceEditorContainer.serviceData.m_isAutoStart;
 				
 				if (serviceEditorContainer.serviceData.m_tracingLevel > -1){
-					switchVerboseMessage.setChecked(true);
+					switchVerboseMessage.checked = true;
 				}
 				else{
-					switchVerboseMessage.setChecked(false);
+					switchVerboseMessage.checked = false;
 				}
 				
 				tracingLevelInput.currentIndex = serviceEditorContainer.serviceData.m_tracingLevel;
