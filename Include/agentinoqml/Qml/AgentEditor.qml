@@ -83,7 +83,7 @@ ViewBase {
 
                     color: Style.textColor;
                     font.family: Style.fontFamily;
-                    font.pixelSize: Style.fontSize_common;
+                    font.pixelSize: Style.fontSizeXSmall;
 
                     text: qsTr("Name");
                 }
@@ -110,7 +110,7 @@ ViewBase {
 
                     color: Style.textColor;
                     font.family: Style.fontFamily;
-                    font.pixelSize: Style.fontSize_common;
+                    font.pixelSize: Style.fontSizeXSmall;
 
                     text: qsTr("Description");
                 }
@@ -139,14 +139,14 @@ ViewBase {
 
                     color: Style.textColor;
                     font.family: Style.fontFamily;
-                    font.pixelSize: Style.fontSize_common;
+                    font.pixelSize: Style.fontSizeXSmall;
 
                     text: qsTr("Verbose message (") + (switchVerboseMessage.checked ? qsTr("on") : qsTr("off")) + ")";
                 }
 
                 Row {
                     height:  Style.itemSizeMedium;
-                    spacing: Style.size_mainMargin;
+                    spacing: Style.sizeMainMargin;
 
                     SwitchCustom {
                         id: switchVerboseMessage
@@ -159,7 +159,7 @@ ViewBase {
                     }
 
                     Item {
-                        width: Style.size_mainMargin;
+                        width: Style.sizeMainMargin;
                         height: Style.itemSizeMedium
                     }
 
@@ -170,7 +170,7 @@ ViewBase {
                         visible: switchVerboseMessage.checked
                         color: Style.textColor;
                         font.family: Style.fontFamily;
-                        font.pixelSize: Style.fontSize_common;
+                        font.pixelSize: Style.fontSizeXSmall;
 
                         text: qsTr("Tracing level");
                     }

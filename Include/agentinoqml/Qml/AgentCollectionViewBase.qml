@@ -112,11 +112,11 @@ RemoteCollectionView {
                 id: lable;
 
                 anchors.left: image.right;
-                anchors.leftMargin: Style.size_smallMargin
+                anchors.leftMargin: Style.sizeSmallMargin
                 anchors.right: parent.right;
                 anchors.verticalCenter: parent.verticalCenter;
 
-                font.pixelSize: Style.fontSize_common;
+                font.pixelSize: Style.fontSizeXSmall;
                 font.family: Style.fontFamily;
                 color: Style.textColor;
 

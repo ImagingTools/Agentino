@@ -148,11 +148,11 @@ ViewBase {
 				id: scrollbar;
 				
 				anchors.left: flickable.right;
-				anchors.leftMargin: Style.size_smallMargin;
+				anchors.leftMargin: Style.sizeSmallMargin;
 				anchors.top: parent.top;
 				anchors.bottom: parent.bottom;
 				
-				secondSize: Style.size_mainMargin;
+				secondSize: Style.sizeMainMargin;
 				targetItem: flickable;
 				
 				visible: parent.visible;
@@ -171,7 +171,7 @@ ViewBase {
 					anchors.right: bodyContainer.right
 					anchors.margins: Style.size_largeMargin
 					
-					spacing: Style.size_mainMargin;
+					spacing: Style.sizeMainMargin;
 					
 					Text {
 						id: titleName;
@@ -180,7 +180,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSize_common;
+						font.pixelSize: Style.fontSizeXSmall;
 						
 						text: qsTr("Name");
 					}
@@ -208,7 +208,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSize_common;
+						font.pixelSize: Style.fontSizeXSmall;
 						
 						text: qsTr("Description");
 					}
@@ -235,7 +235,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSize_common;
+						font.pixelSize: Style.fontSizeXSmall;
 						
 						text: qsTr("Path");
 					}
@@ -262,7 +262,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSize_common;
+						font.pixelSize: Style.fontSizeXSmall;
 						
 						text: qsTr("Arguments");
 					}
@@ -291,7 +291,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSize_common;
+						font.pixelSize: Style.fontSizeXSmall;
 						
 						text: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("on") : qsTr("off")) + ")";
 					}
@@ -314,14 +314,14 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSize_common;
+						font.pixelSize: Style.fontSizeXSmall;
 						
 						text: qsTr("Verbose message (") + (switchVerboseMessage.checked ? qsTr("on") : qsTr("off")) + ")";
 					}
 					
 					Row {
 						height:  Style.itemSizeMedium;
-						spacing: Style.size_mainMargin;
+						spacing: Style.sizeMainMargin;
 						
 						SwitchCustom {
 							id: switchVerboseMessage
@@ -334,7 +334,7 @@ ViewBase {
 						}
 						
 						Item {
-							width: Style.size_mainMargin;
+							width: Style.sizeMainMargin;
 							height: Style.itemSizeMedium
 						}
 						
@@ -345,7 +345,7 @@ ViewBase {
 							visible: switchVerboseMessage.checked
 							color: Style.textColor;
 							font.family: Style.fontFamily;
-							font.pixelSize: Style.fontSize_common;
+							font.pixelSize: Style.fontSizeXSmall;
 							
 							text: qsTr("Tracing level");
 						}
@@ -439,7 +439,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSize_common;
+						font.pixelSize: Style.fontSizeXSmall;
 						
 						text: qsTr("Incoming Connections");
 						
@@ -587,7 +587,7 @@ ViewBase {
 									
 									color: Style.textColor;
 									font.family: Style.fontFamily;
-									font.pixelSize: Style.fontSize_common;
+									font.pixelSize: Style.fontSizeXSmall;
 									lineHeight: 1.5;
 									
 									onTextChanged: {
@@ -604,7 +604,7 @@ ViewBase {
 									
 									anchors.verticalCenter: parent.verticalCenter;
 									anchors.right: parent.right;
-									anchors.rightMargin: Style.size_mainMargin
+									anchors.rightMargin: Style.sizeMainMargin
 									
 									width: 18;
 									height: width;
@@ -660,7 +660,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSize_common;
+						font.pixelSize: Style.fontSizeXSmall;
 						
 						text: qsTr("Dependant Services");
 						
@@ -741,7 +741,7 @@ ViewBase {
 									
 									color: Style.textColor;
 									font.family: Style.fontFamily;
-									font.pixelSize: Style.fontSize_common;
+									font.pixelSize: Style.fontSizeXSmall;
 								}
 								
 								ComboBox {

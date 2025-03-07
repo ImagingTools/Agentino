@@ -98,9 +98,9 @@ ViewBase {
                 id: bodyColumn;
 
                 anchors.fill: parent;
-                anchors.margins: Style.size_mainMargin;
+                anchors.margins: Style.sizeMainMargin;
 
-                spacing: Style.size_mainMargin;
+                spacing: Style.sizeMainMargin;
 
                 Item {
                     width: parent.width;
@@ -114,7 +114,7 @@ ViewBase {
                         text: qsTr("Status");
                         color: Style.textColor;
                         font.family: Style.fontFamilyBold;
-                        font.pixelSize: Style.fontSize_subtitle;
+                        font.pixelSize: Style.fontSizeNormal;
                     }
 
                     Loading {
@@ -122,7 +122,7 @@ ViewBase {
 
                         anchors.verticalCenter: parent.verticalCenter;
                         anchors.left: title.right;
-                        anchors.leftMargin: Style.size_smallMargin
+                        anchors.leftMargin: Style.sizeSmallMargin
 
                         width: 20;
                         height: width;
@@ -137,7 +137,7 @@ ViewBase {
 
                         anchors.verticalCenter: parent.verticalCenter;
                         anchors.left: title.right;
-                        anchors.leftMargin: Style.size_smallMargin
+                        anchors.leftMargin: Style.sizeSmallMargin
 
                         width: 20;
                         height: width;
@@ -151,11 +151,11 @@ ViewBase {
                         id: statusText;
 
                         anchors.left: loading.visible ? loading.right : statusIcon.right;
-                        anchors.leftMargin: Style.size_smallMargin
+                        anchors.leftMargin: Style.sizeSmallMargin
                         anchors.right: parent.right;
                         anchors.verticalCenter: parent.verticalCenter;
 
-                        font.pixelSize: Style.fontSize_subtitle;
+                        font.pixelSize: Style.fontSizeNormal;
                         font.family: Style.fontFamily;
                         color: Style.textColor;
 
@@ -175,7 +175,7 @@ ViewBase {
                         width: parent.width -button.width - button.anchors.leftMargin;
 
                         title: qsTr("Agentino URL");
-                        titleFontPixelSize: Style.fontSize_subtitle;
+                        titleFontPixelSize: Style.fontSizeNormal;
                         titleFontFamily: Style.fontFamilyBold;
 
                         placeHolderText: qsTr("Enter the agentino URL");
@@ -189,7 +189,7 @@ ViewBase {
                         id: button;
 
                         anchors.left: agentinoUrlInput.right;
-                        anchors.leftMargin: Style.size_mainMargin;
+                        anchors.leftMargin: Style.sizeMainMargin;
                         anchors.bottom: parent.bottom;
 
                         width: 100;
