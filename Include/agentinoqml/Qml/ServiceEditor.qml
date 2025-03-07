@@ -161,7 +161,7 @@ ViewBase {
 			Item {
 				id: bodyContainer
 				width: flickable.width
-				height: bodyColumn.height + Style.size_largeMargin * 2
+				height: bodyColumn.height + Style.sizeLargeMargin * 2
 				
 				Column {
 					id: bodyColumn;
@@ -169,7 +169,7 @@ ViewBase {
 					anchors.top: bodyContainer.top
 					anchors.left: bodyContainer.left;
 					anchors.right: bodyContainer.right
-					anchors.margins: Style.size_largeMargin
+					anchors.margins: Style.sizeLargeMargin
 					
 					spacing: Style.sizeMainMargin;
 					
