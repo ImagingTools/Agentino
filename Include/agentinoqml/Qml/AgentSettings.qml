@@ -114,7 +114,7 @@ ViewBase {
                         text: qsTr("Status");
                         color: Style.textColor;
                         font.family: Style.fontFamilyBold;
-                        font.pixelSize: Style.fontSizeNormal;
+                        font.pixelSize: Style.fontSizeXLarge;
                     }
 
                     Loading {
@@ -155,7 +155,7 @@ ViewBase {
                         anchors.right: parent.right;
                         anchors.verticalCenter: parent.verticalCenter;
 
-                        font.pixelSize: Style.fontSizeNormal;
+                        font.pixelSize: Style.fontSizeXLarge;
                         font.family: Style.fontFamily;
                         color: Style.textColor;
 
@@ -175,7 +175,7 @@ ViewBase {
                         width: parent.width -button.width - button.anchors.leftMargin;
 
                         title: qsTr("Agentino URL");
-                        titleFontPixelSize: Style.fontSizeNormal;
+                        titleFontPixelSize: Style.fontSizeXLarge;
                         titleFontFamily: Style.fontFamilyBold;
 
                         placeHolderText: qsTr("Enter the agentino URL");

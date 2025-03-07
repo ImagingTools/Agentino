@@ -180,7 +180,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeXSmall;
+						font.pixelSize: Style.fontSizeNormal;
 						
 						text: qsTr("Name");
 					}
@@ -208,7 +208,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeXSmall;
+						font.pixelSize: Style.fontSizeNormal;
 						
 						text: qsTr("Description");
 					}
@@ -235,7 +235,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeXSmall;
+						font.pixelSize: Style.fontSizeNormal;
 						
 						text: qsTr("Path");
 					}
@@ -262,7 +262,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeXSmall;
+						font.pixelSize: Style.fontSizeNormal;
 						
 						text: qsTr("Arguments");
 					}
@@ -291,7 +291,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeXSmall;
+						font.pixelSize: Style.fontSizeNormal;
 						
 						text: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("on") : qsTr("off")) + ")";
 					}
@@ -314,7 +314,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeXSmall;
+						font.pixelSize: Style.fontSizeNormal;
 						
 						text: qsTr("Verbose message (") + (switchVerboseMessage.checked ? qsTr("on") : qsTr("off")) + ")";
 					}
@@ -345,7 +345,7 @@ ViewBase {
 							visible: switchVerboseMessage.checked
 							color: Style.textColor;
 							font.family: Style.fontFamily;
-							font.pixelSize: Style.fontSizeXSmall;
+							font.pixelSize: Style.fontSizeNormal;
 							
 							text: qsTr("Tracing level");
 						}
@@ -439,7 +439,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeXSmall;
+						font.pixelSize: Style.fontSizeNormal;
 						
 						text: qsTr("Incoming Connections");
 						
@@ -587,7 +587,7 @@ ViewBase {
 									
 									color: Style.textColor;
 									font.family: Style.fontFamily;
-									font.pixelSize: Style.fontSizeXSmall;
+									font.pixelSize: Style.fontSizeNormal;
 									lineHeight: 1.5;
 									
 									onTextChanged: {
@@ -660,7 +660,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeXSmall;
+						font.pixelSize: Style.fontSizeNormal;
 						
 						text: qsTr("Dependant Services");
 						
@@ -741,7 +741,7 @@ ViewBase {
 									
 									color: Style.textColor;
 									font.family: Style.fontFamily;
-									font.pixelSize: Style.fontSizeXSmall;
+									font.pixelSize: Style.fontSizeNormal;
 								}
 								
 								ComboBox {
