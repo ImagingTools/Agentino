@@ -29,9 +29,8 @@ SingleDocumentWorkspaceView {
         AgentEditor {
             id: agentEditor;
 
-            commandsControllerComp: Component {CommandsPanelController {
-                commandId: "Agent";
-                uuid: agentEditor.viewId;
+            commandsControllerComp: Component {GqlBasedCommandsController {
+                typeId: "Agent";
             }
             }
         }

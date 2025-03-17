@@ -32,12 +32,11 @@ ViewBase {
 		getTopologyRequestSender.send()
 	}
 	
-	commandsControllerComp: Component {CommandsPanelController {
+	commandsControllerComp: Component {GqlBasedCommandsController {
 			id: commandsRepresentationProvider
-			commandId: "Topology"
-			uuid: topologyPage.viewId;
+			typeId: "Topology"
 			
-			onCommandsModelChanged: {
+			onCommandsChanged: {
 				setIsToggleable("AutoFit", true);
 				setToggled("AutoFit", scheme.autoFit);
 			}
@@ -226,9 +225,8 @@ ViewBase {
 				}
 			}
 			
-			commandsControllerComp: Component {CommandsPanelController {
-					commandId: "Service";
-					uuid: serviceEditor.viewId;
+			commandsControllerComp: Component {GqlBasedCommandsController {
+					typeId: "Service";
 					function getHeaders(){
 						return topologyPage.getHeaders();
 					}

@@ -136,10 +136,8 @@ RemoteCollectionView {
 				}
 			}
 			
-			commandsControllerComp: Component {CommandsPanelController {
-					commandId: "Service";
-					uuid: serviceEditor.viewId;
-					
+			commandsControllerComp: Component {GqlBasedCommandsController {
+					typeId: "Service";
 					function getHeaders(){
 						return root.getHeaders();
 					}
