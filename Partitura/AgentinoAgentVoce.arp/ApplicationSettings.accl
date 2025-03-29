@@ -2,15 +2,18 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5347" Description="ACF"/>
-            <Version Id="1" Number="2236" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5332" Description="ACF"/>
+            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
-        <Element ComponentName="ApplicationSettings" X="625" Y="75" Note=""/>
-        <Element ComponentName="ServerSettingsController" X="950" Y="300" Note=""/>
-        <Element ComponentName="UserSettingsController" X="250" Y="300" Note=""/>
+        <Element ComponentName="DatabaseUserSettings" X="600" Y="625" Note=""/>
+        <Element ComponentName="Demultiplexer" X="625" Y="100" Note=""/>
+        <Element ComponentName="SettingsController" X="250" Y="100" Note=""/>
+        <Element ComponentName="TableViewParamController" X="750" Y="376" Note=""/>
+        <Element ComponentName="UserSettings" X="125" Y="375" Note=""/>
+        <Element ComponentName="UserSettingsRepresentation" X="425" Y="375" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
         <EmbededRegistry Id="UserSettingsController">

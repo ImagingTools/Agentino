@@ -295,7 +295,7 @@ bool GetUrlConnectionFromRepresentation(
 	
 	QUrl url;
 	if (connectionRepresentation.Url){
-		sdl::agentino::Services::CUrlParam::V1_0 urlRepresentation = *connectionRepresentation.Url;
+		sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation = *connectionRepresentation.Url;
 
 		if (!GetUrlParamFromRepresentation(url, urlRepresentation)){
 			return false;
@@ -352,7 +352,7 @@ bool GetRepresentationFromUrlConnection(
 
 	QUrl url = connectionInfo.GetUrl();
 	
-	sdl::agentino::Services::CUrlParam::V1_0 urlRepresentation;
+	sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation;
 	if (!GetRepresentationFromUrlParam(url, urlRepresentation)){
 		return false;
 	}
@@ -368,7 +368,7 @@ bool GetRepresentationFromUrlConnection(
 		port.Name = incomingConnection.name;
 		port.Description = incomingConnection.description;
 		
-		sdl::agentino::Services::CUrlParam::V1_0 incomingPortUrlRepresentation;
+		sdl::agentino::Services::CUrlParameter::V1_0 incomingPortUrlRepresentation;
 		if (!GetRepresentationFromUrlParam(incomingConnection.url, incomingPortUrlRepresentation)){
 			return false;
 		}
@@ -433,7 +433,7 @@ bool GetRepresentationFromUrlConnectionLink(
 	connectionRepresentation.ServiceTypeName = serviceTypeName;
 	
 	QUrl url = connectionInfo.GetUrl();
-	sdl::agentino::Services::CUrlParam::V1_0 urlRepresentation;
+	sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation;
 	if (!GetRepresentationFromUrlParam(url, urlRepresentation)){
 		return false;
 	}
@@ -444,7 +444,7 @@ bool GetRepresentationFromUrlConnectionLink(
 }
 
 
-bool GetUrlParamFromRepresentation(QUrl& url, const sdl::agentino::Services::CUrlParam::V1_0& urlRepresentation)
+bool GetUrlParamFromRepresentation(QUrl& url, const sdl::agentino::Services::CUrlParameter::V1_0& urlRepresentation)
 {
 	if (urlRepresentation.Scheme){
 		QString scheme = *urlRepresentation.Scheme;
@@ -477,7 +477,7 @@ bool GetUrlParamFromRepresentation(QUrl& url, const sdl::agentino::Services::CUr
 }
 
 
-bool GetRepresentationFromUrlParam(const QUrl& url, sdl::agentino::Services::CUrlParam::V1_0& urlRepresentation)
+bool GetRepresentationFromUrlParam(const QUrl& url, sdl::agentino::Services::CUrlParameter::V1_0& urlRepresentation)
 {
 	QString scheme = url.scheme();
 	if (scheme.isEmpty()){

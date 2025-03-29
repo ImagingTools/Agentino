@@ -9,6 +9,7 @@
     </AcfHeader>
     <PositionMap>
         <Element ComponentName="ApplicationController" X="600" Y="50" Note=""/>
+        <Element ComponentName="ApplicationInfoController" X="1025" Y="100" Note=""/>
         <Element ComponentName="AuthorizationConcept" X="450" Y="275" Note=""/>
         <Element ComponentName="AuthorizationOptions" X="775" Y="275" Note=""/>
         <Element ComponentName="RolesPage" X="1050" Y="600" Note=""/>
@@ -17,8 +18,6 @@
         <Element ComponentName="SlaveGraphQLDemultiplexer" X="600" Y="350" Note=""/>
         <Element ComponentName="UserGroupsPage" X="1050" Y="725" Note=""/>
         <Element ComponentName="UsersPage" X="1050" Y="475" Note=""/>
-        <Element ComponentName="WebSocketController" X="950" Y="50" Note=""/>
-        <Element ComponentName="WebSocketRepresentationController" X="900" Y="150" Note=""/>
     </PositionMap>
     <EmbeddedRegistries/>
 </Acf>

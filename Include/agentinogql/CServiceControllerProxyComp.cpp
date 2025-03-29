@@ -84,7 +84,7 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 			
 			QUrl url = GetDependantConnectionUrl(id);
 			if (url.isValid()){
-				sdl::agentino::Services::CUrlParam::V1_0 urlRepresentation;
+				sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation;
 				if (agentinodata::GetRepresentationFromUrlParam(url, urlRepresentation)){
 					outputConnection.Url = urlRepresentation;
 				}
@@ -153,7 +153,7 @@ sdl::imtbase::ImtCollection::CUpdatedNotificationPayload CServiceControllerProxy
 		QByteArrayList connectionIds = GetChangedConnectionUrl(currentServiceData, serviceData);
 		
 		for (const QByteArray& connectionId : connectionIds){
-			sdl::agentino::Services::CUrlParam::V1_0 newUrlParam = GetUrlParam(serviceData, connectionId);
+			sdl::agentino::Services::CUrlParameter::V1_0 newUrlParam = GetUrlParam(serviceData, connectionId);
 			QByteArrayList dependentServiceIds = GetServiceIdsByDependantId(connectionId);
 			for (const QByteArray& dependantServiceId : dependentServiceIds){
 				UpdateConnectionUrlForService(dependantServiceId, agentId, connectionId, newUrlParam);
@@ -652,7 +652,7 @@ QList<sdl::agentino::Services::CElement::V1_0> CServiceControllerProxyComp::GetC
 						element.Id = connectionElementId;
 						element.Name = urlStr;
 						
-						sdl::agentino::Services::CUrlParam::V1_0 urlParam;
+						sdl::agentino::Services::CUrlParameter::V1_0 urlParam;
 						urlParam.Host = url.host();
 						urlParam.Port = url.port();
 						urlParam.Scheme = url.scheme();
@@ -670,7 +670,7 @@ QList<sdl::agentino::Services::CElement::V1_0> CServiceControllerProxyComp::GetC
 							incomingElement.Id = incomingConnection.id;
 							incomingElement.Name = incommingUrlStr;
 							
-							sdl::agentino::Services::CUrlParam::V1_0 urlRepresentation;
+							sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation;
 							
 							if (agentinodata::GetRepresentationFromUrlParam(incomingConnection.url, urlRepresentation)){
 								incomingElement.Url = urlRepresentation;
@@ -749,7 +749,7 @@ void CServiceControllerProxyComp::UpdateUrlFromDependantConnection(sdl::agentino
 			
 			QUrl url = GetDependantConnectionUrl(dependantConnectionId);
 			
-			sdl::agentino::Services::CUrlParam::V1_0 urlRepresentation;
+			sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation;
 			urlRepresentation.Host = url.host();
 			urlRepresentation.Port = url.port();
 			urlRepresentation.Scheme = url.scheme();
@@ -829,7 +829,7 @@ QUrl CServiceControllerProxyComp::GetDependantConnectionUrl(const QByteArray& de
 }
 
 
-sdl::agentino::Services::CUrlParam::V1_0 CServiceControllerProxyComp::GetUrlParam(
+sdl::agentino::Services::CUrlParameter::V1_0 CServiceControllerProxyComp::GetUrlParam(
 	const sdl::agentino::Services::CServiceData::V1_0& serviceData,
 	const QByteArray& connectionId) const
 {
@@ -843,7 +843,7 @@ sdl::agentino::Services::CUrlParam::V1_0 CServiceControllerProxyComp::GetUrlPara
 		}
 	}
 	
-	return sdl::agentino::Services::CUrlParam::V1_0();
+	return sdl::agentino::Services::CUrlParameter::V1_0();
 }
 
 
@@ -861,8 +861,8 @@ QByteArrayList CServiceControllerProxyComp::GetChangedConnectionUrl(
 			sdl::agentino::Services::CInputConnection::V1_0 connection1 = connections1[i];
 			sdl::agentino::Services::CInputConnection::V1_0 connection2 = connections2[i];
 			
-			sdl::agentino::Services::CUrlParam::V1_0 urlParam1 = *connection1.Url;
-			sdl::agentino::Services::CUrlParam::V1_0 urlParam2 = *connection2.Url;
+			sdl::agentino::Services::CUrlParameter::V1_0 urlParam1 = *connection1.Url;
+			sdl::agentino::Services::CUrlParameter::V1_0 urlParam2 = *connection2.Url;
 			
 			if (*urlParam1.Scheme != *urlParam2.Scheme ||
 				*urlParam1.Port != *urlParam2.Port ||
@@ -935,7 +935,7 @@ bool CServiceControllerProxyComp::UpdateConnectionUrlForService(
 	const QByteArray& serviceId,
 	const QByteArray& agentId,
 	const QByteArray& connectionId,
-	const sdl::agentino::Services::CUrlParam::V1_0& url) const
+	const sdl::agentino::Services::CUrlParameter::V1_0& url) const
 {
 	sdl::agentino::Services::UpdateConnectionUrlRequestArguments arguments;
 	arguments.input.Version_1_0 = sdl::agentino::Services::CConnectionUrlInput::V1_0();

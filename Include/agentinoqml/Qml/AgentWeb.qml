@@ -19,7 +19,7 @@ Item {
         serverReady: true
 
         Component.onCompleted: {
-            designProvider.applyDesignSchema("Light");
+            designProvider.setDesignSchema("Light");
             application.firstModelsInit();
 
             Style.topRightPanelDecorator = topRightPanelDecoratorComp;

@@ -35,7 +35,7 @@ type ServiceListPayload{
 	items: [ServiceItem]!
 }
 
-type UrlParam {
+type UrlParameter {
 	Host: String
 	Port: Integer
 	Scheme: String
@@ -45,7 +45,7 @@ type ExternPort {
 	Id: ID
 	Name: String
 	Description: String
-	Url: UrlParam
+	Url: UrlParameter
 }
 
 type InputConnection {
@@ -56,13 +56,13 @@ type InputConnection {
 	ServiceName: String
 	ServiceTypeName: String
 	ExternPorts: [ExternPort]
-	Url: UrlParam
+	Url: UrlParameter
 }
 
 type Element {
 	Id: ID
 	Name: String
-	Url: UrlParam
+	Url: UrlParameter
 }
 
 type OutputConnection {
@@ -74,7 +74,7 @@ type OutputConnection {
 	ServiceTypeName: String
 	DependantConnectionId: String
 	Elements: [Element]
-	Url: UrlParam
+	Url: UrlParameter
 }
 
 type ServiceData {
@@ -103,7 +103,7 @@ input ServiceDataInput {
 input ConnectionUrlInput {
 	ServiceId: ID!
 	ConnectionId: ID!
-	Url: UrlParam!
+	Url: UrlParameter!
 }
 
 type UpdateConnectionUrlResponse {

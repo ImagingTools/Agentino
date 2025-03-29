@@ -38,8 +38,8 @@ bool GetRepresentationFromUrlConnectionLink(
 	imtservice::CUrlConnectionLinkParam& connectionInfo,
 	const iprm::IParamsSet* paramsPtr = nullptr);
 
-bool GetUrlParamFromRepresentation(QUrl& url, const sdl::agentino::Services::CUrlParam::V1_0& urlRepresentation);
-bool GetRepresentationFromUrlParam(const QUrl& url, sdl::agentino::Services::CUrlParam::V1_0& urlRepresentation);
+bool GetUrlParamFromRepresentation(QUrl& url, const sdl::agentino::Services::CUrlParameter::V1_0& urlRepresentation);
+bool GetRepresentationFromUrlParam(const QUrl& url, sdl::agentino::Services::CUrlParameter::V1_0& urlRepresentation);
 
 
 } // namespace agentinodata

@@ -14,7 +14,7 @@ Item {
         serverReady: true
 
         Component.onCompleted: {
-            designProvider.applyDesignSchema("Light");
+            designProvider.setDesignSchema("Light");
             context.application = ["ImtCore", "Agentino"];
         }
 

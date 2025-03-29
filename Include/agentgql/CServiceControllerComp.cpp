@@ -162,7 +162,7 @@ sdl::agentino::Services::CUpdateConnectionUrlResponse CServiceControllerComp::On
 	
 	QByteArray serviceId = *arguments.input.Version_1_0->ServiceId;
 	QByteArray connectionId = *arguments.input.Version_1_0->ConnectionId;
-	sdl::agentino::Services::CUrlParam::V1_0 urlParam = *arguments.input.Version_1_0->Url;
+	sdl::agentino::Services::CUrlParameter::V1_0 urlParam = *arguments.input.Version_1_0->Url;
 	
 	QUrl url;
 	if (!agentinodata::GetUrlParamFromRepresentation(url, urlParam)){

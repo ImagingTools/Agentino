@@ -10,7 +10,7 @@
     <Description></Description>
     <Keywords></Keywords>
     <ElementsList>
-        <Element Id="BackupFolder" PackageId="ImtFilePck" ComponentId="FileNameParamRepresentationController">
+        <Element Id="BackupFolder" PackageId="ImtRestPck" ComponentId="FileNameParamRepresentationController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ObjectId" Type="Id" ExportId="">
@@ -51,7 +51,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="BackupSettingsRepresentationController" PackageId="ImtAppPck" ComponentId="BackupSettingsRepresentationController">
+        <Element Id="BackupSettingsRepresentationController" PackageId="ImtRestPck" ComponentId="BackupSettingsRepresentationController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ObjectId" Type="Id" ExportId="">
@@ -159,7 +159,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="SchedulerParams" PackageId="ImtAppPck" ComponentId="SchedulerParamsRepresentationController">
+        <Element Id="SchedulerParams" PackageId="ImtRestPck" ComponentId="SchedulerParamsRepresentationController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ObjectId" Type="Id" ExportId="">

@@ -83,7 +83,7 @@ private:
 	void UpdateUrlFromDependantConnection(sdl::agentino::Services::CServiceData::V1_0& serviceData) const;
 	QUrl GetDependantConnectionUrl(const QByteArray& dependantId) const;
 	
-	sdl::agentino::Services::CUrlParam::V1_0 GetUrlParam(
+	sdl::agentino::Services::CUrlParameter::V1_0 GetUrlParam(
 		const sdl::agentino::Services::CServiceData::V1_0& serviceData,
 		const QByteArray& connectionId) const;
 	
@@ -95,7 +95,7 @@ private:
 		const QByteArray& serviceId,
 		const QByteArray& agentId,
 		const QByteArray& connectionId,
-		const sdl::agentino::Services::CUrlParam::V1_0& url) const;
+		const sdl::agentino::Services::CUrlParameter::V1_0& url) const;
 	
 protected:
 	I_REF(agentinodata::IServiceManager, m_serviceManagerCompPtr);
