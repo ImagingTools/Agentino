@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5270" Description="ACF"/>
-            <Version Id="1" Number="2220" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5347" Description="ACF"/>
+            <Version Id="1" Number="2236" Description="ACF-Solutions"/>
             <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -26,14 +26,11 @@
                             </Values>
                         </Data>
                     </AttributeInfo>
-                    <AttributeInfo Id="TableViewParamRepresentationController" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="TableViewParamRepresentationController"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="UserSettingsCollection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="UserSettingsCollection"/>
+                        <Data IsEnabled="true" Value="UserSettingsController/UserSettingsRepository"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>

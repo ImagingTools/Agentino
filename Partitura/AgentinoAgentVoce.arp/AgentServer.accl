@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5303" Description="ACF"/>
-            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394754" Description="Qt Framework"/>
+            <Version Id="0" Number="5347" Description="ACF"/>
+            <Version Id="1" Number="2236" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
@@ -22,29 +22,29 @@
         <Element ComponentName="WebSocketServerFramework" X="725" Y="475" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="Repositories">
+        <EmbededRegistry Id="WebSocketClient">
             <PositionMap>
-                <Element ComponentName="FileAutoPersistence" X="800" Y="200" Note=""/>
-                <Element ComponentName="ServiceCollection" X="525" Y="200" Note=""/>
-                <Element ComponentName="ServiceInfo" X="550" Y="300" Note=""/>
-                <Element ComponentName="UserLocalRepositories" X="525" Y="100" Note=""/>
+                <Element ComponentName="WebSocketClient" X="325" Y="200" Note=""/>
+                <Element ComponentName="WebSocketServlet" X="325" Y="500" Note=""/>
+                <Element ComponentName="WorkerManager" X="725" Y="200" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
         <EmbededRegistry Id="ServiceCollectionController">
             <PositionMap>
-                <Element ComponentName="CheckPermissionOr" X="625" Y="550" Note=""/>
+                <Element ComponentName="CheckPermissionOr" X="650" Y="450" Note=""/>
                 <Element ComponentName="RepresentationService" X="625" Y="125" Note=""/>
                 <Element ComponentName="ServiceCollectionController" X="650" Y="275" Note=""/>
-                <Element ComponentName="ServiceHeadersDataProvider" X="375" Y="400" Note=""/>
+                <Element ComponentName="ServiceHeadersDataProvider" X="225" Y="275" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
-        <EmbededRegistry Id="WebSocketClient">
+        <EmbededRegistry Id="Repositories">
             <PositionMap>
-                <Element ComponentName="WebSocketClient" X="325" Y="275" Note=""/>
-                <Element ComponentName="WebSocketServlet" X="600" Y="350" Note=""/>
-                <Element ComponentName="WorkerManager" X="725" Y="200" Note=""/>
+                <Element ComponentName="FileAutoPersistence" X="250" Y="275" Note=""/>
+                <Element ComponentName="ServiceCollection" X="500" Y="425" Note=""/>
+                <Element ComponentName="ServiceInfo" X="500" Y="525" Note=""/>
+                <Element ComponentName="UserLocalRepositories" X="900" Y="275" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5323" Description="ACF"/>
-            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5347" Description="ACF"/>
+            <Version Id="1" Number="2236" Description="ACF-Solutions"/>
             <Version Id="1023" Number="393732" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -133,20 +133,17 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="DatabaseEngine" PackageId="ImtCoreVoce" ComponentId="SqLiteDatabaseEngine">
+        <Element Id="DatabaseEngine" PackageId="" ComponentId="DatabaseEngine">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="DatabaseSqlFilePath" Type="String" ExportId="">
-                        <Data IsEnabled="true" Value="agentino.sqlite"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="MigrationPath" Type="String" ExportId="">
-                        <Data IsEnabled="true" Value="Migrations"/>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                        <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -326,6 +323,84 @@
         </Element>
     </ElementsList>
     <EmbeddedRegistriesList>
+        <EmbeddedRegistry Id="DatabaseEngine">
+            <Data Description="" Keywords="">
+                <ElementsList>
+                    <Element Id="DatabaseEngine" PackageId="ImtCoreVoce" ComponentId="SqLiteDatabaseEngine">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="DatabaseSqlFilePath" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="agentino.sqlite"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="MigrationController" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="MigrationController"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="MigrationController" PackageId="ImtDatabasePck" ComponentId="MigrationController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="DatabaseEngine"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="MigrationFolderPath" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="MigrationFilePath"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="MigrationFilePath" PackageId="FilePck" ComponentId="RelativeFileNameParam">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="DefaultPath" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="Migrations"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="PathType" Type="Integer" ExportId="">
+                                    <Data IsEnabled="true" Value="2"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ReferencePath" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="SystemLocation"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="SystemLocation" PackageId="FilePck" ComponentId="SystemLocation">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="LocationType" Type="Integer" ExportId="">
+                                    <Data IsEnabled="true" Value="101"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                </ElementsList>
+                <EmbeddedRegistriesList/>
+                <ExportedInterfaces>
+                    <Interface InterfaceId="imtdb::IDatabaseEngine" ComponentId="DatabaseEngine"/>
+                    <Interface InterfaceId="istd::IPolymorphic" ComponentId="DatabaseEngine"/>
+                </ExportedInterfaces>
+                <ExportedComponents/>
+            </Data>
+        </EmbeddedRegistry>
         <EmbeddedRegistry Id="Subscriptions">
             <Data Description="" Keywords="">
                 <ElementsList>
