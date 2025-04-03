@@ -2,7 +2,7 @@
 
 
 // ImtCore includes
-#include <imtrest/IRepresentationController.h>
+#include <imtserverapp/IRepresentationController.h>
 #include <imtservice/CUrlConnectionParamRepresentationController.h>
 
 // Agentino includes
@@ -14,7 +14,7 @@ namespace agentinodata
 {
 
 
-class CServiceInfoRepresentationController: public imtrest::IRepresentationController
+class CServiceInfoRepresentationController: public imtserverapp::IRepresentationController
 {
 public:
 	// reimplemented (imtrest::IRepresentationController)

@@ -21,7 +21,7 @@ include(${ACFDIR}/Config/CMake/ApplicationConfig.cmake)
 
 target_link_libraries(${PROJECT_NAME} iauth iservice)
 target_link_libraries(${PROJECT_NAME} imtqml imtstyle imtauthgui imtauthgql imtstylecontrolsqml imtgui imtguigql imtlic imtauth imtcrypt imtauthsdl imtappsdl imtbasesdl)
-target_link_libraries(${PROJECT_NAME} imtrest imtlicgui imtlicgql imtclientgql imtgql imtauthdb imtdb imtbase imtapp imtfile imtlog imtcom imtservergql imtcol imtmail)
+target_link_libraries(${PROJECT_NAME} imtrest imtlicgui imtlicgql imtclientgql imtgql imtauthdb imtdb imtbase imtapp imtfile imtlog imtcom imtservergql imtcol imtmail imtserverapp)
 target_link_libraries(${PROJECT_NAME} ImtCoreLoc AgentinoLoc)
 target_link_libraries(${PROJECT_NAME} agentinoqml agentinogql agentgql agentinodata)
 target_link_libraries(${PROJECT_NAME} imtcol imtcontrolsqml imtdocguiqml imtcolguiqml imtguiqml imtguigqlqml imtauthguiqml imtlicguiqml)
