@@ -403,7 +403,7 @@
         <EmbeddedRegistry Id="PagesPermissions">
             <Data Description="" Keywords="">
                 <ElementsList>
-                    <Element Id="AdministrationPermissions" PackageId="ImtRestPck" ComponentId="SingleCommandPermissionsProvider">
+                    <Element Id="AdministrationPermissions" PackageId="ImtServerAppPck" ComponentId="SingleCommandPermissionsProvider">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandId" Type="Id" ExportId="">
@@ -422,7 +422,7 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="AgentsPermissions" PackageId="ImtRestPck" ComponentId="SingleCommandPermissionsProvider">
+                    <Element Id="AgentsPermissions" PackageId="ImtServerAppPck" ComponentId="SingleCommandPermissionsProvider">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandId" Type="Id" ExportId="">
@@ -444,7 +444,7 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="PagePermissions" PackageId="ImtRestPck" ComponentId="CommandPermissionsProviderJoiner">
+                    <Element Id="PagePermissions" PackageId="ImtServerAppPck" ComponentId="CommandPermissionsProviderJoiner">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandPermissionsProvider" Type="Reference[]" ExportId="">
@@ -459,7 +459,7 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="TopologyPermissions" PackageId="ImtRestPck" ComponentId="SingleCommandPermissionsProvider">
+                    <Element Id="TopologyPermissions" PackageId="ImtServerAppPck" ComponentId="SingleCommandPermissionsProvider">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandId" Type="Id" ExportId="">
