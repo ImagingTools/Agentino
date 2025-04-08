@@ -39,8 +39,8 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 	}
 	
 	QByteArray serviceId;
-	if (arguments.input.Version_1_0->Id){
-		serviceId = *arguments.input.Version_1_0->Id;
+	if (arguments.input.Version_1_0->id){
+		serviceId = *arguments.input.Version_1_0->id;
 	}
 	
 	sdl::agentino::Services::CServiceData::V1_0 response;
@@ -75,23 +75,23 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 		return sdl::agentino::Services::CServiceData();
 	}
 	
-	if (response.OutputConnections){
-		QList<sdl::agentino::Services::COutputConnection::V1_0> outputConnections = *response.OutputConnections;
+	if (response.outputConnections){
+		QList<sdl::agentino::Services::COutputConnection::V1_0> outputConnections = *response.outputConnections;
 		for (sdl::agentino::Services::COutputConnection::V1_0& outputConnection : outputConnections){
-			QByteArray id = *outputConnection.Id;
-			QByteArray usageId = (*outputConnection.UsageId).toUtf8();
-			outputConnection.Elements = GetConnectionsModel(usageId);
+			QByteArray id = *outputConnection.id;
+			QByteArray usageId = (*outputConnection.usageId).toUtf8();
+			outputConnection.elements = GetConnectionsModel(usageId);
 			
 			QUrl url = GetDependantConnectionUrl(id);
 			if (url.isValid()){
 				sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation;
 				if (agentinodata::GetRepresentationFromUrlParam(url, urlRepresentation)){
-					outputConnection.Url = urlRepresentation;
+					outputConnection.url = urlRepresentation;
 				}
 			}
 		}
 		
-		response.OutputConnections = outputConnections;
+		response.outputConnections = outputConnections;
 	}
 	
 	sdl::agentino::Services::CServiceData retVal;
@@ -119,8 +119,8 @@ sdl::imtbase::ImtCollection::CUpdatedNotificationPayload CServiceControllerProxy
 	}
 	
 	QByteArray serviceId;
-	if (arguments.input.Version_1_0->Id){
-		serviceId = *arguments.input.Version_1_0->Id;
+	if (arguments.input.Version_1_0->id){
+		serviceId = *arguments.input.Version_1_0->id;
 	}
 	
 	const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParamObject("input");
@@ -129,8 +129,8 @@ sdl::imtbase::ImtCollection::CUpdatedNotificationPayload CServiceControllerProxy
 	QByteArray agentId = gqlRequest.GetHeader("clientid");
 
 	sdl::agentino::Services::CServiceData::V1_0 serviceData;
-	if (arguments.input.Version_1_0->Item){
-		serviceData = *arguments.input.Version_1_0->Item;
+	if (arguments.input.Version_1_0->item){
+		serviceData = *arguments.input.Version_1_0->item;
 	}
 
 	if (!SendModelRequest<
@@ -206,8 +206,8 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 	}
 	
 	QByteArray serviceId;
-	if (arguments.input.Version_1_0->Id){
-		serviceId = *arguments.input.Version_1_0->Id;
+	if (arguments.input.Version_1_0->id){
+		serviceId = *arguments.input.Version_1_0->id;
 	}
 	
 	const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParamObject("input");
@@ -235,8 +235,8 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 	}
 	
 	sdl::agentino::Services::CServiceData::V1_0 serviceData;
-	if (arguments.input.Version_1_0->Item){
-		serviceData = *arguments.input.Version_1_0->Item;
+	if (arguments.input.Version_1_0->item){
+		serviceData = *arguments.input.Version_1_0->item;
 	}
 	
 	istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInfoPtr;
@@ -276,7 +276,7 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnS
 {
 	sdl::agentino::Services::CServiceStatusResponse::V1_0 response;
 	
-	response.Status = sdl::agentino::Services::ServiceStatus::UNDEFINED;
+	response.status = sdl::agentino::Services::ServiceStatus::UNDEFINED;
 	
 	sdl::agentino::Services::StartServiceRequestArguments arguments = startServiceRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
@@ -284,8 +284,8 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnS
 	}
 	
 	QByteArray serviceId;
-	if (arguments.input.Version_1_0->ServiceId){
-		serviceId = *arguments.input.Version_1_0->ServiceId;
+	if (arguments.input.Version_1_0->serviceId){
+		serviceId = *arguments.input.Version_1_0->serviceId;
 	}
 	
 	if (!UpdateServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_STARTING)){
@@ -316,7 +316,7 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnS
 	QString& errorMessage) const
 {
 	sdl::agentino::Services::CServiceStatusResponse::V1_0 response;
-	response.Status = sdl::agentino::Services::ServiceStatus::UNDEFINED;
+	response.status = sdl::agentino::Services::ServiceStatus::UNDEFINED;
 	
 	sdl::agentino::Services::StopServiceRequestArguments arguments = stopServiceRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
@@ -324,8 +324,8 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnS
 	}
 	
 	QByteArray serviceId;
-	if (arguments.input.Version_1_0->ServiceId){
-		serviceId = *arguments.input.Version_1_0->ServiceId;
+	if (arguments.input.Version_1_0->serviceId){
+		serviceId = *arguments.input.Version_1_0->serviceId;
 	}
 	
 	if (!UpdateServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_STOPPING)){
@@ -368,8 +368,8 @@ sdl::imtbase::ImtCollection::CRemovedNotificationPayload CServiceControllerProxy
 	}
 	
 	QByteArray serviceId;
-	if (arguments.input.Version_1_0->Id){
-		serviceId = *arguments.input.Version_1_0->Id;
+	if (arguments.input.Version_1_0->id){
+		serviceId = *arguments.input.Version_1_0->id;
 	}
 	
 	const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParamObject("input");
@@ -412,8 +412,8 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnG
 	}
 	
 	QByteArray serviceId;
-	if (arguments.input.Version_1_0->Id){
-		serviceId = *arguments.input.Version_1_0->Id;
+	if (arguments.input.Version_1_0->id){
+		serviceId = *arguments.input.Version_1_0->id;
 	}
 	
 	if (!SendModelRequest<
@@ -649,14 +649,14 @@ QList<sdl::agentino::Services::CElement::V1_0> CServiceControllerProxyComp::GetC
 						
 						QString urlStr = serviceName + "@" + "localhost" + ":" + QString::number(url.port());
 						
-						element.Id = connectionElementId;
-						element.Name = urlStr;
+						element.id = connectionElementId;
+						element.name = urlStr;
 						
 						sdl::agentino::Services::CUrlParameter::V1_0 urlParam;
-						urlParam.Host = url.host();
-						urlParam.Port = url.port();
-						urlParam.Scheme = url.scheme();
-						element.Url = urlParam;
+						urlParam.host = url.host();
+						urlParam.port = url.port();
+						urlParam.scheme = url.scheme();
+						element.url = urlParam;
 						
 						retVal << element;
 						
@@ -667,13 +667,13 @@ QList<sdl::agentino::Services::CElement::V1_0> CServiceControllerProxyComp::GetC
 
 							QString incommingUrlStr = serviceName + "@" + incomingConnection.url.host() + ":" + QString::number(incomingConnection.url.port());
 							
-							incomingElement.Id = incomingConnection.id;
-							incomingElement.Name = incommingUrlStr;
+							incomingElement.id = incomingConnection.id;
+							incomingElement.name = incommingUrlStr;
 							
 							sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation;
 							
 							if (agentinodata::GetRepresentationFromUrlParam(incomingConnection.url, urlRepresentation)){
-								incomingElement.Url = urlRepresentation;
+								incomingElement.url = urlRepresentation;
 								
 								retVal << incomingElement;
 							}
@@ -736,30 +736,30 @@ bool CServiceControllerProxyComp::GetConnectionObjectData(
 
 void CServiceControllerProxyComp::UpdateUrlFromDependantConnection(sdl::agentino::Services::CServiceData::V1_0& serviceData) const
 {
-	if (serviceData.OutputConnections){
-		QList<sdl::agentino::Services::COutputConnection::V1_0> connections = *serviceData.OutputConnections;
+	if (serviceData.outputConnections){
+		QList<sdl::agentino::Services::COutputConnection::V1_0> connections = *serviceData.outputConnections;
 		
 		for (int i = 0; i < connections.size(); i++){
 			sdl::agentino::Services::COutputConnection::V1_0 connection = connections[i];
 			
 			QByteArray dependantConnectionId;
-			if (connection.DependantConnectionId){
-				dependantConnectionId = (*connection.DependantConnectionId).toUtf8();
+			if (connection.dependantConnectionId){
+				dependantConnectionId = (*connection.dependantConnectionId).toUtf8();
 			}
 			
 			QUrl url = GetDependantConnectionUrl(dependantConnectionId);
 			
 			sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation;
-			urlRepresentation.Host = url.host();
-			urlRepresentation.Port = url.port();
-			urlRepresentation.Scheme = url.scheme();
+			urlRepresentation.host = url.host();
+			urlRepresentation.port = url.port();
+			urlRepresentation.scheme = url.scheme();
 			
-			connection.Url = urlRepresentation;
+			connection.url = urlRepresentation;
 			
 			connections[i] = connection;
 		}
 		
-		serviceData.OutputConnections = connections;
+		serviceData.outputConnections = connections;
 	}
 }
 
@@ -833,12 +833,12 @@ sdl::agentino::Services::CUrlParameter::V1_0 CServiceControllerProxyComp::GetUrl
 	const sdl::agentino::Services::CServiceData::V1_0& serviceData,
 	const QByteArray& connectionId) const
 {
-	if (serviceData.InputConnections){
-		QList<sdl::agentino::Services::CInputConnection::V1_0> connections = *serviceData.InputConnections;
+	if (serviceData.inputConnections){
+		QList<sdl::agentino::Services::CInputConnection::V1_0> connections = *serviceData.inputConnections;
 		
 		for (const sdl::agentino::Services::CInputConnection::V1_0& connection : connections){
-			if (connectionId == *connection.Id){
-				return *connection.Url;
+			if (connectionId == *connection.id){
+				return *connection.url;
 			}
 		}
 	}
@@ -853,21 +853,21 @@ QByteArrayList CServiceControllerProxyComp::GetChangedConnectionUrl(
 {
 	QByteArrayList retVal;
 	
-	if (serviceData1.InputConnections && serviceData2.InputConnections){
-		QList<sdl::agentino::Services::CInputConnection::V1_0> connections1 = *serviceData1.InputConnections;
-		QList<sdl::agentino::Services::CInputConnection::V1_0> connections2 = *serviceData2.InputConnections;
+	if (serviceData1.inputConnections && serviceData2.inputConnections){
+		QList<sdl::agentino::Services::CInputConnection::V1_0> connections1 = *serviceData1.inputConnections;
+		QList<sdl::agentino::Services::CInputConnection::V1_0> connections2 = *serviceData2.inputConnections;
 		
 		for (int i = 0; i < connections1.size(); i++){
 			sdl::agentino::Services::CInputConnection::V1_0 connection1 = connections1[i];
 			sdl::agentino::Services::CInputConnection::V1_0 connection2 = connections2[i];
 			
-			sdl::agentino::Services::CUrlParameter::V1_0 urlParam1 = *connection1.Url;
-			sdl::agentino::Services::CUrlParameter::V1_0 urlParam2 = *connection2.Url;
+			sdl::agentino::Services::CUrlParameter::V1_0 urlParam1 = *connection1.url;
+			sdl::agentino::Services::CUrlParameter::V1_0 urlParam2 = *connection2.url;
 			
-			if (*urlParam1.Scheme != *urlParam2.Scheme ||
-				*urlParam1.Port != *urlParam2.Port ||
-				*urlParam1.Host != *urlParam2.Host){
-				retVal << *connection1.Id;
+			if (*urlParam1.scheme != *urlParam2.scheme ||
+				*urlParam1.port != *urlParam2.port ||
+				*urlParam1.host != *urlParam2.host){
+				retVal << *connection1.id;
 			}
 		}
 	}
@@ -939,9 +939,9 @@ bool CServiceControllerProxyComp::UpdateConnectionUrlForService(
 {
 	sdl::agentino::Services::UpdateConnectionUrlRequestArguments arguments;
 	arguments.input.Version_1_0 = sdl::agentino::Services::CConnectionUrlInput::V1_0();
-	arguments.input.Version_1_0->ServiceId = serviceId;
-	arguments.input.Version_1_0->ConnectionId = connectionId;
-	arguments.input.Version_1_0->Url = url;
+	arguments.input.Version_1_0->serviceId = serviceId;
+	arguments.input.Version_1_0->connectionId = connectionId;
+	arguments.input.Version_1_0->url = url;
 	
 	imtgql::CGqlRequest gqlRequest;
 	imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
@@ -961,8 +961,8 @@ bool CServiceControllerProxyComp::UpdateConnectionUrlForService(
 		return false;
 	}
 	
-	if (response.Succesful.has_value()){
-		return *response.Succesful;
+	if (response.succesful.has_value()){
+		return *response.succesful;
 	}
 	
 	return false;

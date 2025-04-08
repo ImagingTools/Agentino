@@ -17,9 +17,9 @@ RemoteCollectionView {
 	property string serviceName;
 	
 	filterMenuVisible: false;
-	
+
 	collectionId: "Services";
-	additionalFieldIds: ["Description","Status","StatusName", "DependencyStatus", "DependantStatusInfo"]
+	additionalFieldIds: ["description","status","statusName", "dependencyStatus", "dependantStatusInfo"]
 	
 	hasPagination: false
 	
@@ -60,9 +60,9 @@ RemoteCollectionView {
 	
 	onHeadersChanged: {
 		if (root.table.headers.getItemsCount() > 0){
-			let orderIndex = root.table.getHeaderIndex("StatusName");
+			let orderIndex = root.table.getHeaderIndex("statusName");
 			root.table.setColumnContentComponent(orderIndex, stateColumnContentComp);
-			let nameIndex = root.table.getHeaderIndex("Name");
+			let nameIndex = root.table.getHeaderIndex("name");
 			root.table.setColumnContentComponent(nameIndex, nameColumnContentComp);
 		}
 	}
@@ -71,13 +71,6 @@ RemoteCollectionView {
 			id: serviceCommandsDelegate
 			collectionView: root
 			documentTypeId: "Service"
-			onCommandActivated: {
-				if (commandId == "Start" || commandId == "Stop"){
-					// root.commandsController.setCommandIsEnabled("Start", false);
-					// root.commandsController.setCommandIsEnabled("Stop", false);
-				}
-			}
-			
 			function getHeaders(){
 				return root.getHeaders()
 			}
@@ -103,25 +96,22 @@ RemoteCollectionView {
 		let headers = {}
 		headers["clientid"] = root.clientId;
 		headers["serviceid"] = root.serviceId;
-		console.log("ServiceCollectionView getHeaders", headers)
 		return headers
 	}
 	
 	
 	onSelectionChanged: {
-		console.log("onSelectionChanged", selection)
 		if (selection.length > 0){
 			let index = selection[0];
 			
-			root.serviceId = root.table.elements.getData("Id", index);
-			root.serviceName = root.table.elements.getData("Name", index);
+			root.serviceId = root.table.elements.getData(ServiceItemTypeMetaInfo.s_id, index);
+			root.serviceName = root.table.elements.getData(ServiceItemTypeMetaInfo.s_name, index);
 		}
 	}
 	
 	onSelectedIndexChanged: {
-		console.log("onSelectedIndexChanged", index)
-		root.serviceId = root.table.elements.getData("Id", index);
-		root.serviceName = root.table.elements.getData("Name", index);
+		root.serviceId = root.table.elements.getData(ServiceItemTypeMetaInfo.s_id, index);
+		root.serviceName = root.table.elements.getData(ServiceItemTypeMetaInfo.s_name, index);
 	}
 	
 	Component {
@@ -173,7 +163,7 @@ RemoteCollectionView {
 			icon.width: icon.visible ? 9 : 0;
 			onReused: {
 				if (rowIndex >= 0){
-					let status = root.table.elements.getData("Status", rowIndex);
+					let status = root.table.elements.getData(ServiceItemTypeMetaInfo.s_status, rowIndex);
 					console.log("status" ,status);
 					
 					if (status === ServiceStatus.s_Running){
@@ -211,10 +201,10 @@ RemoteCollectionView {
 			
 			onReused: {
 				if (rowIndex >= 0){
-					let status = root.table.elements.getData("Status", rowIndex);
-					let dependencyStatus = cellDelegate.rowDelegate.tableItem.elements.getData("DependencyStatus", rowIndex);
+					let status = root.table.elements.getData("status", rowIndex);
+					let dependencyStatus = cellDelegate.rowDelegate.tableItem.elements.getData("dependencyStatus", rowIndex);
 					if (status !== ServiceStatus.s_Running){
-						icon.visible =false;
+						icon.visible = false;
 					}
 					else if (dependencyStatus === DependencyStatus.s_NotRunning){
 						icon.source = "../../../../" + Style.getIconPath("Icons/Error", Icon.State.On, Icon.Mode.Normal);

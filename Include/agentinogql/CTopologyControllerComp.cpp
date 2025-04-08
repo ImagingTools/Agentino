@@ -58,49 +58,49 @@ sdl::agentino::Topology::CTopology CTopologyControllerComp::OnGetTopology(
 					
 					sdl::agentino::Topology::CService::V1_0 service;
 					
-					service.Id = serviceElementId;
-					service.AgentId = elementId;
+					service.id = serviceElementId;
+					service.agentId = elementId;
 					
 					QPoint point = GetServiceCoordinate(serviceElementId);
 					
-					service.X = point.x();
-					service.Y = point.y();
+					service.x = point.x();
+					service.y = point.y();
 					
 					QString serviceTypeName = serviceInfoPtr->GetServiceTypeName();
 					QString serviceName = serviceInfoPtr->GetServiceName();
 					QString description = serviceInfoPtr->GetServiceDescription();
 
-					service.MainText = serviceName + "@" + agentName;
-					service.SecondText = description;
+					service.mainText = serviceName + "@" + agentName;
+					service.secondText = description;
 					
 					QString typeName = serviceInfoPtr->GetServiceTypeName();
-					service.ThirdText = serviceTypeName;
+					service.thirdText = serviceTypeName;
 					
 					agentinodata::IServiceStatusInfo::ServiceStatus serviceStatus = m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceElementId);
 					if (serviceStatus == agentinodata::IServiceStatusInfo::SS_RUNNING){
-						service.Status = sdl::agentino::Topology::ServiceStatus::RUNNING;
-						service.Icon1 = "Icons/Running";
+						service.status = sdl::agentino::Topology::ServiceStatus::RUNNING;
+						service.icon1 = "Icons/Running";
 					}
 					else if (serviceStatus == agentinodata::IServiceStatusInfo::SS_NOT_RUNNING){
-						service.Status = sdl::agentino::Topology::ServiceStatus::NOT_RUNNING;
-						service.Icon1 = "Icons/Stopped";
+						service.status = sdl::agentino::Topology::ServiceStatus::NOT_RUNNING;
+						service.icon1 = "Icons/Stopped";
 					}
 					else{
-						service.Status = sdl::agentino::Topology::ServiceStatus::UNDEFINED;
-						service.Icon1 = "Icons/Alert";
+						service.status = sdl::agentino::Topology::ServiceStatus::UNDEFINED;
+						service.icon1 = "Icons/Alert";
 					}
 					
 					agentinodata::IServiceCompositeInfo::StateOfRequiredServices stateOfRequiredServices = m_serviceCompositeInfoCompPtr->GetStateOfRequiredServices(serviceElementId);
 					if (serviceStatus == agentinodata::IServiceStatusInfo::SS_NOT_RUNNING
 						|| serviceStatus == agentinodata::IServiceStatusInfo::SS_UNDEFINED
 						|| stateOfRequiredServices == agentinodata::IServiceCompositeInfo::SORS_RUNNING){
-						service.Icon2 = "";
+						service.icon2 = "";
 					}
 					else if (stateOfRequiredServices == agentinodata::IServiceCompositeInfo::SORS_NOT_RUNNING){
-						service.Icon2 = "Icons/Error";
+						service.icon2 = "Icons/Error";
 					}
 					else if (stateOfRequiredServices == agentinodata::IServiceCompositeInfo::SORS_UNDEFINED){
-						service.Icon2 = "Icons/Warning";
+						service.icon2 = "Icons/Warning";
 					}
 
 					QList<sdl::agentino::Topology::CLink::V1_0> linkList;
@@ -117,7 +117,7 @@ sdl::agentino::Topology::CTopology CTopologyControllerComp::OnGetTopology(
 									sdl::agentino::Topology::CLink::V1_0 linkData;
 									QByteArray serviceId =  m_serviceCompositeInfoCompPtr->GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
 
-									linkData.Id = serviceId;
+									linkData.id = serviceId;
 									
 									linkList << linkData;
 								}
@@ -125,7 +125,7 @@ sdl::agentino::Topology::CTopology CTopologyControllerComp::OnGetTopology(
 						}
 					}
 					
-					service.Links = linkList;
+					service.links = linkList;
 					
 					services << service;
 				}
@@ -133,7 +133,7 @@ sdl::agentino::Topology::CTopology CTopologyControllerComp::OnGetTopology(
 		}
 	}
 	
-	response.Version_1_0->Services = services;
+	response.Version_1_0->services = services;
 	
 	return response;
 }
@@ -146,7 +146,7 @@ sdl::agentino::Topology::CSaveTopologyResponse CTopologyControllerComp::OnSaveTo
 {
 	sdl::agentino::Topology::CSaveTopologyResponse response;
 	response.Version_1_0.emplace();
-	response.Version_1_0->Successful = false;
+	response.Version_1_0->successful = false;
 	
 	if (!m_topologyCollectionCompPtr.IsValid()){
 		Q_ASSERT_X(false, "Attribute 'TopologyCollection' was not set", "CTopologyControllerComp");
@@ -162,20 +162,20 @@ sdl::agentino::Topology::CSaveTopologyResponse CTopologyControllerComp::OnSaveTo
 	
 	m_topologyCollectionCompPtr->ResetData();
 	
-	QList<sdl::agentino::Topology::CService::V1_0> serviceList = *arguments.input.Version_1_0->Services;
+	QList<sdl::agentino::Topology::CService::V1_0> serviceList = *arguments.input.Version_1_0->services;
 	for (const sdl::agentino::Topology::CService::V1_0& service : serviceList){
-		int x = *service.X;
-		int y = *service.Y;
-		QByteArray id = *service.Id;
+		int x = *service.x;
+		int y = *service.y;
+		QByteArray id = *service.id;
 		QPoint point(x,y);
 		
 		if (!SetServiceCoordinate(id, point)){
-			response.Version_1_0->Successful = false;
+			response.Version_1_0->successful = false;
 			return response;
 		}
 	}
 	
-	response.Version_1_0->Successful = true;
+	response.Version_1_0->successful = true;
 	
 	return response;
 }

@@ -23,8 +23,8 @@ SplitView {
         onSelectionChanged: {
             if (selection.length > 0){
                 let index = selection[0];
-                log.agentId = agentCollectionView.table.elements.getData("Id", index);
-                selectedServices = agentCollectionView.table.elements.getData("Services", index)
+                log.agentId = agentCollectionView.table.elements.getData("id", index);
+                selectedServices = agentCollectionView.table.elements.getData("services", index)
             }
             else{
                 log.agentId = ""
@@ -71,14 +71,6 @@ SplitView {
             }
             dataController.elementsModel.clear()
             dataController.updateModel()
-
-            // if (dataModel.containsKey("typeOperation")){
-            //     let body = dataModel.getData("typeOperation");
-            //     if (body === "inserted"){
-            //         dataController.elementsModel.clear()
-            //         dataController.updateModel()
-            //     }
-            // }
         }
 
         Component {

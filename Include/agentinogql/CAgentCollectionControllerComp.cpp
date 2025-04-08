@@ -58,27 +58,27 @@ bool CAgentCollectionControllerComp::CreateRepresentationFromObject(
 	
 	sdl::agentino::Agents::AgentsListRequestInfo requestInfo = agentsListRequest.GetRequestInfo();
 	if (requestInfo.items.isIdRequested){
-		representationObject.Id = objectId;
+		representationObject.id = objectId;
 	}
 	
 	if (requestInfo.items.isTypeIdRequested){
 		QByteArray typeId = m_objectCollectionCompPtr->GetObjectTypeId(objectId);
-		representationObject.TypeId = typeId;
+		representationObject.typeId = typeId;
 	}
 	
 	if (requestInfo.items.isNameRequested){
 		QString name = m_objectCollectionCompPtr->GetElementInfo(objectId, imtbase::ICollectionInfo::EIT_NAME).toString();
-		representationObject.Name = name;
+		representationObject.name = name;
 	}
 	
 	if (requestInfo.items.isDescriptionRequested){
 		QString description = m_objectCollectionCompPtr->GetElementInfo(objectId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
-		representationObject.Description = description;
+		representationObject.description = description;
 	}
 	
 	if (requestInfo.items.isComputerNameRequested){
 		QString computerName = agentPtr->GetComputerName();
-		representationObject.ComputerName = computerName;
+		representationObject.computerName = computerName;
 	}
 	
 	if (requestInfo.items.isServicesRequested){
@@ -97,7 +97,7 @@ bool CAgentCollectionControllerComp::CreateRepresentationFromObject(
 				}
 			}
 			
-			representationObject.Services = result.join(';');
+			representationObject.services = result.join(';');
 		}
 	}
 	
@@ -124,24 +124,24 @@ bool CAgentCollectionControllerComp::CreateRepresentationFromObject(
 			}
 		}
 		
-		representationObject.Status = statusStr;
+		representationObject.status = statusStr;
 	}
 	
 	if (requestInfo.items.isVersionRequested){
-		representationObject.Version = agentPtr->GetVersion();
+		representationObject.version = agentPtr->GetVersion();
 	}
 	
 	if (requestInfo.items.isLastConnectionRequested){
 		QDateTime lastConnection = agentPtr->GetLastConnection().toUTC();
 		if (!lastConnection.isNull()){
-			representationObject.LastConnection = lastConnection.toLocalTime().toString("dd.MM.yyyy hh:mm:ss");
+			representationObject.lastConnection = lastConnection.toLocalTime().toString("dd.MM.yyyy hh:mm:ss");
 		}
 	}
 	
 	if (requestInfo.items.isAddedRequested){
 		QDateTime addedTime = objectCollectionIterator.GetElementInfo("Added").toDateTime().toUTC();
 		QString added = addedTime.toLocalTime().toString("dd.MM.yyyy hh:mm:ss");
-		representationObject.Added = added;
+		representationObject.added = added;
 	}
 	
 	return true;
@@ -151,7 +151,7 @@ bool CAgentCollectionControllerComp::CreateRepresentationFromObject(
 bool CAgentCollectionControllerComp::CreateRepresentationFromObject(
 	const istd::IChangeable& data,
 	const sdl::agentino::Agents::CGetAgentGqlRequest& agentItemRequest,
-	sdl::agentino::Agents::CAgentDataPayload::V1_0& representationPayload,
+	sdl::agentino::Agents::CAgentData::V1_0& representationPayload,
 	QString& errorMessage) const
 {
 	const agentinodata::CAgentInfo* agentPtr = dynamic_cast<const agentinodata::CAgentInfo*>(&data);
@@ -168,22 +168,18 @@ bool CAgentCollectionControllerComp::CreateRepresentationFromObject(
 	}
 	
 	QByteArray agentId;
-	if (arguments.input.Version_1_0->Id){
-		agentId = *arguments.input.Version_1_0->Id;
+	if (arguments.input.Version_1_0->id){
+		agentId = *arguments.input.Version_1_0->id;
 	}
 	
 	QString name = m_objectCollectionCompPtr->GetElementInfo(agentId, imtbase::ICollectionInfo::EIT_NAME).toString();
 	QString description = m_objectCollectionCompPtr->GetElementInfo(agentId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
 	
-	sdl::agentino::Agents::CAgentData::V1_0 agentData;
-	
-	agentData.Id = agentId;
-	agentData.Name = name;
-	agentData.Description = description;
-	agentData.LastConnection = agentPtr->GetLastConnection().toString("dd.MM.yyyy");
-	agentData.TracingLevel = agentPtr->GetTracingLevel();
-	
-	representationPayload.item = agentData;
+	representationPayload.id = agentId;
+	representationPayload.name = name;
+	representationPayload.description = description;
+	representationPayload.lastConnection = agentPtr->GetLastConnection().toString("dd.MM.yyyy");
+	representationPayload.tracingLevel = agentPtr->GetTracingLevel();
 	
 	return true;
 }
@@ -201,19 +197,19 @@ bool CAgentCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 		return false;
 	}
 	
-	if (!inputArguments.input.Version_1_0->Id.has_value()){
+	if (!inputArguments.input.Version_1_0->id.has_value()){
 		I_CRITICAL();
 		return false;
 	}
 	
 	QByteArray objectId;
-	if (inputArguments.input.Version_1_0->Id){
-		objectId = *inputArguments.input.Version_1_0->Id;
+	if (inputArguments.input.Version_1_0->id){
+		objectId = *inputArguments.input.Version_1_0->id;
 	}
 	
 	sdl::agentino::Agents::CAgentData::V1_0 agentData;
-	if (inputArguments.input.Version_1_0->Item){
-		agentData = *inputArguments.input.Version_1_0->Item;
+	if (inputArguments.input.Version_1_0->item){
+		agentData = *inputArguments.input.Version_1_0->item;
 	}
 
 	agentinodata::CAgentInfo* agentPtr = dynamic_cast<agentinodata::CAgentInfo*>(&object);
@@ -223,12 +219,12 @@ bool CAgentCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 		return false; 
 	}
 	
-	if (agentData.Name){
-		m_objectCollectionCompPtr->SetElementName(objectId, *agentData.Name);
+	if (agentData.name){
+		m_objectCollectionCompPtr->SetElementName(objectId, *agentData.name);
 	}
 	
-	if (agentData.Description){
-		m_objectCollectionCompPtr->SetElementDescription(objectId, *agentData.Description);
+	if (agentData.description){
+		m_objectCollectionCompPtr->SetElementDescription(objectId, *agentData.description);
 	}
 	
 	return true;
@@ -254,12 +250,12 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObjectFromRequest(
 		return nullptr;
 	}
 	
-	objectId = inputDataPtr->GetFieldArgumentValue("Id").toByteArray();
+	objectId = inputDataPtr->GetFieldArgumentValue("id").toByteArray();
 	if (objectId.isEmpty()){
 		objectId = QUuid::createUuid().toString(QUuid::WithoutBraces).toUtf8();
 	}
 	
-	QByteArray itemData = inputDataPtr->GetFieldArgumentValue("Item").toByteArray();
+	QByteArray itemData = inputDataPtr->GetFieldArgumentValue("item").toByteArray();
 	if (itemData.isEmpty()){
 		return nullptr;
 	}
@@ -278,18 +274,18 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObjectFromRequest(
 	
 	agentPtr->SetObjectUuid(objectId);
 	
-	if (itemModel.ContainsKey("ComputerName")){
-		QString computerName = itemModel.GetData("ComputerName").toString();
+	if (itemModel.ContainsKey("computerName")){
+		QString computerName = itemModel.GetData("computerName").toString();
 		agentPtr->SetComputerName(computerName);
 	}
 	
-	if (itemModel.ContainsKey("Version")){
-		QString version = itemModel.GetData("Version").toString();
+	if (itemModel.ContainsKey("version")){
+		QString version = itemModel.GetData("version").toString();
 		agentPtr->SetVersion(version);
 	}
 	
-	if (itemModel.ContainsKey("TracingLevel")){
-		int tracingLevel = itemModel.GetData("TracingLevel").toInt();
+	if (itemModel.ContainsKey("tracingLevel")){
+		int tracingLevel = itemModel.GetData("tracingLevel").toInt();
 		agentPtr->SetTracingLevel(tracingLevel);
 	}
 	
@@ -318,10 +314,10 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 		if (agentInfoPtr != nullptr){
 			agentInfoPtr->SetLastConnection(QDateTime::currentDateTimeUtc());
 			
-			QByteArray item = inputParams.GetFieldArgumentValue("Item").toByteArray();
+			QByteArray item = inputParams.GetFieldArgumentValue("item").toByteArray();
 			QJsonDocument itemDoc = QJsonDocument::fromJson(item);
-			if (itemDoc.object().contains("Version")){
-				QString version = itemDoc.object().value("Version").toString();
+			if (itemDoc.object().contains("version")){
+				QString version = itemDoc.object().value("version").toString();
 				agentInfoPtr->SetVersion(version);
 			}
 			
@@ -400,18 +396,18 @@ void CAgentCollectionControllerComp::UpdateAgentService(
 	QString serviceName = serviceCollectionPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_NAME).toString();
 	QString description = serviceCollectionPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
 	
-	serviceRepresentationModel.SetData("Name", serviceName);
-	serviceRepresentationModel.SetData("Description", description);
+	serviceRepresentationModel.SetData("name", serviceName);
+	serviceRepresentationModel.SetData("description", description);
 	
 	imtgql::CGqlRequest request(imtgql::CGqlRequest::RT_MUTATION, "ServiceUpdate");
 	imtgql::CGqlObject inputObject;
-	inputObject.InsertField(QByteArray("Id"), QVariant(serviceId));
+	inputObject.InsertField(QByteArray("id"), QVariant(serviceId));
 	inputObject.InsertField(QByteArray("Item"), QVariant(serviceRepresentationModel.ToJson()));
 	
 	request.AddParam("input", inputObject);
 	
 	imtgql::CGqlObject updatedObject;
-	updatedObject.InsertField("Id");
+	updatedObject.InsertField("id");
 	request.AddField("updatedNotification", updatedObject);
 	
 	imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
@@ -439,7 +435,7 @@ bool CAgentCollectionControllerComp::UpdateServiceStatusFromAgent(const QByteArr
 	
 	servicessdl::GetServiceStatusRequestArguments arguments;
 	arguments.input.Version_1_0 = sdl::imtbase::ImtCollection::CInputId::V1_0();
-	arguments.input.Version_1_0->Id = serviceId;
+	arguments.input.Version_1_0->id = serviceId;
 	
 	imtgql::CGqlRequest gqlRequest;
 	
@@ -465,7 +461,7 @@ bool CAgentCollectionControllerComp::UpdateServiceStatusFromAgent(const QByteArr
 	
 	serviceStatusInfoPtr->SetServiceId(serviceId);
 	
-	servicessdl::ServiceStatus status = *response.Status;
+	servicessdl::ServiceStatus status = *response.status;
 	switch (status) {
 	case servicessdl::ServiceStatus::NOT_RUNNING:
 		serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);

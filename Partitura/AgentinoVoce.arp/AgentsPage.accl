@@ -27,6 +27,12 @@
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
+        <EmbededRegistry Id="AgentCommands">
+            <PositionMap>
+                <Element ComponentName="StandardDocumentCommandsController" X="575" Y="350" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
         <EmbededRegistry Id="ServiceCommands">
             <PositionMap>
                 <Element ComponentName="CheckPermissionOr" X="700" Y="225" Note=""/>
@@ -43,12 +49,6 @@
                 <Element ComponentName="SavePermissions" X="1025" Y="300" Note=""/>
                 <Element ComponentName="Undo" X="100" Y="500" Note=""/>
                 <Element ComponentName="UndoPermissions" X="1025" Y="550" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
-        <EmbededRegistry Id="AgentCommands">
-            <PositionMap>
-                <Element ComponentName="StandardDocumentCommandsController" X="575" Y="350" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

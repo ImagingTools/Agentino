@@ -33,7 +33,6 @@ ViewBase {
 	}
 	
 	commandsControllerComp: Component {GqlBasedCommandsController {
-			id: commandsRepresentationProvider
 			typeId: "Topology"
 			
 			onCommandsChanged: {
@@ -305,15 +304,8 @@ ViewBase {
 					serviceId = dependencyStatusModel.getData("id", i);
 					index = scheme.findModelIndex(serviceId);
 					dependencyStatus = dependencyStatusModel.getData(DependencyStatus.s_Key, i)
-					
-					console.log("dependency serviceId", serviceId);
-					console.log("dependency index", index);
-					
-					let serviceItem = scheme.objectsModel.get(index).item;
-					
-					console.log("serviceItem", serviceItem);
-					console.log("dependencyStatus", dependencyStatus);
 
+					let serviceItem = scheme.objectsModel.get(index).item;
 					if (dependencyStatus === "NOT_RUNNING"){
 						serviceItem.m_icon2 = "Icons/Error"
 					}

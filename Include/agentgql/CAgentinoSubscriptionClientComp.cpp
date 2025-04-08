@@ -51,7 +51,7 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 		if (m_clientIdCompPtr.IsValid()){
 			clientId = m_clientIdCompPtr->GetText();
 		}
-		inputDataParams.InsertField("Id", QVariant(clientId));
+		inputDataParams.InsertField("id", QVariant(clientId));
 
 		QString localHostName = QHostInfo::localHostName();
 		QString domainMain = QHostInfo::localDomainName();
@@ -65,16 +65,16 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 
 		QJsonObject item;
 
-		item.insert("Name", name);
-		item.insert("ComputerName", name);
-		item.insert("HttpUrl", "http://localhost:7222");
-		item.insert("WebSocketUrl", "http://localhost:7223");
-		item.insert("Version", version);
+		item.insert("name", name);
+		item.insert("computerName", name);
+		item.insert("httpUrl", "http://localhost:7222");
+		item.insert("webSocketUrl", "http://localhost:7223");
+		item.insert("version", version);
 
 		QJsonDocument itemDocument;
 		itemDocument.setObject(item);
 
-		inputDataParams.InsertField("Item", QVariant(itemDocument.toJson(QJsonDocument::Compact)));
+		inputDataParams.InsertField("item", QVariant(itemDocument.toJson(QJsonDocument::Compact)));
 		gqlInitRequest->AddParam("input", inputDataParams);
 
 		imtgql::CGqlObject returnNotify;

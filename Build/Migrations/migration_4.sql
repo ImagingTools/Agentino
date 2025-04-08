@@ -1,7 +1,8 @@
-CREATE TABLE "UserSessions"(
-	"AccessToken" UUID NOT NULL,
+CREATE TABLE IF NOT EXISTS "UserSessions"(
+    "Id" VARCHAR NOT NULL,
+    "RefreshToken" VARCHAR NOT NULL,
     "UserId" VARCHAR (1000) NOT NULL,
-    "LastActivity" TIMESTAMP NOT NULL,
-	PRIMARY KEY ("AccessToken"),
-    FOREIGN KEY ("UserId") REFERENCES "Users" (UserId) ON DELETE CASCADE ON UPDATE CASCADE
+    "CreationDate" TIMESTAMP NOT NULL,
+    "ExpirationDate" TIMESTAMP NOT NULL,
+    PRIMARY KEY ("Id")
 );

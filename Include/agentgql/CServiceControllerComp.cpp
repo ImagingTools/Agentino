@@ -35,21 +35,21 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerComp::OnStartS
 	
 	response.Version_1_0.emplace();
 	
-	response.Version_1_0->Status = sdl::agentino::Services::ServiceStatus::UNDEFINED;
+	response.Version_1_0->status = sdl::agentino::Services::ServiceStatus::UNDEFINED;
 
-	if (!arguments.input.Version_1_0->ServiceId.has_value()){
+	if (!arguments.input.Version_1_0->serviceId.has_value()){
 		errorMessage = QString("Unable to start service with empty ID");
 		SendErrorMessage(0, errorMessage, "CServiceControllerComp");
 		return response;
 	}
 	
-	QByteArray serviceId = *arguments.input.Version_1_0->ServiceId;
+	QByteArray serviceId = *arguments.input.Version_1_0->serviceId;
 	
 	m_serviceControllerCompPtr->StartService(serviceId);
 
 	agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
 	
-	response.Version_1_0->Status = (sdl::agentino::Services::ServiceStatus) state;
+	response.Version_1_0->status = (sdl::agentino::Services::ServiceStatus) state;
 	
 	return response;
 }
@@ -75,20 +75,20 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerComp::OnStopSe
 	}
 	
 	response.Version_1_0.emplace();
-	response.Version_1_0->Status = sdl::agentino::Services::ServiceStatus::UNDEFINED;
+	response.Version_1_0->status = sdl::agentino::Services::ServiceStatus::UNDEFINED;
 	
-	if (!arguments.input.Version_1_0->ServiceId.has_value()){
+	if (!arguments.input.Version_1_0->serviceId.has_value()){
 		errorMessage = QString("Unable to start service with empty ID");
 		return response;
 	}
 	
-	QByteArray serviceId = *arguments.input.Version_1_0->ServiceId;
+	QByteArray serviceId = *arguments.input.Version_1_0->serviceId;
 	
 	m_serviceControllerCompPtr->StopService(serviceId);
 
 	agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
 	
-	response.Version_1_0->Status = (sdl::agentino::Services::ServiceStatus) state;
+	response.Version_1_0->status = (sdl::agentino::Services::ServiceStatus) state;
 
 	return response;
 }
@@ -120,16 +120,16 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerComp::OnGetSer
 		return response;
 	}
 	
-	if (!arguments.input.Version_1_0->Id.has_value()){
+	if (!arguments.input.Version_1_0->id.has_value()){
 		errorMessage = QString("Unable to start service with empty ID");
 		return response;
 	}
 	
 	response.Version_1_0.emplace();
 	
-	QByteArray serviceId = *arguments.input.Version_1_0->Id;
+	QByteArray serviceId = *arguments.input.Version_1_0->id;
 	agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
-	response.Version_1_0->Status = (sdl::agentino::Services::ServiceStatus) state;
+	response.Version_1_0->status = (sdl::agentino::Services::ServiceStatus) state;
 	
 	return response;
 }
@@ -147,7 +147,7 @@ sdl::agentino::Services::CUpdateConnectionUrlResponse CServiceControllerComp::On
 	}
 	
 	response.Version_1_0.emplace();
-	response.Version_1_0->Succesful = false;
+	response.Version_1_0->succesful = false;
 	
 	sdl::agentino::Services::UpdateConnectionUrlRequestArguments arguments = updateConnectionUrlRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
@@ -155,14 +155,14 @@ sdl::agentino::Services::CUpdateConnectionUrlResponse CServiceControllerComp::On
 		return response;
 	}
 	
-	if (!arguments.input.Version_1_0->ServiceId.has_value()){
+	if (!arguments.input.Version_1_0->serviceId.has_value()){
 		errorMessage = QString("Unable to start service with empty ID");
 		return response;
 	}
 	
-	QByteArray serviceId = *arguments.input.Version_1_0->ServiceId;
-	QByteArray connectionId = *arguments.input.Version_1_0->ConnectionId;
-	sdl::agentino::Services::CUrlParameter::V1_0 urlParam = *arguments.input.Version_1_0->Url;
+	QByteArray serviceId = *arguments.input.Version_1_0->serviceId;
+	QByteArray connectionId = *arguments.input.Version_1_0->connectionId;
+	sdl::agentino::Services::CUrlParameter::V1_0 urlParam = *arguments.input.Version_1_0->url;
 	
 	QUrl url;
 	if (!agentinodata::GetUrlParamFromRepresentation(url, urlParam)){
@@ -174,7 +174,7 @@ sdl::agentino::Services::CUpdateConnectionUrlResponse CServiceControllerComp::On
 	if (connectionCollectionPtr != nullptr){
 		bool ok = connectionCollectionPtr->SetUrl(connectionId, url);
 		
-		response.Version_1_0->Succesful = ok;
+		response.Version_1_0->succesful = ok;
 	}
 	
 	return response;

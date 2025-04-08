@@ -34,7 +34,7 @@ ViewBase {
 	
 	onServiceDataChanged: {
 		if (serviceData){
-			// TODO Name???
+			// TODO name???
 			serviceEditorContainer.productId = serviceData.m_name;
 		}
 	}
@@ -361,22 +361,22 @@ ViewBase {
 							}
 							Component.onCompleted: {
 								let index = model.insertNewItem()
-								model.setData("Name", "0", index)
+								model.setData("name", "0", index)
 								
 								index = model.insertNewItem()
-								model.setData("Name", "1", index)
+								model.setData("name", "1", index)
 								
 								index = model.insertNewItem()
-								model.setData("Name", "2", index)
+								model.setData("name", "2", index)
 								
 								index = model.insertNewItem()
-								model.setData("Name", "3", index)
+								model.setData("name", "3", index)
 								
 								index = model.insertNewItem()
-								model.setData("Name", "4", index)
+								model.setData("name", "4", index)
 								
 								index = model.insertNewItem()
-								model.setData("Name", "5", index)
+								model.setData("name", "5", index)
 							}
 							onCurrentIndexChanged: {
 								serviceEditorContainer.doUpdateModel();
@@ -486,23 +486,23 @@ ViewBase {
 							Component.onCompleted: {
 								let index = headersModel.insertNewItem();
 								
-								headersModel.setData("Id", "m_connectionName", index)
-								headersModel.setData("Name", qsTr("Usage"), index)
+								headersModel.setData("id", "m_connectionName", index)
+								headersModel.setData("name", qsTr("Usage"), index)
 								
 								index = headersModel.insertNewItem();
 								
-								headersModel.setData("Id", "m_description", index)
-								headersModel.setData("Name", qsTr("Description"), index)
+								headersModel.setData("id", "m_description", index)
+								headersModel.setData("name", qsTr("Description"), index)
 								
 								index = headersModel.insertNewItem();
 								
-								headersModel.setData("Id", "m_port", index)
-								headersModel.setData("Name", qsTr("Port"), index)
+								headersModel.setData("id", "m_port", index)
+								headersModel.setData("name", qsTr("Port"), index)
 								
 								index = headersModel.insertNewItem();
 								
-								headersModel.setData("Id", "m_externPorts", index)
-								headersModel.setData("Name", qsTr("Extern Addresses"), index)
+								headersModel.setData("id", "m_externPorts", index)
+								headersModel.setData("name", qsTr("Extern Addresses"), index)
 								
 								inputConnTable.headers = headersModel;
 							}
@@ -566,7 +566,7 @@ ViewBase {
 											let values = []
 											for (let i = 0; i < valueModel.count; i++){
 												let item = valueModel.get(i).item;
-												values.push(item.m_host + ":" + item.m_port)
+												values.push(item.m_url.m_host + ":" + item.m_url.m_port)
 											}
 											textLabel.text = values.join('\n')
 										}
@@ -630,10 +630,13 @@ ViewBase {
 										onFinished: {
 											if (buttonId == Enums.save){
 												if (content.rowIndex >= 0){
+													console.log("onFinished", portsModel.toJson())
+													
 													let ports = []
 													for (let i = 0; i < portsModel.count; i++){
 														let item = portsModel.get(i).item;
-														ports.push(item.m_host + ":" + item.m_port)
+														let url = item.m_url;
+														ports.push(url.m_host + ":" + url.m_port)
 													}
 													
 													
@@ -786,7 +789,6 @@ ViewBase {
 									visible: !serviceEditorContainer.readOnly;
 									
 									onDoubleClicked: {
-										console.log("onDoubleClicked", cb.model);
 										if (cb.model && cb.model.count > 0){
 											cb.visible = true;
 											cb.z = ma.z + 1;
@@ -804,23 +806,23 @@ ViewBase {
 							Component.onCompleted: {
 								let index = headersModel2.insertNewItem();
 								
-								headersModel2.setData("Id", "m_connectionName", index)
-								headersModel2.setData("Name", qsTr("Usage"), index)
+								headersModel2.setData("id", "m_connectionName", index)
+								headersModel2.setData("name", qsTr("Usage"), index)
 								
 								index = headersModel2.insertNewItem();
 								
-								headersModel2.setData("Id", "m_serviceTypeName", index)
-								headersModel2.setData("Name", qsTr("Service"), index)
+								headersModel2.setData("id", "m_serviceTypeName", index)
+								headersModel2.setData("name", qsTr("Service"), index)
 								
 								index = headersModel2.insertNewItem();
 								
-								headersModel2.setData("Id", "m_description", index)
-								headersModel2.setData("Name", qsTr("Description"), index)
+								headersModel2.setData("id", "m_description", index)
+								headersModel2.setData("name", qsTr("Description"), index)
 								
 								index = headersModel2.insertNewItem();
 								
-								headersModel2.setData("Id", "m_displayUrl", index)
-								headersModel2.setData("Name", qsTr("Url"), index)
+								headersModel2.setData("id", "m_displayUrl", index)
+								headersModel2.setData("name", qsTr("Url"), index)
 								
 								ouputConnTable.headers = headersModel2;
 							}

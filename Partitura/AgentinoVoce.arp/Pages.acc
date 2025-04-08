@@ -235,6 +235,26 @@
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
+                                <AttributeInfo Id="ReplaceableFilterFields" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>name</Value>
+                                            <Value>description</Value>
+                                            <Value>statusName</Value>
+                                            <Value>version</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ReplacementFilterFields" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Name</Value>
+                                            <Value>Description</Value>
+                                            <Value>StatusName</Value>
+                                            <Value>Version</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
                                 <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="ServiceCompositeInfo">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
@@ -292,10 +312,10 @@
                                 <AttributeInfo Id="HeadersIds" Type="String[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>Name</Value>
-                                            <Value>Description</Value>
-                                            <Value>StatusName</Value>
-                                            <Value>Version</Value>
+                                            <Value>name</Value>
+                                            <Value>description</Value>
+                                            <Value>statusName</Value>
+                                            <Value>version</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>

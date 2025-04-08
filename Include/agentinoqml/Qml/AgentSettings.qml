@@ -237,7 +237,7 @@ ViewBase {
             query.AddParam(inputParams);
 
             var queryFields = Gql.GqlObject("updatedNotification");
-            queryFields.InsertField("Id");
+            queryFields.InsertField("id");
             query.AddField(queryFields);
 
             var gqlData = query.GetQuery();

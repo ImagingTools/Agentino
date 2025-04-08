@@ -75,6 +75,32 @@
                     <AttributeInfo Id="PermissionChecker" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="CheckPermissionOr"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ReplaceableFilterFields" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>name</Value>
+                                <Value>computerName</Value>
+                                <Value>description</Value>
+                                <Value>services</Value>
+                                <Value>status</Value>
+                                <Value>lastConnection</Value>
+                                <Value>version</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ReplacementFilterFields" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>Name</Value>
+                                <Value>ComputerName</Value>
+                                <Value>Description</Value>
+                                <Value>Services</Value>
+                                <Value>Status</Value>
+                                <Value>LastConnection</Value>
+                                <Value>Version</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="ServiceStatusCollection">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -102,13 +128,13 @@
                     <AttributeInfo Id="HeadersIds" Type="String[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>Name</Value>
-                                <Value>ComputerName</Value>
-                                <Value>Description</Value>
-                                <Value>Services</Value>
-                                <Value>Status</Value>
-                                <Value>LastConnection</Value>
-                                <Value>Version</Value>
+                                <Value>name</Value>
+                                <Value>computerName</Value>
+                                <Value>description</Value>
+                                <Value>services</Value>
+                                <Value>status</Value>
+                                <Value>lastConnection</Value>
+                                <Value>version</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -131,9 +157,12 @@
                     <AttributeInfo Id="SearchByFilterIds" Type="String[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>Name</Value>
-                                <Value>ComputerName</Value>
-                                <Value>Description</Value>
+                                <Value>name</Value>
+                                <Value>computerName</Value>
+                                <Value>description</Value>
+                                <Value>services</Value>
+                                <Value>status</Value>
+                                <Value>version</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -215,13 +244,6 @@
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
-                                <AttributeInfo Id="GqlCommandIds" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>AgentCommands</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
@@ -245,6 +267,9 @@
                                 </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TypeId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Agent"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="UndoPermissions" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
@@ -279,13 +304,6 @@
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
-                                <AttributeInfo Id="GqlCommandIds" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>AgentsCommands</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
                                 <AttributeInfo Id="LeftAlignmentCommands" Type="Reference[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
@@ -302,6 +320,9 @@
                                 </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TypeId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Agents"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
@@ -372,9 +393,11 @@
                 </ElementsList>
                 <EmbeddedRegistriesList/>
                 <ExportedInterfaces>
-                    <Interface InterfaceId="imtgql::IGqlRepresentationController" ComponentId="CommandsController"/>
                     <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="CommandsController"/>
                     <Interface InterfaceId="imtrest::IGuiElementContainer" ComponentId="CommandsController"/>
+                    <Interface InterfaceId="imtrest::IRepresentationController" ComponentId="CommandsController"/>
+                    <Interface InterfaceId="istd::IChangeable" ComponentId="CommandsController"/>
+                    <Interface InterfaceId="istd::IPolymorphic" ComponentId="CommandsController"/>
                 </ExportedInterfaces>
                 <ExportedComponents/>
             </Data>

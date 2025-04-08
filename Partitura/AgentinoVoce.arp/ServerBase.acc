@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5347" Description="ACF"/>
-            <Version Id="1" Number="2236" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5332" Description="ACF"/>
+            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -64,9 +64,6 @@
                     <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="DatabaseEngine"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="LanguageConstraints" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -75,9 +72,6 @@
                     </AttributeInfo>
                     <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/RoleRepository"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ServerSettings" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceCompositeInfo"/>
@@ -103,8 +97,8 @@
                     <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="WebSocketUrl" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings/WebSocketAgentinoServerUrl"/>
+                    <AttributeInfo Id="WebSocketUrlParam" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/WebSocketServerPort"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -353,11 +347,17 @@
                                 <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="">
                                     <Data IsEnabled="true" Value="DatabaseEngine"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="From" Type="Integer" ExportId="">
+                                    <Data IsEnabled="true" Value="0"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="MigrationFolderPath" Type="Reference" ExportId="">
                                     <Data IsEnabled="true" Value="MigrationFilePath"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="To" Type="Integer" ExportId="">
+                                    <Data IsEnabled="true" Value="4"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
                                     <Data IsEnabled="false"/>

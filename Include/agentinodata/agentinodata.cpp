@@ -45,58 +45,58 @@ ProcessStateEnum GetProcceStateRepresentation(QProcess::ProcessState processStat
 
 bool GetServiceFromRepresentation(agentinodata::CServiceInfo& serviceInfo, const sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation)
 {
-	if (serviceDataRepresentation.Name){
-		QString name = *serviceDataRepresentation.Name;
+	if (serviceDataRepresentation.name){
+		QString name = *serviceDataRepresentation.name;
 		serviceInfo.SetServiceName(name);
 	}
 	
-	if (serviceDataRepresentation.Description){
-		QString description = *serviceDataRepresentation.Description;
+	if (serviceDataRepresentation.description){
+		QString description = *serviceDataRepresentation.description;
 		serviceInfo.SetServiceDescription(description);
 	}
 	
-	if (serviceDataRepresentation.Path){
-		QString path = *serviceDataRepresentation.Path;
+	if (serviceDataRepresentation.path){
+		QString path = *serviceDataRepresentation.path;
 		serviceInfo.SetServicePath(path.toUtf8());
 	}
 	
-	if (serviceDataRepresentation.StartScript){
-		QString path = *serviceDataRepresentation.StartScript;
+	if (serviceDataRepresentation.startScript){
+		QString path = *serviceDataRepresentation.startScript;
 		serviceInfo.SetStartScriptPath(path.toUtf8());
 	}
 	
-	if (serviceDataRepresentation.StopScript){
-		QString path = *serviceDataRepresentation.StopScript;
+	if (serviceDataRepresentation.stopScript){
+		QString path = *serviceDataRepresentation.stopScript;
 		serviceInfo.SetStopScriptPath(path.toUtf8());
 	}
 	
-	if (serviceDataRepresentation.Arguments){
-		QByteArray arguments = (*serviceDataRepresentation.Arguments).toUtf8();
+	if (serviceDataRepresentation.arguments){
+		QByteArray arguments = (*serviceDataRepresentation.arguments).toUtf8();
 		serviceInfo.SetServiceArguments(arguments.split(' '));
 	}
 	
-	if (serviceDataRepresentation.IsAutoStart){
-		bool isAutoStart = *serviceDataRepresentation.IsAutoStart;
+	if (serviceDataRepresentation.isAutoStart){
+		bool isAutoStart = *serviceDataRepresentation.isAutoStart;
 		serviceInfo.SetIsAutoStart(isAutoStart);
 	}
 	
-	if (serviceDataRepresentation.TracingLevel){
-		int tracingLevel = *serviceDataRepresentation.TracingLevel;
+	if (serviceDataRepresentation.tracingLevel){
+		int tracingLevel = *serviceDataRepresentation.tracingLevel;
 		serviceInfo.SetTracingLevel(tracingLevel);
 	}
 	
-	if (serviceDataRepresentation.ServiceTypeName){
-		QString serviceTypeName = *serviceDataRepresentation.ServiceTypeName;
+	if (serviceDataRepresentation.serviceTypeName){
+		QString serviceTypeName = *serviceDataRepresentation.serviceTypeName;
 		serviceInfo.SetServiceTypeName(serviceTypeName.toUtf8());
 	}
 	
-	if (serviceDataRepresentation.Version){
-		QString version = *serviceDataRepresentation.Version;
+	if (serviceDataRepresentation.version){
+		QString version = *serviceDataRepresentation.version;
 		serviceInfo.SetServiceVersion(version);
 	}
 	
-	if (serviceDataRepresentation.InputConnections){
-		QList<sdl::agentino::Services::CInputConnection::V1_0> connections = *serviceDataRepresentation.InputConnections;
+	if (serviceDataRepresentation.inputConnections){
+		QList<sdl::agentino::Services::CInputConnection::V1_0> connections = *serviceDataRepresentation.inputConnections;
 		
 		imtbase::IObjectCollection* incomingConnectionCollectionPtr = serviceInfo.GetInputConnections();
 		if (incomingConnectionCollectionPtr != nullptr){
@@ -104,18 +104,18 @@ bool GetServiceFromRepresentation(agentinodata::CServiceInfo& serviceInfo, const
 			
 			for (const sdl::agentino::Services::CInputConnection::V1_0& connection : connections){
 				QByteArray id;
-				if (connection.Id){
-					id = *connection.Id;
+				if (connection.id){
+					id = *connection.id;
 				}
 				
 				QString name;
-				if (connection.ConnectionName){
-					name = *connection.ConnectionName;
+				if (connection.connectionName){
+					name = *connection.connectionName;
 				}
 				
 				QString description;
-				if (connection.Description){
-					description = *connection.Description;
+				if (connection.description){
+					description = *connection.description;
 				}
 				
 				istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
@@ -133,8 +133,8 @@ bool GetServiceFromRepresentation(agentinodata::CServiceInfo& serviceInfo, const
 		}
 	}
 	
-	if (serviceDataRepresentation.OutputConnections){
-		QList<sdl::agentino::Services::COutputConnection::V1_0> connections = *serviceDataRepresentation.OutputConnections;
+	if (serviceDataRepresentation.outputConnections){
+		QList<sdl::agentino::Services::COutputConnection::V1_0> connections = *serviceDataRepresentation.outputConnections;
 		
 		imtbase::IObjectCollection* dependantConnectionCollectionPtr = serviceInfo.GetDependantServiceConnections();
 		if (dependantConnectionCollectionPtr != nullptr){
@@ -142,18 +142,18 @@ bool GetServiceFromRepresentation(agentinodata::CServiceInfo& serviceInfo, const
 			
 			for (const sdl::agentino::Services::COutputConnection::V1_0& connection : connections){
 				QByteArray id;
-				if (connection.Id){
-					id = *connection.Id;
+				if (connection.id){
+					id = *connection.id;
 				}
 				
 				QString name;
-				if (connection.ConnectionName){
-					name = *connection.ConnectionName;
+				if (connection.connectionName){
+					name = *connection.connectionName;
 				}
 				
 				QString description;
-				if (connection.Description){
-					description = *connection.Description;
+				if (connection.description){
+					description = *connection.description;
 				}
 				
 				istd::TDelPtr<imtservice::CUrlConnectionLinkParam> urlConnectionLinkParamPtr;
@@ -184,34 +184,34 @@ bool GetRepresentationFromService(
 	Q_ASSERT(serviceInfoPtr != nullptr);
 	
 	QString serviceName = serviceInfo.GetServiceName();
-	serviceDataRepresentation.Name = serviceName;
+	serviceDataRepresentation.name = serviceName;
 	
 	QString description = serviceInfo.GetServiceDescription();
-	serviceDataRepresentation.Description = description;
+	serviceDataRepresentation.description = description;
 	
 	QString servicePath = serviceInfo.GetServicePath();
-	serviceDataRepresentation.Path = servicePath;
+	serviceDataRepresentation.path = servicePath;
 	
 	QString startScriptPath = serviceInfo.GetStartScriptPath();
-	serviceDataRepresentation.StartScript = startScriptPath;
+	serviceDataRepresentation.startScript = startScriptPath;
 	
 	QString stopScriptPath = serviceInfo.GetStopScriptPath();
-	serviceDataRepresentation.StopScript = stopScriptPath;
+	serviceDataRepresentation.stopScript = stopScriptPath;
 
 	QString arguments = serviceInfo.GetServiceArguments().join(' ');
-	serviceDataRepresentation.Arguments = arguments;
+	serviceDataRepresentation.arguments = arguments;
 	
 	bool isAutoStart = serviceInfo.IsAutoStart();
-	serviceDataRepresentation.IsAutoStart = isAutoStart;
+	serviceDataRepresentation.isAutoStart = isAutoStart;
 
 	int tracingLevel = serviceInfo.GetTracingLevel();
-	serviceDataRepresentation.TracingLevel = tracingLevel;
+	serviceDataRepresentation.tracingLevel = tracingLevel;
 	
 	QString serviceTypeName = serviceInfo.GetServiceTypeName();
-	serviceDataRepresentation.ServiceTypeName = serviceTypeName;
+	serviceDataRepresentation.serviceTypeName = serviceTypeName;
 	
 	QString serviceVersion = serviceInfo.GetServiceVersion();
-	serviceDataRepresentation.Version = serviceVersion;
+	serviceDataRepresentation.version = serviceVersion;
 	
 	QList<sdl::agentino::Services::CInputConnection::V1_0> inputConnectionList;
 	
@@ -231,9 +231,9 @@ bool GetRepresentationFromService(
 					QString connectionName = connectionCollectionPtr->GetElementInfo(elementId, imtbase::IObjectCollection::EIT_NAME).toString();
 					QString connectionDescription = connectionCollectionPtr->GetElementInfo(elementId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
 					
-					representaion.Id = elementId;
-					representaion.ConnectionName = connectionName;
-					representaion.Description = connectionDescription;
+					representaion.id = elementId;
+					representaion.connectionName = connectionName;
+					representaion.description = connectionDescription;
 					
 					inputConnectionList << representaion;
 				}
@@ -241,7 +241,7 @@ bool GetRepresentationFromService(
 		}
 	}
 	
-	serviceDataRepresentation.InputConnections = inputConnectionList;
+	serviceDataRepresentation.inputConnections = inputConnectionList;
 	
 	QList<sdl::agentino::Services::COutputConnection::V1_0> outputConnectionList;
 	
@@ -261,9 +261,9 @@ bool GetRepresentationFromService(
 					QString connectionName = dependantServiceCollectionPtr->GetElementInfo(elementId, imtbase::IObjectCollection::EIT_NAME).toString();
 					QString connectionDescription = dependantServiceCollectionPtr->GetElementInfo(elementId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
 					
-					representationModel.Id = elementId;
-					representationModel.ConnectionName = connectionName;
-					representationModel.Description = connectionDescription;
+					representationModel.id = elementId;
+					representationModel.connectionName = connectionName;
+					representationModel.description = connectionDescription;
 					
 					outputConnectionList << representationModel;
 				}
@@ -271,7 +271,7 @@ bool GetRepresentationFromService(
 		}
 	}
 	
-	serviceDataRepresentation.OutputConnections = outputConnectionList;
+	serviceDataRepresentation.outputConnections = outputConnectionList;
 
 	return true;
 }
@@ -283,19 +283,19 @@ bool GetUrlConnectionFromRepresentation(
 {
 	connectionInfo.SetConnectionType(imtservice::IServiceConnectionInfo::CT_INPUT);
 	
-	if (connectionRepresentation.UsageId){
-		QString usageId = *connectionRepresentation.UsageId;
+	if (connectionRepresentation.usageId){
+		QString usageId = *connectionRepresentation.usageId;
 		connectionInfo.SetUsageId(usageId.toUtf8());
 	}
 	
-	if (connectionRepresentation.ServiceTypeName){
-		QString serviceTypeName = *connectionRepresentation.ServiceTypeName;
+	if (connectionRepresentation.serviceTypeName){
+		QString serviceTypeName = *connectionRepresentation.serviceTypeName;
 		connectionInfo.SetServiceTypeName(serviceTypeName.toUtf8());
 	}
 	
 	QUrl url;
-	if (connectionRepresentation.Url){
-		sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation = *connectionRepresentation.Url;
+	if (connectionRepresentation.url){
+		sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation = *connectionRepresentation.url;
 
 		if (!GetUrlParamFromRepresentation(url, urlRepresentation)){
 			return false;
@@ -304,27 +304,27 @@ bool GetUrlConnectionFromRepresentation(
 	
 	connectionInfo.SetUrl(url);
 	
-	if (connectionRepresentation.ExternPorts){
-		QList<sdl::agentino::Services::CExternPort::V1_0> externPorts = *connectionRepresentation.ExternPorts;
+	if (connectionRepresentation.externPorts){
+		QList<sdl::agentino::Services::CExternPort::V1_0> externPorts = *connectionRepresentation.externPorts;
 		
 		for (const sdl::agentino::Services::CExternPort::V1_0& externPort : externPorts){
 			imtservice::IServiceConnectionParam::IncomingConnectionParam incomingConnection;
 			
-			if (externPort.Id){
-				incomingConnection.id = *externPort.Id;
+			if (externPort.id){
+				incomingConnection.id = *externPort.id;
 			}
 			
-			if (externPort.Name){
-				incomingConnection.name = *externPort.Name;
+			if (externPort.name){
+				incomingConnection.name = *externPort.name;
 			}
 			
-			if (externPort.Description){
-				incomingConnection.description = *externPort.Description;
+			if (externPort.description){
+				incomingConnection.description = *externPort.description;
 			}
 			
 			QUrl externalUrl;
-			if (externPort.Url){
-				if (!GetUrlParamFromRepresentation(externalUrl, *externPort.Url)){
+			if (externPort.url){
+				if (!GetUrlParamFromRepresentation(externalUrl, *externPort.url)){
 					return false;
 				}
 			}
@@ -345,10 +345,10 @@ bool GetRepresentationFromUrlConnection(
 	const iprm::IParamsSet* /*paramsPtr*/)
 {
 	QByteArray usageId = connectionInfo.GetUsageId();
-	connectionRepresentation.UsageId = usageId;
+	connectionRepresentation.usageId = usageId;
 	
 	QByteArray serviceTypeName = connectionInfo.GetServiceTypeName();
-	connectionRepresentation.ServiceTypeName = serviceTypeName;
+	connectionRepresentation.serviceTypeName = serviceTypeName;
 
 	QUrl url = connectionInfo.GetUrl();
 	
@@ -357,28 +357,28 @@ bool GetRepresentationFromUrlConnection(
 		return false;
 	}
 
-	connectionRepresentation.Url = urlRepresentation;
+	connectionRepresentation.url = urlRepresentation;
 
 	QList<sdl::agentino::Services::CExternPort::V1_0> portList;
 	
 	QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionInfo.GetIncomingConnections();
 	for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
 		sdl::agentino::Services::CExternPort::V1_0 port;
-		port.Id = incomingConnection.id;
-		port.Name = incomingConnection.name;
-		port.Description = incomingConnection.description;
+		port.id = incomingConnection.id;
+		port.name = incomingConnection.name;
+		port.description = incomingConnection.description;
 		
 		sdl::agentino::Services::CUrlParameter::V1_0 incomingPortUrlRepresentation;
 		if (!GetRepresentationFromUrlParam(incomingConnection.url, incomingPortUrlRepresentation)){
 			return false;
 		}
 		
-		port.Url = incomingPortUrlRepresentation;
+		port.url = incomingPortUrlRepresentation;
 		
 		portList << port;
 	}
 	
-	connectionRepresentation.ExternPorts = portList;
+	connectionRepresentation.externPorts = portList;
 	
 	return true;
 }
@@ -390,25 +390,25 @@ bool GetUrlConnectionLinkFromRepresentation(
 {
 	connectionInfo.SetConnectionType(imtservice::IServiceConnectionInfo::CT_OUTPUT);
 	
-	if (connectionRepresentation.UsageId){
-		QString usageId = *connectionRepresentation.UsageId;
+	if (connectionRepresentation.usageId){
+		QString usageId = *connectionRepresentation.usageId;
 		connectionInfo.SetUsageId(usageId.toUtf8());
 	}
 	
-	if (connectionRepresentation.ServiceTypeName){
-		QString serviceTypeName = *connectionRepresentation.ServiceTypeName;
+	if (connectionRepresentation.serviceTypeName){
+		QString serviceTypeName = *connectionRepresentation.serviceTypeName;
 		connectionInfo.SetServiceTypeName(serviceTypeName.toUtf8());
 	}
 	
-	if (connectionRepresentation.DependantConnectionId){
-		QString dependantConnectionId = *connectionRepresentation.DependantConnectionId;
+	if (connectionRepresentation.dependantConnectionId){
+		QString dependantConnectionId = *connectionRepresentation.dependantConnectionId;
 		connectionInfo.SetDependantServiceConnectionId(dependantConnectionId.toUtf8());
 	}
 	
-	if (connectionRepresentation.Url){
+	if (connectionRepresentation.url){
 		QUrl url;
 		
-		if (!GetUrlParamFromRepresentation(url, *connectionRepresentation.Url)){
+		if (!GetUrlParamFromRepresentation(url, *connectionRepresentation.url)){
 			return false;
 		}
 
@@ -428,9 +428,9 @@ bool GetRepresentationFromUrlConnectionLink(
 	QString serviceTypeName = connectionInfo.GetServiceTypeName();
 	QByteArray usageId = connectionInfo.GetUsageId();
 	
-	connectionRepresentation.UsageId = usageId;
-	connectionRepresentation.DependantConnectionId = dependantServiceConnectionId;
-	connectionRepresentation.ServiceTypeName = serviceTypeName;
+	connectionRepresentation.usageId = usageId;
+	connectionRepresentation.dependantConnectionId = dependantServiceConnectionId;
+	connectionRepresentation.serviceTypeName = serviceTypeName;
 	
 	QUrl url = connectionInfo.GetUrl();
 	sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation;
@@ -438,7 +438,7 @@ bool GetRepresentationFromUrlConnectionLink(
 		return false;
 	}
 
-	connectionRepresentation.Url = urlRepresentation;
+	connectionRepresentation.url = urlRepresentation;
 
 	return true;
 }
@@ -446,8 +446,8 @@ bool GetRepresentationFromUrlConnectionLink(
 
 bool GetUrlParamFromRepresentation(QUrl& url, const sdl::agentino::Services::CUrlParameter::V1_0& urlRepresentation)
 {
-	if (urlRepresentation.Scheme){
-		QString scheme = *urlRepresentation.Scheme;
+	if (urlRepresentation.scheme){
+		QString scheme = *urlRepresentation.scheme;
 		if (scheme.isEmpty()){
 			scheme = "http";
 		}
@@ -455,8 +455,8 @@ bool GetUrlParamFromRepresentation(QUrl& url, const sdl::agentino::Services::CUr
 		url.setScheme(scheme);
 	}
 	
-	if (urlRepresentation.Host){
-		QString host = *urlRepresentation.Host;
+	if (urlRepresentation.host){
+		QString host = *urlRepresentation.host;
 		if (host.isEmpty()){
 			host = "localhost";
 		}
@@ -464,8 +464,8 @@ bool GetUrlParamFromRepresentation(QUrl& url, const sdl::agentino::Services::CUr
 		url.setHost(host);
 	}
 	
-	if (urlRepresentation.Port){
-		int port = *urlRepresentation.Port;
+	if (urlRepresentation.port){
+		int port = *urlRepresentation.port;
 		if (port < 0){
 			port = 80;
 		}
@@ -484,21 +484,21 @@ bool GetRepresentationFromUrlParam(const QUrl& url, sdl::agentino::Services::CUr
 		scheme = "http";
 	}
 	
-	urlRepresentation.Scheme = scheme;
+	urlRepresentation.scheme = scheme;
 	
 	QString host = url.host();
 	if (host.isEmpty()){
 		host = "localhost";
 	}
 	
-	urlRepresentation.Host = host;
+	urlRepresentation.host = host;
 	
 	int port = url.port();
 	if (port < 0){
 		port = 80;
 	}
 	
-	urlRepresentation.Port = port;
+	urlRepresentation.port = port;
 	
 	return true;
 }

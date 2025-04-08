@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5225" Description="ACF"/>
-            <Version Id="1" Number="2208" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5332" Description="ACF"/>
+            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -17,13 +17,6 @@
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>ViewServices</Value>
-                            </Values>
-                        </Data>
-                    </AttributeInfo>
-                    <AttributeInfo Id="GqlCommandIds" Type="Id[]" ExportId="">
-                        <Data IsEnabled="true">
-                            <Values>
-                                <Value>ServiceCommands</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -52,6 +45,9 @@
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TypeId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="Service"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="UndoPermissions" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
@@ -66,9 +62,9 @@
     </ElementsList>
     <EmbeddedRegistriesList/>
     <ExportedInterfaces>
-        <Interface InterfaceId="imtrest::IRepresentationController" ComponentId="StandardDocumentCommandsController"/>
         <Interface InterfaceId="imtgql::IGqlRepresentationController" ComponentId="StandardDocumentCommandsController"/>
         <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="StandardDocumentCommandsController"/>
+        <Interface InterfaceId="imtrest::IRepresentationController" ComponentId="StandardDocumentCommandsController"/>
     </ExportedInterfaces>
     <ExportedComponents/>
 </Acf>

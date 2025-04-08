@@ -209,34 +209,34 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 			for (const QByteArray& informationId : informationIds){
 				QVariant elementInformation;
 
-				if(informationId == "TypeId"){
+				if(informationId == "typeId"){
 					elementInformation = serviceCollectionPtr->GetObjectTypeId(collectionId);
 				}
-				else if(informationId == "Id"){
+				else if(informationId == "id"){
 					elementInformation = collectionId;
 				}
-				else if(informationId == "Name"){
+				else if(informationId == "name"){
 					elementInformation = serviceInfoPtr->GetServiceName();
 				}
-				else if(informationId == "Description"){
+				else if(informationId == "description"){
 					elementInformation = serviceInfoPtr->GetServiceDescription();
 				}
-				else if(informationId == "Path"){
+				else if(informationId == "path"){
 					elementInformation = serviceInfoPtr->GetServicePath();
 				}
-				else if(informationId == "StartScript"){
+				else if(informationId == "startScript"){
 					elementInformation = serviceInfoPtr->GetStartScriptPath();
 				}
-				else if(informationId == "StopScript"){
+				else if(informationId == "stopScript"){
 					elementInformation = serviceInfoPtr->GetStopScriptPath();
 				}
-				else if(informationId == "SettingsPath"){
+				else if(informationId == "settingsPath"){
 					elementInformation = serviceInfoPtr->GetServiceSettingsPath();
 				}
-				else if(informationId == "Arguments"){
+				else if(informationId == "arguments"){
 					elementInformation = serviceInfoPtr->GetServiceArguments().join(' ');
 				}
-				else if(informationId == "Type"){
+				else if(informationId == "type"){
 					agentinodata::IServiceInfo::SettingsType settingsType  = serviceInfoPtr->GetSettingsType();
 					switch (settingsType){
 					case agentinodata::IServiceInfo::ST_PLUGIN:
@@ -247,7 +247,7 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 						break;
 					}
 				}
-				else if(informationId == "Status" || informationId == "StatusName"){
+				else if(informationId == "status" || informationId == "statusName"){
 					agentinodata::IServiceStatusInfo::ServiceStatus status = agentinodata::IServiceStatusInfo::SS_UNDEFINED;
 
 					if (m_serviceStatusCollectionCompPtr.IsValid()){
@@ -261,27 +261,27 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 					}
 
 					agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(status);
-					if (informationId == "Status"){
+					if (informationId == "status"){
 						elementInformation = processStateEnum.id;
 					}
 					else{
 						elementInformation = processStateEnum.name;
 					}
 				}
-				else if(informationId == "IsAutoStart"){
+				else if(informationId == "isAutoStart"){
 					elementInformation = serviceInfoPtr->IsAutoStart();
 				}
-				else if(informationId == "TracingLevel"){
+				else if(informationId == "tracingLevel"){
 					elementInformation = serviceInfoPtr->GetTracingLevel();
 				}
-				else if(informationId == "Version"){
+				else if(informationId == "version"){
 					elementInformation = serviceInfoPtr->GetServiceVersion();
 				}
-				else if(informationId == "DependencyStatus"){
+				else if(informationId == "dependencyStatus"){
 					agentinodata::IServiceCompositeInfo::StateOfRequiredServices state = m_serviceCompositeInfoCompPtr->GetStateOfRequiredServices(collectionId);
 					elementInformation = agentinodata::IServiceCompositeInfo::ToString(state);
 				}
-				else if(informationId == "DependantStatusInfo"){
+				else if(informationId == "dependantStatusInfo"){
 					elementInformation = GetDependantStatusInfo(collectionId).join("; ");
 				}
 
@@ -343,8 +343,8 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::ListObjects(
 	int offset = 0, count = -1;
 
 	if (viewParamsGql != nullptr){
-		offset = viewParamsGql->GetFieldArgumentValue("Offset").toInt();
-		count = viewParamsGql->GetFieldArgumentValue("Count").toInt();
+		offset = viewParamsGql->GetFieldArgumentValue("offset").toInt();
+		count = viewParamsGql->GetFieldArgumentValue("count").toInt();
 		PrepareFilters(gqlRequest, *viewParamsGql, filterParams);
 	}
 
@@ -355,8 +355,8 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::ListObjects(
 		pagesCount = 1;
 	}
 
-	notificationModel->SetData("PagesCount", pagesCount);
-	notificationModel->SetData("TotalCount", elementsCount);
+	notificationModel->SetData("pagesCount", pagesCount);
+	notificationModel->SetData("totalCount", elementsCount);
 
 	imtbase::ICollectionInfo::Ids ids = serviceCollectionPtr->GetElementIds(offset, count, &filterParams);
 
@@ -388,7 +388,7 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 	QByteArray serviceId;
 	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
 	if (gqlInputParamPtr != nullptr){
-		serviceId = gqlInputParamPtr->GetFieldArgumentValue("Id").toByteArray();
+		serviceId = gqlInputParamPtr->GetFieldArgumentValue("id").toByteArray();
 	}
 
 	imtbase::IObjectCollection* serviceCollectionPtr = nullptr;
@@ -441,11 +441,11 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 					);
 			}
 
-			dataModelPtr->SetData("Name", incomingConnectionStr, index);
+			dataModelPtr->SetData("name", incomingConnectionStr, index);
 
 			QStringList connectionInfos;
 
-			imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
+			imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("children", index);
 			for (const imtbase::ICollectionInfo::Id& connectionId : connectionIds){
 				imtbase::IObjectCollection::DataPtr connectionDataPtr;
 				if (inputCollectionPtr->GetObjectData(connectionId, connectionDataPtr)){
@@ -455,7 +455,7 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 						QUrl url = urlConnectionParamPtr->GetUrl();
 						QByteArray usageId = urlConnectionParamPtr->GetUsageId();
 
-						contentModelPtr->SetData("Value", usageId + " (Port: " + QString::number(url.port()) + ")", childIndex);
+						contentModelPtr->SetData("value", usageId + " (Port: " + QString::number(url.port()) + ")", childIndex);
 
 						connectionInfos << GetConnectionInfoAboutDependOnService(url, connectionId);
 
@@ -480,14 +480,14 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 						"agentinogql::CServerServiceCollectionControllerComp"
 						);
 				}
-				dataModelPtr->SetData("Name", dependantServicesStr, index);
+				dataModelPtr->SetData("name", dependantServicesStr, index);
 
-				imtbase::CTreeItemModel* childContentModelPtr = dataModelPtr->AddTreeModel("Children", index);
+				imtbase::CTreeItemModel* childContentModelPtr = dataModelPtr->AddTreeModel("children", index);
 
 				for (const QString& info : connectionInfos){
 					int childIndex = childContentModelPtr->InsertNewItem();
 
-					childContentModelPtr->SetData("Value", info, childIndex);
+					childContentModelPtr->SetData("value", info, childIndex);
 				}
 			}
 		}
@@ -508,9 +508,9 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 					"agentinogql::CServerServiceCollectionControllerComp"
 					);
 			}
-			dataModelPtr->SetData(	"Name", serviceDependsOnStr, index);
+			dataModelPtr->SetData(	"name", serviceDependsOnStr, index);
 
-			imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
+			imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("children", index);
 
 			for (const imtbase::ICollectionInfo::Id& connectionId : connectionIds){
 				imtbase::IObjectCollection::DataPtr connectionDataPtr;
@@ -522,7 +522,7 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 						QByteArray dependantServiceConnectionId = urlConnectionLinkParamPtr->GetDependantServiceConnectionId();
 						QUrl url = GetUrlByDependantId(dependantServiceConnectionId);
 
-						contentModelPtr->SetData("Value", usageId + " (Port: " + QString::number(url.port()) + ")", childIndex);
+						contentModelPtr->SetData("value", usageId + " (Port: " + QString::number(url.port()) + ")", childIndex);
 					}
 				}
 			}
@@ -545,19 +545,19 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 				"agentinogql::CServerServiceCollectionControllerComp"
 				);
 		}
-		dataModelPtr->SetData(	"Name", serviceDependsOnStr, index);
+		dataModelPtr->SetData("name", serviceDependsOnStr, index);
 
-		imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("Children", index);
+		imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("children", index);
 		int childIndex = contentModelPtr->InsertNewItem();
 		QStringList dependantStatusInfo = GetDependantStatusInfo(serviceId);
 
-		contentModelPtr->SetData("Value", dependantStatusInfo.join("; "), childIndex);
+		contentModelPtr->SetData("value", dependantStatusInfo.join("; "), childIndex);
 
 		if (stateOfRequiredServices == agentinodata::IServiceCompositeInfo::SORS_NOT_RUNNING){
-			contentModelPtr->SetData("Icon", "Icons/Error", childIndex);
+			contentModelPtr->SetData("icon", "Icons/Error", childIndex);
 		}
 		else {
-			contentModelPtr->SetData("Icon", "Icons/Warning", childIndex);
+			contentModelPtr->SetData("icon", "Icons/Warning", childIndex);
 		}
 	}
 

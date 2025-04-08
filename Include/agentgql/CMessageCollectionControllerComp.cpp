@@ -59,28 +59,28 @@ bool CMessageCollectionControllerComp::SetupGqlItem(
 			for (const QByteArray& informationId : informationIds){
 				QVariant elementInformation;
 
-				if(informationId == "TypeId"){
+				if(informationId == "typeId"){
 					elementInformation = messageCollectionPtr->GetObjectTypeId(objectCollectionIterator->GetObjectId());
 				}
-				else if(informationId == "Id"){
+				else if(informationId == "id"){
 					elementInformation = objectCollectionIterator->GetObjectId();
 				}
-				else if(informationId == "Text"){
+				else if(informationId == "text"){
 					elementInformation = messagePtr->GetInformationDescription();
 				}
-				else if(informationId == "Category"){
+				else if(informationId == "category"){
 					elementInformation = messagePtr->GetInformationCategory();
 				}
 				else if(informationId == "ID"){
 					elementInformation = messagePtr->GetInformationId();
 				}
-				else if(informationId == "Flags"){
+				else if(informationId == "flags"){
 					elementInformation = messagePtr->GetInformationFlags();
 				}
-				else if(informationId == "Source"){
+				else if(informationId == "source"){
 					elementInformation = messagePtr->GetInformationSource();
 				}
-				else if(informationId == "Timestamp" || informationId == "LastModified"){
+				else if(informationId == "timestamp" || informationId == "lastModified"){
 					elementInformation = messagePtr->GetInformationTimeStamp().toString("dd.MM.yyyy hh:mm:ss.zzz");
 				}
 
@@ -135,8 +135,8 @@ imtbase::CTreeItemModel* CMessageCollectionControllerComp::ListObjects(
 	int offset = 0, count = -1;
 
 	if (viewParamsGql != nullptr){
-		offset = viewParamsGql->GetFieldArgumentValue("Offset").toInt();
-		count = viewParamsGql->GetFieldArgumentValue("Count").toInt();
+		offset = viewParamsGql->GetFieldArgumentValue("offset").toInt();
+		count = viewParamsGql->GetFieldArgumentValue("count").toInt();
 		PrepareFilters(gqlRequest, *viewParamsGql, filterParams);
 	}
 
@@ -147,8 +147,8 @@ imtbase::CTreeItemModel* CMessageCollectionControllerComp::ListObjects(
 		pagesCount = 1;
 	}
 
-	notificationModel->SetData("PagesCount", pagesCount);
-	notificationModel->SetData("TotalCount", elementsCount);
+	notificationModel->SetData("pagesCount", pagesCount);
+	notificationModel->SetData("totalCount", elementsCount);
 
 	istd::TDelPtr<imtbase::IObjectCollectionIterator> iterator = 
 				messageCollectionPtr->CreateObjectCollectionIterator(QByteArray(), offset, count, &filterParams);
@@ -181,34 +181,6 @@ imtbase::CTreeItemModel* CMessageCollectionControllerComp::InsertObject(const im
 imtbase::CTreeItemModel* CMessageCollectionControllerComp::UpdateObject(const imtgql::CGqlRequest& /*gqlRequest*/, QString& /*errorMessage*/) const
 {
 	return nullptr;
-}
-
-
-void CMessageCollectionControllerComp::SetObjectFilter(
-	const imtgql::CGqlRequest& /*gqlRequest*/,
-	const imtbase::CTreeItemModel& objectFilterModel,
-	iprm::CParamsSet& filterParams) const
-{
-	QByteArrayList keys;
-	keys << "VerboseFilter" << "InfoFilter" << "WarningFilter" << "ErrorFilter" << "CriticalFilter";
-	istd::TDelPtr<iprm::CParamsSet> categoryFilterPtr(new iprm::CParamsSet());
-
-	imtbase::CTreeItemModel *categoryModel = objectFilterModel.GetTreeItemModel("Category");
-	if (categoryModel == nullptr){
-		return;
-	}
-
-	for (QByteArray key: keys){
-		if (categoryModel->ContainsKey(key)){
-			QByteArray filterValue = categoryModel->GetData(key).toByteArray();
-			if (!filterValue.isEmpty()){
-				istd::TDelPtr<iprm::CTextParam> textParamPtr(new iprm::CTextParam());
-				textParamPtr->SetText(filterValue);
-				categoryFilterPtr->SetEditableParameter(key, textParamPtr.PopPtr());
-			}
-		}
-	}
-	filterParams.SetEditableParameter("Category", categoryFilterPtr.PopPtr());
 }
 
 

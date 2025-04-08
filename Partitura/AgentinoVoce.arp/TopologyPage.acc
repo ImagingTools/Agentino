@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5262" Description="ACF"/>
-            <Version Id="1" Number="2218" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="394754" Description="Qt Framework"/>
+            <Version Id="0" Number="5332" Description="ACF"/>
+            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -111,13 +111,6 @@
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
-                                <AttributeInfo Id="GqlCommandIds" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>TopologyCommands</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
                                 <AttributeInfo Id="LeftAlignmentCommands" Type="Reference[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
@@ -143,6 +136,9 @@
                                 </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TypeId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Topology"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
@@ -312,10 +308,11 @@
                 </ElementsList>
                 <EmbeddedRegistriesList/>
                 <ExportedInterfaces>
-                    <Interface InterfaceId="imtrest::IRepresentationController" ComponentId="CommandsController"/>
-                    <Interface InterfaceId="imtgql::IGqlRepresentationController" ComponentId="CommandsController"/>
                     <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="CommandsController"/>
                     <Interface InterfaceId="imtrest::IGuiElementContainer" ComponentId="CommandsController"/>
+                    <Interface InterfaceId="imtrest::IRepresentationController" ComponentId="CommandsController"/>
+                    <Interface InterfaceId="istd::IChangeable" ComponentId="CommandsController"/>
+                    <Interface InterfaceId="istd::IPolymorphic" ComponentId="CommandsController"/>
                 </ExportedInterfaces>
                 <ExportedComponents/>
             </Data>

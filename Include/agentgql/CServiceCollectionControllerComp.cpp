@@ -46,7 +46,7 @@ sdl::imtbase::ImtCollection::CVisualStatus CServiceCollectionControllerComp::OnG
 	
 	sdl::imtbase::ImtCollection::CVisualStatus::V1_0& response = *retVal.Version_1_0;
 	
-	if (response.ObjectId){
+	if (response.objectId){
 		imtbase::IObjectCollection::Ids elementIds = m_objectCollectionCompPtr->GetElementIds();
 		for (const imtbase::IObjectCollection::Id& elementId : elementIds){
 			imtbase::IObjectCollection::DataPtr agentDataPtr;
@@ -57,12 +57,12 @@ sdl::imtbase::ImtCollection::CVisualStatus CServiceCollectionControllerComp::OnG
 					
 					imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 					if (serviceCollectionPtr != nullptr){
-						if (serviceCollectionPtr->GetElementIds().contains(*response.ObjectId)){
-							QString serviceName = serviceCollectionPtr->GetElementInfo(*response.ObjectId, imtbase::ICollectionInfo::EIT_NAME).toString();
-							QString description = serviceCollectionPtr->GetElementInfo(*response.ObjectId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
+						if (serviceCollectionPtr->GetElementIds().contains(*response.objectId)){
+							QString serviceName = serviceCollectionPtr->GetElementInfo(*response.objectId, imtbase::ICollectionInfo::EIT_NAME).toString();
+							QString description = serviceCollectionPtr->GetElementInfo(*response.objectId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
 							
-							response.Text = serviceName + "@" + agentName;
-							response.Description = description;
+							response.text = serviceName + "@" + agentName;
+							response.description = description;
 							
 							break;
 						}
@@ -105,22 +105,22 @@ bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 	
 	sdl::agentino::Services::ServicesListRequestInfo requestInfo = servicesListRequest.GetRequestInfo();
 	if (requestInfo.items.isIdRequested){
-		representationObject.Id = objectId;
+		representationObject.id = objectId;
 	}
 	
 	if (requestInfo.items.isTypeIdRequested){
 		QByteArray typeId = m_objectCollectionCompPtr->GetObjectTypeId(objectId);
-		representationObject.TypeId = typeId;
+		representationObject.typeId = typeId;
 	}
 	
 	if (requestInfo.items.isNameRequested){
 		QString name = serviceInfoPtr->GetServiceName();
-		representationObject.Name = name;
+		representationObject.name = name;
 	}
 	
 	if (requestInfo.items.isDescriptionRequested){
 		QString description = serviceInfoPtr->GetServiceDescription();
-		representationObject.Description = description;
+		representationObject.description = description;
 	}
 	
 	if (requestInfo.items.isStatusRequested){
@@ -128,12 +128,12 @@ bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 			agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(objectId);
 			agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
 			
-			representationObject.Status = processStateEnum.id;
+			representationObject.status = processStateEnum.id;
 		}
 	}
 	
 	if (requestInfo.items.isVersionRequested){
-		representationObject.Version = serviceInfoPtr->GetServiceVersion();
+		representationObject.version = serviceInfoPtr->GetServiceVersion();
 	}
 	
 	return true;
@@ -152,7 +152,7 @@ bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 		return false;
 	}
 	
-	if (!arguments.input.Version_1_0->Id.has_value()){
+	if (!arguments.input.Version_1_0->id.has_value()){
 		Q_ASSERT(false);
 		return false;
 	}
@@ -170,15 +170,15 @@ bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 		return false; 
 	}
 	
-	QByteArray objectId = *arguments.input.Version_1_0->Id;
+	QByteArray objectId = *arguments.input.Version_1_0->id;
 	
 	if (m_serviceControllerCompPtr.IsValid()){
 		agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(objectId);
 		agentinodata::ProcessStateEnum processStateEnum = agentinodata::GetProcceStateRepresentation(state);
-		serviceData.Status = processStateEnum.id;
+		serviceData.status = processStateEnum.id;
 	}
 	
-	serviceData.Id = objectId;
+	serviceData.id = objectId;
 	
 	return true;
 }
@@ -204,8 +204,8 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObjectFromRepresentat
 		return nullptr;
 	}
 	
-	if (serviceDataRepresentation.Id){
-		newObjectId = *serviceDataRepresentation.Id;
+	if (serviceDataRepresentation.id){
+		newObjectId = *serviceDataRepresentation.id;
 		
 		serviceInstancePtr->SetObjectUuid(newObjectId);
 	}
@@ -294,12 +294,12 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 		return false;
 	}
 	
-	if (!arguments.input.Version_1_0->Id.has_value()){
+	if (!arguments.input.Version_1_0->id.has_value()){
 		I_CRITICAL();
 		return false;
 	}
 	
-	if (!arguments.input.Version_1_0->Item.has_value()){
+	if (!arguments.input.Version_1_0->item.has_value()){
 		I_CRITICAL();
 		return false;
 	}
@@ -310,8 +310,8 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 		return false;
 	}
 	
-	QByteArray objectId = *arguments.input.Version_1_0->Id;
-	sdl::agentino::Services::CServiceData::V1_0 serviceData = *arguments.input.Version_1_0->Item;
+	QByteArray objectId = *arguments.input.Version_1_0->id;
+	sdl::agentino::Services::CServiceData::V1_0 serviceData = *arguments.input.Version_1_0->item;
 	
 	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, serviceData)){
 		errorMessage = QString("Unable to update service '%1' from representation. Error: Representation invalid").arg(qPrintable(objectId));

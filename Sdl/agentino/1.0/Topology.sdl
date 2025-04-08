@@ -7,7 +7,7 @@ schema {
 }
 
 type Link {
-	Id: ID!
+	id: ID!
 }
 
 enum ServiceStatus {
@@ -17,29 +17,29 @@ enum ServiceStatus {
 }
 
 type Service {
-	Id: ID!
-	AgentId: ID!
-	X: Integer
-	Y: Integer
-	Width: Integer
-	MainText: String
-	SecondText: String
-	ThirdText: String
-	Icon1: String
-	Icon2: String
-	Status: ServiceStatus
-	Links: [Link]
-	Selected: Boolean
-	HasError: Boolean
-	IsComposite: Boolean
+	id: ID!
+	agentId: ID!
+	x: Integer
+	y: Integer
+	width: Integer
+	mainText: String
+	secondText: String
+	thirdText: String
+	icon1: String
+	icon2: String
+	status: ServiceStatus
+	links: [Link]
+	selected: Boolean
+	hasError: Boolean
+	isComposite: Boolean
 }
 
 type Topology {
-	Services: [Service]
+	services: [Service]
 }
 
 type SaveTopologyResponse {
-	Successful: Boolean!
+	successful: Boolean!
 }
 
 type Query {

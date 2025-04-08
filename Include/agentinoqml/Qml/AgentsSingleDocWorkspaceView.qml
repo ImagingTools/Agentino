@@ -7,67 +7,56 @@ import imtgui 1.0
 import agentinoAgentsSdl 1.0
 
 SingleDocumentWorkspaceView {
-    id: root;
-
-    anchors.fill: parent;
-    initialItemTitleVisible: false;
-
-    documentManager: DocumentManager {}
-
-    Component.onCompleted: {
-        documentManager.registerDocumentView("Agent", "AgentEditor", agentEditorComp);
-        documentManager.registerDocumentDataController("Agent", agentDataControllerComp);
-
-        MainDocumentManager.registerDocumentManager("AgentsSingleDocument", documentManager);
-
-        addInitialItem(agentCollectionViewComp, "Agents");
-    }
-
-    Component {
-        id: agentEditorComp;
-
-        AgentEditor {
-            id: agentEditor;
-
-            commandsControllerComp: Component {GqlBasedCommandsController {
-                typeId: "Agent";
-            }
-            }
-        }
-    }
-
-    Component {
-        id: agentCollectionViewComp;
-
-        AgentCollectionView {
-            width: root.width;
-            height: root.height;
-        }
-    }
-
-    Component {
-        id: agentDataControllerComp
-
-        GqlRequestDocumentDataController {
-            id: requestDocumentDataController
-
-            documentModelComp: Component {
-                AgentData {
-                    Component.onCompleted: {
-                        console.log("AgentData onCompleted");
-                    }
-                }
-            }
-
-             payloadModel: AgentDataPayload {
-                 onFinished: {
-                     requestDocumentDataController.documentModel = m_item
-                 }
-             }
-
-            gqlGetCommandId: AgentinoAgentsSdlCommandIds.s_getAgent;
-            gqlUpdateCommandId: AgentinoAgentsSdlCommandIds.s_updateAgent;
-            gqlAddCommandId: AgentinoAgentsSdlCommandIds.s_addAgent;
-        }
-    }
+	id: root;
+	
+	anchors.fill: parent;
+	documentManager: DocumentManager {}
+	visualStatusProvider: GqlBasedObjectVisualStatusProvider {}
+	
+	Component.onCompleted: {
+		documentManager.registerDocumentView("Agent", "AgentEditor", agentEditorComp);
+		documentManager.registerDocumentDataController("Agent", agentDataControllerComp);
+		
+		MainDocumentManager.registerDocumentManager("AgentsSingleDocument", documentManager);
+		
+		addInitialItem(agentCollectionViewComp, "Agents");
+	}
+	
+	Component {
+		id: agentEditorComp;
+		
+		AgentEditor {
+			id: agentEditor;
+			
+			commandsControllerComp: Component {GqlBasedCommandsController {
+					typeId: "Agent";
+				}
+			}
+		}
+	}
+	
+	Component {
+		id: agentCollectionViewComp;
+		
+		AgentCollectionView {
+			width: root.width;
+			height: root.height;
+		}
+	}
+	
+	Component {
+		id: agentDataControllerComp
+		
+		GqlRequestDocumentDataController {
+			id: requestDocumentDataController
+			
+			documentModelComp: Component {
+				AgentData {}
+			}
+			
+			gqlGetCommandId: AgentinoAgentsSdlCommandIds.s_getAgent;
+			gqlUpdateCommandId: AgentinoAgentsSdlCommandIds.s_updateAgent;
+			gqlAddCommandId: AgentinoAgentsSdlCommandIds.s_addAgent;
+		}
+	}
 }

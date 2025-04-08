@@ -21,7 +21,7 @@ QtObject {
             var query = Gql.GqlRequest("query", "GetServiceLog");
 
             var inputParams = Gql.GqlObject("input");
-            inputParams.InsertField("Id", serviceId);
+            inputParams.InsertField("id", serviceId);
 
             let additionInputParams = root.getHeaders();
             if (Object.keys(additionInputParams).length > 0){

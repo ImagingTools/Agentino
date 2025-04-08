@@ -7,84 +7,71 @@ import imtdocgui 1.0
 import imtgui 1.0
 
 SplitView {
-    id: container
+	id: container
+	
+	anchors.fill: parent
+	hasAnimation: true;
+	
+	property alias clientId: serviceCollectionView.clientId
+	property alias clientName: serviceCollectionView.clientName
+	
+	orientation: Qt.Vertical
 
-    anchors.fill: parent
-    hasAnimation: true;
-
-    property alias clientId: serviceCollectionView.clientId
-    property alias clientName: serviceCollectionView.clientName
-
-    orientation: Qt.Vertical
-
-
-    ServiceCollectionViewBase {
-        id: serviceCollectionView;
-
-        width: parent.width
-        height: 200 //container.height - log.height
-
-        onServiceIdChanged: {
-            console.log("onServiceIdChanged", serviceId)
+	ServiceCollectionViewBase {
+		id: serviceCollectionView;
+		
+		width: parent.width
+		height: 200 //container.height - log.height
+		
+		onServiceIdChanged: {
 			log.serviceId = serviceId
-
-			// log.doUpdateGui();
-        }
-    }
-
-    MessageCollectionView {
-        id: log
-
+		}
+	}
+	
+	MessageCollectionView {
+		id: log
+		
 		width: parent.width
 		height: 500;
-
-        property string serviceId
-
-		// collectionId: "ServiceLog";
-
-        collectionFilter: MessageCollectionFilter {
-        }
-
+		
+		property string serviceId
+		
+		collectionFilter: MessageCollectionFilter {}
+		
 		onServiceIdChanged: {
 			dataController.elementsModel.clear()
 			if (collectionId == ""){
 				collectionId = "ServiceLog"
 				dataController.collectionId = log.collectionId
-
+				
 				return;
 			}
 
-			console.log("onServiceIdChanged", serviceId);
-
 			dataController.updateModel();
-			// unRegisterSubscription()
-			// registerSubscription()
 		}
-
-        function getHeaders(){
-            console.log("getHeaders", container.clientId)
-            let additionInputParams = {}
-            additionInputParams["clientid"] = container.clientId;
-            additionInputParams["serviceid"] = log.serviceId;
-            return additionInputParams
-        }
-
-        function handleSubscription(dataModel){
-            console.log("ServiceCollectionView handleSubscription")
-            if (!dataModel){
-                return;
-            }
-            if (dataModel.containsKey("OnServiceLogChanged")){
-                let body = dataModel.getData("OnServiceLogChanged");
-                if (body.containsKey("serviceid")){
-                    let id = body.getData("serviceid")
-                    if (id  === log.serviceId){
-                        dataController.elementsModel.clear()
-                        dataController.updateModel()
-                    }
-                }
-            }
-        }
-    }
+		
+		function getHeaders(){
+			let additionInputParams = {}
+			additionInputParams["clientid"] = container.clientId;
+			additionInputParams["serviceid"] = log.serviceId;
+			return additionInputParams
+		}
+		
+		function handleSubscription(dataModel){
+			if (!dataModel){
+				return;
+			}
+			if (dataModel.containsKey("OnServiceLogChanged")){
+				let body = dataModel.getData("OnServiceLogChanged");
+				if (body.containsKey("serviceid")){
+					let id = body.getData("serviceid")
+					if (id  === log.serviceId){
+						dataController.elementsModel.clear()
+						dataController.updateModel()
+					}
+				}
+			}
+		}
+	}
 }
 

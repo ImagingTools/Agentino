@@ -14,17 +14,18 @@ Dialog {
 	property BaseModel portsModel: BaseModel {}
 	
 	Component.onCompleted: {
-		buttonsModel.append({Id: Enums.save, Name:qsTr("Save"), Enabled: true})
-		buttonsModel.append({Id: Enums.cancel, Name:qsTr("Cancel"), Enabled: true})
-		
+		addButton(Enums.save, qsTr("Save"), true)
+		addButton(Enums.cancel, qsTr("Cancel"), true)
+
 		updateGui();
 	}
 	
 	function setPortsModel(portsModel){
+		console.log("setPortsModel", portsModel.toJson())
 		portsDialog.portsModel.clear();
 		
 		for (let i = 0; i < portsModel.count; i++){
-			portsDialog.portsModel.append(portsModel.get(i));
+			portsDialog.portsModel.addElement(portsModel.get(i).item.copyMe());
 		}
 		
 		portsDialog.contentItem.tableView.elements = portsDialog.portsModel;
@@ -38,8 +39,7 @@ Dialog {
 	
 	Component {
 		id: urlParamComp;
-		UrlParam {
-		}
+		UrlParameter {}
 	}
 	
 	Keys.onPressed: {
@@ -69,20 +69,20 @@ Dialog {
 			property TreeItemModel headersModel: TreeItemModel {
 				Component.onCompleted: {
 					let index = dialogBody.headersModel.insertNewItem();
-					dialogBody.headersModel.setData("Id", "m_scheme", index);
-					dialogBody.headersModel.setData("Name", qsTr("Scheme"), index);
+					dialogBody.headersModel.setData("id", "m_scheme", index);
+					dialogBody.headersModel.setData("name", qsTr("Scheme"), index);
 					
 					index = dialogBody.headersModel.insertNewItem();
-					dialogBody.headersModel.setData("Id", "m_host", index);
-					dialogBody.headersModel.setData("Name", qsTr("Host"), index);
+					dialogBody.headersModel.setData("id", "m_host", index);
+					dialogBody.headersModel.setData("name", qsTr("Host"), index);
 					
 					index = dialogBody.headersModel.insertNewItem();
-					dialogBody.headersModel.setData("Id", "m_port", index);
-					dialogBody.headersModel.setData("Name", qsTr("Port"), index);
+					dialogBody.headersModel.setData("id", "m_port", index);
+					dialogBody.headersModel.setData("name", qsTr("Port"), index);
 					
 					index = dialogBody.headersModel.insertNewItem();
-					dialogBody.headersModel.setData("Id", "m_description", index);
-					dialogBody.headersModel.setData("Name", qsTr("Description"), index);
+					dialogBody.headersModel.setData("id", "m_description", index);
+					dialogBody.headersModel.setData("name", qsTr("Description"), index);
 					
 					tableTreeView.headers = dialogBody.headersModel;
 				}
@@ -105,19 +105,19 @@ Dialog {
 					Component.onCompleted: {
 						let index = commandsModel.insertNewItem();
 						
-						commandsModel.setData("Id", "Add", index);
-						commandsModel.setData("Name", "Add", index);
-						commandsModel.setData("Icon", "Icons/Add", index);
-						commandsModel.setData("IsEnabled", true, index);
-						commandsModel.setData("Visible", true, index);
+						commandsModel.setData("id", "Add", index);
+						commandsModel.setData("name", "Add", index);
+						commandsModel.setData("icon", "Icons/Add", index);
+						commandsModel.setData("isEnabled", true, index);
+						commandsModel.setData("visible", true, index);
 						
 						index = commandsModel.insertNewItem();
 						
-						commandsModel.setData("Id", "Remove", index);
-						commandsModel.setData("Name", "Remove", index);
-						commandsModel.setData("Icon", "Icons/Delete", index);
-						commandsModel.setData("IsEnabled", false, index);
-						commandsModel.setData("Visible", true, index);
+						commandsModel.setData("id", "Remove", index);
+						commandsModel.setData("name", "Remove", index);
+						commandsModel.setData("icon", "Icons/Delete", index);
+						commandsModel.setData("isEnabled", false, index);
+						commandsModel.setData("visible", true, index);
 						
 						commandsDecorator.commandModel = commandsModel;
 					}

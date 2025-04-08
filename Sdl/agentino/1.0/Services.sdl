@@ -12,9 +12,9 @@ import {
 }
 
 type ServiceListInputViewParams {
-	Count: Int
-	Offset: Int
-	FilterModel: String
+	count: Int
+	offset: Int
+	filterModel: String
 }
 
 input ServiceListInput {
@@ -22,13 +22,13 @@ input ServiceListInput {
 }
 
 type ServiceItem {
-	Id: ID!
-	TypeId: ID!
-	Name: String!
-	Description: String
-	Path: String
-	Status: String
-	Version: String
+	id: ID!
+	typeId: ID!
+	name: String!
+	description: String
+	path: String
+	status: String
+	version: String
 }
 
 type ServiceListPayload{
@@ -36,78 +36,78 @@ type ServiceListPayload{
 }
 
 type UrlParameter {
-	Host: String
-	Port: Integer
-	Scheme: String
+	host: String
+	port: Integer
+	scheme: String
 }
 
 type ExternPort {
-	Id: ID
-	Name: String
-	Description: String
-	Url: UrlParameter
+	id: ID
+	name: String
+	description: String
+	url: UrlParameter
 }
 
 type InputConnection {
-	Id: ID
-	UsageId: String
-	ConnectionName: String
-	Description: String
-	ServiceName: String
-	ServiceTypeName: String
-	ExternPorts: [ExternPort]
-	Url: UrlParameter
+	id: ID
+	usageId: String
+	connectionName: String
+	description: String
+	serviceName: String
+	serviceTypeName: String
+	externPorts: [ExternPort]
+	url: UrlParameter
 }
 
 type Element {
-	Id: ID
-	Name: String
-	Url: UrlParameter
+	id: ID
+	name: String
+	url: UrlParameter
 }
 
 type OutputConnection {
-	Id: ID
-	UsageId: String
-	ConnectionName: String
-	Description: String
-	ServiceName: String
-	ServiceTypeName: String
-	DependantConnectionId: String
-	Elements: [Element]
-	Url: UrlParameter
+	id: ID
+	usageId: String
+	connectionName: String
+	description: String
+	serviceName: String
+	serviceTypeName: String
+	dependantConnectionId: String
+	elements: [Element]
+	url: UrlParameter
 }
 
 type ServiceData {
-	Id: ID!
-	Name: String!
-	Description: String
-	Path: String
-	Arguments: String
-	ServiceTypeName: String
-	EnableVerbose: Boolean
-	IsAutoStart: Boolean
-	TracingLevel: Integer
-	StartScript: String
-	StopScript: String
-	Version: String
-	Status: String
-	InputConnections: [InputConnection]
-	OutputConnections: [OutputConnection]
+	id: ID!
+	name: String!
+	description: String
+	path: String
+	arguments: String
+	serviceTypeName: String
+	enableVerbose: Boolean
+	isAutoStart: Boolean
+	tracingLevel: Integer
+	startScript: String
+	stopScript: String
+	version: String
+	status: String
+	inputConnections: [InputConnection]
+	outputConnections: [OutputConnection]
 }
 
 input ServiceDataInput {
-	Id: ID!
-	Item: ServiceData!
+	id: ID!
+	item: ServiceData!
 }
 
 input ConnectionUrlInput {
-	ServiceId: ID!
-	ConnectionId: ID!
-	Url: UrlParameter!
+	serviceId: ID!
+	connectionId: ID!
+	url: UrlParameter!
 }
 
 type UpdateConnectionUrlResponse {
-	Succesful: Boolean
+	succesful: Boolean
 }
 
 enum ServiceStatus {
@@ -120,11 +120,11 @@ enum ServiceStatus {
 }
 
 type ServiceInput {
-	ServiceId: ID!
+	serviceId: ID!
 }
 
 type ServiceStatusResponse {
-	Status: ServiceStatus!
+	status: ServiceStatus!
 }
 
 type Query {

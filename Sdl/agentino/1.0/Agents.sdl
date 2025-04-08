@@ -12,9 +12,9 @@ import {
 }
 
 type AgentListInputViewParams {
-	Count: Int
-	Offset: Int
-	FilterModel: String
+	count: Int
+	offset: Int
+	filterModel: String
 }
 
 input AgentListInput {
@@ -22,16 +22,16 @@ input AgentListInput {
 }
 
 type AgentItem {
-	Id: ID!
-	TypeId: ID!
-	Name: String!
-	Description: String
-	Added: String
-	ComputerName: String
-	Services: String
-	Status: String
-	LastConnection: String
-	Version: String
+	id: ID!
+	typeId: ID!
+	name: String!
+	description: String
+	added: String
+	computerName: String
+	services: String
+	status: String
+	lastConnection: String
+	version: String
 }
 
 type AgentListPayload{
@@ -39,25 +39,21 @@ type AgentListPayload{
 }
 
 type AgentData {
-	Id: ID!
-	Name: String!
-	Description: String
-	LastConnection: String
-	TracingLevel: Integer
-}
-
-type AgentDataPayload{
-	item: AgentData!
+	id: ID!
+	name: String!
+	description: String
+	lastConnection: String
+	tracingLevel: Integer
 }
 
 input AgentDataInput {
-	Id: ID!
-	Item: AgentData!
+	id: ID!
+	item: AgentData!
 }
 
 type Query {
 	AgentsList (input: AgentListInput): AgentListPayload!
-	GetAgent (input: InputId): AgentDataPayload!
+	GetAgent (input: InputId): AgentData!
 }
 
 type Mutation {
