@@ -27,18 +27,18 @@
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
-        <EmbededRegistry Id="PagesPermissions">
-            <PositionMap>
-                <Element ComponentName="DevicesPermissions" X="550" Y="400" Note=""/>
-                <Element ComponentName="PagePermissions" X="575" Y="150" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
         <EmbededRegistry Id="Repositories">
             <PositionMap>
                 <Element ComponentName="FileAutoPersistence" X="800" Y="200" Note=""/>
                 <Element ComponentName="RepresentationService" X="550" Y="300" Note=""/>
                 <Element ComponentName="ServiceCollection" X="525" Y="200" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="PagesPermissions">
+            <PositionMap>
+                <Element ComponentName="DevicesPermissions" X="550" Y="400" Note=""/>
+                <Element ComponentName="PagePermissions" X="575" Y="150" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

@@ -1,0 +1,42 @@
+schema {
+	name: ServiceLog
+	namespace: agentino
+	version: 1.0
+	query: Query
+}
+
+import {
+	"../../../../ImtCore/Sdl/imtbase/1.0/ImtCollection.sdl"
+}
+
+type MessageItem
+{
+	id: ID
+	infoId: Integer
+	typeId: ID
+	category: Integer
+	text: String
+	flags: Integer
+	source: String
+	timestamp: String
+}
+
+type MessageListPayload {
+	items: [MessageItem]
+	notification: NotificationItem
+}
+
+type Query {
+	GetServiceLog(input: CollectionViewParams): MessageListPayload!
+}
+
+collectionSchema {
+	type ServiceLog {
+		ref: MessageItem
+		operations {
+			list: GetServiceLog
+		}
+	}
+}
+
+

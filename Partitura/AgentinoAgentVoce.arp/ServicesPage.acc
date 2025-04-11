@@ -21,7 +21,6 @@
                     <AttributeInfo Id="GqlRequestHandlers" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>ServiceLogController</Value>
                                 <Value>ServiceCollectionCommands</Value>
                                 <Value>ServiceCommands</Value>
                                 <Value>ServiceCollectionController</Value>

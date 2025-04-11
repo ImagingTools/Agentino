@@ -12,6 +12,12 @@ GqlRequestDocumentDataController {
 	
 	subscriptionCommandId: "OnServicesCollectionChanged";
 	
+	property ServiceData serviceData: documentModel;
+	
+	// typeId: "Service";
+	documentName: serviceData ? serviceData.m_name: "";
+	documentDescription: serviceData ? serviceData.m_description: "";
+	
 	function getHeaders(){
 		return {}
 	}
@@ -19,13 +25,7 @@ GqlRequestDocumentDataController {
 	documentModelComp: Component {
 		ServiceData {}
 	}
-	
-	payloadModel: ServiceData {
-		onFinished: {
-			requestDocumentDataController.documentModel = this;
-		}
-	}
-	
+
 	onHasRemoteChangesChanged: {
 		if (hasRemoteChanges){
 			// updateDocumentModel();

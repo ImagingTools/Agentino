@@ -54,6 +54,12 @@ SingleDocumentWorkspaceView {
 				AgentData {}
 			}
 			
+			property AgentData agentData: documentModel;
+			
+			// typeId: "Agent";
+			documentName: agentData ? agentData.m_name: "";
+			documentDescription: agentData ? agentData.m_description: "";
+			
 			gqlGetCommandId: AgentinoAgentsSdlCommandIds.s_getAgent;
 			gqlUpdateCommandId: AgentinoAgentsSdlCommandIds.s_updateAgent;
 			gqlAddCommandId: AgentinoAgentsSdlCommandIds.s_addAgent;

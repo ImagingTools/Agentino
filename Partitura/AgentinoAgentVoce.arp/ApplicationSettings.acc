@@ -299,6 +299,6 @@
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="Demultiplexer"/>
     </ExportedInterfaces>
     <ExportedComponents>
-        <Component ExportedId="UserSettingsRepository" ComponentId="UserSettingsController/UserSettingsRepository"/>
+        <Component ExportedId="UserSettingsRepository" ComponentId="DatabaseUserSettings/UserSettingsRepository"/>
     </ExportedComponents>
 </Acf>

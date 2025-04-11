@@ -1,18 +1,9 @@
 #pragma once
 
 
-// ImtCore includes
-#include <imtservergql/CObjectCollectionControllerCompBase.h>
-#include <imtbase/PluginInterface.h>
-#include <imtservice/IObjectCollectionPlugin.h>
-#include <imtbase/TPluginManager.h>
-
 // Agentino includes
 #include <agentgql/CServiceLog.h>
-#include <agentinodata/IServiceInfo.h>
-#include <agentinodata/IServiceController.h>
-
-#undef GetObject
+#include <GeneratedFiles/agentinosdl//SDL/1.0/CPP/ServiceLog.h>
 
 
 namespace agentgql
@@ -20,37 +11,27 @@ namespace agentgql
 
 
 class CMessageCollectionControllerComp:
-			public imtservergql::CObjectCollectionControllerCompBase,
-			public CServiceLog
+									public sdl::agentino::ServiceLog::CServiceLogCollectionControllerCompBase,
+									public CServiceLog
 {
 public:
-	typedef imtservergql::CObjectCollectionControllerCompBase BaseClass;
+	typedef sdl::agentino::ServiceLog::CServiceLogCollectionControllerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CMessageCollectionControllerComp);
-		I_ASSIGN(m_serviceInfoFactCompPtr, "ServiceFactory", "Factory used for creation of the new service instance", false, "ServiceFactory");
-		I_ASSIGN(m_serviceControllerCompPtr, "ServiceController", "Service controller used to manage services", false, "ServiceController");
 	I_END_COMPONENT;
 
 protected:
-	// reimplemented (imtgql::CObjectCollectionControllerCompBase)
-	virtual bool SetupGqlItem(
-				const imtgql::CGqlRequest& gqlRequest,
-				imtbase::CTreeItemModel& model,
-				int itemIndex,
-				const imtbase::IObjectCollectionIterator* objectCollectionIterator,
+	// reimplemented (sdl::agentino::ServiceLog::CServiceLogCollectionControllerCompBase)
+	virtual bool CreateRepresentationFromObject(
+				const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
+				const sdl::agentino::ServiceLog::CGetServiceLogGqlRequest& getServiceLogRequest,
+				sdl::agentino::ServiceLog::CMessageItem::V1_0& representationObject,
 				QString& errorMessage) const override;
 	virtual imtbase::CTreeItemModel* ListObjects(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
-	virtual imtbase::CTreeItemModel* GetObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
-	virtual imtbase::CTreeItemModel* InsertObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
-	virtual imtbase::CTreeItemModel* UpdateObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
-
 	// reimplemented (icomp::CComponentBase)
 	virtual void OnComponentDestroyed() override;
 
-	virtual imtbase::IObjectCollection* GetMessageCollection(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const;
-protected:
-	I_FACT(agentinodata::IServiceInfo, m_serviceInfoFactCompPtr);
-	I_REF(agentinodata::IServiceController, m_serviceControllerCompPtr);
+	virtual imtbase::IObjectCollection* GetMessageCollection(const QByteArray& serviceId, QString& errorMessage) const;
 };
 
 

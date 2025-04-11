@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5347" Description="ACF"/>
-            <Version Id="1" Number="2236" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5332" Description="ACF"/>
+            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -37,9 +37,6 @@
                     <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/RoleRepository"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="ServerSettings" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="ServiceController" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServiceController"/>
                     </AttributeInfo>
@@ -61,7 +58,7 @@
                     <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="WebSocketUrl" Type="Reference" ExportId="">
+                    <AttributeInfo Id="WebSocketUrlParam" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/WebSocketServerPort"/>
                     </AttributeInfo>
                 </AttributeInfoMap>

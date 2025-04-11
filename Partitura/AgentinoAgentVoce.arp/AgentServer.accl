@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5347" Description="ACF"/>
-            <Version Id="1" Number="2236" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5332" Description="ACF"/>
+            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
@@ -30,21 +30,21 @@
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
-        <EmbededRegistry Id="ServiceCollectionController">
-            <PositionMap>
-                <Element ComponentName="CheckPermissionOr" X="650" Y="450" Note=""/>
-                <Element ComponentName="RepresentationService" X="625" Y="125" Note=""/>
-                <Element ComponentName="ServiceCollectionController" X="650" Y="275" Note=""/>
-                <Element ComponentName="ServiceHeadersDataProvider" X="225" Y="275" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
         <EmbededRegistry Id="Repositories">
             <PositionMap>
                 <Element ComponentName="FileAutoPersistence" X="250" Y="275" Note=""/>
                 <Element ComponentName="ServiceCollection" X="500" Y="425" Note=""/>
                 <Element ComponentName="ServiceInfo" X="500" Y="525" Note=""/>
                 <Element ComponentName="UserLocalRepositories" X="900" Y="275" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="ServiceCollectionController">
+            <PositionMap>
+                <Element ComponentName="CheckPermissionOr" X="650" Y="450" Note=""/>
+                <Element ComponentName="RepresentationService" X="625" Y="125" Note=""/>
+                <Element ComponentName="ServiceCollectionController" X="650" Y="275" Note=""/>
+                <Element ComponentName="ServiceHeadersDataProvider" X="225" Y="275" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

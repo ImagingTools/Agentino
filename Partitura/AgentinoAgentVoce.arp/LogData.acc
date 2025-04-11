@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5270" Description="ACF"/>
-            <Version Id="1" Number="2220" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="5332" Description="ACF"/>
+            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -33,6 +33,26 @@
                     </AttributeInfo>
                     <AttributeInfo Id="PermissionChecker" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="CheckPermissionOr"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ReplaceableFilterFields" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>text</Value>
+                                <Value>timestamp</Value>
+                                <Value>source</Value>
+                                <Value>category</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ReplacementFilterFields" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>Text</Value>
+                                <Value>Timestamp</Value>
+                                <Value>Source</Value>
+                                <Value>Category</Value>
+                            </Values>
+                        </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                         <Data IsEnabled="false"/>
@@ -68,9 +88,9 @@
                     <AttributeInfo Id="HeadersIds" Type="String[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>Text</Value>
-                                <Value>Timestamp</Value>
-                                <Value>Source</Value>
+                                <Value>text</Value>
+                                <Value>timestamp</Value>
+                                <Value>source</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -89,9 +109,8 @@
                     <AttributeInfo Id="SearchByFilterIds" Type="String[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>Text</Value>
-                                <Value>Timestamp</Value>
-                                <Value>Source</Value>
+                                <Value>text</Value>
+                                <Value>source</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -111,8 +130,7 @@
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>ServiceLogInfo</Value>
-                                <Value>ServiceLogList</Value>
-                                <Value>ServiceLogItem</Value>
+                                <Value>GetServiceLog</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -127,6 +145,26 @@
                     </AttributeInfo>
                     <AttributeInfo Id="PermissionChecker" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="CheckPermissionOr"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ReplaceableFilterFields" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>text</Value>
+                                <Value>timestamp</Value>
+                                <Value>source</Value>
+                                <Value>category</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ReplacementFilterFields" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>Text</Value>
+                                <Value>Timestamp</Value>
+                                <Value>Source</Value>
+                                <Value>Category</Value>
+                            </Values>
+                        </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                         <Data IsEnabled="false"/>

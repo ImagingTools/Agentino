@@ -107,11 +107,10 @@ RemoteCollectionView {
 			root.serviceId = root.table.elements.getData(ServiceItemTypeMetaInfo.s_id, index);
 			root.serviceName = root.table.elements.getData(ServiceItemTypeMetaInfo.s_name, index);
 		}
-	}
-	
-	onSelectedIndexChanged: {
-		root.serviceId = root.table.elements.getData(ServiceItemTypeMetaInfo.s_id, index);
-		root.serviceName = root.table.elements.getData(ServiceItemTypeMetaInfo.s_name, index);
+		else{
+			root.serviceId = ""
+			root.serviceName = ""
+		}
 	}
 	
 	Component {

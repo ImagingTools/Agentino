@@ -21,10 +21,19 @@ SplitView {
 		id: serviceCollectionView;
 		
 		width: parent.width
-		height: 200 //container.height - log.height
+		height: 200
 		
 		onServiceIdChanged: {
-			log.serviceId = serviceId
+			if (serviceId == ""){
+				if (log.dataController){
+					log.dataController.elementsModel.clear()
+				}
+			}
+			else{
+				log.serviceId = serviceId
+				log.collectionId = "ServiceLog"
+				log.doUpdateGui()
+			}
 		}
 	}
 	
@@ -36,19 +45,7 @@ SplitView {
 		
 		property string serviceId
 		
-		collectionFilter: MessageCollectionFilter {}
-		
-		onServiceIdChanged: {
-			dataController.elementsModel.clear()
-			if (collectionId == ""){
-				collectionId = "ServiceLog"
-				dataController.collectionId = log.collectionId
-				
-				return;
-			}
-
-			dataController.updateModel();
-		}
+		gqlGetListCommandId: "GetServiceLog"
 		
 		function getHeaders(){
 			let additionInputParams = {}

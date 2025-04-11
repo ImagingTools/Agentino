@@ -50,13 +50,14 @@ void CServiceLogSubscriberControllerComp::OnUpdate(const istd::IChangeable::Chan
 
 	imtbase::ICollectionInfo::Ids serviceIds = m_serviceCollectionCompPtr->GetElementIds();
 	QList<QByteArray> keys = m_pluginMap.keys();
-	for (QByteArray serviceId: keys){
+	for (const QByteArray& serviceId: keys){
 		if (!serviceIds.contains(serviceId)){
 			m_pluginMap.remove(serviceId);
 			m_servicesMessageInfo.remove(serviceId);
 		}
 	}
-	for (QByteArray serviceId: serviceIds){
+	
+	for (const QByteArray& serviceId: serviceIds){
 		if (!m_pluginMap.contains(serviceId)){
 			agentinodata::CServiceInfo* serviceInfoPtr = nullptr;
 			imtbase::IObjectCollection::DataPtr dataPtr;

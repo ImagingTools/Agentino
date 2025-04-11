@@ -363,17 +363,13 @@
                                 <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>ServicesSetDescription</Value>
                                             <Value>ServiceItem</Value>
                                             <Value>ServiceUpdate</Value>
                                             <Value>GetServiceLog</Value>
                                             <Value>ServiceLogInfo</Value>
-                                            <Value>ServiceLogList</Value>
-                                            <Value>ServiceLogObjectView</Value>
                                             <Value>GetAgentLog</Value>
                                             <Value>AgentLogInfo</Value>
                                             <Value>AgentLogList</Value>
-                                            <Value>AgentLogObjectView</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>

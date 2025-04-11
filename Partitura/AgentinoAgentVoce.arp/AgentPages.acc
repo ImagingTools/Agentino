@@ -284,7 +284,8 @@
                 </ElementsList>
                 <EmbeddedRegistriesList/>
                 <ExportedInterfaces>
-                    <Interface InterfaceId="imtrest::ICommandPermissionsProvider" ComponentId="PagePermissions"/>
+                    <Interface InterfaceId="imtserverapp::ICommandPermissionsProvider" ComponentId="PagePermissions"/>
+                    <Interface InterfaceId="istd::IPolymorphic" ComponentId="PagePermissions"/>
                 </ExportedInterfaces>
                 <ExportedComponents/>
             </Data>

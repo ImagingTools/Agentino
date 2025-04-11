@@ -1,23 +1,8 @@
 #include <agentgql/CMessageCollectionControllerComp.h>
 
 
-// Windows includes
-#ifdef Q_OS_WIN
-#include <windows.h>
-#endif
-#undef GetObject
-#undef StartService
-
 // ACF includes
-#include <idoc/IDocumentMetaInfo.h>
-#include <iprm/CTextParam.h>
 #include <ilog/CMessage.h>
-
-// ImtCore includes
-#include <imtbase/CCollectionFilter.h>
-#include <imtauth/ICompanyBaseInfo.h>
-#include <imtbase/IObjectCollectionIterator.h>
-#include <imtdb/CSqlDatabaseObjectCollectionComp.h>
 
 // Agentino includes
 #include <agentinodata/agentinodata.h>
@@ -28,131 +13,126 @@ namespace agentgql
 {
 
 
-bool CMessageCollectionControllerComp::SetupGqlItem(
-			const imtgql::CGqlRequest& gqlRequest,
-			imtbase::CTreeItemModel& model,
-			int itemIndex,
-			const imtbase::IObjectCollectionIterator* objectCollectionIterator,
+// reimplemented (sdl::agentino::ServiceLog::CServiceLogCollectionControllerCompBase)
+
+bool CMessageCollectionControllerComp::CreateRepresentationFromObject(
+			const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
+			const sdl::agentino::ServiceLog::CGetServiceLogGqlRequest& getServiceLogRequest,
+			sdl::agentino::ServiceLog::CMessageItem::V1_0& representationObject,
 			QString& errorMessage) const
 {
-	QByteArray agentId = gqlRequest.GetHeader("clientid");
-
-	istd::TDelPtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(gqlRequest, errorMessage);
+	QByteArray objectId = objectCollectionIterator.GetObjectId();
+	sdl::agentino::ServiceLog::GetServiceLogRequestInfo requestInfo = getServiceLogRequest.GetRequestInfo();
+	
+	const ilog::CMessage* messagePtr = nullptr;
+	imtbase::IObjectCollection::DataPtr dataPtr;
+	if (objectCollectionIterator.GetObjectData(dataPtr)){
+		messagePtr = dynamic_cast<const ilog::CMessage*>(dataPtr.GetPtr());
+	}
+	
+	if (messagePtr == nullptr){
+		return false;
+	}
+	
+	QByteArray serviceId;
+	const imtgql::IGqlContext* gqlContextPtr = getServiceLogRequest.GetRequestContext();
+	if (gqlContextPtr != nullptr){
+		imtgql::IGqlContext::Headers headers = gqlContextPtr->GetHeaders();
+		
+		serviceId = headers["serviceid"];
+	}
+	
+	istd::TDelPtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(serviceId, errorMessage);
 	if (!messageCollectionPtr.IsValid()){
 		SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
-
+		
 		return false;
 	}
 
-	bool retVal = true;
-
-	QByteArrayList informationIds = GetInformationIds(gqlRequest, "items");
-
-	if (!informationIds.isEmpty() && messageCollectionPtr.IsValid()){
-		ilog::CMessage* messagePtr = nullptr;
-		imtbase::IObjectCollection::DataPtr massageDataPtr;
-		if (objectCollectionIterator->GetObjectData(massageDataPtr)){
-			messagePtr = dynamic_cast<ilog::CMessage*>(massageDataPtr.GetPtr());
-		}
-
-		if (messagePtr != nullptr){
-			for (const QByteArray& informationId : informationIds){
-				QVariant elementInformation;
-
-				if(informationId == "typeId"){
-					elementInformation = messageCollectionPtr->GetObjectTypeId(objectCollectionIterator->GetObjectId());
-				}
-				else if(informationId == "id"){
-					elementInformation = objectCollectionIterator->GetObjectId();
-				}
-				else if(informationId == "text"){
-					elementInformation = messagePtr->GetInformationDescription();
-				}
-				else if(informationId == "category"){
-					elementInformation = messagePtr->GetInformationCategory();
-				}
-				else if(informationId == "ID"){
-					elementInformation = messagePtr->GetInformationId();
-				}
-				else if(informationId == "flags"){
-					elementInformation = messagePtr->GetInformationFlags();
-				}
-				else if(informationId == "source"){
-					elementInformation = messagePtr->GetInformationSource();
-				}
-				else if(informationId == "timestamp" || informationId == "lastModified"){
-					elementInformation = messagePtr->GetInformationTimeStamp().toString("dd.MM.yyyy hh:mm:ss.zzz");
-				}
-
-				if (elementInformation.isNull()){
-					elementInformation = "";
-				}
-
-				retVal = retVal && model.SetData(informationId, elementInformation, itemIndex);
-			}
-
-			return retVal;
-		}
+	if (requestInfo.items.isIdRequested){
+		representationObject.id = objectId;
 	}
-	errorMessage = "Unable to get object data from object collection";
+	
+	if (requestInfo.items.isTypeIdRequested){
+		representationObject.typeId = messageCollectionPtr->GetObjectTypeId(objectCollectionIterator.GetObjectId());
+	}
+	
+	if (requestInfo.items.isInfoIdRequested){
+		representationObject.infoId = messagePtr->GetInformationId();
+	}
+	
+	if (requestInfo.items.isCategoryRequested){
+		representationObject.category = messagePtr->GetInformationCategory();
+	}
+	
+	if (requestInfo.items.isSourceRequested){
+		representationObject.source = messagePtr->GetInformationSource();
+	}
 
-	return false;
+	if (requestInfo.items.isTextRequested){
+		representationObject.text = messagePtr->GetInformationDescription();
+	}
+	
+	if (requestInfo.items.isTimestampRequested){
+		representationObject.timestamp = messagePtr->GetInformationTimeStamp().toString("dd.MM.yyyy hh:mm:ss.zzz");;
+	}
+	
+	return true;
 }
 
 
 imtbase::CTreeItemModel* CMessageCollectionControllerComp::ListObjects(
-			const imtgql::CGqlRequest &gqlRequest,
-			QString &errorMessage) const
+	const imtgql::CGqlRequest& gqlRequest,
+	QString &errorMessage) const
 {
 	const imtgql::CGqlObject& inputParams = gqlRequest.GetParams();
-
+	
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
-
+	
 	imtbase::CTreeItemModel* dataModel = new imtbase::CTreeItemModel();
 	imtbase::CTreeItemModel* itemsModel = new imtbase::CTreeItemModel();
 	imtbase::CTreeItemModel* notificationModel = new imtbase::CTreeItemModel();
 	dataModel->SetExternTreeModel("items", itemsModel);
 	dataModel->SetExternTreeModel("notification", notificationModel);
 	rootModelPtr->SetExternTreeModel("data", dataModel);
-	itemsModel->SetIsArray(true);
-
-	QByteArray agentId = gqlRequest.GetHeader("clientid");
+	
+	QByteArray serviceid = gqlRequest.GetHeader("serviceid");
 	const imtgql::CGqlObject* viewParamsGql = nullptr;
 	const imtgql::CGqlObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
 	if (inputObject != nullptr){
 		viewParamsGql = inputObject->GetFieldArgumentObjectPtr("viewParams");
 	}
-
-	istd::TDelPtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(gqlRequest, errorMessage);
+	
+	istd::TDelPtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(serviceid, errorMessage);
 	if (!messageCollectionPtr.IsValid()){
 		SendErrorMessage(0, errorMessage, "CMessageCollectionControllerComp");
-
+		
 		return rootModelPtr.PopPtr();
 	}
-
+	
 	iprm::CParamsSet filterParams;
-
+	
 	int offset = 0, count = -1;
-
+	
 	if (viewParamsGql != nullptr){
 		offset = viewParamsGql->GetFieldArgumentValue("offset").toInt();
 		count = viewParamsGql->GetFieldArgumentValue("count").toInt();
 		PrepareFilters(gqlRequest, *viewParamsGql, filterParams);
 	}
-
+	
 	int elementsCount = messageCollectionPtr->GetElementsCount(&filterParams);
-
+	
 	int pagesCount = std::ceil(elementsCount / (double)count);
 	if (pagesCount <= 0){
 		pagesCount = 1;
 	}
-
+	
 	notificationModel->SetData("pagesCount", pagesCount);
 	notificationModel->SetData("totalCount", elementsCount);
-
+	
 	istd::TDelPtr<imtbase::IObjectCollectionIterator> iterator = 
-				messageCollectionPtr->CreateObjectCollectionIterator(QByteArray(), offset, count, &filterParams);
-
+		messageCollectionPtr->CreateObjectCollectionIterator(QByteArray(), offset, count, &filterParams);
+	
 	while (iterator.IsValid() && iterator->Next()){
 		int itemIndex = itemsModel->InsertNewItem();
 		if (itemIndex >= 0){
@@ -161,26 +141,8 @@ imtbase::CTreeItemModel* CMessageCollectionControllerComp::ListObjects(
 			}
 		}
 	}
-
+	
 	return rootModelPtr.PopPtr();
-}
-
-
-imtbase::CTreeItemModel* CMessageCollectionControllerComp::GetObject(const imtgql::CGqlRequest& /*gqlRequest*/, QString& /*errorMessage*/) const
-{
-	return nullptr;
-}
-
-
-imtbase::CTreeItemModel* CMessageCollectionControllerComp::InsertObject(const imtgql::CGqlRequest& /*gqlRequest*/, QString& /*errorMessage*/) const
-{
-	return nullptr;
-}
-
-
-imtbase::CTreeItemModel* CMessageCollectionControllerComp::UpdateObject(const imtgql::CGqlRequest& /*gqlRequest*/, QString& /*errorMessage*/) const
-{
-	return nullptr;
 }
 
 
@@ -194,15 +156,13 @@ void CMessageCollectionControllerComp::OnComponentDestroyed()
 }
 
 
-imtbase::IObjectCollection* CMessageCollectionControllerComp::GetMessageCollection(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+imtbase::IObjectCollection* CMessageCollectionControllerComp::GetMessageCollection(const QByteArray& serviceId, QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		errorMessage = QString("Internal error").toUtf8();
 		return nullptr;
 	}
-
-	QByteArray serviceId = gqlRequest.GetHeader("serviceid");
-
+	
 	imtbase::IObjectCollection::DataPtr dataPtr;
 	if (m_objectCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
 		const agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = dynamic_cast<const agentinodata::CIdentifiableServiceInfo*>(dataPtr.GetPtr());
