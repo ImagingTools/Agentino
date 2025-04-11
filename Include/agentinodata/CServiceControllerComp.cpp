@@ -142,7 +142,7 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 
 	QString serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::ICollectionInfo::EIT_NAME).toString();
 
-	SendInfoMessage(0, QString("Service '%1' started").arg(serviceName));
+	SendInfoMessage(0, QString("Service '%1' started").arg(serviceName), serviceName);
 
 	return true;
 }
