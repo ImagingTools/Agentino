@@ -288,7 +288,7 @@ ViewBase {
 				else if (serviceStatus === "NOT_RUNNING"){
 					item.m_icon1 = "Icons/Stopped";
 				}
-				else{
+				else if (serviceStatus === "UNDEFINED"){
 					item.m_icon1 = "Icons/Alert";
 				}
 				

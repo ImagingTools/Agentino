@@ -38,9 +38,10 @@
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>text</Value>
-                                <Value>timestamp</Value>
+                                <Value>timeStamp</Value>
                                 <Value>source</Value>
                                 <Value>category</Value>
+                                <Value>timestamp</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -48,9 +49,10 @@
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>Text</Value>
-                                <Value>Timestamp</Value>
+                                <Value>TimeStamp</Value>
                                 <Value>Source</Value>
                                 <Value>Category</Value>
+                                <Value>Timestamp</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -150,9 +152,10 @@
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>text</Value>
-                                <Value>timestamp</Value>
+                                <Value>timeStamp</Value>
                                 <Value>source</Value>
                                 <Value>category</Value>
+                                <Value>timestamp</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -160,9 +163,10 @@
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>Text</Value>
-                                <Value>Timestamp</Value>
+                                <Value>TimeStamp</Value>
                                 <Value>Source</Value>
                                 <Value>Category</Value>
+                                <Value>Timestamp</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

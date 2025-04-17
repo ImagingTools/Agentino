@@ -33,7 +33,7 @@ SplitView {
 			}
 			else{
 				log.agentId = ""
-				log.dataController.elementsModel.clear()
+				log.dataController.clearElements()
 			}
 		}
 	}
@@ -55,11 +55,7 @@ SplitView {
 		}
 		
 		function handleSubscription(dataModel){
-			if (!dataModel){
-				return;
-			}
-			dataController.elementsModel.clear()
-			dataController.updateModel()
+			log.doUpdateGui()
 		}
 		
 		Component {

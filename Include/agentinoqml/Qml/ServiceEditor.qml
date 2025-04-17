@@ -28,7 +28,7 @@ ViewBase {
 	
 	onProductIdChanged: {
 		if (productId !== ""){
-			tabPanel.addTab("Administration", qsTr("Administration"), administrationViewComp);
+			// tabPanel.addTab("Administration", qsTr("Administration"), administrationViewComp);
 		}
 	}
 	
@@ -150,7 +150,7 @@ ViewBase {
 				anchors.left: flickable.right;
 				anchors.leftMargin: Style.sizeSmallMargin;
 				anchors.top: parent.top;
-				anchors.bottom: parent.bottom;
+				anchors.bottom: flickable.parent.bottom;
 				
 				secondSize: Style.sizeMainMargin;
 				targetItem: flickable;
@@ -867,8 +867,8 @@ ViewBase {
 				}
 				
 				let obj = serviceEditorContainer.getHeaders();
-				obj["ProductId"] = serviceEditorContainer.productId;
-				obj["token"] = userTokenProvider.token;
+				obj["productId"] = serviceEditorContainer.productId;
+				obj["token"] = userTokenProvider.accessToken;
 				
 				return obj;
 			}
@@ -886,17 +886,15 @@ ViewBase {
 					authorizationPage.visible = false;
 					loader.sourceComponent = administrationViewDocument
 				}
-				
-				onFailed: {
-					root.loginFailed();
-				}
 			}
 			
 			AuthorizationPage {
 				id: authorizationPage
 				anchors.fill: parent;
 				appName: serviceEditorContainer.productId
-				function onLogin(login, password){
+				canRegisterUser: false
+				canRecoveryPassword: false
+				onLogin: {
 					userTokenProvider.authorization(login, password)
 				}
 			}

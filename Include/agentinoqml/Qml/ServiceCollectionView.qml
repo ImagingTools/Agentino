@@ -26,7 +26,7 @@ SplitView {
 		onServiceIdChanged: {
 			if (serviceId == ""){
 				if (log.dataController){
-					log.dataController.elementsModel.clear()
+					log.dataController.clearElements()
 				}
 			}
 			else{
@@ -63,8 +63,7 @@ SplitView {
 				if (body.containsKey("serviceid")){
 					let id = body.getData("serviceid")
 					if (id  === log.serviceId){
-						dataController.elementsModel.clear()
-						dataController.updateModel()
+						log.doUpdateGui()
 					}
 				}
 			}

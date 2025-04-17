@@ -239,6 +239,24 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 		serviceData = *arguments.input.Version_1_0->item;
 	}
 	
+	// We take the document from the agent immediately after adding it to download the connection information.
+	sdl::agentino::Services::GetServiceRequestArguments getArguments;
+	getArguments.input.Version_1_0.emplace();
+	getArguments.input.Version_1_0->id = serviceId;
+	
+	imtgql::CGqlRequest getGqlRequest;
+	getGqlRequest.SetGqlContext(dynamic_cast<imtgql::IGqlContext*>(gqlRequest.GetRequestContext()->CloneMe()));
+	if (sdl::agentino::Services::CGetServiceGqlRequest::SetupGqlRequest(getGqlRequest, getArguments)){
+		sdl::agentino::Services::CServiceData::V1_0 getServiceResponse;
+		if (!SendModelRequest<
+				sdl::agentino::Services::CServiceData::V1_0,
+				sdl::agentino::Services::CServiceData>(getGqlRequest, serviceData)){
+			errorMessage = QString("Unable to get service '%1'. Error: Sending request is failed").arg(qPrintable(serviceId));
+			SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
+			return sdl::imtbase::ImtCollection::CAddedNotificationPayload();
+		}
+	}
+
 	istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInfoPtr;
 	serviceInfoPtr.SetPtr(new agentinodata::CIdentifiableServiceInfo);
 	
@@ -247,7 +265,7 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CAddedNotificationPayload();
 	}
-	
+
 	serviceInfoPtr->SetObjectUuid(serviceId);
 	
 	QString serviceName = serviceInfoPtr->GetServiceName();

@@ -233,8 +233,6 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObjectFromRepresentat
 				}
 				
 				const QUrl* url = connectionCollectionPtr->GetUrl(id);
-				qDebug() << "url" << *url;
-				
 				if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT){
 					istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
 					urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam);

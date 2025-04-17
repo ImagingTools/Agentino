@@ -13,7 +13,6 @@ namespace agentgql
 
 // reimplemented (sdl::agentino::Services::CGraphQlHandlerCompBase)
 
-
 sdl::agentino::Services::CServiceStatusResponse CServiceControllerComp::OnStartService(
 			const sdl::agentino::Services::CStartServiceGqlRequest& startServiceRequest,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,

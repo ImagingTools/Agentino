@@ -64,6 +64,15 @@ void CServiceStatusCollectionSubscriberControllerComp::OnUpdate(const istd::ICha
 	else if (status == agentinodata::IServiceStatusInfo::ServiceStatus::SS_NOT_RUNNING){
 		statusStr = "NOT_RUNNING";
 	}
+	else if (status == agentinodata::IServiceStatusInfo::ServiceStatus::SS_STARTING){
+		statusStr = "STARTING";
+	}
+	else if (status == agentinodata::IServiceStatusInfo::ServiceStatus::SS_STOPPING){
+		statusStr = "STOPPING";
+	}
+	else if (status == agentinodata::IServiceStatusInfo::ServiceStatus::SS_RUNNING_IMPOSSIBLE){
+		statusStr = "RUNNING_IMPOSSIBLE";
+	}
 	else{
 		statusStr = "UNDEFINED";
 	}
