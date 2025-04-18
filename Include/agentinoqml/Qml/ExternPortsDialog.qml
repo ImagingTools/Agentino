@@ -70,19 +70,19 @@ Dialog {
 			property TreeItemModel headersModel: TreeItemModel {
 				Component.onCompleted: {
 					let index = dialogBody.headersModel.insertNewItem();
-					dialogBody.headersModel.setData("id", "m_scheme", index);
+					dialogBody.headersModel.setData("id", "scheme", index);
 					dialogBody.headersModel.setData("name", qsTr("Scheme"), index);
 					
 					index = dialogBody.headersModel.insertNewItem();
-					dialogBody.headersModel.setData("id", "m_host", index);
+					dialogBody.headersModel.setData("id", "host", index);
 					dialogBody.headersModel.setData("name", qsTr("Host"), index);
 					
 					index = dialogBody.headersModel.insertNewItem();
-					dialogBody.headersModel.setData("id", "m_port", index);
+					dialogBody.headersModel.setData("id", "port", index);
 					dialogBody.headersModel.setData("name", qsTr("Port"), index);
 					
 					index = dialogBody.headersModel.insertNewItem();
-					dialogBody.headersModel.setData("id", "m_description", index);
+					dialogBody.headersModel.setData("id", "description", index);
 					dialogBody.headersModel.setData("name", qsTr("Description"), index);
 					
 					tableTreeView.headers = dialogBody.headersModel;
@@ -221,16 +221,16 @@ Dialog {
 					
 					Component.onCompleted: {
 						let index = schemesModel.insertNewItem();
-						schemesModel.setData("m_scheme", "http", index);
+						schemesModel.setData("scheme", "http", index);
 						
 						index = schemesModel.insertNewItem();
-						schemesModel.setData("m_scheme", "https", index);
+						schemesModel.setData("scheme", "https", index);
 						
 						index = schemesModel.insertNewItem();
-						schemesModel.setData("m_scheme", "ws", index);
+						schemesModel.setData("scheme", "ws", index);
 						
 						index = schemesModel.insertNewItem();
-						schemesModel.setData("m_scheme", "wss", index);
+						schemesModel.setData("scheme", "wss", index);
 					}
 				}
 				
@@ -243,10 +243,10 @@ Dialog {
 					radius: 0;
 					
 					onHeadersChanged: {
-						tableTreeView.setColumnContentById("m_scheme", comboBoxCellContentComp)
-						tableTreeView.setColumnContentById("m_host", hostInputComp)
-						tableTreeView.setColumnContentById("m_port", portInputComp)
-						tableTreeView.setColumnContentById("m_description", textInputComp)
+						tableTreeView.setColumnContentById("scheme", comboBoxCellContentComp)
+						tableTreeView.setColumnContentById("host", hostInputComp)
+						tableTreeView.setColumnContentById("port", portInputComp)
+						tableTreeView.setColumnContentById("description", textInputComp)
 					}
 					
 					onSelectionChanged: {

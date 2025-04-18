@@ -43,6 +43,8 @@ SplitView {
 		id: log
 		
 		property string agentId
+		
+		visible: agentId !== ""
 
 		Component.onCompleted: {
 			filterMenu.decorator = messageCollectionFilterComp;

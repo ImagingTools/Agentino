@@ -44,6 +44,8 @@ SplitView {
 		width: parent.width
 		height: 500;
 		
+		visible: serviceId !== ""
+		
 		property string serviceId
 		
 		gqlGetListCommandId: "GetServiceLog"

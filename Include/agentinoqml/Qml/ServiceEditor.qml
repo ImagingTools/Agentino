@@ -470,9 +470,9 @@ ViewBase {
 						}
 						
 						onHeadersChanged: {
-							inputConnTable.setColumnContentById("m_description", textInputComp)
-							inputConnTable.setColumnContentById("m_port", portInputComp)
-							inputConnTable.setColumnContentById("m_externPorts", externCompEditComp)
+							inputConnTable.setColumnContentById("description", textInputComp)
+							inputConnTable.setColumnContentById("port", portInputComp)
+							inputConnTable.setColumnContentById("externPorts", externCompEditComp)
 							
 							inputConnTable.tableDecorator = inputTableDecoratorModel;
 						}
@@ -487,22 +487,22 @@ ViewBase {
 							Component.onCompleted: {
 								let index = headersModel.insertNewItem();
 								
-								headersModel.setData("id", "m_connectionName", index)
+								headersModel.setData("id", "connectionName", index)
 								headersModel.setData("name", qsTr("Usage"), index)
 								
 								index = headersModel.insertNewItem();
 								
-								headersModel.setData("id", "m_description", index)
+								headersModel.setData("id", "description", index)
 								headersModel.setData("name", qsTr("Description"), index)
 								
 								index = headersModel.insertNewItem();
 								
-								headersModel.setData("id", "m_port", index)
+								headersModel.setData("id", "port", index)
 								headersModel.setData("name", qsTr("Port"), index)
 								
 								index = headersModel.insertNewItem();
 								
-								headersModel.setData("id", "m_externPorts", index)
+								headersModel.setData("id", "externPorts", index)
 								headersModel.setData("name", qsTr("Extern Addresses"), index)
 								
 								inputConnTable.headers = headersModel;
@@ -807,22 +807,22 @@ ViewBase {
 							Component.onCompleted: {
 								let index = headersModel2.insertNewItem();
 								
-								headersModel2.setData("id", "m_connectionName", index)
+								headersModel2.setData("id", "connectionName", index)
 								headersModel2.setData("name", qsTr("Usage"), index)
 								
 								index = headersModel2.insertNewItem();
 								
-								headersModel2.setData("id", "m_serviceTypeName", index)
+								headersModel2.setData("id", "serviceTypeName", index)
 								headersModel2.setData("name", qsTr("Service"), index)
 								
 								index = headersModel2.insertNewItem();
 								
-								headersModel2.setData("id", "m_description", index)
+								headersModel2.setData("id", "description", index)
 								headersModel2.setData("name", qsTr("Description"), index)
 								
 								index = headersModel2.insertNewItem();
 								
-								headersModel2.setData("id", "m_displayUrl", index)
+								headersModel2.setData("id", "displayUrl", index)
 								headersModel2.setData("name", qsTr("Url"), index)
 								
 								ouputConnTable.headers = headersModel2;
