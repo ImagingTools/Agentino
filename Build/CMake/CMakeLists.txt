@@ -60,6 +60,7 @@ if (NOT IMT_DevAll_BUILD)
 	get_filename_component(CACHE_BASE_DIR_PATH "${IMTCOREDIR}/AuxInclude/${TARGETNAME}" ABSOLUTE)
 	
 	ImtCoreAddSdlHeaderIncludePath("${CACHE_BASE_DIR_PATH}")
+	ImtCoreAddSdlModulesPath("${CACHE_BASE_DIR_PATH}")
 	ImtCoreAddSdlHeaderIncludePath("${AUX_INCLUDE_DIR}/..")
 endif()
 add_subdirectory("${SDL_DIR}/agentino/CMake" "${AUX_INCLUDE_DIR}/agentinosdl")
