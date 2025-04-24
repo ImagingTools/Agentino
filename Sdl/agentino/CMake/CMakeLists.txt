@@ -4,6 +4,8 @@ include(${ACFDIR}/Config/CMake/StaticConfig.cmake)
 include(${IMTCOREDIR}/Config/CMake/ImtCore.cmake)
 include(${IMTCOREDIR}/Config/CMake/ImtCoreSdlCustomConfig.cmake)
 
+target_link_libraries(agentinosdl imtbasesdl)
+
 add_custom_target(${PROJECT_NAME}-SDL-related-files SOURCES
 	${CMAKE_CURRENT_LIST_DIR}/../1.0/Agents.sdl
 	${CMAKE_CURRENT_LIST_DIR}/../1.0/Services.sdl
