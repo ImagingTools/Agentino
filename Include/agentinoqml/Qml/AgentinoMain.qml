@@ -8,8 +8,6 @@ import imtauthgui 1.0
 ApplicationMain{
     id: window;
     useWebSocketSubscription: true
-    applicationId: "Agentino"
-
     canRecoveryPassword: false;
     authorizationServerConnected: true;
 }

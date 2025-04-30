@@ -115,7 +115,8 @@ sdl::agentino::Topology::CTopology CTopologyControllerComp::OnGetTopology(
 								imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
 								if (connectionLinkParamPtr != nullptr){
 									sdl::agentino::Topology::CLink::V1_0 linkData;
-									QByteArray serviceId =  m_serviceCompositeInfoCompPtr->GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
+									QByteArray dependantConnectionId = connectionLinkParamPtr->GetDependantServiceConnectionId();
+									QByteArray serviceId =  m_serviceCompositeInfoCompPtr->GetServiceId(dependantConnectionId);
 
 									linkData.id = serviceId;
 									

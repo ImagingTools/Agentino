@@ -665,7 +665,7 @@ QList<sdl::agentino::Services::CElement::V1_0> CServiceControllerProxyComp::GetC
 						QUrl url = connectionParamPtr->GetUrl();
 						url.setHost("localhost");
 						
-						QString urlStr = serviceName + "@" + "localhost" + ":" + QString::number(url.port());
+						QString urlStr = url.toString();
 						
 						element.id = connectionElementId;
 						element.name = urlStr;
@@ -686,7 +686,7 @@ QList<sdl::agentino::Services::CElement::V1_0> CServiceControllerProxyComp::GetC
 							QString incommingUrlStr = serviceName + "@" + incomingConnection.url.host() + ":" + QString::number(incomingConnection.url.port());
 							
 							incomingElement.id = incomingConnection.id;
-							incomingElement.name = incommingUrlStr;
+							incomingElement.name = incomingConnection.url.toString();
 							
 							sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation;
 							

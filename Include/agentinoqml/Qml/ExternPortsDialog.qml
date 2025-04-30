@@ -221,15 +221,19 @@ Dialog {
 					
 					Component.onCompleted: {
 						let index = schemesModel.insertNewItem();
+						schemesModel.setData("id", "http", index);
 						schemesModel.setData("scheme", "http", index);
 						
 						index = schemesModel.insertNewItem();
+						schemesModel.setData("id", "https", index);
 						schemesModel.setData("scheme", "https", index);
 						
 						index = schemesModel.insertNewItem();
+						schemesModel.setData("id", "ws", index);
 						schemesModel.setData("scheme", "ws", index);
 						
 						index = schemesModel.insertNewItem();
+						schemesModel.setData("id", "wss", index);
 						schemesModel.setData("scheme", "wss", index);
 					}
 				}

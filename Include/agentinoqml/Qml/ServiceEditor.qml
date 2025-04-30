@@ -763,11 +763,13 @@ ViewBase {
 											let item = cb.model.get(cb.currentIndex).item;
 											let id = item.m_id
 											let name = item.m_name
+											let url = item.m_url
 											
 											textLabel.text = name;
 											
 											let outputItem = ouputConnTable.elements.get(bodyItem.rowIndex).item;
 											outputItem.m_dependantConnectionId = id;
+											outputItem.m_url = url.copyMe();
 										}
 									}
 									

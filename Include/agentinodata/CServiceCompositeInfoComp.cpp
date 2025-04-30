@@ -125,6 +125,19 @@ QByteArray CServiceCompositeInfoComp::GetServiceId(const QByteArray& dependantSe
 						if (connectionElementId == dependantServiceConnectionId){
 							return serviceElementId;
 						}
+						
+						imtbase::IObjectCollection::DataPtr connectionDataPtr;
+						if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
+							imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
+							if (connectionParamPtr != nullptr){
+								QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
+								for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
+									if (incomingConnection.id == dependantServiceConnectionId){
+										return serviceElementId;
+									}
+								}
+							}
+						}
 					}
 				}
 			}
