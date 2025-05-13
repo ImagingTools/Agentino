@@ -34,8 +34,8 @@ int main(int argc, char *argv[])
 	Q_INIT_RESOURCE(AgentinoLoc);
 	Q_INIT_RESOURCE(imtauthguiTheme);
 	Q_INIT_RESOURCE(imtguiTheme);
-
 	Q_INIT_RESOURCE(imtlicguiqml);
+	Q_INIT_RESOURCE(imtbase);
 
 	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 

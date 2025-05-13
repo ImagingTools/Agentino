@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
 	Q_INIT_RESOURCE(agentinoServicesSdl);
 	Q_INIT_RESOURCE(agentinoTopologySdl);
 	Q_INIT_RESOURCE(agentino);
+	Q_INIT_RESOURCE(imtbase);
 
 	return Run<CAgentinoClient, DefaultImtCoreQmlInitializer>(argc, argv);
 }
