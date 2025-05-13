@@ -22,7 +22,6 @@ Dialog {
 	}
 	
 	function setPortsModel(portsModel){
-		console.log("setPortsModel", portsModel.toJson())
 		portsDialog.portsModel.clear();
 		
 		for (let i = 0; i < portsModel.count; i++){
