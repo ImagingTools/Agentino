@@ -26,10 +26,4 @@ GqlRequestDocumentDataController {
 	documentModelComp: Component {
 		ServiceData {}
 	}
-
-	onHasRemoteChangesChanged: {
-		if (hasRemoteChanges){
-			// updateDocumentModel();
-		}
-	}
 }

@@ -73,7 +73,8 @@ bool CAgentCollectionComp::SetService(
 	const QByteArray& serviceId,
 	const IServiceInfo& serviceInfo,
 	const QString& serviceName,
-	const QString& serviceDescription)
+	const QString& serviceDescription,
+	bool beQuiet)
 {
 	ObjectInfo* objectInfoPtr = GetObjectInfo(agentId);
 	if (objectInfoPtr != nullptr){
@@ -90,7 +91,9 @@ bool CAgentCollectionComp::SetService(
 					changeSet.SetChangeInfo("agentid", agentId);
 					changeSet.SetChangeInfo("serviceid", serviceId);
 					
-					istd::CChangeNotifier changeNotifier(this, &changeSet);
+					if (!beQuiet){
+						istd::CChangeNotifier changeNotifier(this, &changeSet);
+					}
 				}
 				
 				return result;

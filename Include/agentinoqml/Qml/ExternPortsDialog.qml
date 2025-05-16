@@ -17,18 +17,10 @@ Dialog {
 	Component.onCompleted: {
 		addButton(Enums.save, qsTr("Save"), true)
 		addButton(Enums.cancel, qsTr("Cancel"), true)
-
-		updateGui();
 	}
 	
-	function setPortsModel(portsModel){
-		portsDialog.portsModel.clear();
-		
-		for (let i = 0; i < portsModel.count; i++){
-			portsDialog.portsModel.addElement(portsModel.get(i).item.copyMe());
-		}
-		
-		portsDialog.contentItem.tableView.elements = portsDialog.portsModel;
+	onPortsModelChanged: {
+		updateGui();
 	}
 	
 	Component {
@@ -85,6 +77,8 @@ Dialog {
 					dialogBody.headersModel.setData("name", qsTr("Description"), index);
 					
 					tableTreeView.headers = dialogBody.headersModel;
+					
+					tableTreeView.elements = portsDialog.portsModel
 				}
 			}
 			
@@ -144,7 +138,10 @@ Dialog {
 							
 							portObj.m_url = urlObj;
 							
+							console.log("add portObj", portObj, portObj.toJson())
 							portsDialog.portsModel.addElement(portObj);
+							
+							portsDialog.updateGui()
 						}
 						else if (commandId == "Remove"){
 							let indexes = tableTreeView.getSelectedIndexes();
@@ -154,6 +151,7 @@ Dialog {
 								portsDialog.portsModel.removeElement(index)
 								
 								tableTreeView.resetSelection();
+								portsDialog.updateGui()
 							}
 						}
 					}
@@ -244,7 +242,7 @@ Dialog {
 					height: 200;
 					
 					radius: 0;
-					
+
 					onHeadersChanged: {
 						tableTreeView.setColumnContentById("scheme", comboBoxCellContentComp)
 						tableTreeView.setColumnContentById("host", hostInputComp)

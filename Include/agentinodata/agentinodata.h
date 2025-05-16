@@ -26,7 +26,7 @@ struct ProcessStateEnum
 ProcessStateEnum GetProcceStateRepresentation(QProcess::ProcessState processState);
 
 
-bool GetServiceFromRepresentation(agentinodata::CServiceInfo& serviceInfo, const sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation);
+bool GetServiceFromRepresentation(agentinodata::CServiceInfo& serviceInfo, const sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation, QString& errorMessage);
 bool GetRepresentationFromService(sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation, const agentinodata::CServiceInfo& serviceInfo, const iprm::IParamsSet* paramsPtr = nullptr);
 
 bool GetUrlConnectionFromRepresentation(imtservice::CUrlConnectionParam& connectionInfo, const sdl::agentino::Services::CInputConnection::V1_0& connectionRepresentation);

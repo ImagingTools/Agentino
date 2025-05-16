@@ -57,14 +57,18 @@ sdl::imtbase::ImtCollection::CVisualStatus CServiceCollectionControllerComp::OnG
 					
 					imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 					if (serviceCollectionPtr != nullptr){
-						if (serviceCollectionPtr->GetElementIds().contains(*response.objectId)){
-							QString serviceName = serviceCollectionPtr->GetElementInfo(*response.objectId, imtbase::ICollectionInfo::EIT_NAME).toString();
-							QString description = serviceCollectionPtr->GetElementInfo(*response.objectId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
-							
-							response.text = serviceName + "@" + agentName;
-							response.description = description;
-							
-							break;
+						imtbase::IObjectCollection::DataPtr serviceDataPtr;
+						if (serviceCollectionPtr->GetObjectData(*response.objectId, serviceDataPtr)){
+							const agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<const agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+							if (serviceInfoPtr != nullptr){
+								QString serviceName = serviceInfoPtr->GetServiceName();
+								QString description = serviceInfoPtr->GetServiceDescription();
+								
+								response.text = serviceName + "@" + agentName;
+								response.description = description;
+								
+								break;
+							}
 						}
 					}
 				}
@@ -198,7 +202,7 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObjectFromRepresentat
 		return nullptr;
 	}
 	
-	if (!agentinodata::GetServiceFromRepresentation(*serviceInstancePtr, serviceDataRepresentation)){
+	if (!agentinodata::GetServiceFromRepresentation(*serviceInstancePtr, serviceDataRepresentation, errorMessage)){
 		errorMessage = QString("Unable to create service from representation. Error: Representation invalid");
 		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 		return nullptr;
@@ -212,6 +216,13 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObjectFromRepresentat
 	
 	QByteArray serviceName = serviceInstancePtr->GetServiceName().toUtf8();
 	QByteArray servicePath = serviceInstancePtr->GetServicePath();
+	
+	QFileInfo fileInfo(servicePath);
+	if (!fileInfo.exists()){
+		errorMessage = QString("Unable to create service from representation. Error: Service path '%1' not exists").arg(qPrintable(servicePath));
+		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+		return nullptr;
+	}
 	
 	std::shared_ptr<imtservice::IConnectionCollection> connectionCollectionPtr = GetConnectionCollection(serviceName, servicePath);
 	if (connectionCollectionPtr != nullptr){
@@ -311,8 +322,8 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 	QByteArray objectId = *arguments.input.Version_1_0->id;
 	sdl::agentino::Services::CServiceData::V1_0 serviceData = *arguments.input.Version_1_0->item;
 	
-	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, serviceData)){
-		errorMessage = QString("Unable to update service '%1' from representation. Error: Representation invalid").arg(qPrintable(objectId));
+	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, serviceData, errorMessage)){
+		errorMessage = QString("Unable to update service from representation. Error: %1").arg(errorMessage);
 		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 		return false;
 	}

@@ -46,8 +46,7 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 	sdl::agentino::Services::CServiceData::V1_0 response;
 	if (!SendModelRequest<
 			sdl::agentino::Services::CServiceData::V1_0,
-			sdl::agentino::Services::CServiceData>(gqlRequest, response)){
-		errorMessage = QString("Unable to get service '%1'. Error: Sending request is failed").arg(qPrintable(serviceId));
+			sdl::agentino::Services::CServiceData>(gqlRequest, response, errorMessage)){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::agentino::Services::CServiceData();
 	}
@@ -63,13 +62,13 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 	}
 	
 	// Syncronise service with agent
-	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, response)){
-		errorMessage = QString("Unable to get service '%1'. Error: Get representation from service failed").arg(qPrintable(serviceId));
+	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, response, errorMessage)){
+		errorMessage = QString("Unable to get service '%1'. Error: %2").arg(qPrintable(serviceId), errorMessage);
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::agentino::Services::CServiceData();
 	}
 	
-	if (!m_serviceManagerCompPtr->SetService(agentId, serviceId, *serviceInfoPtr)){
+	if (!m_serviceManagerCompPtr->SetService(agentId, serviceId, *serviceInfoPtr, "", "", true)){
 		errorMessage = QString("Unable to set service '%1'. Error: Set service to collection failed").arg(qPrintable(serviceId));
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::agentino::Services::CServiceData();
@@ -135,8 +134,7 @@ sdl::imtbase::ImtCollection::CUpdatedNotificationPayload CServiceControllerProxy
 
 	if (!SendModelRequest<
 			sdl::imtbase::ImtCollection::CUpdatedNotificationPayload::V1_0,
-			sdl::imtbase::ImtCollection::CUpdatedNotificationPayload>(gqlRequest, response)){
-		errorMessage = QString("Unable to update service '%1'. Error: Sending request is failed").arg(qPrintable(serviceId));
+			sdl::imtbase::ImtCollection::CUpdatedNotificationPayload>(gqlRequest, response, errorMessage)){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CUpdatedNotificationPayload();
 	}
@@ -161,7 +159,7 @@ sdl::imtbase::ImtCollection::CUpdatedNotificationPayload CServiceControllerProxy
 		}
 	}
 	
-	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr.GetPtr(), serviceData)){
+	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr.GetPtr(), serviceData, errorMessage)){
 		errorMessage = QString("Unable to get service from representation");
 
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
@@ -217,8 +215,7 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 	
 	if (!SendModelRequest<
 			sdl::imtbase::ImtCollection::CAddedNotificationPayload::V1_0,
-			sdl::imtbase::ImtCollection::CAddedNotificationPayload>(gqlRequest, response)){
-		errorMessage = QString("Unable to add service '%1'. Error: Sending request is failed").arg(qPrintable(serviceId));
+			sdl::imtbase::ImtCollection::CAddedNotificationPayload>(gqlRequest, response, errorMessage)){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CAddedNotificationPayload();
 	}
@@ -250,8 +247,7 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 		sdl::agentino::Services::CServiceData::V1_0 getServiceResponse;
 		if (!SendModelRequest<
 				sdl::agentino::Services::CServiceData::V1_0,
-				sdl::agentino::Services::CServiceData>(getGqlRequest, serviceData)){
-			errorMessage = QString("Unable to get service '%1'. Error: Sending request is failed").arg(qPrintable(serviceId));
+				sdl::agentino::Services::CServiceData>(getGqlRequest, serviceData, errorMessage)){
 			SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 			return sdl::imtbase::ImtCollection::CAddedNotificationPayload();
 		}
@@ -260,7 +256,7 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 	istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInfoPtr;
 	serviceInfoPtr.SetPtr(new agentinodata::CIdentifiableServiceInfo);
 	
-	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, serviceData)){
+	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, serviceData, errorMessage)){
 		errorMessage = QString("Unable to get service from representation");
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CAddedNotificationPayload();
@@ -315,8 +311,7 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnS
 	
 	if (!SendModelRequest<
 			sdl::agentino::Services::CServiceStatusResponse::V1_0,
-			sdl::agentino::Services::CServiceStatusResponse>(gqlRequest, response)){
-		errorMessage = QString("Unable to start service '%1'. Error: Sending request is failed").arg(qPrintable(serviceId));
+			sdl::agentino::Services::CServiceStatusResponse>(gqlRequest, response, errorMessage)){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::agentino::Services::CServiceStatusResponse();
 	}
@@ -355,8 +350,7 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnS
 	
 	if (!SendModelRequest<
 			sdl::agentino::Services::CServiceStatusResponse::V1_0,
-			sdl::agentino::Services::CServiceStatusResponse>(gqlRequest, response)){
-		errorMessage = QString("Unable to stop service '%1'. Error: Sending request is failed").arg(qPrintable(serviceId));
+			sdl::agentino::Services::CServiceStatusResponse>(gqlRequest, response, errorMessage)){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::agentino::Services::CServiceStatusResponse();
 	}
@@ -397,8 +391,7 @@ sdl::imtbase::ImtCollection::CRemovedNotificationPayload CServiceControllerProxy
 	
 	if (!SendModelRequest<
 			sdl::imtbase::ImtCollection::CRemovedNotificationPayload::V1_0,
-			sdl::imtbase::ImtCollection::CRemovedNotificationPayload>(gqlRequest, response)){
-		errorMessage = QString("Unable to remove service '%1'. Error: Sending request is failed").arg(qPrintable(serviceId));
+			sdl::imtbase::ImtCollection::CRemovedNotificationPayload>(gqlRequest, response, errorMessage)){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CRemovedNotificationPayload();
 	}
@@ -436,8 +429,7 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnG
 	
 	if (!SendModelRequest<
 			sdl::agentino::Services::CServiceStatusResponse::V1_0,
-			sdl::agentino::Services::CServiceStatusResponse>(gqlRequest, response)){
-		errorMessage = QString("Unable to get status for service '%1'. Error: Sending request is failed").arg(qPrintable(serviceId));
+			sdl::agentino::Services::CServiceStatusResponse>(gqlRequest, response, errorMessage)){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::agentino::Services::CServiceStatusResponse();
 	}
@@ -640,8 +632,6 @@ QList<sdl::agentino::Services::CElement::V1_0> CServiceControllerProxyComp::GetC
 				continue;
 			}
 			
-			QString serviceName = serviceInfoPtr->GetServiceName();
-			
 			// Get Connections
 			imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
 			if (connectionCollectionPtr == nullptr){
@@ -682,8 +672,6 @@ QList<sdl::agentino::Services::CElement::V1_0> CServiceControllerProxyComp::GetC
 						
 						for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
 							sdl::agentino::Services::CElement::V1_0 incomingElement;
-
-							QString incommingUrlStr = serviceName + "@" + incomingConnection.url.host() + ":" + QString::number(incomingConnection.url.port());
 							
 							incomingElement.id = incomingConnection.id;
 							incomingElement.name = incomingConnection.url.toString();
@@ -972,10 +960,11 @@ bool CServiceControllerProxyComp::UpdateConnectionUrlForService(
 		return false;
 	}
 	
+	QString errorMessage;
 	sdl::agentino::Services::CUpdateConnectionUrlResponse::V1_0 response;
 	if (!SendModelRequest<
 			sdl::agentino::Services::CUpdateConnectionUrlResponse::V1_0,
-			sdl::agentino::Services::CUpdateConnectionUrlResponse>(gqlRequest, response)){
+			sdl::agentino::Services::CUpdateConnectionUrlResponse>(gqlRequest, response, errorMessage)){
 		return false;
 	}
 	

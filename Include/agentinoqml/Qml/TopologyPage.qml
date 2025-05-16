@@ -49,6 +49,8 @@ ViewBase {
 		}
 	}
 	
+	signal serviceStatusChanged(string serviceId, string status)
+	
 	commandsDelegateComp: Component {ServiceCollectionViewCommandsDelegate {
 			id: serviceCommandsDelegate
 			collectionView: topologyPage
@@ -217,29 +219,14 @@ ViewBase {
 	Component {
 		id: serviceEditorComp;
 		
-		ServiceEditor {
+		ServiceEditorWrap {
 			id: serviceEditor
-			documentManager: topologyPage.documentManager;
-			commandsDelegateComp: Component {ViewCommandsDelegateBase {
-					view: serviceEditor;
-				}
-			}
-			
-			commandsControllerComp: Component {GqlBasedCommandsController {
-					typeId: "Service";
-					function getHeaders(){
-						return topologyPage.getHeaders();
-					}
-				}}
+			documentManager: topologyPage.documentManager
 			
 			Component.onCompleted: {
 				let item = scheme.objectsModel.get(scheme.selectedIndex).item
-				let agentId = item.m_agentId;
-				serviceEditor.agentId = agentId;
-			}
-			
-			function getHeaders(){
-				return topologyPage.getHeaders();
+				clientId = item.m_agentId;
+				topologyPage.serviceStatusChanged.connect(serviceStatusChanged)
 			}
 		}
 	}
@@ -269,8 +256,8 @@ ViewBase {
 		
 		onMessageReceived: {
 			console.log("OnServiceStatusChanged", data.toJson());
-			if (data.containsKey("OnServiceStatusChanged")){
-				let dataModel = data.getData("OnServiceStatusChanged")
+			// if (data.containsKey("OnServiceStatusChanged")){
+				let dataModel = data
 				let serviceId = dataModel.getData("serviceid")
 				let serviceStatus = dataModel.getData(ServiceStatus.s_Key)
 				let dependencyStatus
@@ -326,8 +313,10 @@ ViewBase {
 					}
 				}
 				
+				topologyPage.serviceStatusChanged(serviceId, serviceStatus)
+				
 				scheme.requestPaint()
-			}
+			// }
 		}
 	}
 	

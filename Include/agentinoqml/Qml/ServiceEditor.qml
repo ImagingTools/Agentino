@@ -2,6 +2,7 @@ import QtQuick 2.0
 import Acf 1.0
 import com.imtcore.imtqml 1.0
 import imtgui 1.0
+import imtguigql 1.0
 import imtdocgui 1.0
 import imtauthgui 1.0
 import imtcontrols 1.0
@@ -10,33 +11,27 @@ import agentinoServicesSdl 1.0
 ViewBase {
 	id: serviceEditorContainer;
 	
-	property int radius: 3;
-	property int flickableWidth: 800;
-	property string productId;
-	property string productName;
-	property string agentId;
-	property var documentManager: null;
-	
 	property ServiceData serviceData: model;
 	
 	Component.onCompleted: {
 		let ok = PermissionsController.checkPermission("ChangeService");
-		
 		serviceEditorContainer.readOnly = !ok;
-		
 		tabPanel.addTab("General", qsTr("General"), mainEditorComp);
 	}
 	
-	onProductIdChanged: {
-		if (productId !== ""){
-			// tabPanel.addTab("Administration", qsTr("Administration"), administrationViewComp);
+	property bool serviceRunning: false
+	
+	property string serviceTypeName: serviceData ? serviceData.m_serviceTypeName : ""
+	onServiceTypeNameChanged: {
+		let tabId = "Administration"
+		if (tabPanel.getIndexById(tabId) < 0){
+			tabPanel.addTab(tabId, qsTr("Administration"), administrationViewComp)
 		}
 	}
 	
 	onServiceDataChanged: {
 		if (serviceData){
-			// TODO name???
-			serviceEditorContainer.productId = serviceData.m_name;
+			serviceRunning = serviceData.m_status === "running"
 		}
 	}
 	
@@ -108,11 +103,37 @@ ViewBase {
 					stopScriptChecked.checkState = Qt.Unchecked
 				}
 				
-				inputConnTable.elements = serviceEditorContainer.serviceData.m_inputConnections;
-				ouputConnTable.elements = serviceEditorContainer.serviceData.m_outputConnections;
+				if (!inputConnTable.elements){
+					inputConnTable.elements = serviceEditorContainer.serviceData.m_inputConnections.copyMe()
+				}
+				else{
+					for (let inputItemIndex = 0; inputItemIndex < inputConnTable.elements.count; inputItemIndex++){
+						let inputItem = inputConnTable.elements.get(inputItemIndex).item
+						let originalItem = serviceEditorContainer.serviceData.m_inputConnections.get(inputItemIndex).item
+						
+						inputItem.m_description = originalItem.m_description
+						inputItem.m_url = originalItem.m_url.copyMe()
+						inputItem.m_externPorts = originalItem.m_externPorts.copyMe()
+					}
+				}
+				
+				if (!ouputConnTable.elements){
+					ouputConnTable.elements = serviceEditorContainer.serviceData.m_outputConnections.copyMe()
+				}
+				else{
+					for (let outputItemIndex = 0; outputItemIndex < ouputConnTable.elements.count; outputItemIndex++){
+						let outputItem = ouputConnTable.elements.get(outputItemIndex).item
+						let originalItem = serviceEditorContainer.serviceData.m_outputConnections.get(outputItemIndex).item
+						
+						outputItem.m_url = originalItem.m_url.copyMe()
+						outputItem.m_description = originalItem.m_description
+						outputItem.m_dependantConnectionId = originalItem.m_dependantConnectionId
+					}
+				}
 			}
 			
 			function updateModel(){
+				console.log("updateModel begin")
 				serviceEditorContainer.serviceData.m_name = nameInput.text;
 				serviceEditorContainer.serviceData.m_description = descriptionInput.text;
 				serviceEditorContainer.serviceData.m_path = pathInput.text;
@@ -143,6 +164,44 @@ ViewBase {
 				else{
 					serviceEditorContainer.serviceData.m_stopScript = "";
 				}
+				
+				for (let inputItemIndex = 0; inputItemIndex < inputConnTable.elements.count; inputItemIndex++){
+					let inputConnections = serviceEditorContainer.serviceData.m_inputConnections
+					let inputItem = inputConnTable.elements.get(inputItemIndex).item
+					
+					if (inputConnections.get(inputItemIndex).item.m_description !== inputItem.m_description){
+						inputConnections.setProperty(inputItemIndex, "m_description", inputItem.m_description);
+					}
+					
+					if (!inputConnections.get(inputItemIndex).item.m_url.isEqualWithModel(inputItem.m_url)){
+						inputConnections.setProperty(inputItemIndex, "m_url", inputItem.m_url.copyMe());
+					}
+					
+					if (!inputConnections.get(inputItemIndex).item.m_externPorts.isEqualWithModel(inputItem.m_externPorts)){
+						inputConnections.setProperty(inputItemIndex, "m_externPorts", inputItem.m_externPorts.copyMe());
+					}
+				}
+				
+				for (let outputItemIndex = 0; outputItemIndex < ouputConnTable.elements.count; outputItemIndex++){
+					let outputItem = ouputConnTable.elements.get(outputItemIndex).item
+					let outputConnections = serviceEditorContainer.serviceData.m_outputConnections
+					
+					if (outputConnections.get(outputItemIndex).item.m_description !== outputItem.m_description){
+						outputConnections.setProperty(outputItemIndex, "m_description", outputItem.m_description);
+					}
+					
+					if (outputConnections.get(outputItemIndex).item.m_dependantConnectionId !== outputItem.m_dependantConnectionId){
+						outputConnections.setProperty(outputItemIndex, "m_dependantConnectionId", outputItem.m_dependantConnectionId);
+					}
+					
+					if (outputItem.m_url){
+						if (!outputConnections.get(outputItemIndex).item.m_url.isEqualWithModel(outputItem.m_url)){
+							outputConnections.setProperty(outputItemIndex, "m_url", outputItem.m_url.copyMe());
+						}
+					}
+				}
+				
+				console.log("updateModel end")
 			}
 			
 			CustomScrollbar {
@@ -327,8 +386,6 @@ ViewBase {
 						SwitchCustom {
 							id: switchVerboseMessage
 							anchors.verticalCenter: parent.verticalCenter
-							
-							backgroundColor: "#D4D4D4"
 							onCheckedChanged: {
 								serviceEditorContainer.doUpdateModel();
 							}
@@ -362,21 +419,27 @@ ViewBase {
 							}
 							Component.onCompleted: {
 								let index = model.insertNewItem()
+								model.setData("id", "0", index)
 								model.setData("name", "0", index)
 								
 								index = model.insertNewItem()
+								model.setData("id", "1", index)
 								model.setData("name", "1", index)
 								
 								index = model.insertNewItem()
+								model.setData("id", "2", index)
 								model.setData("name", "2", index)
 								
 								index = model.insertNewItem()
+								model.setData("id", "3", index)
 								model.setData("name", "3", index)
 								
 								index = model.insertNewItem()
+								model.setData("id", "4", index)
 								model.setData("name", "4", index)
 								
 								index = model.insertNewItem()
+								model.setData("id", "5", index)
 								model.setData("name", "5", index)
 							}
 							onCurrentIndexChanged: {
@@ -533,7 +596,12 @@ ViewBase {
 							id: textInputComp;
 							
 							TextInputCellContentComp {
-								id: textInputComp;
+								onEditingFinished: {
+									let actual = serviceEditorContainer.serviceData.m_inputConnections.get(rowIndex).item.m_description
+									if (actual != text){
+										serviceEditorContainer.doUpdateModel()
+									}
+								}
 							}
 						}
 						
@@ -543,11 +611,25 @@ ViewBase {
 							TextInputCellContentComp {
 								id: textInputContent;
 								
+								property int port: rowDelegate && rowDelegate.dataModel ? rowDelegate.dataModel.item.m_url.m_port : -1
+								onPortChanged: {
+									reused()
+								}
+								
+								onEditingFinished: {
+									console.log("port onEditingFinished", port)
+									let actualPort = serviceEditorContainer.serviceData.m_inputConnections.get(rowIndex).item.m_url.m_port
+									if (actualPort !== port){
+										serviceEditorContainer.doUpdateModel()
+									}
+								}
+								
 								function getValue(){
 									return rowDelegate.dataModel.item.m_url.m_port;
 								}
 								
 								function setValue(value){
+									console.log("port setValue", value)
 									let urlParam = rowDelegate.dataModel.item.m_url;
 									urlParam.m_port = value;
 									rowDelegate.dataModel.item.m_url = urlParam;
@@ -624,31 +706,16 @@ ViewBase {
 									
 									ExternPortsDialog {
 										onStarted: {
-											let item = inputConnTable.elements.get(content.rowIndex).item;
-											setPortsModel(item.m_externPorts);
+											let externPorts = content.rowDelegate.dataModel.item.m_externPorts
+											console.log("onStarted externPorts", externPorts.toJson())
+											portsModel = externPorts.copyMe()
 										}
 										
 										onFinished: {
 											if (buttonId == Enums.save){
-												if (content.rowIndex >= 0){
-													console.log("onFinished", portsModel.toJson())
-													
-													let ports = []
-													for (let i = 0; i < portsModel.count; i++){
-														let item = portsModel.get(i).item;
-														let url = item.m_url;
-														ports.push(url.m_host + ":" + url.m_port)
-													}
-													
-													
-													let externPortsModel = inputConnTable.elements.get(content.rowIndex).item.m_externPorts;
-													externPortsModel.clear();
-													for (let i = 0; i < portsModel.count; i++){
-														externPortsModel.addElement(portsModel.get(i).item)
-													}
-													
-													textLabel.text = ports.join('\n');
-												}
+												content.rowDelegate.dataModel.item.m_externPorts = portsModel.copyMe()
+												portsModel = content.rowDelegate.dataModel.item.m_externPorts.copyMe()
+												serviceEditorContainer.doUpdateModel()
 											}
 										}
 									}
@@ -700,6 +767,12 @@ ViewBase {
 						Component {
 							id: textInputComp2;
 							TextInputCellContentComp {
+								onEditingFinished: {
+									let actual = serviceEditorContainer.serviceData.m_outputConnections.get(rowIndex).item.m_description
+									if (actual != text){
+										serviceEditorContainer.doUpdateModel()
+									}
+								}
 							}
 						}
 						
@@ -709,23 +782,29 @@ ViewBase {
 							TableCellDelegateBase {
 								id: bodyItem;
 								
+								property string dependantConnectionId: rowDelegate && rowDelegate.dataModel ? rowDelegate.dataModel.item.m_dependantConnectionId : ""
+								onDependantConnectionIdChanged: {
+									reused()
+								}
+								
+								property var url: rowDelegate && rowDelegate.dataModel ? rowDelegate.dataModel.item.m_url : ""
+								
 								onReused: {
 									if (rowIndex >= 0){
-										let value = getValue();
 										let item = ouputConnTable.elements.get(bodyItem.rowIndex).item;
 										
 										let dependantConnectionId = item.m_dependantConnectionId;
 										let elementsModel = item.m_elements;
 										
-										textLabel.text = value;
+										textLabel.text = "";
 										cb.model = elementsModel;
-										
-										console.log("cb.model", cb.model);
 										
 										if (cb.model){
 											for (let i = 0; i < cb.model.count; i++){
 												if (cb.model.get(i).item.m_id == dependantConnectionId){
 													cb.currentIndex = i;
+													let item = cb.model.get(cb.currentIndex).item;
+													textLabel.text = item.m_name
 													break;
 												}
 											}
@@ -759,17 +838,28 @@ ViewBase {
 									
 									onCurrentIndexChanged: {
 										cb.visible = false;
-										if (cb.model){
+										
+										let dependantConnectionId = ""
+										let name = ""
+										let url = undefined
+										
+										if (currentIndex >= 0 && cb.model){
 											let item = cb.model.get(cb.currentIndex).item;
-											let id = item.m_id
-											let name = item.m_name
-											let url = item.m_url
-											
-											textLabel.text = name;
-											
-											let outputItem = ouputConnTable.elements.get(bodyItem.rowIndex).item;
-											outputItem.m_dependantConnectionId = id;
+											dependantConnectionId = item.m_id
+											name = item.m_name
+											url = item.m_url
+										}
+										
+										textLabel.text = name;
+										
+										let outputItem = ouputConnTable.elements.get(bodyItem.rowIndex).item;
+										outputItem.m_dependantConnectionId = dependantConnectionId;
+										if (url){
 											outputItem.m_url = url.copyMe();
+										}
+										
+										if (serviceEditorContainer.serviceData.m_outputConnections.get(bodyItem.rowIndex).item.m_dependantConnectionId != dependantConnectionId){
+											serviceEditorContainer.doUpdateModel()
 										}
 									}
 									
@@ -824,7 +914,7 @@ ViewBase {
 								
 								index = headersModel2.insertNewItem();
 								
-								headersModel2.setData("id", "displayUrl", index)
+								headersModel2.setData("id", "url", index)
 								headersModel2.setData("name", qsTr("Url"), index)
 								
 								ouputConnTable.headers = headersModel2;
@@ -864,13 +954,13 @@ ViewBase {
 			anchors.fill: parent;
 			
 			function getHeaders(){
-				if (serviceEditorContainer.productId === ""){
+				if (serviceEditorContainer.serviceTypeName === ""){
 					console.error("Unable to get additional parameters. Product-ID is empty");
 					return null;
 				}
 				
 				let obj = serviceEditorContainer.getHeaders();
-				obj["productId"] = serviceEditorContainer.productId;
+				obj["productId"] = serviceEditorContainer.serviceTypeName;
 				obj["token"] = userTokenProvider.accessToken;
 				
 				return obj;
@@ -878,7 +968,7 @@ ViewBase {
 			
 			UserTokenProvider {
 				id: userTokenProvider
-				productId: serviceEditorContainer.productId;
+				productId: serviceEditorContainer.serviceTypeName;
 				isTokenGlobal: false
 				
 				function getHeaders(){
@@ -894,7 +984,7 @@ ViewBase {
 			AuthorizationPage {
 				id: authorizationPage
 				anchors.fill: parent;
-				appName: serviceEditorContainer.productId
+				appName: serviceEditorContainer.serviceTypeName
 				canRegisterUser: false
 				canRecoveryPassword: false
 				onLogin: {
@@ -907,12 +997,41 @@ ViewBase {
 				anchors.fill: parent;
 			}
 			
+			Rectangle {
+				anchors.fill: parent
+				color: Style.backgroundColor2
+				visible: !serviceEditorContainer.serviceRunning
+				
+				Row {
+					anchors.centerIn: parent
+					spacing: Style.sizeMainMargin
+					
+					Image {
+						id: image
+						width: 30
+						height: width
+						
+						sourceSize.width: width
+						sourceSize.height: height
+						
+						source: "../../../../" + Style.getIconPath("Icons/Warning", Icon.State.On, Icon.Mode.Normal)
+					}
+					
+					BaseText {
+						text: qsTr("Service not running")
+						font.pixelSize: Style.fontSizeXXLarge
+					}
+				}
+			}
+			
 			Component {
 				id: administrationViewDocument
 				SingleDocumentWorkspaceView {
 					id: singleDocumentWorkspaceView
 					anchors.fill: administrationViewItem
 					documentManager: DocumentManager {}
+					
+					visualStatusProvider: GqlBasedObjectVisualStatusProvider {}
 					
 					Component.onCompleted: {
 						addInitialItem(administrationView, "Administration")
@@ -922,7 +1041,7 @@ ViewBase {
 						id: administrationView;
 						AdministrationView {
 							anchors.fill: parent;
-							productId: serviceEditorContainer.productId;
+							productId: serviceEditorContainer.serviceTypeName;
 							documentManager: singleDocumentWorkspaceView.documentManager;
 							
 							function getHeaders(){

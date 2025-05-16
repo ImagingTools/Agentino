@@ -19,8 +19,8 @@ enum ServiceStatus {
 type Service {
 	id: ID!
 	agentId: ID!
-	x: Integer
-	y: Integer
+	x: Double
+	y: Double
 	width: Integer
 	mainText: String
 	secondText: String

@@ -39,7 +39,6 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 			const imtrest::IRequest& networkRequest,
 			QString& /*errorMessage*/)
 {
-	QByteArray serviceId = gqlRequest.GetHeader("serviceid");
 	if (!IsRequestSupported(gqlRequest) || !m_connectionCollectionProviderCompPtr.IsValid()){
 		return false;
 	}
@@ -52,7 +51,6 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 	imtclientgql::IGqlClient::GqlRequestPtr clientRequestPtr(dynamic_cast<imtgql::IGqlRequest*>(gqlRequestPtr));
 	if (!clientRequestPtr.isNull()){
 		QByteArray serviceId = gqlRequest.GetHeader("serviceid");
-		QByteArray token = gqlRequest.GetHeader("token");
 		QUrl url;
 		QByteArray serviceTypeName;
 		std::shared_ptr<imtservice::IConnectionCollection> connectionCollection = m_connectionCollectionProviderCompPtr->GetConnectionCollection(serviceId);

@@ -415,12 +415,6 @@ void CAgentCollectionControllerComp::UpdateAgentService(
 	headers.insert("clientid",agentId);
 	gqlContextPtr->SetHeaders(headers);
 	request.SetGqlContext(gqlContextPtr);
-	
-	// QString errorMessage;
-	// istd::TDelPtr<imtbase::CTreeItemModel> responseModelPtr = m_requestHandlerCompPtr->CreateResponse(request, errorMessage);
-	// if (!responseModelPtr.IsValid()){
-	// 	SendErrorMessage(0, QString("Unable to update service on the agent"));
-	// }
 }
 
 
@@ -450,9 +444,10 @@ bool CAgentCollectionControllerComp::UpdateServiceStatusFromAgent(const QByteArr
 		return false;
 	}
 	
+	QString errorMessage;
 	servicessdl::CServiceStatusResponse::V1_0 response;
-	if (!SendModelRequest<servicessdl::CServiceStatusResponse::V1_0, servicessdl::CServiceStatusResponse>(gqlRequest, response)){
-		SendErrorMessage(0, QString("Unable to update status for service '%1'. Error: Request sending failed").arg(qPrintable(serviceId)), "CAgentCollectionControllerComp");
+	if (!SendModelRequest<servicessdl::CServiceStatusResponse::V1_0, servicessdl::CServiceStatusResponse>(gqlRequest, response, errorMessage)){
+		SendErrorMessage(0, QString("Unable to update status for service '%1'. Error: %2").arg(qPrintable(serviceId), errorMessage), "CAgentCollectionControllerComp");
 		return false;
 	}
 	

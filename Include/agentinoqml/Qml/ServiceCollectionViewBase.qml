@@ -7,6 +7,7 @@ import imtguigql 1.0
 import imtdocgui 1.0
 import imtgui 1.0
 import agentinoServicesSdl 1.0
+import imtbaseImtCollectionSdl 1.0
 import agentino 1.0
 
 RemoteCollectionView {
@@ -40,12 +41,14 @@ RemoteCollectionView {
 		}
 	}
 	
+	signal serviceStatusChanged(string serviceId, string status)
+	
 	onClientIdChanged: {
 		if (clientId == ""){
 			return
 		}
 		
-		commandsController.commandId = root.collectionId;
+		commandsController.typeId = root.collectionId;
 		dataController.collectionId = root.collectionId;
 		
 		// let documentManagerPtr = MainDocumentManager.getDocumentManager(root.collectionId)
@@ -55,7 +58,7 @@ RemoteCollectionView {
 			
 			documentManagerPtr.registerDocumentView("Service", "ServiceEditor", serviceEditorComp);
 			documentManagerPtr.registerDocumentDataController("Service", serviceDataControllerComp);
-			documentManagerPtr.registerDocumentValidator("Service", serviceValidatorComp);
+			// documentManagerPtr.registerDocumentValidator("Service", serviceValidatorComp);
 		}
 	}
 	
@@ -99,8 +102,7 @@ RemoteCollectionView {
 		headers["serviceid"] = root.serviceId;
 		return headers
 	}
-	
-	
+
 	onSelectionChanged: {
 		if (selection.length > 0){
 			let index = selection[0];
@@ -112,30 +114,18 @@ RemoteCollectionView {
 			root.serviceId = ""
 			root.serviceName = ""
 		}
+		
+		console.log("onSelectionChanged", root.serviceId)
 	}
 	
 	Component {
 		id: serviceEditorComp;
 		
-		ServiceEditor {
-			id: serviceEditor
-			documentManager: root.documentManager;
-			
-			commandsDelegateComp: Component {ViewCommandsDelegateBase {
-					view: serviceEditor;
-				}
-			}
-			
-			commandsControllerComp: Component {GqlBasedCommandsController {
-					typeId: "Service";
-					function getHeaders(){
-						return root.getHeaders();
-					}
-				}
-			}
-			
-			function getHeaders(){
-				return root.getHeaders();
+		ServiceEditorWrap {
+			clientId: root.clientId
+			documentManager: root.documentManager
+			Component.onCompleted: {
+				root.serviceStatusChanged.connect(serviceStatusChanged)
 			}
 		}
 	}
@@ -164,15 +154,12 @@ RemoteCollectionView {
 			onReused: {
 				if (rowIndex >= 0){
 					let status = root.table.elements.getData(ServiceItemTypeMetaInfo.s_status, rowIndex);
-					console.log("status" ,status);
-					
 					if (status === ServiceStatus.s_Running){
 						console.log(ServiceStatus.s_Running ,status);
 						
 						icon.source = "../../../../" + Style.getIconPath("Icons/Running", Icon.State.On, Icon.Mode.Normal);
 					}
 					else if (status === ServiceStatus.s_NotRunning  || status === ServiceStatus.s_Stopping || status === ServiceStatus.s_Starting){
-						console.log("Stopped" ,status);
 						icon.source = "../../../../" + Style.getIconPath("Icons/Stopped", Icon.State.On, Icon.Mode.Normal);
 					}
 					else{
@@ -191,7 +178,7 @@ RemoteCollectionView {
 			
 			ToolButton {
 				anchors.fill: cellDelegate.icon
-				tooltipText: width > 0 ? cellDelegate.rowDelegate.tableItem.elements.getData("DependantStatusInfo", cellDelegate.rowIndex) : ""
+				tooltipText: width > 0 ? cellDelegate.rowDelegate.tableItem.elements.getData("dependantStatusInfo", cellDelegate.rowIndex) : ""
 				decorator: Component {
 					ToolButtonDecorator{
 						color: "transparent"
@@ -226,6 +213,11 @@ RemoteCollectionView {
 		id: subscriptionClient;
 		gqlCommandId: "OnServiceStatusChanged";
 		onMessageReceived: {
+			console.log("OnServiceStatusChanged onMessageReceived", data)
+			let serviceId = data.getData("serviceid")
+			let serviceStatus = data.getData(ServiceStatus.s_Key)
+			root.serviceStatusChanged(serviceId, serviceStatus)
+			
 			root.doUpdateGui();
 		}
 	}

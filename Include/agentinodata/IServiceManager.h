@@ -48,7 +48,8 @@ public:
 				const QByteArray& serviceId,
 				const IServiceInfo& serviceInfo,
 				const QString& serviceName = QString(),
-				const QString& serviceDescription = QString()) = 0;
+				const QString& serviceDescription = QString(),
+				bool beQuiet = false) = 0;
 	virtual bool ServiceExists(const QByteArray& agentId, const QByteArray& serviceId) const = 0;
 	virtual IServiceInfo* GetService(const QByteArray& agentId, const QByteArray& serviceId) const = 0;
 };

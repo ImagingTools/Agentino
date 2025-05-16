@@ -1,6 +1,9 @@
 #include <agentinodata/agentinodata.h>
 
 
+// Qt includes
+#include <QtCore/QFileInfo>
+
 // ACF includes
 #include <iprm/TParamsPtr.h>
 
@@ -43,7 +46,10 @@ ProcessStateEnum GetProcceStateRepresentation(QProcess::ProcessState processStat
 }
 
 
-bool GetServiceFromRepresentation(agentinodata::CServiceInfo& serviceInfo, const sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation)
+bool GetServiceFromRepresentation(
+			agentinodata::CServiceInfo& serviceInfo,
+			const sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation,
+			QString& errorMessage)
 {
 	if (serviceDataRepresentation.name){
 		QString name = *serviceDataRepresentation.name;
@@ -57,6 +63,13 @@ bool GetServiceFromRepresentation(agentinodata::CServiceInfo& serviceInfo, const
 	
 	if (serviceDataRepresentation.path){
 		QString path = *serviceDataRepresentation.path;
+		
+		QFileInfo fileInfo(path);
+		if (!fileInfo.exists()){
+			errorMessage = QString("Service path '%1' not exists").arg(qPrintable(path));
+			return false;
+		}
+		
 		serviceInfo.SetServicePath(path.toUtf8());
 	}
 	

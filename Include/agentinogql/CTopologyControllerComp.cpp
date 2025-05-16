@@ -73,7 +73,6 @@ sdl::agentino::Topology::CTopology CTopologyControllerComp::OnGetTopology(
 					service.mainText = serviceName + "@" + agentName;
 					service.secondText = description;
 					
-					QString typeName = serviceInfoPtr->GetServiceTypeName();
 					service.thirdText = serviceTypeName;
 					
 					agentinodata::IServiceStatusInfo::ServiceStatus serviceStatus = m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceElementId);
