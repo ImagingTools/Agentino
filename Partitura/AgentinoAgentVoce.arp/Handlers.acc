@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5332" Description="ACF"/>
-            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5352" Description="ACF"/>
+            <Version Id="1" Number="2237" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -100,6 +100,8 @@
                                 <Value>GroupsCommands</Value>
                                 <Value>Authorization</Value>
                                 <Value>ProductPermissions</Value>
+                                <Value>GetRevisionInfoList</Value>
+                                <Value>GetObjectVisualStatus</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -148,6 +150,66 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="AgentRemoteDocumentRevisionController" PackageId="AgentGqlPck" ComponentId="AgentRemoteDocumentRevisionController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ApiClient" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ApiClient"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="CollectionIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>Roles</Value>
+                                <Value>Users</Value>
+                                <Value>Groups</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ConnectionCollectionProvider" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentPages/ServiceCollectionController"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="AgentRemoteVisualStatusController" PackageId="AgentGqlPck" ComponentId="AgentRemoteVisualStatusController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ApiClient" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ApiClient"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ConnectionCollectionProvider" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentPages/ServiceCollectionController"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TypeIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>Role</Value>
+                                <Value>User</Value>
+                                <Value>Group</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="ApiClient" PackageId="ImtClientGqlPck" ComponentId="ApiClient">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
@@ -178,6 +240,8 @@
                     <AttributeInfo Id="GqlRequestHandlers" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
+                                <Value>AgentRemoteVisualStatusController</Value>
+                                <Value>AgentRemoteDocumentRevisionController</Value>
                                 <Value>AgentGqlRemoteRepresentationController</Value>
                                 <Value>AgentPages</Value>
                                 <Value>ServiceController</Value>

@@ -2,14 +2,16 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5332" Description="ACF"/>
-            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5352" Description="ACF"/>
+            <Version Id="1" Number="2237" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
         <Element ComponentName="AgentGqlRemoteRepresentationController" X="225" Y="525" Note=""/>
         <Element ComponentName="AgentPages" X="150" Y="400" Note=""/>
+        <Element ComponentName="AgentRemoteDocumentRevisionController" X="750" Y="525" Note=""/>
+        <Element ComponentName="AgentRemoteVisualStatusController" X="775" Y="625" Note=""/>
         <Element ComponentName="ApiClient" X="250" Y="625" Note=""/>
         <Element ComponentName="ApplicationController" X="375" Y="375" Note=""/>
         <Element ComponentName="GraphQLClientEngine" X="250" Y="725" Note=""/>

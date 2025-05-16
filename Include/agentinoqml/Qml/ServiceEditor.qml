@@ -1031,7 +1031,11 @@ ViewBase {
 					anchors.fill: administrationViewItem
 					documentManager: DocumentManager {}
 					
-					visualStatusProvider: GqlBasedObjectVisualStatusProvider {}
+					visualStatusProvider: GqlBasedObjectVisualStatusProvider {
+						function getHeaders(){
+							return administrationViewItem.getHeaders();
+						}
+					}
 					
 					Component.onCompleted: {
 						addInitialItem(administrationView, "Administration")
