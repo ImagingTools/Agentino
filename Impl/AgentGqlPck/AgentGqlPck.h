@@ -6,6 +6,8 @@
 #include <icomp/TMakeComponentWrap.h>
 
 // Agentino includes
+#include <agentgql/TVisualStatusControllerCompWrap.h>
+#include <agentgql/TDocumentRevisionControllerCompWrap.h>
 #include <agentgql/CServiceCollectionControllerComp.h>
 #include <agentgql/CServiceControllerComp.h>
 #include <agentgql/CAgentinoSubscriptionClientComp.h>
@@ -17,8 +19,6 @@
 #include <agentgql/CAgentGqlRemoteRepresentationControllerComp.h>
 #include <agentgql/CAgentConnectionSubscriberControllerComp.h>
 #include <agentgql/CAgentServicesRemoteSubscriberProxyComp.h>
-#include <agentgql/CAgentRemoteVisualStatusControllerComp.h>
-#include <agentgql/CAgentRemoteDocumentRevisionControllerComp.h>
 
 
 /**
@@ -39,8 +39,8 @@ typedef agentgql::CServiceLogSubscriberControllerComp ServiceLogSubscriberContro
 typedef agentgql::CAgentGqlRemoteRepresentationControllerComp AgentGqlRemoteRepresentationController;
 typedef agentgql::CAgentConnectionSubscriberControllerComp AgentConnectionSubscriberController;
 typedef agentgql::CAgentServicesRemoteSubscriberProxyComp AgentServicesRemoteSubscriberProxy;
-typedef agentgql::CAgentRemoteVisualStatusControllerComp AgentRemoteVisualStatusController;
-typedef agentgql::CAgentRemoteDocumentRevisionControllerComp AgentRemoteDocumentRevisionController;
+typedef agentgql::TVisualStatusControllerCompWrap<AgentGqlRemoteRepresentationController> AgentRemoteVisualStatusController;
+typedef agentgql::TDocumentRevisionControllerCompWrap<AgentGqlRemoteRepresentationController> AgentRemoteDocumentRevisionController;
 
 
 } // namespace AgentGqlPck

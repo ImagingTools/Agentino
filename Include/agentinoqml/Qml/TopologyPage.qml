@@ -117,6 +117,7 @@ ViewBase {
 		property string selectedService: ""
 		
 		onAutoFitChanged: {
+			console.log("SchemeView onAutoFitChanged", autoFit);
 			if (topologyPage.commandsController){
 				topologyPage.commandsController.setToggled("AutoFit", scheme.autoFit);
 			}
@@ -132,7 +133,7 @@ ViewBase {
 			if (!topologyPage.commandsController){
 				return;
 			}
-						
+			
 			if(objectsModel.count > selectedIndex && selectedIndex >= 0){
 				let item = scheme.objectsModel.get(scheme.selectedIndex).item
 				let serviceId = item.m_id;
@@ -212,8 +213,7 @@ ViewBase {
 	Component {
 		id: serviceValidatorComp;
 		
-		ServiceValidator {
-		}
+		ServiceValidator {}
 	}
 	
 	Component {
@@ -255,68 +255,65 @@ ViewBase {
 		gqlCommandId: "OnServiceStatusChanged";
 		
 		onMessageReceived: {
-			console.log("OnServiceStatusChanged", data.toJson());
-			// if (data.containsKey("OnServiceStatusChanged")){
-				let dataModel = data
-				let serviceId = dataModel.getData("serviceid")
-				let serviceStatus = dataModel.getData(ServiceStatus.s_Key)
-				let dependencyStatus
-
-				let index = scheme.findModelIndex(serviceId);
-				if (index < 0){
-					return;
+			let dataModel = data
+			let serviceId = dataModel.getData("serviceid")
+			let serviceStatus = dataModel.getData(ServiceStatus.s_Key)
+			let dependencyStatus
+			
+			let index = scheme.findModelIndex(serviceId);
+			if (index < 0){
+				return;
+			}
+			
+			let item = scheme.objectsModel.get(index).item
+			
+			item.m_status = serviceStatus;
+			if (serviceStatus === "RUNNING"){
+				item.m_icon1 = "Icons/Running";
+			}
+			else if (serviceStatus === "NOT_RUNNING"){
+				item.m_icon1 = "Icons/Stopped";
+			}
+			else if (serviceStatus === "UNDEFINED"){
+				item.m_icon1 = "Icons/Alert";
+			}
+			
+			if (index === scheme.selectedIndex){
+				topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus === "NOT_RUNNING");
+				topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === "RUNNING");
+			}
+			
+			serviceStatus = item.m_status;
+			
+			let dependencyStatusModel = dataModel.getData(DependencyStatus.s_Key)
+			for (let i = 0; i < dependencyStatusModel.getItemsCount(); i++){
+				serviceId = dependencyStatusModel.getData("id", i);
+				index = scheme.findModelIndex(serviceId);
+				dependencyStatus = dependencyStatusModel.getData(DependencyStatus.s_Key, i)
+				
+				let serviceItem = scheme.objectsModel.get(index).item;
+				if (dependencyStatus === "NOT_RUNNING"){
+					serviceItem.m_icon2 = "Icons/Error"
+				}
+				else if (dependencyStatus === "UNDEFINED") {
+					serviceItem.m_icon2 = "Icons/Warning"
+				}
+				else {
+					serviceItem.m_icon2 = ""
 				}
 				
-				let item = scheme.objectsModel.get(index).item
-
-				item.m_status = serviceStatus;
-				if (serviceStatus === "RUNNING"){
-					item.m_icon1 = "Icons/Running";
-				}
-				else if (serviceStatus === "NOT_RUNNING"){
-					item.m_icon1 = "Icons/Stopped";
-				}
-				else if (serviceStatus === "UNDEFINED"){
-					item.m_icon1 = "Icons/Alert";
+				if (serviceStatus !== "RUNNING"){
+					item.m_icon2 = ""
 				}
 				
-				if (index === scheme.selectedIndex){
-					topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus === "NOT_RUNNING");
-					topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === "RUNNING");
+				if (serviceId === scheme.selectedService){
+					metaInfoProvider.getMetaInfo(scheme.selectedService);
 				}
-				
-				serviceStatus = item.m_status;
-				
-				let dependencyStatusModel = dataModel.getData(DependencyStatus.s_Key)
-				for (let i = 0; i < dependencyStatusModel.getItemsCount(); i++){
-					serviceId = dependencyStatusModel.getData("id", i);
-					index = scheme.findModelIndex(serviceId);
-					dependencyStatus = dependencyStatusModel.getData(DependencyStatus.s_Key, i)
-
-					let serviceItem = scheme.objectsModel.get(index).item;
-					if (dependencyStatus === "NOT_RUNNING"){
-						serviceItem.m_icon2 = "Icons/Error"
-					}
-					else if (dependencyStatus === "UNDEFINED") {
-						serviceItem.m_icon2 = "Icons/Warning"
-					}
-					else {
-						serviceItem.m_icon2 = ""
-					}
-					
-					if (serviceStatus !== "RUNNING"){
-						item.m_icon2 = ""
-					}
-					
-					if (serviceId === scheme.selectedService){
-						metaInfoProvider.getMetaInfo(scheme.selectedService);
-					}
-				}
-				
-				topologyPage.serviceStatusChanged(serviceId, serviceStatus)
-				
-				scheme.requestPaint()
-			// }
+			}
+			
+			topologyPage.serviceStatusChanged(serviceId, serviceStatus)
+			
+			scheme.requestPaint()
 		}
 	}
 	

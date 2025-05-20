@@ -74,6 +74,16 @@ I_EXPORT_COMPONENT(
 			"Retranslate requests from argentina to agent",
 			"Agentino Retranslate Request Controller");
 
+I_EXPORT_COMPONENT(
+			AgentinoRemoteVisualStatusController,
+			"Agentino remote visual status controller",
+			"Agentino Remote Visual Status Controller");
+
+I_EXPORT_COMPONENT(
+			AgentinoRemoteDocumentRevisionController,
+			"Agentino remote document revision controller",
+			"Agentino Remote Document Revision Controller");
+
 
 } // namespace AgentinoGqlPck
 

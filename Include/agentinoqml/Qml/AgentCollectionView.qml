@@ -127,7 +127,6 @@ SplitView {
 				GroupFilter {
 					id: sourceGroupFilter
 					m_logicalOperation: "Or"
-					
 				}
 			}
 		}

@@ -1,14 +1,7 @@
 #include <agentinogql/CAgentsSubscriberProxyControllerComp.h>
 
 
-// ImtCore includes
-#include <imtbase/CTreeItemModel.h>
-#include <imtbase/ICollectionInfo.h>
-#include <imtgql/CGqlRequest.h>
-#include <imtgql/CGqlContext.h>
-
 // Agentino includes
-#include <agentinodata/CAgentInfo.h>
 #include <agentinodata/IServiceController.h>
 
 
@@ -54,18 +47,16 @@ bool CAgentsSubscriberProxyControllerComp::RegisterSubscription(
 bool CAgentsSubscriberProxyControllerComp::UnregisterSubscription(const QByteArray& subscriptionId)
 {
 	if (!m_subscriptionManagerCompPtr.IsValid()){
-
 		return false;
 	}
 
 	bool retVal = BaseClass::UnregisterSubscription(subscriptionId);
 	if (retVal){
-		for (QByteArray remoteSubscriptionId: m_remoteSubscriptions){
-			if (m_remoteSubscriptions.value(remoteSubscriptionId) == subscriptionId){
-				m_subscriptionManagerCompPtr->UnregisterSubscription(remoteSubscriptionId);
-				m_remoteSubscriptions.remove(remoteSubscriptionId);
+		for (auto it = m_remoteSubscriptions.constBegin(); it != m_remoteSubscriptions.constEnd(); ++it) {
+			if (it.value() == subscriptionId) {
+				m_subscriptionManagerCompPtr->UnregisterSubscription(it.key());
+				m_remoteSubscriptions.remove(it.key());
 				retVal = true;
-
 				break;
 			}
 		}
@@ -90,16 +81,17 @@ void CAgentsSubscriberProxyControllerComp::OnResponseReceived(const QByteArray &
 		if (registerSubscriptionId.isEmpty()){
 			return;
 		}
+		
+		QJsonObject jsonData = document.object().value(subscriptionTypeId).toObject();
+		QJsonDocument documentBody;
+		documentBody.setObject(jsonData);
+		QByteArray body = documentBody.toJson(QJsonDocument::Compact);
+		
 		for (RequestNetworks& requestNetworks: m_registeredSubscribers){
 			if (requestNetworks.networkRequests.contains(registerSubscriptionId)){
-				QJsonObject jsonData = document.object().value(subscriptionTypeId).toObject();
-
-				QJsonDocument documentBody;
-				documentBody.setObject(jsonData);
-
-				QByteArray body = documentBody.toJson(QJsonDocument::Compact);
-
 				PublishData(subscriptionTypeId, body);
+
+				break;
 			}
 		}
 	}

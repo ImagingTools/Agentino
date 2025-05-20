@@ -27,6 +27,7 @@
                 <Element ComponentName="AgentCollectionSubscriber" X="550" Y="75" Note=""/>
                 <Element ComponentName="AgentStatusCollectionSubscriber" X="525" Y="150" Note=""/>
                 <Element ComponentName="AgentSubscriberProxyController" X="950" Y="150" Note=""/>
+                <Element ComponentName="LogSubscriberProxyController" X="950" Y="250" Note=""/>
                 <Element ComponentName="RolesSubscriberController" X="525" Y="450" Note=""/>
                 <Element ComponentName="ServiceCollectionSubscriberController" X="550" Y="250" Note=""/>
                 <Element ComponentName="ServiceStatusCollectionSubscriberController" X="550" Y="675" Note=""/>

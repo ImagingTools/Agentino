@@ -30,6 +30,10 @@ ServiceEditor {
 	signal serviceStatusChanged(string serviceId, string status)
 	onServiceStatusChanged: {
 		console.log("ServiceEditor onServiceStatusChanged", serviceId, status)
+		if (!serviceEditor.serviceData){
+			return
+		}
+
 		if (serviceId == serviceEditor.serviceData.m_id){
 			serviceEditor.serviceRunning = status === "RUNNING"
 		}
@@ -68,6 +72,10 @@ ServiceEditor {
 		}
 		
 		onMessageReceived: {
+			if (!serviceEditor.serviceData){
+				return
+			}
+
 			if (data.containsKey("serviceid")){
 				let serviceId = data.getData("serviceid")
 				if (serviceId === serviceEditor.serviceData.m_id){

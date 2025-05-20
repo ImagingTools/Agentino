@@ -9,10 +9,10 @@
     </AcfHeader>
     <PositionMap>
         <Element ComponentName="AgentinoGqlRemoteRepresentationController" X="375" Y="200" Note=""/>
+        <Element ComponentName="AgentinoRemoteDocumentRevisionController" X="850" Y="125" Note=""/>
+        <Element ComponentName="AgentinoRemoteVisualStatusController" X="850" Y="200" Note=""/>
         <Element ComponentName="ApplicationController" X="375" Y="375" Note=""/>
         <Element ComponentName="Pages" X="375" Y="525" Note=""/>
-        <Element ComponentName="RemoteDocumentRevisionController" X="850" Y="125" Note=""/>
-        <Element ComponentName="RemoteObjectVisualStatusController" X="850" Y="200" Note=""/>
         <Element ComponentName="StandardGraphQlHandlers" X="975" Y="375" Note=""/>
     </PositionMap>
     <EmbeddedRegistries/>

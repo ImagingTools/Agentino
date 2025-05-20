@@ -1,10 +1,6 @@
 #pragma once
 
 
-// ACF includes
-#include <ilog/TLoggerCompWrap.h>
-#include <imod/TSingleModelObserverBase.h>
-
 // ImtCore includes
 #include <imtclientgql/IGqlSubscriptionManager.h>
 #include <imtclientgql/IGqlClient.h>
@@ -26,7 +22,6 @@ public:
 	I_BEGIN_COMPONENT(CAgentsSubscriberProxyControllerComp);
 		I_REGISTER_INTERFACE(imtclientgql::IGqlSubscriptionClient);
 		I_ASSIGN(m_subscriptionManagerCompPtr, "SubscriptionManager", "Subscription agent manager", true, "SubscriptionManager");
-		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", true, "AgentCollection");
 	I_END_COMPONENT;
 
 protected:
@@ -45,10 +40,8 @@ protected:
 
 private:
 	I_REF(imtclientgql::IGqlSubscriptionManager, m_subscriptionManagerCompPtr);
-	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
-	I_REF(imtclientgql::IGqlClient, m_gqlClientCompPtr);
-
-	QMap<QByteArray, QByteArray> m_registeredAgents; // <agentId, subscriptionId>
+	
+private:
 	QMap<QByteArray, QByteArray> m_remoteSubscriptions; // <remoteSubscriptionId, subscriptionId>
 };
 

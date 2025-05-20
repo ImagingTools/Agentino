@@ -1,4 +1,4 @@
-#include <agentgql/CAgentRemoteVisualStatusControllerComp.h>
+#pragma once
 
 
 // ImtCore includes
@@ -9,11 +9,29 @@ namespace agentgql
 {
 
 
-// protected methods
+template <class RemoteControllerComp>
+class TVisualStatusControllerCompWrap: public RemoteControllerComp
+{
+public:
+	typedef RemoteControllerComp BaseClass;
 
-// reimplemented (imtgql::IGqlRequestHandler)
+	I_BEGIN_COMPONENT(TVisualStatusControllerCompWrap)
+		I_ASSIGN_MULTI_0(m_typeIdsAttrPtr, "TypeIds", "Remote object type-IDs", false);
+	I_END_COMPONENT;
 
-bool CAgentRemoteVisualStatusControllerComp::IsRequestSupported(const imtgql::CGqlRequest& gqlRequest) const
+protected:
+	// reimplemented (imtgql::IGqlRequestHandler)
+	virtual bool IsRequestSupported(const imtgql::CGqlRequest& gqlRequest) const override;
+	
+protected:
+	I_MULTIATTR(QByteArray, m_typeIdsAttrPtr);
+};
+
+
+// public methods
+
+template<class RemoteControllerComp>
+bool TVisualStatusControllerCompWrap<RemoteControllerComp>::IsRequestSupported(const imtgql::CGqlRequest& gqlRequest) const
 {
 	bool isSupported = BaseClass::IsRequestSupported(gqlRequest);
 	if (!isSupported){

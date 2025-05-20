@@ -1,5 +1,10 @@
 #pragma once
 
+
+// Qt includes
+#include <QtWebSockets/QWebSocket>
+#include <QtCore/QTimer>
+
 // ACF includes
 #include <istd/TDelPtr.h>
 
@@ -8,16 +13,13 @@
 #include <imtservice/IConnectionCollectionProvider.h>
 #include <imtservergql/CGqlPublisherCompBase.h>
 
-// Qt includes
-#include <QtWebSockets/QWebSocket>
-#include <QtCore/QTimer>
 
 
 namespace agentgql
 {
 
 
-class CAgentServicesRemoteSubscriberProxyComp: public QObject, public imtservergql::CGqlPublisherCompBase //, virtual public imtrest::IRequestServlet
+class CAgentServicesRemoteSubscriberProxyComp: public QObject, public imtservergql::CGqlPublisherCompBase
 {
 	Q_OBJECT
 public:

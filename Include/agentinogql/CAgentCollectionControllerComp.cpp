@@ -455,7 +455,7 @@ bool CAgentCollectionControllerComp::UpdateServiceStatusFromAgent(const QByteArr
 	serviceStatusInfoPtr.SetPtr(new agentinodata::CServiceStatusInfo);
 	
 	serviceStatusInfoPtr->SetServiceId(serviceId);
-	
+
 	servicessdl::ServiceStatus status = *response.status;
 	switch (status) {
 	case servicessdl::ServiceStatus::NOT_RUNNING:

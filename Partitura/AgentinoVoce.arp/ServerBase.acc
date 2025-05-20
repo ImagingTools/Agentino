@@ -303,6 +303,7 @@
                                 <Value>Subscribers/AgentsSubscriberController</Value>
                                 <Value>Subscribers/TopologySubscriber</Value>
                                 <Value>ServiceStatusSubscriberController</Value>
+                                <Value>Subscribers/LogSubscriberProxyController</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -429,9 +430,6 @@
                                 <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
@@ -454,9 +452,6 @@
                                 <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
@@ -470,20 +465,13 @@
                                     <Data IsEnabled="true">
                                         <Values>
                                             <Value>OnAgentLogCollectionChanged</Value>
-                                            <Value>OnServiceLogCollectionChanged</Value>
                                             <Value>OnRolesCollectionChanged</Value>
                                             <Value>OnUsersCollectionChanged</Value>
                                             <Value>OnGroupsCollectionChanged</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
-                                <AttributeInfo Id="GqlRequestHandler" Type="Reference" ExportId="GqlRequestHandler">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Model" Type="Reference" ExportId="AgentRepository">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
@@ -492,7 +480,30 @@
                                 <AttributeInfo Id="SubscriptionManager" Type="Reference" ExportId="SubscriptionManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="LogSubscriberProxyController" PackageId="AgentinoGqlPck" ComponentId="AgentsSubscriberProxyController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>OnAgentLogCollectionChanged</Value>
+                                            <Value>OnServiceLogCollectionChanged</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="SubscriptionManager" Type="Reference" ExportId="SubscriptionManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>
@@ -517,9 +528,6 @@
                                 <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
@@ -540,9 +548,6 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>
@@ -592,9 +597,6 @@
                                 <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
@@ -615,9 +617,6 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>
@@ -642,9 +641,6 @@
                                 <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
@@ -655,6 +651,7 @@
                     <Component ExportedId="AgentStatusCollectionSubscriber" ComponentId="AgentStatusCollectionSubscriber"/>
                     <Component ExportedId="AgentSubscriberProxyController" ComponentId="AgentSubscriberProxyController"/>
                     <Component ExportedId="AgentsSubscriberController" ComponentId="AgentCollectionSubscriber"/>
+                    <Component ExportedId="LogSubscriberProxyController" ComponentId="LogSubscriberProxyController"/>
                     <Component ExportedId="RolesSubscriberController" ComponentId="RolesSubscriberController"/>
                     <Component ExportedId="ServiceCollectionSubscriberController" ComponentId="ServiceCollectionSubscriberController"/>
                     <Component ExportedId="ServiceStatusCollectionSubscriberController" ComponentId="ServiceStatusCollectionSubscriberController"/>

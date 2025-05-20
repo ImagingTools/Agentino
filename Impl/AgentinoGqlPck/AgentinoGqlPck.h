@@ -6,6 +6,8 @@
 #include <icomp/TMakeComponentWrap.h>
 
 // Agentino includes
+#include <agentgql/TVisualStatusControllerCompWrap.h>
+#include <agentgql/TDocumentRevisionControllerCompWrap.h>
 #include <agentinogql/CServiceSubscriberControllerComp.h>
 #include <agentinogql/CServiceControllerProxyComp.h>
 #include <agentinogql/CAgentCollectionControllerComp.h>
@@ -39,6 +41,8 @@ typedef agentinogql::CServiceStatusCollectionSubscriberControllerComp ServiceSta
 typedef agentinogql::CAgentConnectionObserverComp AgentConnectionObserver;
 typedef agentinogql::CAgentsSubscriberProxyControllerComp AgentsSubscriberProxyController;
 typedef agentinogql::CAgentinoGqlRemoteRepresentationControllerComp AgentinoGqlRemoteRepresentationController;
+typedef agentgql::TVisualStatusControllerCompWrap<AgentinoGqlRemoteRepresentationController> AgentinoRemoteVisualStatusController;
+typedef agentgql::TDocumentRevisionControllerCompWrap<AgentinoGqlRemoteRepresentationController> AgentinoRemoteDocumentRevisionController;
 
 
 } // namespace AgentinoGqlPck

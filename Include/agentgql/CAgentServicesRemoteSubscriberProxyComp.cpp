@@ -66,8 +66,6 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 					}
 
 					if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT){
-						QString connectionName = objectCollection->GetElementInfo(id, imtbase::IObjectCollection::EIT_NAME).toString();
-						QString connectionDescription = collectionInfo->GetElementInfo(id, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
 						serviceTypeName = connectionCollection->GetServiceTypeName().toUtf8();
 						url = connectionParamPtr->GetDefaultUrl();
 
@@ -108,21 +106,21 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 				// connect(this, &CAgentServicesRemoteSubscriberProxyComp::EmitWebSocketClose, websocketPtr, &QWebSocket::close);
 				connect(websocketPtr, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(OnWebSocketError(QAbstractSocket::SocketError)));
 
-
 				m_webSocketClientMap.insert(serviceId, websocketPtr);
 			}
 		}
-
+		
 		if (!m_requestMap.contains(subscriptionId)){
 			m_requestMap.insert(subscriptionId, QPair<QByteArray, const imtrest::IRequest*>(serviceId, &networkRequest));
 		}
 
 		if (m_webSocketClientMap.contains(serviceId)){
 			QByteArray queryData = networkRequest.GetBody();
+			
+			qDebug() << "Test: CAgentServicesRemoteSubscriberProxyComp sendTextMessage" << serviceId << queryData;
 			m_webSocketClientMap.value(serviceId)->sendTextMessage(queryData);
 		}
 	}
-
 
 	return true;
 }
@@ -195,7 +193,7 @@ void CAgentServicesRemoteSubscriberProxyComp::OnWebSocketDisconnected()
 
 	for (QByteArray& serviceId: m_webSocketClientMap.keys()){
 		if (m_webSocketClientMap.value(serviceId) == webSocketPtr){
-			for (QByteArray& subscriptionId : m_requestMap.keys()){
+			for (const QByteArray& subscriptionId : m_requestMap.keys()){
 				if (m_requestMap.value(subscriptionId).first == serviceId){
 					m_requestMap.remove(subscriptionId);
 					UnregisterSubscription(subscriptionId);
