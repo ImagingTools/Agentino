@@ -12,6 +12,7 @@
         <Element ComponentName="ApplicationInfoController" X="1025" Y="100" Note=""/>
         <Element ComponentName="AuthorizationConcept" X="450" Y="275" Note=""/>
         <Element ComponentName="AuthorizationOptions" X="775" Y="275" Note=""/>
+        <Element ComponentName="DocumentRevisionController" X="725" Y="475" Note=""/>
         <Element ComponentName="ProfileController" X="300" Y="450" Note=""/>
         <Element ComponentName="RolesPage" X="1050" Y="600" Note=""/>
         <Element ComponentName="SettingsController" X="225" Y="75" Note=""/>

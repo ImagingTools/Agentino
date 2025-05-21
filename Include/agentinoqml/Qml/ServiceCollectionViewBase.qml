@@ -40,9 +40,7 @@ RemoteCollectionView {
 			root.doUpdateGui();
 		}
 	}
-	
-	signal serviceStatusChanged(string serviceId, string status)
-	
+
 	onClientIdChanged: {
 		if (clientId == ""){
 			return
@@ -51,7 +49,6 @@ RemoteCollectionView {
 		commandsController.typeId = root.collectionId;
 		dataController.collectionId = root.collectionId;
 		
-		// let documentManagerPtr = MainDocumentManager.getDocumentManager(root.collectionId)
 		let documentManagerPtr = root.documentManager;
 		if (documentManagerPtr){
 			root.commandsDelegate.documentManager = documentManagerPtr
@@ -124,8 +121,9 @@ RemoteCollectionView {
 		ServiceEditorWrap {
 			clientId: root.clientId
 			documentManager: root.documentManager
-			Component.onCompleted: {
-				root.serviceStatusChanged.connect(serviceStatusChanged)
+			
+			function getHeaders(){
+				return root.getHeaders();
 			}
 		}
 	}
@@ -133,8 +131,7 @@ RemoteCollectionView {
 	Component {
 		id: serviceValidatorComp;
 		
-		ServiceValidator {
-		}
+		ServiceValidator {}
 	}
 	
 	Component {
@@ -213,11 +210,6 @@ RemoteCollectionView {
 		id: subscriptionClient;
 		gqlCommandId: "OnServiceStatusChanged";
 		onMessageReceived: {
-			console.log("OnServiceStatusChanged onMessageReceived", data)
-			let serviceId = data.getData("serviceid")
-			let serviceStatus = data.getData(ServiceStatus.s_Key)
-			root.serviceStatusChanged(serviceId, serviceStatus)
-			
 			root.doUpdateGui();
 		}
 	}

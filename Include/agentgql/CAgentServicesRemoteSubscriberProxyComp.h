@@ -46,7 +46,6 @@ Q_SIGNALS:
 	void EmitQueryDataReceived(int resultCode = 1);
 
 private Q_SLOTS:
-	void OnTimeout();
 	void OnWebSocketConnected();
 	void OnWebSocketDisconnected();
 	void OnWebSocketError(QAbstractSocket::SocketError error);
@@ -54,6 +53,9 @@ private Q_SLOTS:
 	void OnWebSocketBinaryMessageReceived(const QByteArray& message);
 
 private:
+	void TryReconnect(const QByteArray& serviceId);
+	QByteArray GetServiceId(const QWebSocket& webSocket) const;
+	
 	class NetworkOperation
 	{
 	public:
@@ -65,12 +67,20 @@ private:
 		bool timerFlag;
 		QTimer timer;
 	};
+	
+	struct RequestInfo
+	{
+		QByteArray serviceId;
+		const imtrest::IRequest* networkRequestPtr;
+		imtclientgql::IGqlClient::GqlRequestPtr gqlRequestPtr;
+	};
 
 private:
 	I_REF(imtservice::IConnectionCollectionProvider, m_connectionCollectionProviderCompPtr);
 
-	QMap<QByteArray, QWebSocket*> m_webSocketClientMap; // <serviceId, WebSocketClient<
-	QMap<QByteArray,  QPair<QByteArray, const imtrest::IRequest*>> m_requestMap;  // <subscriptionId, QPair(serviceId, networkRequest pointer)>
+	QMap<QByteArray, QWebSocket*> m_webSocketClientMap;
+	QMap<QByteArray, RequestInfo> m_requestMap;
+	QMap<QByteArray, QTimer*> m_reconnectTimers;
 };
 
 

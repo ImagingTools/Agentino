@@ -26,6 +26,7 @@
                                 <Value>UserGroupsPage</Value>
                                 <Value>UsersPage</Value>
                                 <Value>RolesPage</Value>
+                                <Value>DocumentRevisionController</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -75,6 +76,42 @@
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="DocumentRevisionController" PackageId="ImtGraphQlVoce" ComponentId="DocumentRevisionController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CollectionIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>Roles</Value>
+                                <Value>Users</Value>
+                                <Value>Groups</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DocumentChangeGenerators" Type="Reference[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>RolesPage/RoleChangeGenerator</Value>
+                                <Value>UsersPage/UserChangeGenerator</Value>
+                                <Value>UserGroupsPage/UserGroupChangeGenerator</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ObjectCollections" Type="Reference[]" ExportId="AdminCollections">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
@@ -257,6 +294,10 @@
     </ExportedInterfaces>
     <ExportedComponents>
         <Component ExportedId="JwtSessionController" ComponentId="AuthorizationConcept/JwtSessionController"/>
+        <Component ExportedId="RoleChangeGenerator" ComponentId="RolesPage/RoleChangeGenerator"/>
+        <Component ExportedId="UserChangeGenerator" ComponentId="UsersPage/UserChangeGenerator"/>
+        <Component ExportedId="UserGroupChangeGenerator" ComponentId="UserGroupsPage/UserGroupChangeGenerator"/>
+        <Component ExportedId="UserGroupsPage" ComponentId="UserGroupsPage"/>
         <Component ExportedId="UserSessionRepository" ComponentId="AuthorizationConcept/UserSessionRepository"/>
         <Component ExportedId="UserSettingsRepository" ComponentId="SettingsController/UserSettingsRepository"/>
     </ExportedComponents>

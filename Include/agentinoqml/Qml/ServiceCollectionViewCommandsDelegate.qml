@@ -19,22 +19,31 @@ DocumentCollectionViewDelegate {
 	removeMessage: qsTr("Delete the selected service ?");
 	
 	function updateItemSelection(selectedItems){
-		if (container.collectionView && container.collectionView.commandsController){
-			let isEnabled = selectedItems.length > 0;
-			let commandsController = container.collectionView.commandsController;
-			if(commandsController){
-				commandsController.setCommandIsEnabled("Remove", isEnabled);
-				commandsController.setCommandIsEnabled("Edit", isEnabled);
-				if (isEnabled){
-					let elements = container.collectionView.table.elements;
-					
-					let status = elements.getData(ServiceItemTypeMetaInfo.s_status, selectedItems[0]);
-					
-					commandsController.setCommandIsEnabled("Start", String(status) === ServiceStatus.s_NotRunning);
-					commandsController.setCommandIsEnabled("Stop", String(status) === ServiceStatus.s_Running);
-				}
-			}
+		if (!collectionView){
+			return
 		}
+		
+		if (!collectionView.commandsController){
+			return
+		}
+		
+		let commandsController = collectionView.commandsController
+		
+		let startEnabled = false
+		let stopEnabled = false
+		
+		let isEnabled = selectedItems.length > 0;
+		if (isEnabled){
+			let elements = collectionView.table.elements;
+			let status = elements.getData(ServiceItemTypeMetaInfo.s_status, selectedItems[0]);
+			startEnabled = String(status) === ServiceStatus.s_NotRunning
+			stopEnabled = String(status) === ServiceStatus.s_Running
+		}
+		
+		commandsController.setCommandIsEnabled("Remove", isEnabled)
+		commandsController.setCommandIsEnabled("Edit", isEnabled)
+		commandsController.setCommandIsEnabled("Start", startEnabled);
+		commandsController.setCommandIsEnabled("Stop", stopEnabled);
 	}
 	
 	function getHeaders(){
@@ -42,13 +51,6 @@ DocumentCollectionViewDelegate {
 	}
 	
 	onCommandActivated: {
-		if (commandId == "Start" || commandId == "Stop"){
-			let commandsController = container.collectionView.commandsController;
-			
-			commandsController.setCommandIsEnabled("Start", false);
-			commandsController.setCommandIsEnabled("Stop", false);
-		}
-		
 		if (commandId === "Start"){
 			onStart();
 		}
@@ -58,13 +60,11 @@ DocumentCollectionViewDelegate {
 	}
 	
 	function startService(serviceId){
-		serviceInput.m_serviceId = serviceId;
-		startServiceRequestSender.send(serviceInput);
+		serviceController.startService(serviceId)
 	}
 	
 	function stopService(serviceId){
-		serviceInput.m_serviceId = serviceId;
-		stopServiceRequestSender.send(serviceInput);
+		serviceController.stopService(serviceId)
 	}
 	
 	function onStart(){
@@ -117,43 +117,40 @@ DocumentCollectionViewDelegate {
 		}
 	}
 	
-	ServiceInput {
-		id: serviceInput;
-	}
-	
-	GqlSdlRequestSender {
-		id: startServiceRequestSender;
-		requestType: 1;
-		gqlCommandId: AgentinoServicesSdlCommandIds.s_startService;
-		
-		sdlObjectComp: Component {
-			ServiceStatusResponse {
-				onFinished: {
-					console.log("ServiceStatusResponse", m_status);
-				}
-			}
-		}
+	GqlBasedServiceController {
+		id: serviceController
+		commandsController: container.collectionView.commandsController
 		
 		function getHeaders(){
 			return container.getHeaders()
 		}
-	}
-	
-	GqlSdlRequestSender {
-		id: stopServiceRequestSender;
-		requestType: 1;
-		gqlCommandId: AgentinoServicesSdlCommandIds.s_stopService;
 		
-		sdlObjectComp: Component {
-			ServiceStatusResponse {
-				onFinished: {
-					console.log("ServiceStatusResponse", m_status);
-				}
+		onBeginStartService: {
+			if (container.commandsController){
+				container.commandsController.setCommandIsEnabled("Start", false)
+				container.commandsController.setCommandIsEnabled("Stop", false)
 			}
 		}
 		
-		function getHeaders(){
-			return container.getHeaders()
+		onBeginStopService: {
+			if (container.commandsController){
+				container.commandsController.setCommandIsEnabled("Stop", false)
+				container.commandsController.setCommandIsEnabled("Stop", false)
+			}
+		}
+		
+		onServiceStarted: {
+			if (container.commandsController){
+				container.commandsController.setCommandIsEnabled("Start", false)
+				container.commandsController.setCommandIsEnabled("Stop", true)
+			}
+		}
+		
+		onServiceStopped: {
+			if (container.commandsController){
+				container.commandsController.setCommandIsEnabled("Start", true)
+				container.commandsController.setCommandIsEnabled("Stop", false)
+			}
 		}
 	}
 }

@@ -26,6 +26,8 @@
 	<file alias="ServiceLogProvider.qml">Qml/ServiceLogProvider.qml</file>
 	<file alias="AgentTopRightPanelDecorator.qml">Qml/AgentTopRightPanelDecorator.qml</file>
 	<file alias="ServiceDocumentDataController.qml">Qml/ServiceDocumentDataController.qml</file>
+	<file alias="ServiceController.qml">Qml/ServiceController.qml</file>
+	<file alias="GqlBasedServiceController.qml">Qml/GqlBasedServiceController.qml</file>
     </qresource>
     <qresource prefix="/Features">
         <file alias="AgentinoFeatures">Resources/Features/AgentinoFeatures.xml</file>

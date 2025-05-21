@@ -12,10 +12,22 @@ ServiceEditor {
 	id: serviceEditor
 	
 	property string clientId
+	property string serviceId: serviceEditor.serviceData ? serviceEditor.serviceData.m_id : ""
 	property var documentManager
-	
+
 	commandsDelegateComp: Component {ViewCommandsDelegateBase {
 			view: serviceEditor;
+			
+			onCommandActivated: {
+				let serviceId = serviceEditor.serviceId
+
+				if (commandId == "Start"){
+					serviceController.startService(serviceId)
+				}
+				else if (commandId == "Stop"){
+					serviceController.stopService(serviceId)
+				}
+			}
 		}
 	}
 	
@@ -24,18 +36,22 @@ ServiceEditor {
 			function getHeaders(){
 				return serviceEditor.getHeaders();
 			}
+			
+			onCommandsReceived: {
+				serviceEditor.commandsReceived = true
+			}
 		}
 	}
 	
-	signal serviceStatusChanged(string serviceId, string status)
-	onServiceStatusChanged: {
-		console.log("ServiceEditor onServiceStatusChanged", serviceId, status)
-		if (!serviceEditor.serviceData){
-			return
-		}
-
-		if (serviceId == serviceEditor.serviceData.m_id){
-			serviceEditor.serviceRunning = status === "RUNNING"
+	property bool commandsReceived: false
+	
+	property bool updateCommands: commandsReceived && serviceData !== null
+	onUpdateCommandsChanged: {
+		console.log("ServiceEditorWrap onServiceDataChanged", serviceData, commandsController)
+		if (updateCommands && commandsController){
+			console.log("setCommandIsEnabled", serviceData)
+			commandsController.setCommandIsEnabled("Start", serviceData.m_status === "notRunning")
+			commandsController.setCommandIsEnabled("Stop", serviceData.m_status === "running")
 		}
 	}
 	
@@ -83,6 +99,55 @@ ServiceEditor {
 					serviceDocumentDataController.updateDocumentModel()
 				}
 			}
+		}
+	}
+	
+	GqlBasedServiceController {
+		id: serviceController
+		commandsController: serviceEditor.commandsController
+		
+		onBeginStartService: {
+			if (serviceEditor.commandsController){
+				serviceEditor.commandsController.setCommandIsEnabled("Start", false)
+				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
+			}
+		}
+		
+		onBeginStopService: {
+			if (serviceEditor.commandsController){
+				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
+				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
+			}
+		}
+		
+		onServiceStarted: {
+			if (serviceEditor.commandsController){
+				serviceEditor.commandsController.setCommandIsEnabled("Start", false)
+				serviceEditor.commandsController.setCommandIsEnabled("Stop", true)
+			}
+		}
+		
+		onServiceStopped: {
+			if (serviceEditor.commandsController){
+				serviceEditor.commandsController.setCommandIsEnabled("Start", true)
+				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
+			}
+		}
+		
+		onServiceStatusChanged: {
+			if (serviceId === serviceEditor.serviceId){
+				serviceEditor.serviceRunning = status === "RUNNING"
+				
+				if (serviceEditor.commandsController){
+					serviceEditor.commandsController.setCommandIsEnabled("Start", status === "NOT_RUNNING")
+					serviceEditor.commandsController.setCommandIsEnabled("Stop", status === "RUNNING")
+				}
+				
+			}
+		}
+		
+		function getHeaders(){
+			return serviceEditor.getHeaders()
 		}
 	}
 }

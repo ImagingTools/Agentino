@@ -228,6 +228,10 @@ ViewBase {
 				clientId = item.m_agentId;
 				topologyPage.serviceStatusChanged.connect(serviceStatusChanged)
 			}
+			
+			function getHeaders(){
+				return topologyPage.getHeaders();
+			}
 		}
 	}
 	

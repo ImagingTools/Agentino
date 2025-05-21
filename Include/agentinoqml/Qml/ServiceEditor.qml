@@ -20,7 +20,7 @@ ViewBase {
 	}
 	
 	property bool serviceRunning: false
-	
+
 	property string serviceTypeName: serviceData ? serviceData.m_serviceTypeName : ""
 	onServiceTypeNameChanged: {
 		let tabId = "Administration"
@@ -303,7 +303,7 @@ ViewBase {
 					CustomTextField {
 						id: pathInput;
 						
-						width: parent.width;
+						width: flickable.parent.width;
 						height: Style.itemSizeMedium;
 						
 						placeHolderText: qsTr("Enter the path");

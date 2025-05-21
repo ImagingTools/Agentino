@@ -49,6 +49,15 @@
         <Element Id="AgentinoHandlers" PackageId="AgentinoVoce" ComponentId="Handlers">
             <Data IsEnabled="true" Flags="2">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="AdminCollections" Type="Reference[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>Repositories/RoleRepository</Value>
+                                <Value>Repositories/UserRepository</Value>
+                                <Value>Repositories/UserGroupRepository</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
                     <AttributeInfo Id="AgentRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/AgentCollection"/>
                     </AttributeInfo>
