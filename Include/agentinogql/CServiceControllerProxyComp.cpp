@@ -191,11 +191,6 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 		return sdl::imtbase::ImtCollection::CAddedNotificationPayload();
 	}
 	
-	if (!m_serviceStatusCollectionCompPtr.IsValid()){
-		Q_ASSERT_X(false, "Attribute 'ServiceStatusCollection' was not set", "CServiceControllerProxyComp");
-		return sdl::imtbase::ImtCollection::CAddedNotificationPayload();
-	}
-	
 	sdl::imtbase::ImtCollection::CAddedNotificationPayload::V1_0 response;
 	
 	sdl::agentino::Services::AddServiceRequestArguments arguments = addServiceRequest.GetRequestedArguments();
@@ -220,16 +215,7 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 		return sdl::imtbase::ImtCollection::CAddedNotificationPayload();
 	}
 	
-	istd::TDelPtr<agentinodata::CServiceStatusInfo> serviceStatusInfoPtr;
-	serviceStatusInfoPtr.SetPtr(new agentinodata::CServiceStatusInfo);
-	
-	serviceStatusInfoPtr->SetServiceId(serviceId);
-	serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);
-	
-	QByteArray result = m_serviceStatusCollectionCompPtr->InsertNewObject("ServiceStatusInfo", "", "", serviceStatusInfoPtr.PopPtr(), serviceId);
-	if (result.isEmpty()){
-		SendErrorMessage(0, QString("Unable to insert new status for service '%1'").arg(qPrintable(serviceId)), "CServiceControllerProxyComp");
-	}
+	SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);
 	
 	sdl::agentino::Services::CServiceData::V1_0 serviceData;
 	if (arguments.input.Version_1_0->item){
@@ -302,18 +288,21 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnS
 		serviceId = *arguments.input.Version_1_0->serviceId;
 	}
 	
-	if (!UpdateServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_STARTING)){
-		errorMessage = QString("Unable to set status 'Starting' for service with ID: '%1'").arg(qPrintable(serviceId));
-		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
-		
-		return sdl::agentino::Services::CServiceStatusResponse();
-	}
+	istd::CChangeGroup changeGroup(m_serviceStatusCollectionCompPtr.GetPtr());
+	
+	SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_STARTING);
 	
 	if (!SendModelRequest<
 			sdl::agentino::Services::CServiceStatusResponse::V1_0,
 			sdl::agentino::Services::CServiceStatusResponse>(gqlRequest, response, errorMessage)){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
+		SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_UNDEFINED);
+
 		return sdl::agentino::Services::CServiceStatusResponse();
+	}
+	
+	if (response.status.has_value()){
+		SetServiceStatus(serviceId, *response.status);
 	}
 	
 	sdl::agentino::Services::CServiceStatusResponse retVal;
@@ -341,18 +330,20 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnS
 		serviceId = *arguments.input.Version_1_0->serviceId;
 	}
 	
-	if (!UpdateServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_STOPPING)){
-		errorMessage = QString("Unable to set status 'Stopping' for service with ID: '%1'").arg(qPrintable(serviceId));
-		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
-		
-		return sdl::agentino::Services::CServiceStatusResponse();
-	}
+	istd::CChangeGroup changeGroup(m_serviceStatusCollectionCompPtr.GetPtr());
+	
+	SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_STOPPING);
 	
 	if (!SendModelRequest<
 			sdl::agentino::Services::CServiceStatusResponse::V1_0,
 			sdl::agentino::Services::CServiceStatusResponse>(gqlRequest, response, errorMessage)){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
+		SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_UNDEFINED);
 		return sdl::agentino::Services::CServiceStatusResponse();
+	}
+	
+	if (response.status.has_value()){
+		SetServiceStatus(serviceId, *response.status);
 	}
 	
 	sdl::agentino::Services::CServiceStatusResponse retVal;
@@ -557,9 +548,7 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateResponse(
 }
 
 
-bool CServiceControllerProxyComp::UpdateServiceStatus(
-	const QByteArray& serviceId,
-	agentinodata::IServiceStatusInfo::ServiceStatus status) const
+bool CServiceControllerProxyComp::SetServiceStatus(const QByteArray& serviceId, agentinodata::IServiceStatusInfo::ServiceStatus status) const
 {
 	if (!m_serviceStatusCollectionCompPtr.IsValid()){
 		Q_ASSERT_X(false, "Attribute 'ServiceStatusCollection' was not set", "CServiceStatusControllerProxyComp");
@@ -592,6 +581,26 @@ bool CServiceControllerProxyComp::UpdateServiceStatus(
 	}
 	
 	return true;
+}
+
+
+bool CServiceControllerProxyComp::SetServiceStatus(const QByteArray& serviceId, sdl::agentino::Services::ServiceStatus status) const
+{
+	agentinodata::IServiceStatusInfo::ServiceStatus serviceStatus = agentinodata::IServiceStatusInfo::SS_UNDEFINED;
+	if (status == sdl::agentino::Services::ServiceStatus::STARTING){
+		serviceStatus = agentinodata::IServiceStatusInfo::SS_STARTING;
+	}
+	else if (status == sdl::agentino::Services::ServiceStatus::NOT_RUNNING){
+		serviceStatus = agentinodata::IServiceStatusInfo::SS_NOT_RUNNING;
+	}
+	else if (status == sdl::agentino::Services::ServiceStatus::RUNNING){
+		serviceStatus = agentinodata::IServiceStatusInfo::SS_RUNNING;
+	}
+	else if (status == sdl::agentino::Services::ServiceStatus::STOPPING){
+		serviceStatus = agentinodata::IServiceStatusInfo::SS_STOPPING;
+	}
+	
+	return SetServiceStatus(serviceId, serviceStatus);
 }
 
 

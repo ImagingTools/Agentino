@@ -48,9 +48,7 @@ ViewBase {
 			getTopologyRequestSender.send()
 		}
 	}
-	
-	signal serviceStatusChanged(string serviceId, string status)
-	
+		
 	commandsDelegateComp: Component {ServiceCollectionViewCommandsDelegate {
 			id: serviceCommandsDelegate
 			collectionView: topologyPage
@@ -141,8 +139,6 @@ ViewBase {
 				selectedService = serviceId;
 				let status = item.m_status;
 				
-				console.log("status", status);
-				
 				topologyPage.commandsController.setCommandIsEnabled("Start", status === "NOT_RUNNING")
 				topologyPage.commandsController.setCommandIsEnabled("Stop", status === "RUNNING")
 				topologyPage.commandsController.setCommandIsEnabled("Edit", true)
@@ -224,13 +220,10 @@ ViewBase {
 			documentManager: topologyPage.documentManager
 			
 			Component.onCompleted: {
-				let item = scheme.objectsModel.get(scheme.selectedIndex).item
-				clientId = item.m_agentId;
-				topologyPage.serviceStatusChanged.connect(serviceStatusChanged)
-			}
-			
-			function getHeaders(){
-				return topologyPage.getHeaders();
+				if (scheme.selectedIndex >= 0){
+					let item = scheme.objectsModel.get(scheme.selectedIndex).item
+					clientId = item.m_agentId;
+				}
 			}
 		}
 	}
@@ -281,8 +274,8 @@ ViewBase {
 			else if (serviceStatus === "UNDEFINED"){
 				item.m_icon1 = "Icons/Alert";
 			}
-			
-			if (index === scheme.selectedIndex){
+
+			if (index === scheme.selectedIndex && topologyPage.commandsController){
 				topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus === "NOT_RUNNING");
 				topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === "RUNNING");
 			}
@@ -314,9 +307,7 @@ ViewBase {
 					metaInfoProvider.getMetaInfo(scheme.selectedService);
 				}
 			}
-			
-			topologyPage.serviceStatusChanged(serviceId, serviceStatus)
-			
+
 			scheme.requestPaint()
 		}
 	}
@@ -335,7 +326,9 @@ ViewBase {
 		sdlObjectComp: Component {
 			SaveTopologyResponse {
 				onFinished: {
-					topologyPage.commandsController.setCommandIsEnabled("Save", !m_successful);
+					if (topologyPage.commandsController){
+						topologyPage.commandsController.setCommandIsEnabled("Save", !m_successful);
+					}
 				}
 			}
 		}
@@ -351,7 +344,10 @@ ViewBase {
 				onFinished: {
 					scheme.objectsModel = m_services;
 					scheme.requestPaint()
-					topologyPage.commandsController.setCommandIsEnabled("Save", false)
+					
+					if (topologyPage.commandsController){
+						topologyPage.commandsController.setCommandIsEnabled("Save", false)
+					}
 				}
 			}
 		}

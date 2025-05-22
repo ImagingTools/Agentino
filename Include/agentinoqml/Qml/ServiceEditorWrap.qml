@@ -47,9 +47,7 @@ ServiceEditor {
 	
 	property bool updateCommands: commandsReceived && serviceData !== null
 	onUpdateCommandsChanged: {
-		console.log("ServiceEditorWrap onServiceDataChanged", serviceData, commandsController)
 		if (updateCommands && commandsController){
-			console.log("setCommandIsEnabled", serviceData)
 			commandsController.setCommandIsEnabled("Start", serviceData.m_status === "notRunning")
 			commandsController.setCommandIsEnabled("Stop", serviceData.m_status === "running")
 		}
@@ -104,8 +102,6 @@ ServiceEditor {
 	
 	GqlBasedServiceController {
 		id: serviceController
-		commandsController: serviceEditor.commandsController
-		
 		onBeginStartService: {
 			if (serviceEditor.commandsController){
 				serviceEditor.commandsController.setCommandIsEnabled("Start", false)

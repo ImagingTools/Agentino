@@ -119,8 +119,7 @@ DocumentCollectionViewDelegate {
 	
 	GqlBasedServiceController {
 		id: serviceController
-		commandsController: container.collectionView.commandsController
-		
+
 		function getHeaders(){
 			return container.getHeaders()
 		}
@@ -131,7 +130,7 @@ DocumentCollectionViewDelegate {
 				container.commandsController.setCommandIsEnabled("Stop", false)
 			}
 		}
-		
+	
 		onBeginStopService: {
 			if (container.commandsController){
 				container.commandsController.setCommandIsEnabled("Stop", false)

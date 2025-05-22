@@ -473,7 +473,6 @@
                                 <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>OnAgentLogCollectionChanged</Value>
                                             <Value>OnRolesCollectionChanged</Value>
                                             <Value>OnUsersCollectionChanged</Value>
                                             <Value>OnGroupsCollectionChanged</Value>
@@ -495,9 +494,6 @@
                     <Element Id="LogSubscriberProxyController" PackageId="AgentinoGqlPck" ComponentId="AgentsSubscriberProxyController">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
-                                <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
                                 <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>

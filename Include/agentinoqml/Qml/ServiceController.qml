@@ -5,8 +5,6 @@ import imtcontrols 1.0
 QtObject {
 	id: root
 	
-	property CommandsController commandsController: null
-	
 	signal beginStartService(string serviceId)
 	signal beginStopService(string serviceId)
 	signal serviceStarted(string serviceId)

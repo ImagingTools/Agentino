@@ -75,7 +75,8 @@ private:
 		const imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage,
 		std::function<SdlResponse(const SdlGqlRequest&, const imtgql::CGqlRequest&, QString&)> func) const;
-	bool UpdateServiceStatus(const QByteArray& serviceId, agentinodata::IServiceStatusInfo::ServiceStatus status) const;
+	bool SetServiceStatus(const QByteArray& serviceId, agentinodata::IServiceStatusInfo::ServiceStatus status) const;
+	bool SetServiceStatus(const QByteArray& serviceId, sdl::agentino::Services::ServiceStatus status) const;
 	QList<sdl::agentino::Services::CElement::V1_0> GetConnectionsModel(const QByteArray& connectionUsageId) const;
 	bool GetConnectionObjectData(
 		const imtbase::IObjectCollection::Id& connectionId,

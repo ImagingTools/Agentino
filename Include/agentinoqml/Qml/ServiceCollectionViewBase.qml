@@ -111,8 +111,6 @@ RemoteCollectionView {
 			root.serviceId = ""
 			root.serviceName = ""
 		}
-		
-		console.log("onSelectionChanged", root.serviceId)
 	}
 	
 	Component {
@@ -121,10 +119,6 @@ RemoteCollectionView {
 		ServiceEditorWrap {
 			clientId: root.clientId
 			documentManager: root.documentManager
-			
-			function getHeaders(){
-				return root.getHeaders();
-			}
 		}
 	}
 	
