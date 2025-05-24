@@ -18,7 +18,7 @@ QtObject {
     }
 
     property GqlModel serviceLogGqlModel : GqlModel {
-        function updateModel(serviceId) {
+        function updateModel(serviceId){
             var query = Gql.GqlRequest("query", "GetServiceLog");
 
             var inputParams = Gql.GqlObject("input");
@@ -42,7 +42,7 @@ QtObject {
         onStateChanged: {
             console.log("State:", this.state, root.serviceLogGqlModel);
 
-            if (this.state === "Ready") {
+            if (this.state === "Ready"){
                 var dataModelLocal;
 
                 if (root.serviceLogGqlModel.containsKey("errors")){

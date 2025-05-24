@@ -52,8 +52,8 @@ bool CAgentsSubscriberProxyControllerComp::UnregisterSubscription(const QByteArr
 
 	bool retVal = BaseClass::UnregisterSubscription(subscriptionId);
 	if (retVal){
-		for (auto it = m_remoteSubscriptions.constBegin(); it != m_remoteSubscriptions.constEnd(); ++it) {
-			if (it.value() == subscriptionId) {
+		for (auto it = m_remoteSubscriptions.constBegin(); it != m_remoteSubscriptions.constEnd(); ++it){
+			if (it.value() == subscriptionId){
 				m_subscriptionManagerCompPtr->UnregisterSubscription(it.key());
 				m_remoteSubscriptions.remove(it.key());
 				retVal = true;

@@ -54,7 +54,7 @@ RemoteCollectionView {
 		}
 	}
 	
-	function onEdit() {
+	function onEdit(){
 		if (root.commandsDelegate){
 			root.commandsDelegate.commandHandle("Services");
 		}

@@ -54,7 +54,7 @@ protected:
 				const sdl::agentino::Services::CGetServiceGqlRequest& getServiceRequest,
 				sdl::agentino::Services::CServiceData::V1_0& representationPayload,
 				QString& errorMessage) const override;
-	virtual istd::IChangeable* CreateObjectFromRepresentation(
+	virtual istd::IChangeableUniquePtr CreateObjectFromRepresentation(
 				const sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation,
 				QByteArray& newObjectId,
 				QString& errorMessage) const override;

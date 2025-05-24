@@ -264,7 +264,7 @@ ViewBase {
     property GqlModel settingsGetModel: GqlModel {
         id: settingsModel
 
-        function updateModel() {
+        function updateModel(){
             var query = Gql.GqlRequest("query", "GetAgentSettings");
             var queryFields = Gql.GqlObject("input");
             query.AddParam(queryFields);

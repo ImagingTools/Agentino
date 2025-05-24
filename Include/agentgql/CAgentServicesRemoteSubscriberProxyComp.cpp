@@ -257,8 +257,12 @@ void CAgentServicesRemoteSubscriberProxyComp::OnWebSocketTextMessageReceived(con
 	QByteArray reponseTypeId = QByteArray("application/json; charset=utf-8");
 	const imtrest::IProtocolEngine& engine = networkRequest->GetProtocolEngine();
 	
-	imtrest::ConstResponsePtr responsePtr(engine.CreateResponse(*networkRequest,
-																imtrest::IProtocolEngine::SC_OPERATION_NOT_AVAILABLE, body, reponseTypeId));
+	imtrest::ConstResponsePtr responsePtr(
+				engine.CreateResponse(
+							*networkRequest,
+							imtrest::IProtocolEngine::SC_OPERATION_NOT_AVAILABLE,
+							body,
+							reponseTypeId).PopInterfacePtr());
 	if (responsePtr.IsValid()){
 		const imtrest::ISender* sender = m_requestManagerCompPtr->GetSender(networkRequest->GetRequestId());
 		if (sender != nullptr){

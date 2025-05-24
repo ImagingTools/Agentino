@@ -9,7 +9,7 @@ ProcessStateEnum GetProcceStateRepresentation(IServiceStatusInfo::ServiceStatus 
 {
 	ProcessStateEnum processStateEnum;
 
-	switch (processState) {
+	switch (processState){
 	case IServiceStatusInfo::SS_STARTING:
 		processStateEnum.id = "starting";
 		processStateEnum.name = QString("Starting");

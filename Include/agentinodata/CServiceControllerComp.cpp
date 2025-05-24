@@ -91,7 +91,7 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 
 	QStringList arguments;
 	for (const QByteArray& argument: serviceArguments){
-		if (!argument.isEmpty()) {
+		if (!argument.isEmpty()){
 			arguments << QString(argument);
 		}
 	}
@@ -371,7 +371,7 @@ QByteArray CServiceControllerComp::GetModuleName(QByteArray servicePath) const
 		/* if endptr is not a null character, the directory is not
 		 * entirely numeric, so ignore it */
 		long lpid = strtol(ent->d_name, &endptr, 10);
-		if (*endptr != '\0') {
+		if (*endptr != '\0'){
 			continue;
 		}
 
@@ -379,7 +379,7 @@ QByteArray CServiceControllerComp::GetModuleName(QByteArray servicePath) const
 		snprintf(buf, sizeof(buf), "/proc/%ld/cmdline", lpid);
 		FILE* fp = fopen(buf, "r");
 
-		if (fp) {
+		if (fp){
 			if (fgets(buf, sizeof(buf), fp) != NULL){
 				/* check the first token in the file, the program name */
 				QByteArray modulePath = QString::fromStdString(buf).toUtf8();

@@ -292,7 +292,7 @@ ViewBase {
 				if (dependencyStatus === "NOT_RUNNING"){
 					serviceItem.m_icon2 = "Icons/Error"
 				}
-				else if (dependencyStatus === "UNDEFINED") {
+				else if (dependencyStatus === "UNDEFINED"){
 					serviceItem.m_icon2 = "Icons/Warning"
 				}
 				else {

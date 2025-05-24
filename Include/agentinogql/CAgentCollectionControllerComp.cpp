@@ -233,10 +233,10 @@ bool CAgentCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 
 // reimplemented (imtgql::CObjectCollectionControllerCompBase)
 
-istd::IChangeable* CAgentCollectionControllerComp::CreateObjectFromRequest(
-	const imtgql::CGqlRequest& gqlRequest,
-	QByteArray& objectId,
-	QString& errorMessage) const
+istd::IChangeableUniquePtr CAgentCollectionControllerComp::CreateObjectFromRequest(
+			const imtgql::CGqlRequest& gqlRequest,
+			QByteArray& objectId,
+			QString& errorMessage) const
 {
 	if (!m_agentFactCompPtr.IsValid() || !m_objectCollectionCompPtr.IsValid()){
 		Q_ASSERT(false);
@@ -244,7 +244,7 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObjectFromRequest(
 	}
 	
 	const imtgql::CGqlObject* inputDataPtr = gqlRequest.GetParamObject("input");
-	if (inputDataPtr == nullptr) {
+	if (inputDataPtr == nullptr){
 		Q_ASSERT(false);
 		
 		return nullptr;
@@ -260,10 +260,18 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObjectFromRequest(
 		return nullptr;
 	}
 	
-	istd::TDelPtr<agentinodata::CIdentifiableAgentInfo> agentPtr;
-	agentPtr.SetCastedOrRemove(m_agentFactCompPtr.CreateInstance());
-	if (!agentPtr.IsValid()){
+	istd::TUniqueInterfacePtr<agentinodata::IAgentInfo> agentInstancePtr = m_agentFactCompPtr.CreateInstance();
+	if (!agentInstancePtr.IsValid()){
 		errorMessage = QT_TR_NOOP("Unable to get an service info!");
+
+		return nullptr;
+	}
+
+	istd::TUniqueInterfacePtr<agentinodata::CIdentifiableAgentInfo> agentImplPtr;
+	agentImplPtr.MoveCastedPtr<agentinodata::IAgentInfo>(agentInstancePtr);
+	if (!agentImplPtr.IsValid()){
+		errorMessage = QT_TR_NOOP("Unable to get an service info!");
+
 		return nullptr;
 	}
 	
@@ -272,28 +280,33 @@ istd::IChangeable* CAgentCollectionControllerComp::CreateObjectFromRequest(
 		return nullptr;
 	}
 	
-	agentPtr->SetObjectUuid(objectId);
+	agentImplPtr->SetObjectUuid(objectId);
 	
 	if (itemModel.ContainsKey("computerName")){
 		QString computerName = itemModel.GetData("computerName").toString();
-		agentPtr->SetComputerName(computerName);
+		agentImplPtr->SetComputerName(computerName);
 	}
 	
 	if (itemModel.ContainsKey("version")){
 		QString version = itemModel.GetData("version").toString();
-		agentPtr->SetVersion(version);
+		agentImplPtr->SetVersion(version);
 	}
 	
 	if (itemModel.ContainsKey("tracingLevel")){
 		int tracingLevel = itemModel.GetData("tracingLevel").toInt();
-		agentPtr->SetTracingLevel(tracingLevel);
+		agentImplPtr->SetTracingLevel(tracingLevel);
 	}
 	
-	return agentPtr.PopPtr();
+	istd::IChangeableUniquePtr retVal;
+	retVal.MoveCastedPtr<agentinodata::CIdentifiableAgentInfo>(agentImplPtr);
+
+	return retVal;
 }
 
 
-imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(
+			const imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		Q_ASSERT(false);
@@ -327,17 +340,23 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(const imtg
 		}
 	}
 	else{
-		istd::TDelPtr<agentinodata::CIdentifiableAgentInfo> agentInfoPtr;
-		agentInfoPtr.SetCastedOrRemove(CreateObjectFromRequest(gqlRequest, agentId, errorMessage));
-		if (!agentInfoPtr.IsValid()){
+		istd::IChangeableUniquePtr agentInstancePtr;
+		agentInstancePtr = CreateObjectFromRequest(gqlRequest, agentId, errorMessage);
+		if (!agentInstancePtr.IsValid()){
+			return nullptr;
+		}
+
+		istd::TUniqueInterfacePtr<agentinodata::CIdentifiableAgentInfo> agentImplPtr;
+		agentImplPtr.MoveCastedPtr<istd::IChangeable>(agentInstancePtr);
+		if (!agentImplPtr.IsValid()){
 			return nullptr;
 		}
 		
-		QString name = agentInfoPtr->GetComputerName();
+		QString name = agentImplPtr->GetComputerName();
 		
-		agentInfoPtr->SetLastConnection(QDateTime::currentDateTimeUtc());
+		agentImplPtr->SetLastConnection(QDateTime::currentDateTimeUtc());
 		
-		m_objectCollectionCompPtr->InsertNewObject("DocumentInfo", name, "", agentInfoPtr.GetPtr(), agentId);
+		m_objectCollectionCompPtr->InsertNewObject("DocumentInfo", name, "", agentImplPtr.GetPtr(), agentId);
 	}
 	
 	m_connectedAgents.append(agentId);
@@ -457,7 +476,7 @@ bool CAgentCollectionControllerComp::UpdateServiceStatusFromAgent(const QByteArr
 	serviceStatusInfoPtr->SetServiceId(serviceId);
 
 	servicessdl::ServiceStatus status = *response.status;
-	switch (status) {
+	switch (status){
 	case servicessdl::ServiceStatus::NOT_RUNNING:
 		serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);
 		break;

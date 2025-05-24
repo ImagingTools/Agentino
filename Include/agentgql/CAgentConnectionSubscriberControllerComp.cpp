@@ -71,7 +71,7 @@ void CAgentConnectionSubscriberControllerComp::OnComponentCreated()
 {
 	BaseClass::OnComponentCreated();
 
-	if (m_loginStatusModelCompPtr.IsValid()) {
+	if (m_loginStatusModelCompPtr.IsValid()){
 		m_loginStatusModelCompPtr->AttachObserver(this);
 	}
 }

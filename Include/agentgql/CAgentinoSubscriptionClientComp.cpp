@@ -17,7 +17,7 @@ namespace agentgql
 
 void CAgentinoSubscriptionClientComp::OnComponentCreated()
 {
-	if (m_webLoginStatusModelCompPtr.IsValid()) {
+	if (m_webLoginStatusModelCompPtr.IsValid()){
 		m_webLoginStatusModelCompPtr->AttachObserver(this);
 	}
 }

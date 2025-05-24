@@ -455,7 +455,7 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 			sdl::agentino::Services::CServiceData>(
 			gqlRequest,
 			errorMessage,
-			[&](const auto& req, const auto& gqlReq, QString& err) {
+			[&](const auto& req, const auto& gqlReq, QString& err){
 				return OnGetService(req, gqlReq, err);
 			});
 	}
@@ -465,7 +465,7 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 			sdl::imtbase::ImtCollection::CUpdatedNotificationPayload>(
 			gqlRequest,
 			errorMessage,
-			[&](const auto& req, const auto& gqlReq, QString& err) {
+			[&](const auto& req, const auto& gqlReq, QString& err){
 				return OnUpdateService(req, gqlReq, err);
 			});
 	}
@@ -475,7 +475,7 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 			sdl::imtbase::ImtCollection::CAddedNotificationPayload>(
 			gqlRequest,
 			errorMessage,
-			[&](const auto& req, const auto& gqlReq, QString& err) {
+			[&](const auto& req, const auto& gqlReq, QString& err){
 				return OnAddService(req, gqlReq, err);
 			});
 	}
@@ -485,7 +485,7 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 			sdl::agentino::Services::CServiceStatusResponse>(
 			gqlRequest,
 			errorMessage,
-			[&](const auto& req, const auto& gqlReq, QString& err) {
+			[&](const auto& req, const auto& gqlReq, QString& err){
 				return OnStartService(req, gqlReq, err);
 			});
 	}
@@ -495,7 +495,7 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 			sdl::agentino::Services::CServiceStatusResponse>(
 			gqlRequest,
 			errorMessage,
-			[&](const auto& req, const auto& gqlReq, QString& err) {
+			[&](const auto& req, const auto& gqlReq, QString& err){
 				return OnStopService(req, gqlReq, err);
 			});
 	}
@@ -505,7 +505,7 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 			sdl::imtbase::ImtCollection::CRemovedNotificationPayload>(
 			gqlRequest,
 			errorMessage,
-			[&](const auto& req, const auto& gqlReq, QString& err) {
+			[&](const auto& req, const auto& gqlReq, QString& err){
 				return OnServicesRemove(req, gqlReq, err);
 			});
 	}

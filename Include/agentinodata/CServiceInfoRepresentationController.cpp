@@ -21,7 +21,7 @@ QByteArray CServiceInfoRepresentationController::GetModelId() const
 bool CServiceInfoRepresentationController::IsModelSupported(const istd::IChangeable& dataModel) const
 {
 	const CServiceInfo* serviceInfoPtr = dynamic_cast<const CServiceInfo*>(&dataModel);
-	if (serviceInfoPtr != nullptr) {
+	if (serviceInfoPtr != nullptr){
 		return true;
 	}
 
@@ -39,7 +39,7 @@ bool CServiceInfoRepresentationController::GetRepresentationFromDataModel(
 	}
 
 	CServiceInfo* serviceInfoPtr = dynamic_cast<CServiceInfo*>(const_cast<istd::IChangeable*>(&dataModel));
-	if (serviceInfoPtr == nullptr) {
+	if (serviceInfoPtr == nullptr){
 		return false;
 	}
 
@@ -119,7 +119,7 @@ bool CServiceInfoRepresentationController::GetDataModelFromRepresentation(
 	}
 
 	CServiceInfo* serviceInfoPtr = dynamic_cast<CServiceInfo*>(&dataModel);
-	if (serviceInfoPtr == nullptr) {
+	if (serviceInfoPtr == nullptr){
 		return false;
 	}
 

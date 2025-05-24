@@ -188,21 +188,30 @@ bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 }
 
 
-istd::IChangeable* CServiceCollectionControllerComp::CreateObjectFromRepresentation(
+istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRepresentation(
 	const sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation,
 	QByteArray& newObjectId,
 	QString& errorMessage) const
 {
-	istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInstancePtr;
-	serviceInstancePtr.SetCastedOrRemove(m_serviceInfoFactCompPtr.CreateInstance());
+	istd::TUniqueInterfacePtr<agentinodata::IServiceInfo> serviceInstancePtr = m_serviceInfoFactCompPtr.CreateInstance();
 	if (!serviceInstancePtr.IsValid()){
 		errorMessage = QString("Unable to create service instance. Object is invalid");
+
 		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 		
 		return nullptr;
 	}
+
+	agentinodata::CIdentifiableServiceInfo* serviceInfoImplPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(serviceInstancePtr.GetPtr());
+	if (serviceInfoImplPtr == nullptr) {
+		errorMessage = QString("Unable to create service instance. Object is invalid");
+
+		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
+		return nullptr;
+	}
 	
-	if (!agentinodata::GetServiceFromRepresentation(*serviceInstancePtr, serviceDataRepresentation, errorMessage)){
+	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoImplPtr, serviceDataRepresentation, errorMessage)){
 		errorMessage = QString("Unable to create service from representation. Error: Representation invalid");
 		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 		return nullptr;
@@ -211,11 +220,11 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObjectFromRepresentat
 	if (serviceDataRepresentation.id){
 		newObjectId = *serviceDataRepresentation.id;
 		
-		serviceInstancePtr->SetObjectUuid(newObjectId);
+		serviceInfoImplPtr->SetObjectUuid(newObjectId);
 	}
 	
-	QByteArray serviceName = serviceInstancePtr->GetServiceName().toUtf8();
-	QByteArray servicePath = serviceInstancePtr->GetServicePath();
+	QByteArray serviceName = serviceInfoImplPtr->GetServiceName().toUtf8();
+	QByteArray servicePath = serviceInfoImplPtr->GetServicePath();
 	
 	QFileInfo fileInfo(servicePath);
 	if (!fileInfo.exists()){
@@ -226,12 +235,12 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObjectFromRepresentat
 	
 	std::shared_ptr<imtservice::IConnectionCollection> connectionCollectionPtr = GetConnectionCollection(serviceName, servicePath);
 	if (connectionCollectionPtr != nullptr){
-		serviceInstancePtr->SetTracingLevel(connectionCollectionPtr->GetTracingLevel());
-		serviceInstancePtr->SetServiceVersion(connectionCollectionPtr->GetServiceVersion());
-		serviceInstancePtr->SetServiceTypeName(connectionCollectionPtr->GetServiceTypeName().toUtf8());
+		serviceInfoImplPtr->SetTracingLevel(connectionCollectionPtr->GetTracingLevel());
+		serviceInfoImplPtr->SetServiceVersion(connectionCollectionPtr->GetServiceVersion());
+		serviceInfoImplPtr->SetServiceTypeName(connectionCollectionPtr->GetServiceTypeName().toUtf8());
 		
-		imtbase::IObjectCollection* incomingConnectionCollectionPtr = serviceInstancePtr->GetInputConnections();
-		imtbase::IObjectCollection* dependantConnectionCollectionPtr = serviceInstancePtr->GetDependantServiceConnections();
+		imtbase::IObjectCollection* incomingConnectionCollectionPtr = serviceInfoImplPtr->GetInputConnections();
+		imtbase::IObjectCollection* dependantConnectionCollectionPtr = serviceInfoImplPtr->GetDependantServiceConnections();
 		
 		const imtbase::ICollectionInfo* collectionInfo = static_cast<const imtbase::ICollectionInfo*>(connectionCollectionPtr->GetUrlList());
 		const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
@@ -281,8 +290,11 @@ istd::IChangeable* CServiceCollectionControllerComp::CreateObjectFromRepresentat
 			}
 		}
 	}
+
+	istd::IChangeableUniquePtr retVal;
+	retVal.MoveCastedPtr<agentinodata::IServiceInfo>(serviceInstancePtr);
 	
-	return serviceInstancePtr.PopPtr();
+	return retVal;
 }
 
 
@@ -509,7 +521,7 @@ std::shared_ptr<imtservice::IConnectionCollection> CServiceCollectionControllerC
 	istd::TDelPtr<PluginManager>& pluginManagerPtr = m_pluginMap[serviceTypeId];
 	pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), nullptr));
 	
-	if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")) {
+	if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")){
 		SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(qPrintable(serviceTypeId)), "CServiceCollectionControllerComp");
 		m_pluginMap.remove(serviceTypeId);
 	}

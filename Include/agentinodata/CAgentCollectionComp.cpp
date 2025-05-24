@@ -20,7 +20,7 @@ bool CAgentCollectionComp::AddService(
 {
 	ObjectInfo* objectInfoPtr = GetObjectInfo(agentId);
 	if (objectInfoPtr != nullptr){
-		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(objectInfoPtr->objectPtr.GetPtr());
+		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(objectInfoPtr->dataPtr.GetPtr());
 		if (agentInfoPtr != nullptr){
 			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 			if (serviceCollectionPtr != nullptr){
@@ -46,7 +46,7 @@ bool CAgentCollectionComp::RemoveService(const QByteArray& agentId, const QByteA
 {
 	ObjectInfo* objectInfoPtr = GetObjectInfo(agentId);
 	if (objectInfoPtr != nullptr){
-		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(objectInfoPtr->objectPtr.GetPtr());
+		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(objectInfoPtr->dataPtr.GetPtr());
 		if (agentInfoPtr != nullptr){
 			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 			if (serviceCollectionPtr != nullptr){
@@ -78,7 +78,7 @@ bool CAgentCollectionComp::SetService(
 {
 	ObjectInfo* objectInfoPtr = GetObjectInfo(agentId);
 	if (objectInfoPtr != nullptr){
-		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(objectInfoPtr->objectPtr.GetPtr());
+		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(objectInfoPtr->dataPtr.GetPtr());
 		if (agentInfoPtr != nullptr){
 			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 			if (serviceCollectionPtr != nullptr){
@@ -109,7 +109,7 @@ bool CAgentCollectionComp::ServiceExists(const QByteArray& agentId, const QByteA
 {
 	ObjectInfo* objectInfoPtr = GetObjectInfo(agentId);
 	if (objectInfoPtr != nullptr){
-		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(objectInfoPtr->objectPtr.GetPtr());
+		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(objectInfoPtr->dataPtr.GetPtr());
 		if (agentInfoPtr != nullptr){
 			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 			if (serviceCollectionPtr != nullptr){
@@ -129,7 +129,7 @@ IServiceInfo* CAgentCollectionComp::GetService(const QByteArray& agentId, const 
 		return nullptr;
 	}
 	
-	agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(objectInfoPtr->objectPtr.GetPtr());
+	agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(objectInfoPtr->dataPtr.GetPtr());
 	if (agentInfoPtr == nullptr){
 		return nullptr;
 	}

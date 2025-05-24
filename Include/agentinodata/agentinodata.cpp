@@ -22,7 +22,7 @@ ProcessStateEnum GetProcceStateRepresentation(QProcess::ProcessState processStat
 {
 	ProcessStateEnum processStateEnum;
 
-	switch (processState) {
+	switch (processState){
 	case QProcess::Starting:
 		processStateEnum.id = "Starting";
 		processStateEnum.name = QString("Starting");

@@ -55,9 +55,13 @@ protected:
 				QString& errorMessage) const override;
 
 	// reimplemented (imtgql::CObjectCollectionControllerCompBase)
-	virtual istd::IChangeable* CreateObjectFromRequest(const imtgql::CGqlRequest& gqlRequest, QByteArray &objectId, QString& errorMessage) const override;
-	virtual imtbase::CTreeItemModel* InsertObject(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
-
+	virtual istd::IChangeableUniquePtr CreateObjectFromRequest(
+				const imtgql::CGqlRequest& gqlRequest,
+				QByteArray &objectId,
+				QString& errorMessage) const override;
+	virtual imtbase::CTreeItemModel* InsertObject(
+				const imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
 private:
 	void UpdateAgentService(const QByteArray& agentId, const QByteArray& serviceId) const;
 	bool UpdateServiceStatusFromAgent(const QByteArray& agentId, const QByteArray& serviceId) const;

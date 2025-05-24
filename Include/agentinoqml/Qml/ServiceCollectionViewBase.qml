@@ -188,7 +188,7 @@ RemoteCollectionView {
 						icon.source = "../../../../" + Style.getIconPath("Icons/Error", Icon.State.On, Icon.Mode.Normal);
 						icon.visible = true
 					}
-					else if (dependencyStatus === DependencyStatus.s_Undefined) {
+					else if (dependencyStatus === DependencyStatus.s_Undefined){
 						icon.source = "../../../../" + Style.getIconPath("Icons/Warning", Icon.State.On, Icon.Mode.Normal);
 						icon.visible = true
 					}

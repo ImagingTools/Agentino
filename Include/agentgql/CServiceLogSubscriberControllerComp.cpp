@@ -21,7 +21,7 @@ void CServiceLogSubscriberControllerComp::OnComponentCreated()
 {
 	BaseClass::OnComponentCreated();
 
-	if (m_serviceCollectionModelCompPtr.IsValid()) {
+	if (m_serviceCollectionModelCompPtr.IsValid()){
 		m_serviceCollectionModelCompPtr->AttachObserver(this);
 	}
 
