@@ -243,7 +243,7 @@ istd::IChangeableUniquePtr CAgentCollectionControllerComp::CreateObjectFromReque
 		return nullptr;
 	}
 	
-	const imtgql::CGqlObject* inputDataPtr = gqlRequest.GetParamObject("input");
+	const imtgql::CGqlParamObject* inputDataPtr = gqlRequest.GetParamObject("input");
 	if (inputDataPtr == nullptr){
 		Q_ASSERT(false);
 		
@@ -313,7 +313,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(
 		return nullptr;
 	}
 	
-	const imtgql::CGqlObject& inputParams = gqlRequest.GetParams();
+	const imtgql::CGqlParamObject& inputParams = gqlRequest.GetParams();
 	
 	QByteArray agentId = GetObjectIdFromInputParams(inputParams);
 	
@@ -419,13 +419,13 @@ void CAgentCollectionControllerComp::UpdateAgentService(
 	serviceRepresentationModel.SetData("description", description);
 	
 	imtgql::CGqlRequest request(imtgql::CGqlRequest::RT_MUTATION, "ServiceUpdate");
-	imtgql::CGqlObject inputObject;
+	imtgql::CGqlParamObject inputObject;
 	inputObject.InsertField(QByteArray("id"), QVariant(serviceId));
 	inputObject.InsertField(QByteArray("Item"), QVariant(serviceRepresentationModel.ToJson()));
 	
 	request.AddParam("input", inputObject);
 	
-	imtgql::CGqlObject updatedObject;
+	imtgql::CGqlFieldObject updatedObject;
 	updatedObject.InsertField("id");
 	request.AddField("updatedNotification", updatedObject);
 	

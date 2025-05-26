@@ -67,10 +67,10 @@ void CSubscriptionControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& /
 		for (const QByteArray& agentId: agentCollectionIds){
 			if(!m_registeredAgents.contains(agentId)){
 				imtgql::CGqlRequest gqlAddRequest(imtgql::IGqlRequest::RT_SUBSCRIPTION, "OnAgentServiceStatusChanged");
-				imtgql::CGqlObject subscriptionInput;
+				imtgql::CGqlParamObject subscriptionInput;
 				gqlAddRequest.AddParam("input", subscriptionInput);
 
-				imtgql::CGqlObject subscriptionField;
+				imtgql::CGqlFieldObject subscriptionField;
 				subscriptionField.InsertField("id");
 				subscriptionField.InsertField("status");
 				gqlAddRequest.AddField("data", subscriptionField);

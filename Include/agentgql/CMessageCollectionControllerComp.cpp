@@ -85,7 +85,7 @@ imtbase::CTreeItemModel* CMessageCollectionControllerComp::ListObjects(
 	const imtgql::CGqlRequest& gqlRequest,
 	QString &errorMessage) const
 {
-	const imtgql::CGqlObject& inputParams = gqlRequest.GetParams();
+	const imtgql::CGqlParamObject& inputParams = gqlRequest.GetParams();
 	
 	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
 	
@@ -97,8 +97,8 @@ imtbase::CTreeItemModel* CMessageCollectionControllerComp::ListObjects(
 	rootModelPtr->SetExternTreeModel("data", dataModel);
 	
 	QByteArray serviceid = gqlRequest.GetHeader("serviceid");
-	const imtgql::CGqlObject* viewParamsGql = nullptr;
-	const imtgql::CGqlObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
+	const imtgql::CGqlParamObject* viewParamsGql = nullptr;
+	const imtgql::CGqlParamObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
 	if (inputObject != nullptr){
 		viewParamsGql = inputObject->GetFieldArgumentObjectPtr("viewParams");
 	}

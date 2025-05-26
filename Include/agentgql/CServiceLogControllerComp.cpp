@@ -32,7 +32,7 @@ imtbase::CTreeItemModel* CServiceLogControllerComp::CreateInternalResponse(
 
 	QByteArray serviceId;
 
-	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
+	const imtgql::CGqlParamObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
 	if (gqlInputParamPtr != nullptr){
 		serviceId = gqlInputParamPtr->GetFieldArgumentValue("id").toByteArray();
 	}

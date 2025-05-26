@@ -21,7 +21,7 @@ imtbase::CTreeItemModel* CAgentSettingsControllerComp::CreateInternalResponse(
 		return nullptr;
 	}
 
-	const imtgql::CGqlObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
+	const imtgql::CGqlParamObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
 	if (gqlInputParamPtr == nullptr){
 		SendErrorMessage(0, QString("GraphQL input parameters is invalid"));
 

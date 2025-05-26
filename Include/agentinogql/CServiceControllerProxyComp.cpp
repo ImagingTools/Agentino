@@ -32,7 +32,7 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 		return sdl::agentino::Services::CServiceData();
 	}
 	
-	const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParamObject("input");
+	const imtgql::CGqlParamObject* inputParamPtr = gqlRequest.GetParamObject("input");
 	Q_ASSERT(inputParamPtr != nullptr);
 	if (inputParamPtr == nullptr){
 		return sdl::agentino::Services::CServiceData();
@@ -122,7 +122,7 @@ sdl::imtbase::ImtCollection::CUpdatedNotificationPayload CServiceControllerProxy
 		serviceId = *arguments.input.Version_1_0->id;
 	}
 	
-	const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParamObject("input");
+	const imtgql::CGqlParamObject* inputParamPtr = gqlRequest.GetParamObject("input");
 	Q_ASSERT(inputParamPtr != nullptr);
 
 	QByteArray agentId = gqlRequest.GetHeader("clientid");
@@ -203,7 +203,7 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 		serviceId = *arguments.input.Version_1_0->id;
 	}
 	
-	const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParamObject("input");
+	const imtgql::CGqlParamObject* inputParamPtr = gqlRequest.GetParamObject("input");
 	Q_ASSERT(inputParamPtr != nullptr);
 	
 	QByteArray agentId = gqlRequest.GetHeader("clientid");
@@ -375,7 +375,7 @@ sdl::imtbase::ImtCollection::CRemovedNotificationPayload CServiceControllerProxy
 		serviceId = *arguments.input.Version_1_0->id;
 	}
 	
-	const imtgql::CGqlObject* inputParamPtr = gqlRequest.GetParamObject("input");
+	const imtgql::CGqlParamObject* inputParamPtr = gqlRequest.GetParamObject("input");
 	Q_ASSERT(inputParamPtr != nullptr);
 	
 	QByteArray agentId = gqlRequest.GetHeader("clientid");

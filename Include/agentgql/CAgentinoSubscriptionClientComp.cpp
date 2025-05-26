@@ -46,7 +46,7 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 	imtcom::IConnectionStatusProvider::ConnectionStatus connectionStatus = m_loginStatusCompPtr->GetConnectionStatus();
 	if (connectionStatus == imtcom::IConnectionStatusProvider::CS_CONNECTED){
 		imtgql::CGqlRequest* gqlInitRequest = new imtgql::CGqlRequest(imtgql::IGqlRequest::RT_MUTATION, "AgentAdd");
-		imtgql::CGqlObject inputDataParams;
+		imtgql::CGqlParamObject inputDataParams;
 		QString clientId;
 		if (m_clientIdCompPtr.IsValid()){
 			clientId = m_clientIdCompPtr->GetText();
@@ -77,7 +77,7 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 		inputDataParams.InsertField("item", QVariant(itemDocument.toJson(QJsonDocument::Compact)));
 		gqlInitRequest->AddParam("input", inputDataParams);
 
-		imtgql::CGqlObject returnNotify;
+		imtgql::CGqlFieldObject returnNotify;
 		returnNotify.InsertField("status");
 		gqlInitRequest->AddField("addedNotification", returnNotify);
 
