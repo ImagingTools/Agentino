@@ -51,7 +51,7 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 		if (m_clientIdCompPtr.IsValid()){
 			clientId = m_clientIdCompPtr->GetText();
 		}
-		inputDataParams.InsertField("id", QVariant(clientId));
+		inputDataParams.InsertParam("id", QVariant(clientId));
 
 		QString localHostName = QHostInfo::localHostName();
 		QString domainMain = QHostInfo::localDomainName();
@@ -74,7 +74,7 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 		QJsonDocument itemDocument;
 		itemDocument.setObject(item);
 
-		inputDataParams.InsertField("item", QVariant(itemDocument.toJson(QJsonDocument::Compact)));
+		inputDataParams.InsertParam("item", QVariant(itemDocument.toJson(QJsonDocument::Compact)));
 		gqlInitRequest->AddParam("input", inputDataParams);
 
 		imtgql::CGqlFieldObject returnNotify;

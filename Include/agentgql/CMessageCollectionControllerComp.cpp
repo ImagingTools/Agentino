@@ -98,9 +98,9 @@ imtbase::CTreeItemModel* CMessageCollectionControllerComp::ListObjects(
 	
 	QByteArray serviceid = gqlRequest.GetHeader("serviceid");
 	const imtgql::CGqlParamObject* viewParamsGql = nullptr;
-	const imtgql::CGqlParamObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
+	const imtgql::CGqlParamObject* inputObject = inputParams.GetParamArgumentObjectPtr("input");
 	if (inputObject != nullptr){
-		viewParamsGql = inputObject->GetFieldArgumentObjectPtr("viewParams");
+		viewParamsGql = inputObject->GetParamArgumentObjectPtr("viewParams");
 	}
 	
 	istd::TDelPtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(serviceid, errorMessage);
@@ -115,8 +115,8 @@ imtbase::CTreeItemModel* CMessageCollectionControllerComp::ListObjects(
 	int offset = 0, count = -1;
 	
 	if (viewParamsGql != nullptr){
-		offset = viewParamsGql->GetFieldArgumentValue("offset").toInt();
-		count = viewParamsGql->GetFieldArgumentValue("count").toInt();
+		offset = viewParamsGql->GetParamArgumentValue("offset").toInt();
+		count = viewParamsGql->GetParamArgumentValue("count").toInt();
 		PrepareFilters(gqlRequest, *viewParamsGql, filterParams);
 	}
 	

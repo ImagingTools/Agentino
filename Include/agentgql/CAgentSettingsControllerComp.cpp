@@ -38,7 +38,7 @@ imtbase::CTreeItemModel* CAgentSettingsControllerComp::CreateInternalResponse(
 	else if (gqlRequest.GetRequestType() == imtgql::IGqlRequest::RT_MUTATION){
 		QByteArray agentinoUrl;
 
-		QByteArray itemData = gqlInputParamPtr->GetFieldArgumentValue("Item").toByteArray();
+		QByteArray itemData = gqlInputParamPtr->GetParamArgumentValue("Item").toByteArray();
 
 		imtbase::CTreeItemModel itemModel;
 		if (!itemModel.CreateFromJson(itemData)){

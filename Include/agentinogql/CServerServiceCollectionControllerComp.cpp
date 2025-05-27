@@ -315,9 +315,9 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::ListObjects(
 	imtbase::CTreeItemModel* notificationModel = dataModel->AddTreeModel("notification");
 
 	const imtgql::CGqlParamObject* viewParamsGql = nullptr;
-	const imtgql::CGqlParamObject* inputObject = inputParams.GetFieldArgumentObjectPtr("input");
+	const imtgql::CGqlParamObject* inputObject = inputParams.GetParamArgumentObjectPtr("input");
 	if (inputObject != nullptr){
-		viewParamsGql = inputObject->GetFieldArgumentObjectPtr("viewParams");
+		viewParamsGql = inputObject->GetParamArgumentObjectPtr("viewParams");
 	}
 
 	QByteArray agentId = gqlRequest.GetHeader("clientid");
@@ -343,8 +343,8 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::ListObjects(
 	int offset = 0, count = -1;
 
 	if (viewParamsGql != nullptr){
-		offset = viewParamsGql->GetFieldArgumentValue("offset").toInt();
-		count = viewParamsGql->GetFieldArgumentValue("count").toInt();
+		offset = viewParamsGql->GetParamArgumentValue("offset").toInt();
+		count = viewParamsGql->GetParamArgumentValue("count").toInt();
 		PrepareFilters(gqlRequest, *viewParamsGql, filterParams);
 	}
 
@@ -388,7 +388,7 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(con
 	QByteArray serviceId;
 	const imtgql::CGqlParamObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
 	if (gqlInputParamPtr != nullptr){
-		serviceId = gqlInputParamPtr->GetFieldArgumentValue("id").toByteArray();
+		serviceId = gqlInputParamPtr->GetParamArgumentValue("id").toByteArray();
 	}
 
 	imtbase::IObjectCollection* serviceCollectionPtr = nullptr;

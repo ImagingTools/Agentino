@@ -34,7 +34,7 @@ imtbase::CTreeItemModel* CServiceLogControllerComp::CreateInternalResponse(
 
 	const imtgql::CGqlParamObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
 	if (gqlInputParamPtr != nullptr){
-		serviceId = gqlInputParamPtr->GetFieldArgumentValue("id").toByteArray();
+		serviceId = gqlInputParamPtr->GetParamArgumentValue("id").toByteArray();
 	}
 
 	agentinodata::CServiceInfo* serviceInfoPtr = nullptr;

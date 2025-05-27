@@ -250,12 +250,12 @@ istd::IChangeableUniquePtr CAgentCollectionControllerComp::CreateObjectFromReque
 		return nullptr;
 	}
 	
-	objectId = inputDataPtr->GetFieldArgumentValue("id").toByteArray();
+	objectId = inputDataPtr->GetParamArgumentValue("id").toByteArray();
 	if (objectId.isEmpty()){
 		objectId = QUuid::createUuid().toString(QUuid::WithoutBraces).toUtf8();
 	}
 	
-	QByteArray itemData = inputDataPtr->GetFieldArgumentValue("item").toByteArray();
+	QByteArray itemData = inputDataPtr->GetParamArgumentValue("item").toByteArray();
 	if (itemData.isEmpty()){
 		return nullptr;
 	}
@@ -327,7 +327,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(
 		if (agentInfoPtr != nullptr){
 			agentInfoPtr->SetLastConnection(QDateTime::currentDateTimeUtc());
 			
-			QByteArray item = inputParams.GetFieldArgumentValue("item").toByteArray();
+			QByteArray item = inputParams.GetParamArgumentValue("item").toByteArray();
 			QJsonDocument itemDoc = QJsonDocument::fromJson(item);
 			if (itemDoc.object().contains("version")){
 				QString version = itemDoc.object().value("version").toString();
@@ -420,8 +420,8 @@ void CAgentCollectionControllerComp::UpdateAgentService(
 	
 	imtgql::CGqlRequest request(imtgql::CGqlRequest::RT_MUTATION, "ServiceUpdate");
 	imtgql::CGqlParamObject inputObject;
-	inputObject.InsertField(QByteArray("id"), QVariant(serviceId));
-	inputObject.InsertField(QByteArray("Item"), QVariant(serviceRepresentationModel.ToJson()));
+	inputObject.InsertParam(QByteArray("id"), QVariant(serviceId));
+	inputObject.InsertParam(QByteArray("Item"), QVariant(serviceRepresentationModel.ToJson()));
 	
 	request.AddParam("input", inputObject);
 	
