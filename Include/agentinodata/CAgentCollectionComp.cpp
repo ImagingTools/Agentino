@@ -50,7 +50,10 @@ bool CAgentCollectionComp::RemoveService(const QByteArray& agentId, const QByteA
 		if (agentInfoPtr != nullptr){
 			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 			if (serviceCollectionPtr != nullptr){
-				bool result = serviceCollectionPtr->RemoveElement(serviceId);
+				imtbase::ICollectionInfo::Ids objectIds;
+				objectIds << serviceId;
+
+				bool result = serviceCollectionPtr->RemoveElements(objectIds);
 				if (result){
 					ChangeSet changeSet(agentinodata::IServiceManager::CF_SERVICE_REMOVED);
 					changeSet.SetChangeInfo("agentid", agentId);

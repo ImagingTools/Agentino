@@ -23,16 +23,19 @@ void CServiceStatusCollectionSubscriberControllerComp::OnUpdate(const istd::ICha
 	if (changeIds.contains(imtbase::ICollectionInfo::CF_ADDED)){
 		serviceId = changeSet.GetChangeInfo(imtbase::IObjectCollection::CN_ELEMENT_INSERTED).toByteArray();
 	}
-
-	if (changeIds.contains(imtbase::ICollectionInfo::CF_ELEMENT_STATE)){
+	else if (changeIds.contains(imtbase::ICollectionInfo::CF_ELEMENT_STATE)){
 		serviceId = changeSet.GetChangeInfo(imtbase::IObjectCollection::CN_ELEMENT_STATE).toByteArray();
 	}
-
-	if (changeIds.contains(imtbase::ICollectionInfo::CF_REMOVED)){
-		serviceId = changeSet.GetChangeInfo(imtbase::IObjectCollection::CN_ELEMENT_REMOVED).toByteArray();
+	else if (changeIds.contains(imtbase::ICollectionInfo::CF_REMOVED)){
+		QVariant changeInfo = changeSet.GetChangeInfo(imtbase::ICollectionInfo::CN_ELEMENTS_REMOVED);
+		if (changeInfo.isValid()){
+			imtbase::ICollectionInfo::MultiElementNotifierInfo info = changeInfo.value<imtbase::ICollectionInfo::MultiElementNotifierInfo>();
+			if (!info.elementIds.isEmpty()){
+				serviceId = info.elementIds[0];
+			}
+		}
 	}
-
-	if (changeIds.contains(imtbase::IObjectCollection::CF_OBJECT_DATA_CHANGED)){
+	else if (changeIds.contains(imtbase::IObjectCollection::CF_OBJECT_DATA_CHANGED)){
 		serviceId = changeSet.GetChangeInfo(imtbase::IObjectCollection::CN_OBJECT_DATA_CHANGED).toByteArray();
 	}
 
