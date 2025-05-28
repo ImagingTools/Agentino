@@ -23,14 +23,14 @@ SplitView {
 		property string selectedServices
 		
 		onSelectionChanged: {
-			if (selection.length > 0){
-				let index = selection[0];
-				log.agentId = agentCollectionView.table.elements.getData("id", index);
+			if (selectedIndexes.length > 0){
+				let index = selectedIndexes[0]
+				log.agentId = table.elements.getData("id", index)
 				log.collectionId = "AgentLog"
 
 				log.doUpdateGui()
 				
-				selectedServices = agentCollectionView.table.elements.getData("services", index)
+				selectedServices = table.elements.getData("services", index)
 			}
 			else{
 				log.agentId = ""

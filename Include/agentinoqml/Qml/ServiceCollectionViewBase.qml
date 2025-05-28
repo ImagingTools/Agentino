@@ -101,9 +101,9 @@ RemoteCollectionView {
 	}
 
 	onSelectionChanged: {
-		if (selection.length > 0){
-			let index = selection[0];
-			
+		if (selectedIndexes.length > 0){
+			let index = selectedIndexes[0]
+
 			root.serviceId = root.table.elements.getData(ServiceItemTypeMetaInfo.s_id, index);
 			root.serviceName = root.table.elements.getData(ServiceItemTypeMetaInfo.s_name, index);
 		}

@@ -28,14 +28,15 @@ DocumentCollectionViewDelegate {
 		}
 		
 		let commandsController = collectionView.commandsController
-		
+		let elements = collectionView.table.elements;
+
 		let startEnabled = false
 		let stopEnabled = false
 		
 		let isEnabled = selectedItems.length > 0;
 		if (isEnabled){
-			let elements = collectionView.table.elements;
-			let status = elements.getData(ServiceItemTypeMetaInfo.s_status, selectedItems[0]);
+			let index = collectionView.table.getIndexByItemId(selectedItems[0])
+			let status = elements.getData(ServiceItemTypeMetaInfo.s_status, index);
 			startEnabled = String(status) === ServiceStatus.s_NotRunning
 			stopEnabled = String(status) === ServiceStatus.s_Running
 		}
