@@ -75,7 +75,7 @@ ViewBase {
 					
 					color: Style.textColor;
 					font.family: Style.fontFamily;
-					font.pixelSize: Style.fontSizeNormal;
+					font.pixelSize: Style.fontSizeM;
 					
 					text: qsTr("Name");
 				}
@@ -84,7 +84,7 @@ ViewBase {
 					id: nameInput;
 					
 					width: parent.width;
-					height: Style.itemSizeMedium;
+					height: Style.itemSizeM;
 					
 					placeHolderText: qsTr("Enter the name");
 					
@@ -102,7 +102,7 @@ ViewBase {
 					
 					color: Style.textColor;
 					font.family: Style.fontFamily;
-					font.pixelSize: Style.fontSizeNormal;
+					font.pixelSize: Style.fontSizeM;
 					
 					text: qsTr("Description");
 				}
@@ -111,7 +111,7 @@ ViewBase {
 					id: descriptionInput;
 					
 					width: parent.width;
-					height: Style.itemSizeMedium;
+					height: Style.itemSizeM;
 					
 					placeHolderText: qsTr("Enter the description");
 					
@@ -131,14 +131,14 @@ ViewBase {
 					
 					color: Style.textColor;
 					font.family: Style.fontFamily;
-					font.pixelSize: Style.fontSizeNormal;
+					font.pixelSize: Style.fontSizeM;
 					
 					text: qsTr("Verbose message (") + (switchVerboseMessage.checked ? qsTr("on") : qsTr("off")) + ")";
 				}
 				
 				Row {
-					height:  Style.itemSizeMedium;
-					spacing: Style.sizeMainMargin;
+					height:  Style.itemSizeM;
+					spacing: Style.marginM;
 					
 					SwitchCustom {
 						id: switchVerboseMessage
@@ -151,8 +151,8 @@ ViewBase {
 					}
 					
 					Item {
-						width: Style.sizeMainMargin;
-						height: Style.itemSizeMedium
+						width: Style.marginM;
+						height: Style.itemSizeM
 					}
 					
 					Text {
@@ -162,7 +162,7 @@ ViewBase {
 						visible: switchVerboseMessage.checked
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeNormal;
+						font.pixelSize: Style.fontSizeM;
 						
 						text: qsTr("Tracing level");
 					}
@@ -170,8 +170,8 @@ ViewBase {
 					ComboBox {
 						id: tracingLevelInput
 						anchors.verticalCenter: parent.verticalCenter
-						height: Style.itemSizeMedium * 0.75;
-						width: Style.itemSizeLarge;
+						height: Style.itemSizeM * 0.75;
+						width: Style.itemSizeL;
 						visible: switchVerboseMessage.checked
 						
 						model: TreeItemModel {}

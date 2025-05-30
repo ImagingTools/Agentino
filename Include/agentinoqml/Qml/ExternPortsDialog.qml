@@ -88,8 +88,8 @@ Dialog {
 				anchors.verticalCenter: parent.verticalCenter;
 				anchors.right: parent.right;
 				anchors.left: parent.left;
-				anchors.rightMargin: Style.sizeMainMargin;
-				anchors.leftMargin: Style.sizeMainMargin;
+				anchors.rightMargin: Style.marginM;
+				anchors.leftMargin: Style.marginM;
 				
 				width: portsDialog.width;
 				

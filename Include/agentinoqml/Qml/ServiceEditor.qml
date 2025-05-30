@@ -208,11 +208,11 @@ ViewBase {
 				id: scrollbar;
 				
 				anchors.left: flickable.right;
-				anchors.leftMargin: Style.sizeSmallMargin;
+				anchors.leftMargin: Style.marginXS;
 				anchors.top: parent.top;
 				anchors.bottom: flickable.parent.bottom;
 				
-				secondSize: Style.sizeMainMargin;
+				secondSize: Style.marginM;
 				targetItem: flickable;
 				
 				visible: parent.visible;
@@ -221,7 +221,7 @@ ViewBase {
 			Item {
 				id: bodyContainer
 				width: flickable.width
-				height: bodyColumn.height + Style.sizeLargeMargin * 2
+				height: bodyColumn.height + Style.marginXL * 2
 				
 				Column {
 					id: bodyColumn;
@@ -229,9 +229,9 @@ ViewBase {
 					anchors.top: bodyContainer.top
 					anchors.left: bodyContainer.left;
 					anchors.right: bodyContainer.right
-					anchors.margins: Style.sizeLargeMargin
+					anchors.margins: Style.marginXL
 					
-					spacing: Style.sizeMainMargin;
+					spacing: Style.marginM;
 					
 					Text {
 						id: titleName;
@@ -240,7 +240,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeNormal;
+						font.pixelSize: Style.fontSizeM;
 						
 						text: qsTr("Name");
 					}
@@ -249,7 +249,7 @@ ViewBase {
 						id: nameInput;
 						
 						width: parent.width;
-						height: Style.itemSizeMedium;
+						height: Style.itemSizeM;
 						autoEditingFinished: false
 						
 						placeHolderText: qsTr("Enter the name");
@@ -268,7 +268,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeNormal;
+						font.pixelSize: Style.fontSizeM;
 						
 						text: qsTr("Description");
 					}
@@ -277,7 +277,7 @@ ViewBase {
 						id: descriptionInput;
 						
 						width: parent.width;
-						height: Style.itemSizeMedium;
+						height: Style.itemSizeM;
 						
 						placeHolderText: qsTr("Enter the description");
 						
@@ -295,7 +295,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeNormal;
+						font.pixelSize: Style.fontSizeM;
 						
 						text: qsTr("Path");
 					}
@@ -304,7 +304,7 @@ ViewBase {
 						id: pathInput;
 						
 						width: flickable.parent.width;
-						height: Style.itemSizeMedium;
+						height: Style.itemSizeM;
 						
 						placeHolderText: qsTr("Enter the path");
 						
@@ -322,7 +322,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeNormal;
+						font.pixelSize: Style.fontSizeM;
 						
 						text: qsTr("Arguments");
 					}
@@ -331,7 +331,7 @@ ViewBase {
 						id: argumentsInput;
 						
 						width: parent.width;
-						height: Style.itemSizeMedium;
+						height: Style.itemSizeM;
 						
 						placeHolderText: qsTr("Enter the arguments");
 						
@@ -351,7 +351,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeNormal;
+						font.pixelSize: Style.fontSizeM;
 						
 						text: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("on") : qsTr("off")) + ")";
 					}
@@ -374,14 +374,14 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeNormal;
+						font.pixelSize: Style.fontSizeM;
 						
 						text: qsTr("Verbose message (") + (switchVerboseMessage.checked ? qsTr("on") : qsTr("off")) + ")";
 					}
 					
 					Row {
-						height:  Style.itemSizeMedium;
-						spacing: Style.sizeMainMargin;
+						height:  Style.itemSizeM;
+						spacing: Style.marginM;
 						
 						SwitchCustom {
 							id: switchVerboseMessage
@@ -392,8 +392,8 @@ ViewBase {
 						}
 						
 						Item {
-							width: Style.sizeMainMargin;
-							height: Style.itemSizeMedium
+							width: Style.marginM;
+							height: Style.itemSizeM
 						}
 						
 						Text {
@@ -403,7 +403,7 @@ ViewBase {
 							visible: switchVerboseMessage.checked
 							color: Style.textColor;
 							font.family: Style.fontFamily;
-							font.pixelSize: Style.fontSizeNormal;
+							font.pixelSize: Style.fontSizeM;
 							
 							text: qsTr("Tracing level");
 						}
@@ -411,8 +411,8 @@ ViewBase {
 						ComboBox {
 							id: tracingLevelInput
 							anchors.verticalCenter: parent.verticalCenter
-							height: Style.itemSizeMedium * 0.75;
-							width: Style.itemSizeLarge;
+							height: Style.itemSizeM * 0.75;
+							width: Style.itemSizeL;
 							visible: switchVerboseMessage.checked
 							
 							model: TreeItemModel {
@@ -460,7 +460,7 @@ ViewBase {
 						id: startScriptInput;
 						
 						width: parent.width;
-						height: Style.itemSizeMedium;
+						height: Style.itemSizeM;
 						visible: startScriptChecked.checkState === Qt.Checked
 						
 						placeHolderText: qsTr("Enter the start script path");
@@ -484,7 +484,7 @@ ViewBase {
 						id: stopScriptInput;
 						
 						width: parent.width;
-						height: Style.itemSizeMedium;
+						height: Style.itemSizeM;
 						visible: stopScriptChecked.checkState === Qt.Checked
 						
 						placeHolderText: qsTr("Enter the stop script path");
@@ -503,7 +503,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeNormal;
+						font.pixelSize: Style.fontSizeM;
 						
 						text: qsTr("Incoming Connections");
 						
@@ -670,7 +670,7 @@ ViewBase {
 									
 									color: Style.textColor;
 									font.family: Style.fontFamily;
-									font.pixelSize: Style.fontSizeNormal;
+									font.pixelSize: Style.fontSizeM;
 									lineHeight: 1.5;
 									
 									onTextChanged: {
@@ -687,7 +687,7 @@ ViewBase {
 									
 									anchors.verticalCenter: parent.verticalCenter;
 									anchors.right: parent.right;
-									anchors.rightMargin: Style.sizeMainMargin
+									anchors.rightMargin: Style.marginM
 									
 									width: 18;
 									height: width;
@@ -731,7 +731,7 @@ ViewBase {
 						
 						color: Style.textColor;
 						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeNormal;
+						font.pixelSize: Style.fontSizeM;
 						
 						text: qsTr("Dependant Services");
 						
@@ -824,7 +824,7 @@ ViewBase {
 									
 									color: Style.textColor;
 									font.family: Style.fontFamily;
-									font.pixelSize: Style.fontSizeNormal;
+									font.pixelSize: Style.fontSizeM;
 								}
 								
 								ComboBox {
@@ -1004,7 +1004,7 @@ ViewBase {
 				
 				Row {
 					anchors.centerIn: parent
-					spacing: Style.sizeMainMargin
+					spacing: Style.marginM
 					
 					Image {
 						id: image
@@ -1019,7 +1019,7 @@ ViewBase {
 					
 					BaseText {
 						text: qsTr("Service not running")
-						font.pixelSize: Style.fontSizeXXLarge
+						font.pixelSize: Style.fontSizeXXL
 					}
 				}
 			}

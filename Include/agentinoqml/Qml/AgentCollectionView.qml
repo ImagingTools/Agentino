@@ -85,7 +85,7 @@ SplitView {
 					
 					anchors.verticalCenter: parent.verticalCenter
 					anchors.left: filterDecorator.segmentedButton.right
-					anchors.leftMargin: Style.sizeSmallMargin
+					anchors.leftMargin: Style.marginXS
 					width: 200
 					height: 30
 					visible: filterDecorator.filtermenu.x - x < width ? false : true
