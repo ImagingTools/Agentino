@@ -10,7 +10,7 @@
 
 [Setup]
 AppName={#MyAppName}
-AppVersion={#MyAppVersion}
+AppVersion=1.0
 ;AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
@@ -19,7 +19,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf64}\ImagingTools\{#MyAppName}
 DisableProgramGroupPage=yes
 PrivilegesRequired=admin
-OutputBaseFilename=AgentinoAgentInstall_{#MyAppVersion}
+OutputBaseFilename=AgentinoAgentInstall
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
