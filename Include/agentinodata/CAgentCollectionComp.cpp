@@ -42,7 +42,9 @@ bool CAgentCollectionComp::AddService(
 }
 
 
-bool CAgentCollectionComp::RemoveService(const QByteArray& agentId, const QByteArray& serviceId)
+bool CAgentCollectionComp::RemoveServices(
+			const QByteArray& agentId,
+			const imtbase::ICollectionInfo::Ids& serviceIds)
 {
 	ObjectInfo* objectInfoPtr = GetObjectInfo(agentId);
 	if (objectInfoPtr != nullptr){
@@ -50,15 +52,9 @@ bool CAgentCollectionComp::RemoveService(const QByteArray& agentId, const QByteA
 		if (agentInfoPtr != nullptr){
 			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 			if (serviceCollectionPtr != nullptr){
-				imtbase::ICollectionInfo::Ids objectIds;
-				objectIds << serviceId;
-
-				bool result = serviceCollectionPtr->RemoveElements(objectIds);
+				bool result = serviceCollectionPtr->RemoveElements(serviceIds);
 				if (result){
 					ChangeSet changeSet(agentinodata::IServiceManager::CF_SERVICE_REMOVED);
-					changeSet.SetChangeInfo("agentid", agentId);
-					changeSet.SetChangeInfo("serviceid", serviceId);
-					
 					istd::CChangeNotifier changeNotifier(this, &changeSet);
 				}
 				

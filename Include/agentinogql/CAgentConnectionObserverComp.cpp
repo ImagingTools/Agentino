@@ -24,8 +24,6 @@ void CAgentConnectionObserverComp::SetAgentStatus(
 		return;
 	}
 
-	qDebug() << "SetAgentStatus" << agentId << status;
-
 	istd::TDelPtr<agentinodata::CAgentStatusInfo> serviceStatusInfoPtr;
 	serviceStatusInfoPtr.SetPtr(new agentinodata::CAgentStatusInfo(agentId, status));
 

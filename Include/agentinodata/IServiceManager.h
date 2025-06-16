@@ -42,7 +42,9 @@ public:
 				const QByteArray& serviceId = QByteArray(),
 				const QString& serviceName = QString(),
 				const QString& serviceDescription = QString()) = 0;
-	virtual bool RemoveService(const QByteArray& agentId, const QByteArray& serviceId) = 0;
+	virtual bool RemoveServices(
+				const QByteArray& agentId,
+				const imtbase::ICollectionInfo::Ids& serviceIds) = 0;
 	virtual bool SetService(
 				const QByteArray& agentId,
 				const QByteArray& serviceId,

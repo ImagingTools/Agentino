@@ -35,8 +35,7 @@ DocumentCollectionViewDelegate {
 		
 		let isEnabled = selectedItems.length > 0;
 		if (isEnabled){
-			let index = collectionView.table.getIndexByItemId(selectedItems[0])
-			let status = elements.getData(ServiceItemTypeMetaInfo.s_status, index);
+			let status = elements.getData(ServiceItemTypeMetaInfo.s_status, selectedItems[0]);
 			startEnabled = String(status) === ServiceStatus.s_NotRunning
 			stopEnabled = String(status) === ServiceStatus.s_Running
 		}
@@ -72,8 +71,7 @@ DocumentCollectionViewDelegate {
 		let elements = container.collectionView.table.elements;
 		let indexes = container.collectionView.table.getSelectedIndexes();
 		if (indexes.length > 0){
-			let index = indexes[0];
-			let serviceId = elements.getData(ServiceItemTypeMetaInfo.s_id, index)
+			let serviceId = elements.getData(ServiceItemTypeMetaInfo.s_id, indexes[0])
 			
 			startService(serviceId);
 		}
@@ -83,8 +81,7 @@ DocumentCollectionViewDelegate {
 		let elements = container.collectionView.table.elements;
 		let indexes = container.collectionView.table.getSelectedIndexes();
 		if (indexes.length > 0){
-			let index = indexes[0];
-			let serviceId = elements.getData(ServiceItemTypeMetaInfo.s_id, index)
+			let serviceId = elements.getData(ServiceItemTypeMetaInfo.s_id, indexes[0])
 			
 			stopService(serviceId)
 		}

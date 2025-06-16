@@ -370,11 +370,11 @@ sdl::imtbase::ImtCollection::CRemovedNotificationPayload CServiceControllerProxy
 		return sdl::imtbase::ImtCollection::CRemovedNotificationPayload();
 	}
 	
-	QByteArray serviceId;
-	if (arguments.input.Version_1_0->id){
-		serviceId = *arguments.input.Version_1_0->id;
+	QByteArrayList serviceIds;
+	if (arguments.input.Version_1_0->elementIds){
+		serviceIds = *arguments.input.Version_1_0->elementIds;
 	}
-	
+
 	const imtgql::CGqlParamObject* inputParamPtr = gqlRequest.GetParamObject("input");
 	Q_ASSERT(inputParamPtr != nullptr);
 	
@@ -387,10 +387,10 @@ sdl::imtbase::ImtCollection::CRemovedNotificationPayload CServiceControllerProxy
 		return sdl::imtbase::ImtCollection::CRemovedNotificationPayload();
 	}
 	
-	if (!m_serviceManagerCompPtr->RemoveService(agentId, serviceId)){
+	if (!m_serviceManagerCompPtr->RemoveServices(agentId, imtbase::ICollectionInfo::Ids(serviceIds.begin(), serviceIds.end()))){
 		SendErrorMessage(
 			0,
-			QString("Unable to remove service '%1' from agent '%2'").arg(qPrintable(serviceId), qPrintable(agentId)),
+			QString("Unable to remove service '%1' from agent '%2'").arg(qPrintable(serviceIds.join(';')), qPrintable(agentId)),
 			"CServiceControllerProxyComp");
 	}
 	

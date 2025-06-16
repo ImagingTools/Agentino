@@ -54,6 +54,10 @@ ServiceEditor {
 	}
 	
 	function getHeaders(){
+		if (!serviceEditor.serviceData){
+			return {}
+		}
+
 		let headers = {}
 		headers["clientid"] = serviceEditor.clientId;
 		headers["serviceid"] = serviceEditor.serviceData.m_id;

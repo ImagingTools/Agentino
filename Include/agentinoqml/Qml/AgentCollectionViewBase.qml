@@ -22,7 +22,7 @@ RemoteCollectionView {
 			
 			onCommandActivated: {
 				if (commandId === "Services"){
-					let itemId = root.table.getSelectedIds()[0];
+					let itemId = root.getSelectedIds()[0];
 					
 					let indexes = root.table.getSelectedIndexes();
 					if (indexes.length > 0){
@@ -71,10 +71,8 @@ RemoteCollectionView {
 			Component.onCompleted: {
 				MainDocumentManager.registerDocumentManager("Services", documentManager);
 				
-				var clientId = root.table.getSelectedIds()[0];
-				var clientName = root.table.getSelectedNames()[0];
-				
-				addInitialItem(serviceCollectionViewComp, clientName);
+				var clientId = root.getSelectedIds()[0];
+				addInitialItem(serviceCollectionViewComp, "");
 			}
 		}
 	}
@@ -84,8 +82,7 @@ RemoteCollectionView {
 		
 		ServiceCollectionView {
 			Component.onCompleted: {
-				clientId = root.table.getSelectedIds()[0];
-				clientName = root.table.getSelectedNames()[0];
+				clientId = root.getSelectedIds()[0];
 			}
 		}
 	}

@@ -28,7 +28,7 @@ public:
 				const QByteArray& serviceId = QByteArray(),
 				const QString& serviceName = QString(),
 				const QString& serviceDescription = QString()) override;
-	virtual bool RemoveService(const QByteArray& agentId, const QByteArray& serviceId) override;
+	virtual bool RemoveServices(const QByteArray& agentId, const imtbase::ICollectionInfo::Ids& serviceIds) override;
 	virtual bool SetService(
 				const QByteArray& agentId,
 				const QByteArray& serviceId,

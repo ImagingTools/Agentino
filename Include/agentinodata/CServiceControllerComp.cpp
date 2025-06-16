@@ -451,12 +451,16 @@ void CServiceControllerComp::UpdateServiceVersion(const QByteArray& serviceId)
 						break;
 					}
 				}
-                istd::TDelPtr<imtservice::IConnectionCollection> connectionCollection = nullptr;
-                if (connectionCollectionFactoryPtr != nullptr){
-                    connectionCollection = connectionCollectionFactoryPtr->CreateInstance();
-                }
-				if (connectionCollection != nullptr){
-					QString serviceVersion = connectionCollection->GetServiceVersion();
+
+				// istd::TDelPtr<imtservice::IConnectionCollection> connectionCollection = nullptr;
+				// if (connectionCollectionFactoryPtr != nullptr){
+				// 	connectionCollection = connectionCollectionFactoryPtr->CreateInstance();
+				// }
+				
+				imtservice::IConnectionCollection* connectionCollectionPtr = connectionCollectionFactoryPtr->CreateInstance();
+				// imtservice::IConnectionCollectionPlugin::IConnectionCollectionUniquePtr connectionCollectionPtr(connectionCollectionFactoryPtr->CreateInstance());
+				if (connectionCollectionPtr != nullptr){
+					QString serviceVersion = connectionCollectionPtr->GetServiceVersion();
 					if (serviceInfoPtr->GetServiceVersion() != serviceVersion){
 						serviceInfoPtr->SetServiceVersion(serviceVersion);
 						m_serviceCollectionCompPtr->SetObjectData(serviceId, *serviceInfoPtr);
@@ -527,7 +531,6 @@ void CServiceControllerComp::OnTimeout()
 
 void CServiceControllerComp::EmitChangeSignal(const QByteArray& serviceId, IServiceStatusInfo::ServiceStatus serviceStatus)
 {
-	qDebug() << "EmitChangeSignal" << serviceId << serviceStatus;
 	if (m_processMap.contains(serviceId)){
 		m_processMap[serviceId].lastStatus = serviceStatus;
 	}

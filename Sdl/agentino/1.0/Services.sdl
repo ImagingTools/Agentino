@@ -140,7 +140,7 @@ type Mutation {
 	StartService (input: ServiceInput): ServiceStatusResponse!
 	StopService (input: ServiceInput): ServiceStatusResponse!
 	
-	ServicesRemove (input: InputId): RemovedNotificationPayload!
+	ServicesRemove (input: RemoveElementsInput): RemovedNotificationPayload!
 	UpdateConnectionUrl (input: ConnectionUrlInput): UpdateConnectionUrlResponse!
 }
 
