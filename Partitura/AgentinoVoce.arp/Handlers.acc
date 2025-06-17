@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5352" Description="ACF"/>
-            <Version Id="1" Number="2237" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5394" Description="ACF"/>
+            <Version Id="1" Number="2250" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -189,6 +189,9 @@
                     <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="DatabaseEngine">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="FeatureContainer" Type="Reference" ExportId="FeatureContainer">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="GqlRequestHandlers" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
@@ -313,6 +316,7 @@
     <ExportedInterfaces>
         <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="ApplicationController"/>
         <Interface InterfaceId="imtgql::IGqlRequestProvider" ComponentId="StandardGraphQlHandlers"/>
+        <Interface InterfaceId="imtlic::IProductInfo" ComponentId="ApplicationController"/>
         <Interface InterfaceId="imtrest::IRequestServlet" ComponentId="StandardGraphQlHandlers"/>
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="StandardGraphQlHandlers"/>
     </ExportedInterfaces>
