@@ -22,7 +22,6 @@ public:
 	I_END_COMPONENT;
 
 protected:
-	QUrl GetUrlByDependantId(const QByteArray& dependantId) const;
 	QStringList GetConnectionInfoAboutDependOnService(const QUrl& url, const QByteArray& connectionId) const;
 	QStringList GetConnectionInfoAboutServiceDepends(const QByteArray& connectionId) const;
 

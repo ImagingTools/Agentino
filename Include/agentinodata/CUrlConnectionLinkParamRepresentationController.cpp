@@ -59,9 +59,9 @@ QUrl CUrlConnectionLinkParamRepresentationController::GetDependantConnectionUrl(
 								break;
 							}
 
-							if (connectionElementId == dependantId){
-								return connectionParamPtr->GetUrl();
-							}
+							// if (connectionElementId == dependantId){
+							// 	return connectionParamPtr->GetUrl();
+							// }
 
 							QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
 							for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
@@ -127,9 +127,9 @@ bool CUrlConnectionLinkParamRepresentationController::GetRepresentationFromDataM
 	if (paramsPtr != nullptr){
 		iprm::TParamsPtr<imtbase::IObjectCollection> agentCollectionPtr(paramsPtr, "AgentCollection");
 		if (agentCollectionPtr.IsValid()){
-			QUrl url = GetDependantConnectionUrl(*const_cast<imtbase::IObjectCollection*>(agentCollectionPtr.GetPtr()), dependantServiceConnectionId);
+			// QUrl url = GetDependantConnectionUrl(*const_cast<imtbase::IObjectCollection*>(agentCollectionPtr.GetPtr()), dependantServiceConnectionId);
 
-			representation.SetData("Url", url.toString());
+			// representation.SetData("Url", url.toString());
 		}
 	}
 

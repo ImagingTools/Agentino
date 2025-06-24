@@ -3,11 +3,11 @@
 
 // ImtCore includes
 #include <imtclientgql/TClientRequestManagerCompWrap.h>
+#include <generatedfiles/imtbasesdl/sdl/1.0/cpp/imtbasetypes.h>
 
 // Agentino includes
 #include <agentinodata/IServiceManager.h>
 #include <agentinodata/CServiceStatusInfo.h>
-#include <agentinodata/CServiceInfoRepresentationController.h>
 #include <imtclientgql/CGqlRemoteRepresentationControllerCompBase.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
 
@@ -82,9 +82,9 @@ private:
 		const imtbase::IObjectCollection::Id& connectionId,
 		imtbase::IObjectCollection::DataPtr& connectionDataPtr) const;
 	void UpdateUrlFromDependantConnection(sdl::agentino::Services::CServiceData::V1_0& serviceData) const;
-	QUrl GetDependantConnectionUrl(const QByteArray& dependantId) const;
-	
-	sdl::agentino::Services::CUrlParameter::V1_0 GetUrlParam(
+	std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> GetDependantServerConnectionParam(const QByteArray& dependantId) const;
+
+	sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 GetServerConnectionParam(
 		const sdl::agentino::Services::CServiceData::V1_0& serviceData,
 		const QByteArray& connectionId) const;
 	
@@ -92,19 +92,16 @@ private:
 		const sdl::agentino::Services::CServiceData::V1_0& serviceData1,
 		const sdl::agentino::Services::CServiceData::V1_0& serviceData2) const;
 	QByteArrayList GetServiceIdsByDependantId(const QByteArray& dependantId) const;
-	bool UpdateConnectionUrlForService(
+	bool UpdateConnectionForService(
 		const QByteArray& serviceId,
 		const QByteArray& agentId,
 		const QByteArray& connectionId,
-		const sdl::agentino::Services::CUrlParameter::V1_0& url) const;
+		const sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0& connectionParam) const;
 	
 protected:
 	I_REF(agentinodata::IServiceManager, m_serviceManagerCompPtr);
 	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
-
-private:
-	agentinodata::CServiceInfoRepresentationController m_serviceInfoRepresentationController;
 };
 
 

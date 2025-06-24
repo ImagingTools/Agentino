@@ -6,7 +6,9 @@
 
 // ImtCore includes
 #include <imtservice/CUrlConnectionParam.h>
+#include <imtcom/CServerConnectionInterfaceParam.h>
 #include <imtservice/CUrlConnectionLinkParam.h>
+#include <generatedfiles/imtbasesdl/sdl/1.0/cpp/imtbasetypes.h>
 
 // Agentino includes
 #include <agentinodata/CServiceInfo.h>
@@ -38,8 +40,12 @@ bool GetRepresentationFromUrlConnectionLink(
 	imtservice::CUrlConnectionLinkParam& connectionInfo,
 	const iprm::IParamsSet* paramsPtr = nullptr);
 
-bool GetUrlParamFromRepresentation(QUrl& url, const sdl::agentino::Services::CUrlParameter::V1_0& urlRepresentation);
-bool GetRepresentationFromUrlParam(const QUrl& url, sdl::agentino::Services::CUrlParameter::V1_0& urlRepresentation);
+bool GetServerConnectionParamFromRepresentation(
+			imtcom::CServerConnectionInterfaceParam& serverConnectionParam,
+			const sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0& serverConnectionRepresentation);
+bool GetRepresentationFromUrlServerConnectionParam(
+			const imtcom::CServerConnectionInterfaceParam& serverConnectionParam,
+			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0& serverConnectionRepresentation);
 
 
 } // namespace agentinodata

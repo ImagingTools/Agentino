@@ -10,7 +10,6 @@
 
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
-#include <agentinodata/CServiceInfoRepresentationController.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Agents.h>
 
 
@@ -63,7 +62,6 @@ protected:
 				const imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
 private:
-	void UpdateAgentService(const QByteArray& agentId, const QByteArray& serviceId) const;
 	bool UpdateServiceStatusFromAgent(const QByteArray& agentId, const QByteArray& serviceId) const;
 	void OnTimeout();
 
@@ -74,7 +72,6 @@ protected:
 
 	mutable QTimer m_timer;
 	mutable QList<QByteArray> m_connectedAgents;
-	agentinodata::CServiceInfoRepresentationController m_serviceInfoRepresentationController;
 };
 
 

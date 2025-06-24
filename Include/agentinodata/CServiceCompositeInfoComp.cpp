@@ -65,8 +65,17 @@ QByteArray CServiceCompositeInfoComp::GetServiceId(const QUrl& url) const
 							imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
 							if (connectionParamPtr != nullptr){
 								if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT){
-									if (connectionParamPtr->GetUrl() == url){
-										return serviceElementId;
+									QUrl connectionUrl;
+									if (connectionParamPtr->GetUrl(imtcom::IServerConnectionInterface::PT_HTTP, connectionUrl)){
+										if (connectionUrl == url){
+											return serviceElementId;
+										}
+									}
+
+									if (connectionParamPtr->GetUrl(imtcom::IServerConnectionInterface::PT_WEBSOCKET, connectionUrl)){
+										if (connectionUrl == url){
+											return serviceElementId;
+										}
 									}
 
 									QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();

@@ -306,17 +306,14 @@ bool GetUrlConnectionFromRepresentation(
 		connectionInfo.SetServiceTypeName(serviceTypeName.toUtf8());
 	}
 	
-	QUrl url;
-	if (connectionRepresentation.url){
-		sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation = *connectionRepresentation.url;
+	if (connectionRepresentation.connectionParam){
+		sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 urlRepresentation = *connectionRepresentation.connectionParam;
 
-		if (!GetUrlParamFromRepresentation(url, urlRepresentation)){
+		if (!GetServerConnectionParamFromRepresentation(connectionInfo, urlRepresentation)){
 			return false;
 		}
 	}
-	
-	connectionInfo.SetUrl(url);
-	
+
 	if (connectionRepresentation.externPorts){
 		QList<sdl::agentino::Services::CExternPort::V1_0> externPorts = *connectionRepresentation.externPorts;
 		
@@ -334,12 +331,12 @@ bool GetUrlConnectionFromRepresentation(
 			if (externPort.description){
 				incomingConnection.description = *externPort.description;
 			}
-			
+
 			QUrl externalUrl;
-			if (externPort.url){
-				if (!GetUrlParamFromRepresentation(externalUrl, *externPort.url)){
-					return false;
-				}
+			if (externPort.connectionParam){
+				// if (!GetServerConnectionParamFromRepresentation(externalUrl, *externPort.url)){
+				// 	return false;
+				// }
 			}
 
 			incomingConnection.url = externalUrl;
@@ -363,35 +360,33 @@ bool GetRepresentationFromUrlConnection(
 	QByteArray serviceTypeName = connectionInfo.GetServiceTypeName();
 	connectionRepresentation.serviceTypeName = serviceTypeName;
 
-	QUrl url = connectionInfo.GetUrl();
-	
-	sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation;
-	if (!GetRepresentationFromUrlParam(url, urlRepresentation)){
+	sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParamRepresentation;
+	if (!GetRepresentationFromUrlServerConnectionParam(connectionInfo, connectionParamRepresentation)){
 		return false;
 	}
 
-	connectionRepresentation.url = urlRepresentation;
+	connectionRepresentation.connectionParam = connectionParamRepresentation;
 
-	QList<sdl::agentino::Services::CExternPort::V1_0> portList;
+	// QList<sdl::agentino::Services::CExternPort::V1_0> portList;
 	
-	QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionInfo.GetIncomingConnections();
-	for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-		sdl::agentino::Services::CExternPort::V1_0 port;
-		port.id = incomingConnection.id;
-		port.name = incomingConnection.name;
-		port.description = incomingConnection.description;
+	// QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionInfo.GetIncomingConnections();
+	// for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
+	// 	sdl::agentino::Services::CExternPort::V1_0 port;
+	// 	port.id = incomingConnection.id;
+	// 	port.name = incomingConnection.name;
+	// 	port.description = incomingConnection.description;
 		
-		sdl::agentino::Services::CUrlParameter::V1_0 incomingPortUrlRepresentation;
-		if (!GetRepresentationFromUrlParam(incomingConnection.url, incomingPortUrlRepresentation)){
-			return false;
-		}
+	// 	sdl::agentino::Services::CUrlParameter::V1_0 incomingPortUrlRepresentation;
+	// 	if (!GetRepresentationFromUrlParam(incomingConnection.url, incomingPortUrlRepresentation)){
+	// 		return false;
+	// 	}
 		
-		port.url = incomingPortUrlRepresentation;
+	// 	port.url = incomingPortUrlRepresentation;
 		
-		portList << port;
-	}
+	// 	portList << port;
+	// }
 	
-	connectionRepresentation.externPorts = portList;
+	// connectionRepresentation.externPorts = portList;
 	
 	return true;
 }
@@ -418,14 +413,10 @@ bool GetUrlConnectionLinkFromRepresentation(
 		connectionInfo.SetDependantServiceConnectionId(dependantConnectionId.toUtf8());
 	}
 	
-	if (connectionRepresentation.url){
-		QUrl url;
-		
-		if (!GetUrlParamFromRepresentation(url, *connectionRepresentation.url)){
+	if (connectionRepresentation.connectionParam){
+		if (!GetServerConnectionParamFromRepresentation(connectionInfo, *connectionRepresentation.connectionParam)){
 			return false;
 		}
-
-		connectionInfo.SetUrl(url);
 	}
 	
 	return true;
@@ -444,75 +435,72 @@ bool GetRepresentationFromUrlConnectionLink(
 	connectionRepresentation.usageId = usageId;
 	connectionRepresentation.dependantConnectionId = dependantServiceConnectionId;
 	connectionRepresentation.serviceTypeName = serviceTypeName;
-	
-	QUrl url = connectionInfo.GetUrl();
-	sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation;
-	if (!GetRepresentationFromUrlParam(url, urlRepresentation)){
+
+	sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParamRepresentation;
+	if (!GetRepresentationFromUrlServerConnectionParam(connectionInfo, connectionParamRepresentation)){
 		return false;
 	}
 
-	connectionRepresentation.url = urlRepresentation;
+	connectionRepresentation.connectionParam = connectionParamRepresentation;
 
 	return true;
 }
 
 
-bool GetUrlParamFromRepresentation(QUrl& url, const sdl::agentino::Services::CUrlParameter::V1_0& urlRepresentation)
+bool GetServerConnectionParamFromRepresentation(
+			imtcom::CServerConnectionInterfaceParam& serverConnectionParam,
+			const sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0& sdlRepresentation)
 {
-	if (urlRepresentation.scheme){
-		QString scheme = *urlRepresentation.scheme;
-		if (scheme.isEmpty()){
-			scheme = "http";
-		}
-		
-		url.setScheme(scheme);
+	if (sdlRepresentation.host){
+		QString host = *sdlRepresentation.host;
+		serverConnectionParam.SetHost(host);
 	}
-	
-	if (urlRepresentation.host){
-		QString host = *urlRepresentation.host;
-		if (host.isEmpty()){
-			host = "localhost";
-		}
-		
-		url.setHost(host);
+
+	if (sdlRepresentation.httpPort){
+		int httpPort = *sdlRepresentation.httpPort;
+		serverConnectionParam.SetPort(imtcom::IServerConnectionInterface::PT_HTTP, httpPort);
 	}
-	
-	if (urlRepresentation.port){
-		int port = *urlRepresentation.port;
-		if (port < 0){
-			port = 80;
-		}
-		
-		url.setPort(port);
+
+	if (sdlRepresentation.wsPort){
+		int wsPort = *sdlRepresentation.wsPort;
+		serverConnectionParam.SetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET, wsPort);
 	}
-	
+
+	if (sdlRepresentation.isSecure){
+		bool isSecure = *sdlRepresentation.isSecure;
+		if (isSecure){
+			serverConnectionParam.SetConnectionFlags(imtcom::IServerConnectionInterface::CF_SECURE);
+		}
+	}
+
 	return true;
 }
 
 
-bool GetRepresentationFromUrlParam(const QUrl& url, sdl::agentino::Services::CUrlParameter::V1_0& urlRepresentation)
+bool GetRepresentationFromUrlServerConnectionParam(
+			const imtcom::CServerConnectionInterfaceParam& serverConnectionParam,
+			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0& sdlRepresentation)
 {
-	QString scheme = url.scheme();
-	if (scheme.isEmpty()){
-		scheme = "http";
-	}
-	
-	urlRepresentation.scheme = scheme;
-	
-	QString host = url.host();
-	if (host.isEmpty()){
-		host = "localhost";
-	}
-	
-	urlRepresentation.host = host;
-	
-	int port = url.port();
-	if (port < 0){
-		port = 80;
-	}
-	
-	urlRepresentation.port = port;
-	
+	const QString host = serverConnectionParam.GetHost();
+	sdlRepresentation.host = host;
+
+	int flags = serverConnectionParam.GetConnectionFlags();
+
+	switch (flags){
+	case imtcom::IServerConnectionInterface::CF_NONE:
+		sdlRepresentation.isSecure = false;
+		break;
+	case imtcom::IServerConnectionInterface::CF_SECURE:
+		sdlRepresentation.isSecure = true;
+		break;
+	};
+
+	int httpPort = serverConnectionParam.GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
+	sdlRepresentation.httpPort = httpPort;
+
+	int wsPort = serverConnectionParam.GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
+	sdlRepresentation.wsPort = wsPort;
+
 	return true;
 }
 

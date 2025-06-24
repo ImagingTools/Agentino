@@ -81,11 +81,11 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 			QByteArray usageId = (*outputConnection.usageId).toUtf8();
 			outputConnection.elements = GetConnectionsModel(usageId);
 			
-			QUrl url = GetDependantConnectionUrl(id);
-			if (url.isValid()){
-				sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation;
-				if (agentinodata::GetRepresentationFromUrlParam(url, urlRepresentation)){
-					outputConnection.url = urlRepresentation;
+			std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr = GetDependantServerConnectionParam(id);
+			if (serverConnectionInterfacePtr != nullptr){
+				sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 urlRepresentation;
+				if (agentinodata::GetRepresentationFromUrlServerConnectionParam(*serverConnectionInterfacePtr.get(), urlRepresentation)){
+					outputConnection.connectionParam = urlRepresentation;
 				}
 			}
 		}
@@ -151,10 +151,10 @@ sdl::imtbase::ImtCollection::CUpdatedNotificationPayload CServiceControllerProxy
 		QByteArrayList connectionIds = GetChangedConnectionUrl(currentServiceData, serviceData);
 		
 		for (const QByteArray& connectionId : connectionIds){
-			sdl::agentino::Services::CUrlParameter::V1_0 newUrlParam = GetUrlParam(serviceData, connectionId);
+			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 newConnectionParam = GetServerConnectionParam(serviceData, connectionId);
 			QByteArrayList dependentServiceIds = GetServiceIdsByDependantId(connectionId);
 			for (const QByteArray& dependantServiceId : dependentServiceIds){
-				UpdateConnectionUrlForService(dependantServiceId, agentId, connectionId, newUrlParam);
+				UpdateConnectionForService(dependantServiceId, agentId, connectionId, newConnectionParam);
 			}
 		}
 	}
@@ -659,41 +659,43 @@ QList<sdl::agentino::Services::CElement::V1_0> CServiceControllerProxyComp::GetC
 					continue;
 				}
 				
-				if (connectionParamPtr->GetUsageId() == connectionUsageId && connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT){
-					sdl::agentino::Services::CElement::V1_0 element;
-						QUrl url = connectionParamPtr->GetUrl();
-						url.setHost("localhost");
+				// if (connectionParamPtr->GetUsageId() == connectionUsageId && connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT){
+					
+				// 	agentinodata::GetRepresentationFromUrlServerConnectionParam(*connectionParamPtr, )
+				// 	sdl::agentino::Services::CElement::V1_0 element;
+				// 		QUrl url = connectionParamPtr->GetUrl();
+				// 		url.setHost("localhost");
 						
-						QString urlStr = url.toString();
+				// 		QString urlStr = url.toString();
 						
-						element.id = connectionElementId;
-						element.name = urlStr;
+				// 		element.id = connectionElementId;
+				// 		element.name = urlStr;
 						
-						sdl::agentino::Services::CUrlParameter::V1_0 urlParam;
-						urlParam.host = url.host();
-						urlParam.port = url.port();
-						urlParam.scheme = url.scheme();
-						element.url = urlParam;
+				// 		sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam;
+				// 		urlParam.host = url.host();
+				// 		urlParam.port = url.port();
+				// 		urlParam.scheme = url.scheme();
+				// 		element.url = urlParam;
 						
-						retVal << element;
+				// 		retVal << element;
 						
-						QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
+				// 		QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
 						
-						for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-							sdl::agentino::Services::CElement::V1_0 incomingElement;
+				// 		for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
+				// 			sdl::agentino::Services::CElement::V1_0 incomingElement;
 							
-							incomingElement.id = incomingConnection.id;
-							incomingElement.name = incomingConnection.url.toString();
+				// 			incomingElement.id = incomingConnection.id;
+				// 			incomingElement.name = incomingConnection.url.toString();
 							
-							sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation;
+				// 			sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation;
 							
-							if (agentinodata::GetRepresentationFromUrlParam(incomingConnection.url, urlRepresentation)){
-								incomingElement.url = urlRepresentation;
+				// 			if (agentinodata::GetRepresentationFromUrlParam(incomingConnection.url, urlRepresentation)){
+				// 				incomingElement.url = urlRepresentation;
 								
-								retVal << incomingElement;
-							}
-						}
-				}
+				// 				retVal << incomingElement;
+				// 			}
+				// 		}
+				// }
 			}
 		}
 	}
@@ -761,29 +763,26 @@ void CServiceControllerProxyComp::UpdateUrlFromDependantConnection(sdl::agentino
 			if (connection.dependantConnectionId){
 				dependantConnectionId = (*connection.dependantConnectionId).toUtf8();
 			}
-			
-			QUrl url = GetDependantConnectionUrl(dependantConnectionId);
-			
-			sdl::agentino::Services::CUrlParameter::V1_0 urlRepresentation;
-			urlRepresentation.host = url.host();
-			urlRepresentation.port = url.port();
-			urlRepresentation.scheme = url.scheme();
-			
-			connection.url = urlRepresentation;
-			
-			connections[i] = connection;
+
+			std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr = GetDependantServerConnectionParam(dependantConnectionId);
+
+			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 serverConnectionRepresentation;
+			if (agentinodata::GetRepresentationFromUrlServerConnectionParam(*serverConnectionInterfacePtr.get(), serverConnectionRepresentation)){
+				connection.connectionParam = serverConnectionRepresentation;
+				connections[i] = connection;
+			}
 		}
-		
+
 		serviceData.outputConnections = connections;
 	}
 }
 
 
-QUrl CServiceControllerProxyComp::GetDependantConnectionUrl(const QByteArray& dependantId) const
+std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> CServiceControllerProxyComp::GetDependantServerConnectionParam(const QByteArray& dependantId) const
 {
 	if (!m_agentCollectionCompPtr.IsValid()){
 		Q_ASSERT_X(false, "Attribute 'AgentCollection' was not set", "CServiceControllerProxyComp");
-		return QUrl();
+		return nullptr;
 	}
 	
 	imtbase::ICollectionInfo::Ids agentIds = m_agentCollectionCompPtr->GetElementIds();
@@ -824,15 +823,17 @@ QUrl CServiceControllerProxyComp::GetDependantConnectionUrl(const QByteArray& de
 							}
 							
 							if (connectionElementId == dependantId){
-								return connectionParamPtr->GetUrl();
+								std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr;
+								serverConnectionInterfacePtr.reset(dynamic_cast<imtcom::CServerConnectionInterfaceParam*>(connectionParamPtr));
+								return serverConnectionInterfacePtr;
 							}
 							
-							QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
-							for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-								if (incomingConnection.id == dependantId){
-									return incomingConnection.url;
-								}
-							}
+							// QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
+							// for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
+							// 	if (incomingConnection.id == dependantId){
+							// 		return incomingConnection.;
+							// 	}
+							// }
 						}
 					}
 				}
@@ -840,11 +841,11 @@ QUrl CServiceControllerProxyComp::GetDependantConnectionUrl(const QByteArray& de
 		}
 	}
 	
-	return QUrl();
+	return nullptr;
 }
 
 
-sdl::agentino::Services::CUrlParameter::V1_0 CServiceControllerProxyComp::GetUrlParam(
+sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 CServiceControllerProxyComp::GetServerConnectionParam(
 	const sdl::agentino::Services::CServiceData::V1_0& serviceData,
 	const QByteArray& connectionId) const
 {
@@ -853,12 +854,12 @@ sdl::agentino::Services::CUrlParameter::V1_0 CServiceControllerProxyComp::GetUrl
 		
 		for (const sdl::agentino::Services::CInputConnection::V1_0& connection : connections){
 			if (connectionId == *connection.id){
-				return *connection.url;
+				return *connection.connectionParam;
 			}
 		}
 	}
-	
-	return sdl::agentino::Services::CUrlParameter::V1_0();
+
+	return sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0();
 }
 
 
@@ -875,13 +876,13 @@ QByteArrayList CServiceControllerProxyComp::GetChangedConnectionUrl(
 		for (int i = 0; i < connections1.size(); i++){
 			sdl::agentino::Services::CInputConnection::V1_0 connection1 = connections1[i];
 			sdl::agentino::Services::CInputConnection::V1_0 connection2 = connections2[i];
-			
-			sdl::agentino::Services::CUrlParameter::V1_0 urlParam1 = *connection1.url;
-			sdl::agentino::Services::CUrlParameter::V1_0 urlParam2 = *connection2.url;
-			
-			if (*urlParam1.scheme != *urlParam2.scheme ||
-				*urlParam1.port != *urlParam2.port ||
-				*urlParam1.host != *urlParam2.host){
+
+			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam1 = *connection1.connectionParam;
+			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam2 = *connection2.connectionParam;
+
+			if (*connectionParam1.host != *connectionParam2.host ||
+				*connectionParam1.httpPort != *connectionParam2.httpPort ||
+				*connectionParam1.wsPort != *connectionParam2.wsPort){
 				retVal << *connection1.id;
 			}
 		}
@@ -946,17 +947,17 @@ QByteArrayList CServiceControllerProxyComp::GetServiceIdsByDependantId(const QBy
 }
 
 
-bool CServiceControllerProxyComp::UpdateConnectionUrlForService(
+bool CServiceControllerProxyComp::UpdateConnectionForService(
 	const QByteArray& serviceId,
 	const QByteArray& agentId,
 	const QByteArray& connectionId,
-	const sdl::agentino::Services::CUrlParameter::V1_0& url) const
+	const sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0& connectionParam) const
 {
 	sdl::agentino::Services::UpdateConnectionUrlRequestArguments arguments;
 	arguments.input.Version_1_0 = sdl::agentino::Services::CConnectionUrlInput::V1_0();
 	arguments.input.Version_1_0->serviceId = serviceId;
 	arguments.input.Version_1_0->connectionId = connectionId;
-	arguments.input.Version_1_0->url = url;
+	arguments.input.Version_1_0->connectionParam = connectionParam;
 	
 	imtgql::CGqlRequest gqlRequest;
 	imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
@@ -968,7 +969,7 @@ bool CServiceControllerProxyComp::UpdateConnectionUrlForService(
 	if (!sdl::agentino::Services::CUpdateConnectionUrlGqlRequest::SetupGqlRequest(gqlRequest, arguments)){
 		return false;
 	}
-	
+
 	QString errorMessage;
 	sdl::agentino::Services::CUpdateConnectionUrlResponse::V1_0 response;
 	if (!SendModelRequest<
@@ -976,11 +977,11 @@ bool CServiceControllerProxyComp::UpdateConnectionUrlForService(
 			sdl::agentino::Services::CUpdateConnectionUrlResponse>(gqlRequest, response, errorMessage)){
 		return false;
 	}
-	
+
 	if (response.succesful.has_value()){
 		return *response.succesful;
 	}
-	
+
 	return false;
 }
 

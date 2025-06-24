@@ -242,7 +242,7 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 		imtbase::IObjectCollection* incomingConnectionCollectionPtr = serviceInfoImplPtr->GetInputConnections();
 		imtbase::IObjectCollection* dependantConnectionCollectionPtr = serviceInfoImplPtr->GetDependantServiceConnections();
 		
-		const imtbase::ICollectionInfo* collectionInfo = static_cast<const imtbase::ICollectionInfo*>(connectionCollectionPtr->GetUrlList());
+		const imtbase::ICollectionInfo* collectionInfo = static_cast<const imtbase::ICollectionInfo*>(connectionCollectionPtr->GetServerConnectionList());
 		const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
 		if (objectCollection != nullptr){
 			imtbase::ICollectionInfo::Ids ids = collectionInfo->GetElementIds();
@@ -252,7 +252,7 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 					continue;
 				}
 				
-				const QUrl* url = connectionCollectionPtr->GetUrl(id);
+				const imtcom::IServerConnectionInterface* serverConnectionPtr  = connectionCollectionPtr->GetServerConnection(id);
 				if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT){
 					istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
 					urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam);

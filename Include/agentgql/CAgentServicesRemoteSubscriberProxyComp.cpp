@@ -65,7 +65,7 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 		return false;
 	}
 	
-	const imtbase::ICollectionInfo* collectionInfo = static_cast<const imtbase::ICollectionInfo*>(connectionCollection->GetUrlList());
+	const imtbase::ICollectionInfo* collectionInfo = static_cast<const imtbase::ICollectionInfo*>(connectionCollection->GetServerConnectionList());
 	const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
 	if (objectCollection != nullptr){
 		imtbase::ICollectionInfo::Ids ids = collectionInfo->GetElementIds();
@@ -77,17 +77,8 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 			
 			if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT){
 				serviceTypeName = connectionCollection->GetServiceTypeName().toUtf8();
-				url = connectionParamPtr->GetDefaultUrl();
-				
-				imtbase::IObjectCollection::DataPtr dataPtr;
-				objectCollection->GetObjectData(id, dataPtr);
-				imtservice::CUrlConnectionParam* connectionParam = dynamic_cast<imtservice::CUrlConnectionParam*>(dataPtr.GetPtr());
-				if (connectionParam != nullptr){
-					url = connectionParam->GetUrl();
-				}
-				
-				// TODO: ???
-				if (url.scheme() == "ws"){
+				const imtcom::IServerConnectionInterface& serverConnectionInterface = connectionParamPtr->GetDefaultInterface();
+				if (serverConnectionInterface.GetUrl(imtcom::IServerConnectionInterface::PT_WEBSOCKET, url)){
 					break;
 				}
 			}
