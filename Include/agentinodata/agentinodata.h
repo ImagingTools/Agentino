@@ -8,11 +8,12 @@
 #include <imtservice/CUrlConnectionParam.h>
 #include <imtcom/CServerConnectionInterfaceParam.h>
 #include <imtservice/CUrlConnectionLinkParam.h>
-#include <generatedfiles/imtbasesdl/sdl/1.0/cpp/imtbasetypes.h>
 
 // Agentino includes
 #include <agentinodata/CServiceInfo.h>
+
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtBaseTypes.h>
 
 
 namespace agentinodata
