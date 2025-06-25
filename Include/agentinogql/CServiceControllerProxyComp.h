@@ -3,12 +3,13 @@
 
 // ImtCore includes
 #include <imtclientgql/TClientRequestManagerCompWrap.h>
-#include <generatedfiles/imtbasesdl/sdl/1.0/cpp/imtbasetypes.h>
 
 // Agentino includes
 #include <agentinodata/IServiceManager.h>
 #include <agentinodata/CServiceStatusInfo.h>
 #include <imtclientgql/CGqlRemoteRepresentationControllerCompBase.h>
+
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtBaseTypes.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
 
 
