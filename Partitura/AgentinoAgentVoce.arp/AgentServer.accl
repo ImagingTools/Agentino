@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5352" Description="ACF"/>
-            <Version Id="1" Number="2237" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5398" Description="ACF"/>
+            <Version Id="1" Number="2250" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -14,6 +14,7 @@
         <Element ComponentName="DatabaseEngine" X="475" Y="175" Note=""/>
         <Element ComponentName="HttpServerFramework" X="350" Y="450" Note=""/>
         <Element ComponentName="Repositories" X="750" Y="225" Note=""/>
+        <Element ComponentName="ServerConnectionInterface" X="675" Y="750" Note=""/>
         <Element ComponentName="ServerSettings" X="125" Y="350" Note=""/>
         <Element ComponentName="ServiceCollectionPropvider" X="1025" Y="126" Note=""/>
         <Element ComponentName="ServiceController" X="825" Y="375" Note=""/>

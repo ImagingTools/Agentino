@@ -165,7 +165,10 @@ sdl::agentino::Services::CUpdateConnectionUrlResponse CServiceControllerComp::On
 	QByteArray serviceId = *arguments.input.Version_1_0->serviceId;
 	QByteArray connectionId = *arguments.input.Version_1_0->connectionId;
 	sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam = *arguments.input.Version_1_0->connectionParam;
+
 	imtcom::CServerConnectionInterfaceParam serverConnectionParam;
+	serverConnectionParam.RegisterProtocol(imtcom::IServerConnectionInterface::PT_HTTP);
+	serverConnectionParam.RegisterProtocol(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
 
 	if (!agentinodata::GetServerConnectionParamFromRepresentation(serverConnectionParam, connectionParam)){
 		errorMessage = QString("ServerConnectionParam is invalid");

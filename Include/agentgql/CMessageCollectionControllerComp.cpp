@@ -167,9 +167,9 @@ imtbase::IObjectCollection* CMessageCollectionControllerComp::GetMessageCollecti
 	if (m_objectCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
 		const agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = dynamic_cast<const agentinodata::CIdentifiableServiceInfo*>(dataPtr.GetPtr());
 		if (serviceInfoPtr != nullptr){
-			QByteArray serviceName = serviceInfoPtr->GetServiceTypeName().toUtf8();
+			QByteArray serviceName = serviceInfoPtr->GetServiceTypeId().toUtf8();
 			QString servicePath = serviceInfoPtr->GetServicePath();
-			QByteArray serviceTypeName = serviceInfoPtr->GetServiceTypeName().toUtf8();
+			QByteArray serviceTypeName = serviceInfoPtr->GetServiceTypeId().toUtf8();
 
 			QFileInfo fileInfo(servicePath);
 			QString pluginPath = fileInfo.path() + "/Plugins";

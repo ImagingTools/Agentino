@@ -45,16 +45,15 @@ type ExternPort {
 
 type InputConnection {
 	id: ID
-	usageId: String
 	connectionName: String
 	description: String
 	serviceName: String
-	serviceTypeName: String
+	serviceTypeId: String
 	externPorts: [ExternPort]
 	connectionParam: ServerConnectionParam
 }
 
-type Element {
+type DependantConnectionInfo {
 	id: ID
 	name: String
 	connectionParam: ServerConnectionParam
@@ -62,13 +61,12 @@ type Element {
 
 type OutputConnection {
 	id: ID
-	usageId: String
 	connectionName: String
 	description: String
 	serviceName: String
-	serviceTypeName: String
+	serviceTypeId: String
 	dependantConnectionId: String
-	elements: [Element]
+	dependantConnectionList: [DependantConnectionInfo]
 	connectionParam: ServerConnectionParam
 }
 
@@ -78,7 +76,7 @@ type ServiceData {
 	description: String
 	path: String
 	arguments: String
-	serviceTypeName: String
+	serviceTypeId: String
 	enableVerbose: Boolean
 	isAutoStart: Boolean
 	tracingLevel: Integer

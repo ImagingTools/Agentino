@@ -98,9 +98,9 @@ bool GetServiceFromRepresentation(
 		serviceInfo.SetTracingLevel(tracingLevel);
 	}
 	
-	if (serviceDataRepresentation.serviceTypeName){
-		QString serviceTypeName = *serviceDataRepresentation.serviceTypeName;
-		serviceInfo.SetServiceTypeName(serviceTypeName.toUtf8());
+	if (serviceDataRepresentation.serviceTypeId){
+		QString serviceTypeId = *serviceDataRepresentation.serviceTypeId;
+		serviceInfo.SetServiceTypeId(serviceTypeId.toUtf8());
 	}
 	
 	if (serviceDataRepresentation.version){
@@ -220,8 +220,8 @@ bool GetRepresentationFromService(
 	int tracingLevel = serviceInfo.GetTracingLevel();
 	serviceDataRepresentation.tracingLevel = tracingLevel;
 	
-	QString serviceTypeName = serviceInfo.GetServiceTypeName();
-	serviceDataRepresentation.serviceTypeName = serviceTypeName;
+	QString serviceTypeId = serviceInfo.GetServiceTypeId();
+	serviceDataRepresentation.serviceTypeId = serviceTypeId;
 	
 	QString serviceVersion = serviceInfo.GetServiceVersion();
 	serviceDataRepresentation.version = serviceVersion;
@@ -295,17 +295,12 @@ bool GetUrlConnectionFromRepresentation(
 	const sdl::agentino::Services::CInputConnection::V1_0& connectionRepresentation)
 {
 	connectionInfo.SetConnectionType(imtservice::IServiceConnectionInfo::CT_INPUT);
-	
-	if (connectionRepresentation.usageId){
-		QString usageId = *connectionRepresentation.usageId;
-		connectionInfo.SetUsageId(usageId.toUtf8());
+
+	if (connectionRepresentation.serviceTypeId){
+		QString serviceTypeId = *connectionRepresentation.serviceTypeId;
+		connectionInfo.SetServiceTypeId(serviceTypeId.toUtf8());
 	}
-	
-	if (connectionRepresentation.serviceTypeName){
-		QString serviceTypeName = *connectionRepresentation.serviceTypeName;
-		connectionInfo.SetServiceTypeName(serviceTypeName.toUtf8());
-	}
-	
+
 	if (connectionRepresentation.connectionParam){
 		sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 urlRepresentation = *connectionRepresentation.connectionParam;
 
@@ -354,11 +349,8 @@ bool GetRepresentationFromUrlConnection(
 	imtservice::CUrlConnectionParam& connectionInfo,
 	const iprm::IParamsSet* /*paramsPtr*/)
 {
-	QByteArray usageId = connectionInfo.GetUsageId();
-	connectionRepresentation.usageId = usageId;
-	
-	QByteArray serviceTypeName = connectionInfo.GetServiceTypeName();
-	connectionRepresentation.serviceTypeName = serviceTypeName;
+	QByteArray serviceTypeId = connectionInfo.GetServiceTypeId();
+	connectionRepresentation.serviceTypeId = serviceTypeId;
 
 	sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParamRepresentation;
 	if (!GetRepresentationFromUrlServerConnectionParam(connectionInfo, connectionParamRepresentation)){
@@ -397,15 +389,10 @@ bool GetUrlConnectionLinkFromRepresentation(
 	const sdl::agentino::Services::COutputConnection::V1_0& connectionRepresentation)
 {
 	connectionInfo.SetConnectionType(imtservice::IServiceConnectionInfo::CT_OUTPUT);
-	
-	if (connectionRepresentation.usageId){
-		QString usageId = *connectionRepresentation.usageId;
-		connectionInfo.SetUsageId(usageId.toUtf8());
-	}
-	
-	if (connectionRepresentation.serviceTypeName){
-		QString serviceTypeName = *connectionRepresentation.serviceTypeName;
-		connectionInfo.SetServiceTypeName(serviceTypeName.toUtf8());
+
+	if (connectionRepresentation.serviceTypeId){
+		QString serviceTypeId = *connectionRepresentation.serviceTypeId;
+		connectionInfo.SetServiceTypeId(serviceTypeId.toUtf8());
 	}
 	
 	if (connectionRepresentation.dependantConnectionId){
@@ -429,12 +416,10 @@ bool GetRepresentationFromUrlConnectionLink(
 	const iprm::IParamsSet* /*paramsPtr*/)
 {
 	QByteArray dependantServiceConnectionId = connectionInfo.GetDependantServiceConnectionId();
-	QString serviceTypeName = connectionInfo.GetServiceTypeName();
-	QByteArray usageId = connectionInfo.GetUsageId();
-	
-	connectionRepresentation.usageId = usageId;
+	QString serviceTypeId = connectionInfo.GetServiceTypeId();
+
 	connectionRepresentation.dependantConnectionId = dependantServiceConnectionId;
-	connectionRepresentation.serviceTypeName = serviceTypeName;
+	connectionRepresentation.serviceTypeId = serviceTypeId;
 
 	sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParamRepresentation;
 	if (!GetRepresentationFromUrlServerConnectionParam(connectionInfo, connectionParamRepresentation)){

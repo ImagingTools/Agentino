@@ -237,7 +237,7 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 	if (connectionCollectionPtr != nullptr){
 		serviceInfoImplPtr->SetTracingLevel(connectionCollectionPtr->GetTracingLevel());
 		serviceInfoImplPtr->SetServiceVersion(connectionCollectionPtr->GetServiceVersion());
-		serviceInfoImplPtr->SetServiceTypeName(connectionCollectionPtr->GetServiceTypeName().toUtf8());
+		serviceInfoImplPtr->SetServiceTypeId(connectionCollectionPtr->GetServiceTypeId().toUtf8());
 		
 		imtbase::IObjectCollection* incomingConnectionCollectionPtr = serviceInfoImplPtr->GetInputConnections();
 		imtbase::IObjectCollection* dependantConnectionCollectionPtr = serviceInfoImplPtr->GetDependantServiceConnections();
@@ -260,8 +260,7 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 					QString connectionName = objectCollection->GetElementInfo(id, imtbase::IObjectCollection::EIT_NAME).toString();
 					QString connectionDescription = collectionInfo->GetElementInfo(id, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
 					
-					urlConnectionParamPtr->SetServiceTypeName(connectionParamPtr->GetServiceTypeName());
-					urlConnectionParamPtr->SetUsageId(connectionParamPtr->GetUsageId());
+					urlConnectionParamPtr->SetServiceTypeId(connectionParamPtr->GetServiceTypeId());
 
 					urlConnectionParamPtr->SetDefaultServiceInterface(connectionParamPtr->GetDefaultInterface());
 					
@@ -276,8 +275,7 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 					QString connectionName = objectCollection->GetElementInfo(id, imtbase::IObjectCollection::EIT_NAME).toString();
 					QString connectionDescription = collectionInfo->GetElementInfo(id, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
 					
-					urlConnectionLinkParamPtr->SetUsageId(connectionParamPtr->GetUsageId());
-					urlConnectionLinkParamPtr->SetServiceTypeName(connectionParamPtr->GetServiceTypeName());
+					urlConnectionLinkParamPtr->SetServiceTypeId(connectionParamPtr->GetServiceTypeId());
 					urlConnectionLinkParamPtr->SetDefaultServiceInterface(connectionParamPtr->GetDefaultInterface());
 
 					dependantConnectionCollectionPtr->InsertNewObject("ConnectionLink", connectionName, connectionDescription, urlConnectionLinkParamPtr.PopPtr(), id);
@@ -335,7 +333,7 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 		return false;
 	}
 	
-	QByteArray serviceTypeName = serviceInfoPtr->GetServiceTypeName().toUtf8();
+	QByteArray serviceTypeName = serviceInfoPtr->GetServiceTypeId().toUtf8();
 	
 	std::shared_ptr<imtservice::IConnectionCollection> connectionCollectionPtr = GetConnectionCollection(objectId);
 	if (connectionCollectionPtr != nullptr){
@@ -394,7 +392,7 @@ std::shared_ptr<imtservice::IConnectionCollection> CServiceCollectionControllerC
 	}
 	
 	QByteArray servicePath = serviceInfoPtr->GetServicePath();
-	QByteArray serviceName = serviceInfoPtr->GetServiceTypeName().toUtf8();
+	QByteArray serviceName = serviceInfoPtr->GetServiceTypeId().toUtf8();
 	
 	if (servicePath.isEmpty()){
 		SendErrorMessage(0,
@@ -444,10 +442,9 @@ bool CServiceCollectionControllerComp::CheckInputPortsUpdated(
 			if (connectionCollectionPtr->GetObjectData(elementId, connectionDataPtr)){
 				imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
 				if (connectionParamPtr != nullptr){
-					QString usageId = connectionParamPtr->GetUsageId();
 					int httpPort = connectionParamPtr->GetPort(imtcom::CServerConnectionInterfaceParam::PT_HTTP);
 					int websocketPort = connectionParamPtr->GetPort(imtcom::CServerConnectionInterfaceParam::PT_WEBSOCKET);
-					const imtcom::IServerConnectionInterface* collectionParamPtr = connectionCollection.GetServerConnection(usageId.toUtf8());
+					const imtcom::IServerConnectionInterface* collectionParamPtr = connectionCollection.GetServerConnection(elementId);
 					
 					if (collectionParamPtr != nullptr && collectionParamPtr->GetPort(imtcom::CServerConnectionInterfaceParam::PT_HTTP) != httpPort
 						&& collectionParamPtr->GetPort(imtcom::CServerConnectionInterfaceParam::PT_WEBSOCKET) != websocketPort){
@@ -472,8 +469,10 @@ bool CServiceCollectionControllerComp::UpdateConnectionCollectionFromService(age
 			if (inputCollectionPtr->GetObjectData(elementId, connectionDataPtr)){
 				imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
 				if (connectionParamPtr != nullptr){
-					QByteArray usageId = connectionParamPtr->GetUsageId();
 					imtcom::CServerConnectionInterfaceParam serverConnectionParam;
+					serverConnectionParam.RegisterProtocol(imtcom::IServerConnectionInterface::PT_HTTP);
+					serverConnectionParam.RegisterProtocol(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
+
 					serverConnectionParam.SetHost(connectionParamPtr->GetHost());
 
 					imtcom::IServerConnectionInterface::ProtocolTypes protocols = connectionParamPtr->GetSupportedProtocols();
@@ -481,7 +480,7 @@ bool CServiceCollectionControllerComp::UpdateConnectionCollectionFromService(age
 						serverConnectionParam.SetPort(protocolType, connectionParamPtr->GetPort(protocolType));
 					}
 					
-					connectionCollection.SetServerConnectionInterface(usageId, serverConnectionParam);
+					connectionCollection.SetServerConnectionInterface(elementId, serverConnectionParam);
 				}
 			}
 		}
@@ -495,8 +494,10 @@ bool CServiceCollectionControllerComp::UpdateConnectionCollectionFromService(age
 			if (dependantServiceCollectionPtr->GetObjectData(elementId, connectionDataPtr)){
 				imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
 				if (connectionLinkParamPtr != nullptr){
-					QByteArray usageId = connectionLinkParamPtr->GetUsageId();
 					imtcom::CServerConnectionInterfaceParam serverConnectionParam;
+					serverConnectionParam.RegisterProtocol(imtcom::IServerConnectionInterface::PT_HTTP);
+					serverConnectionParam.RegisterProtocol(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
+
 					serverConnectionParam.SetHost(connectionLinkParamPtr->GetHost());
 					imtcom::IServerConnectionInterface::ProtocolTypes protocols = connectionLinkParamPtr->GetSupportedProtocols();
 
@@ -504,7 +505,7 @@ bool CServiceCollectionControllerComp::UpdateConnectionCollectionFromService(age
 						serverConnectionParam.SetPort(protocolType, connectionLinkParamPtr->GetPort(protocolType));
 					}
 
-					connectionCollection.SetServerConnectionInterface(usageId, serverConnectionParam);
+					connectionCollection.SetServerConnectionInterface(elementId, serverConnectionParam);
 				}
 			}
 		}

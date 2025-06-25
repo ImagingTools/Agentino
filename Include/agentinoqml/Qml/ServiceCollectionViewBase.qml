@@ -42,19 +42,16 @@ RemoteCollectionView {
 	}
 
 	onClientIdChanged: {
+		console.log("onClientIdChanged", clientId)
 		if (clientId == ""){
 			return
 		}
-		
-		commandsController.typeId = root.collectionId;
-		dataController.collectionId = root.collectionId;
-		
-		let documentManagerPtr = root.documentManager;
-		if (documentManagerPtr){
-			root.commandsDelegate.documentManager = documentManagerPtr
+
+		if (documentManager){
+			console.log("registerDocumentView")
 			
-			documentManagerPtr.registerDocumentView("Service", "ServiceEditor", serviceEditorComp);
-			documentManagerPtr.registerDocumentDataController("Service", serviceDataControllerComp);
+			documentManager.registerDocumentView("Service", "ServiceEditor", serviceEditorComp);
+			documentManager.registerDocumentDataController("Service", serviceDataControllerComp);
 			// documentManagerPtr.registerDocumentValidator("Service", serviceValidatorComp);
 		}
 	}
@@ -72,6 +69,7 @@ RemoteCollectionView {
 			id: serviceCommandsDelegate
 			collectionView: root
 			documentTypeId: "Service"
+			documentManager: root.documentManager
 			function getHeaders(){
 				return root.getHeaders()
 			}
@@ -80,7 +78,7 @@ RemoteCollectionView {
 	
 	dataControllerComp: Component {CollectionRepresentation {
 			id: collectionRepresentation
-			
+			collectionId: root.collectionId;
 			additionalFieldIds: root.additionalFieldIds;
 			
 			function getHeaders(){

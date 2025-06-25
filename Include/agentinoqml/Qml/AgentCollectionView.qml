@@ -8,127 +8,129 @@ import imtdocgui 1.0
 import imtgui 1.0
 import imtbaseComplexCollectionFilterSdl 1.0
 
-SplitView {
+Item {
 	id: container
 	
 	anchors.fill: parent
-	hasAnimation: true;
+	// hasAnimation: true;
 	
-	orientation: Qt.Vertical
+	// orientation: Qt.Vertical
 	
 	AgentCollectionViewBase {
 		id: agentCollectionView;
+		anchors.fill: parent
 		
-		height: 200
+		// height: 200
 		property string selectedServices
 		
-		onSelectionChanged: {
-			if (selectedIndexes.length > 0){
-				let index = selectedIndexes[0]
-				log.agentId = table.elements.getData("id", index)
-				log.collectionId = "AgentLog"
+		// onSelectionChanged: {
+		// 	if (selectedIndexes.length > 0){
+		// 		let index = selectedIndexes[0]
+		// 		log.agentId = table.elements.getData("id", index)
+		// 		log.collectionId = "AgentLog"
 
-				log.doUpdateGui()
+		// 		log.doUpdateGui()
 				
-				selectedServices = table.elements.getData("services", index)
-			}
-			else{
-				log.agentId = ""
-				log.dataController.clearElements()
-			}
-		}
+		// 		selectedServices = table.elements.getData("services", index)
+		// 	}
+		// 	else{
+		// 		log.agentId = ""
+		// 		log.dataController.clearElements()
+		// 	}
+		// }
 	}
 	
-	MessageCollectionView {
-		id: log
+	// MessageCollectionView {
+	// 	id: log
+	// 	anchors.top: agentCollectionView.bottom
 		
-		property string agentId
+	// 	property string agentId
 		
-		visible: agentId !== ""
+	// 	visible: agentId !== ""
 
-		Component.onCompleted: {
-			filterMenu.decorator = messageCollectionFilterComp;
-		}
+	// 	Component.onCompleted: {
+	// 		filterMenu.decorator = messageCollectionFilterComp;
+	// 	}
 		
-		function getHeaders(){
-			let additionInputParams = {}
-			additionInputParams["clientid"] = log.agentId;
+	// 	function getHeaders(){
+	// 		let additionInputParams = {}
+	// 		additionInputParams["clientid"] = log.agentId;
 			
-			return additionInputParams
-		}
+	// 		return additionInputParams
+	// 	}
 		
-		function handleSubscription(dataModel){
-			log.doUpdateGui()
-		}
+	// 	function handleSubscription(dataModel){
+	// 		log.doUpdateGui()
+	// 	}
 		
-		Component {
-			id: messageCollectionFilterComp;
+	// 	Component {
+	// 		id: messageCollectionFilterComp;
 			
-			MessageCollectionFilterDecorator {
-				id: filterDecorator
-				complexFilter: log.collectionFilter
-				property string services: agentCollectionView.selectedServices
+	// 		MessageCollectionFilterDecorator {
+	// 			id: filterDecorator
+	// 			complexFilter: log.collectionFilter
+	// 			property string services: agentCollectionView.selectedServices
 				
-				onServicesChanged: {
-					if (services != ""){
-						checkMenu.dataModel.clear()
-						var servicesModel = services.split(';')
-						for (let i = 0; i < servicesModel.length; i++){
-							checkMenu.dataModel.insertNewItem()
-							checkMenu.dataModel.setData("name", servicesModel[i], i)
-						}
-					}
-				}
+	// 			onServicesChanged: {
+	// 				if (services != ""){
+	// 					checkMenu.dataModel.clear()
+	// 					var servicesModel = services.split(';')
+	// 					for (let i = 0; i < servicesModel.length; i++){
+	// 						checkMenu.dataModel.insertNewItem()
+	// 						checkMenu.dataModel.setData("name", servicesModel[i], i)
+	// 					}
+	// 				}
+	// 			}
 				
-				CheckBoxMenu{
-					id: checkMenu;
+	// 			CheckBoxMenu{
+	// 				id: checkMenu;
 					
-					anchors.verticalCenter: parent.verticalCenter
-					anchors.left: filterDecorator.segmentedButton.right
-					anchors.leftMargin: Style.marginXS
-					width: 200
-					height: 30
-					visible: filterDecorator.filtermenu.x - x < width ? false : true
-					placeHolderText: qsTr("Services");
-					menuHeight: delegateHeight  * (dataModel.getItemsCount() + 1) ;
-					delegateHeight: 40;
-					hasSearch: false;
-					canOpenMenu: true;
-					nameId: "name";
+	// 				anchors.verticalCenter: parent.verticalCenter
+	// 				anchors.left: filterDecorator.segmentedButton.right
+	// 				anchors.leftMargin: Style.marginXS
+	// 				width: 200
+	// 				height: 30
+	// 				visible: filterDecorator.filtermenu.x - x < width ? false : true
+	// 				placeHolderText: qsTr("Services");
+	// 				menuHeight: delegateHeight  * (dataModel.getItemsCount() + 1) ;
+	// 				delegateHeight: 40;
+	// 				hasSearch: false;
+	// 				canOpenMenu: true;
+	// 				nameId: "name";
 
-					onChangedSignal: {
-						sourceGroupFilter.m_fieldFilters.clear()
+	// 				onChangedSignal: {
+	// 					sourceGroupFilter.m_fieldFilters.clear()
 						
-						log.collectionFilter.removeGroupFilter(sourceGroupFilter)
+	// 					log.collectionFilter.removeGroupFilter(sourceGroupFilter)
 						
-						for (let i = 0; i < checkMenu.dataModel.getItemsCount(); i++){
-							let service = checkMenu.dataModel.getData("name", i)
-							let status = checkMenu.dataModel.getData("checkState", i)
-							if (status){
-								let filter = sourceFilter.copyMe();
-								filter.m_filterValue = service
-								sourceGroupFilter.m_fieldFilters.addElement(filter)
-							}
-						}
+	// 					for (let i = 0; i < checkMenu.dataModel.getItemsCount(); i++){
+	// 						let service = checkMenu.dataModel.getData("name", i)
+	// 						let status = checkMenu.dataModel.getData("checkState", i)
+	// 						if (status){
+	// 							let filter = sourceFilter.copyMe();
+	// 							filter.m_filterValue = service
+	// 							sourceGroupFilter.m_fieldFilters.addElement(filter)
+	// 						}
+	// 					}
 						
-						log.collectionFilter.addGroupFilter(sourceGroupFilter)
+	// 					log.collectionFilter.addGroupFilter(sourceGroupFilter)
 						
-						log.collectionFilter.filterChanged()
-					}
-				}
+	// 					log.collectionFilter.filterChanged()
+	// 				}
+	// 			}
 				
-				FieldFilter {
-					id: sourceFilter
-					m_fieldId: "Category"
-					m_filterValueType: "String"
-					m_filterOperations: ["Equal"]
-				}
+	// 			FieldFilter {
+	// 				id: sourceFilter
+	// 				m_fieldId: "Category"
+	// 				m_filterValueType: "String"
+	// 				m_filterOperations: ["Equal"]
+	// 			}
 				
-				GroupFilter {
-					id: sourceGroupFilter
-					m_logicalOperation: "Or"
-				}
-			}
-		}
-	}
+	// 			GroupFilter {
+	// 				id: sourceGroupFilter
+	// 				m_logicalOperation: "Or"
+	// 			}
+	// 		}
+	// 	}
+	// }
 }

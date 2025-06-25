@@ -66,7 +66,7 @@ imtbase::CTreeItemModel* CAgentGqlRemoteRepresentationControllerComp::CreateInte
 					}
 
 					if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT){
-						serviceTypeName = connectionCollection->GetServiceTypeName().toUtf8();
+						serviceTypeName = connectionCollection->GetServiceTypeId().toUtf8();
 						const imtcom::IServerConnectionInterface& serverConnectionInterface = connectionParamPtr->GetDefaultInterface();
 						if (serverConnectionInterface.GetUrl(imtcom::IServerConnectionInterface::PT_HTTP, url)){
 							break;

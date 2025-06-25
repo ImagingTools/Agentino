@@ -4,6 +4,7 @@ import com.imtcore.imtqml 1.0
 import imtcontrols 1.0
 import imtgui 1.0
 import agentinoServicesSdl 1.0
+import imtbaseImtBaseTypesSdl 1.0
 
 Dialog {
 	id: portsDialog;
@@ -31,7 +32,8 @@ Dialog {
 	
 	Component {
 		id: urlParamComp;
-		UrlParameter {}
+		ServerConnectionParam {
+		}
 	}
 	
 	Keys.onPressed: {

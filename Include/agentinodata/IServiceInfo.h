@@ -24,7 +24,6 @@ class IServiceInfo:
 			virtual public iser::IObject, virtual public ilog::ITracingConfiguration
 {
 public:
-
 	/**
 		Supported settings service types.
 	*/
@@ -63,23 +62,28 @@ public:
 	/**
 		Get type name of the service.
 	*/
-	virtual QString GetServiceTypeName() const = 0;
+	virtual QString GetServiceTypeId() const = 0;
+
 	/**
 		Get path of the service.
 	*/
 	virtual QByteArray GetServicePath() const = 0;
+
 	/**
 		Get path of the start script.
 	*/
 	virtual QByteArray GetStartScriptPath() const = 0;
+
 	/**
 		Get path of the stop script.
 	*/
 	virtual QByteArray GetStopScriptPath() const = 0;
+
 	/**
 		Get settings path of the service.
 	*/
 	virtual QByteArray GetServiceSettingsPath() const = 0;
+
 	/**
 		Get arguments of the service.
 	*/
@@ -94,6 +98,7 @@ public:
 		Get input connection collection.
 	*/
 	virtual imtbase::IObjectCollection* GetInputConnections() = 0;
+
 	/**
 		Get dependant service connection collection.
 	*/

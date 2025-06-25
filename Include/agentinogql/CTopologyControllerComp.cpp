@@ -66,7 +66,7 @@ sdl::agentino::Topology::CTopology CTopologyControllerComp::OnGetTopology(
 					service.x = point.x();
 					service.y = point.y();
 					
-					QString serviceTypeName = serviceInfoPtr->GetServiceTypeName();
+					QString serviceTypeName = serviceInfoPtr->GetServiceTypeId();
 					QString serviceName = serviceInfoPtr->GetServiceName();
 					QString description = serviceInfoPtr->GetServiceDescription();
 

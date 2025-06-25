@@ -21,8 +21,8 @@ ViewBase {
 	
 	property bool serviceRunning: false
 
-	property string serviceTypeName: serviceData ? serviceData.m_serviceTypeName : ""
-	onServiceTypeNameChanged: {
+	property string serviceTypeId: serviceData ? serviceData.m_serviceTypeId : ""
+	onServiceTypeIdChanged: {
 		let tabId = "Administration"
 		if (tabPanel.getIndexById(tabId) < 0){
 			tabPanel.addTab(tabId, qsTr("Administration"), administrationViewComp)
@@ -104,7 +104,9 @@ ViewBase {
 				}
 				
 				if (!inputConnTable.elements){
-					inputConnTable.elements = serviceEditorContainer.serviceData.m_inputConnections.copyMe()
+					if (serviceEditorContainer.serviceData.m_inputConnections){
+						inputConnTable.elements = serviceEditorContainer.serviceData.m_inputConnections.copyMe()
+					}
 				}
 				else{
 					for (let inputItemIndex = 0; inputItemIndex < inputConnTable.elements.count; inputItemIndex++){
@@ -112,20 +114,30 @@ ViewBase {
 						let originalItem = serviceEditorContainer.serviceData.m_inputConnections.get(inputItemIndex).item
 						
 						inputItem.m_description = originalItem.m_description
-						inputItem.m_url = originalItem.m_url.copyMe()
-						inputItem.m_externPorts = originalItem.m_externPorts.copyMe()
+						
+						if (originalItem.m_connectionParam){
+							inputItem.m_connectionParam = originalItem.m_connectionParam.copyMe()
+						}
+
+						if (originalItem.m_externPorts){
+							inputItem.m_externPorts = originalItem.m_externPorts.copyMe()
+						}
 					}
 				}
 				
 				if (!ouputConnTable.elements){
-					ouputConnTable.elements = serviceEditorContainer.serviceData.m_outputConnections.copyMe()
+					if (serviceEditorContainer.serviceData.m_outputConnections){
+						ouputConnTable.elements = serviceEditorContainer.serviceData.m_outputConnections.copyMe()
+					}
 				}
 				else{
 					for (let outputItemIndex = 0; outputItemIndex < ouputConnTable.elements.count; outputItemIndex++){
 						let outputItem = ouputConnTable.elements.get(outputItemIndex).item
 						let originalItem = serviceEditorContainer.serviceData.m_outputConnections.get(outputItemIndex).item
-						
-						outputItem.m_url = originalItem.m_url.copyMe()
+						if (originalItem.m_connectionParam){
+							outputItem.m_connectionParam = originalItem.m_connectionParam.copyMe()
+						}
+
 						outputItem.m_description = originalItem.m_description
 						outputItem.m_dependantConnectionId = originalItem.m_dependantConnectionId
 					}
@@ -164,43 +176,48 @@ ViewBase {
 				else{
 					serviceEditorContainer.serviceData.m_stopScript = "";
 				}
-				
-				for (let inputItemIndex = 0; inputItemIndex < inputConnTable.elements.count; inputItemIndex++){
-					let inputConnections = serviceEditorContainer.serviceData.m_inputConnections
-					let inputItem = inputConnTable.elements.get(inputItemIndex).item
-					
-					if (inputConnections.get(inputItemIndex).item.m_description !== inputItem.m_description){
-						inputConnections.setProperty(inputItemIndex, "m_description", inputItem.m_description);
-					}
-					
-					if (!inputConnections.get(inputItemIndex).item.m_url.isEqualWithModel(inputItem.m_url)){
-						inputConnections.setProperty(inputItemIndex, "m_url", inputItem.m_url.copyMe());
-					}
-					
-					if (!inputConnections.get(inputItemIndex).item.m_externPorts.isEqualWithModel(inputItem.m_externPorts)){
-						inputConnections.setProperty(inputItemIndex, "m_externPorts", inputItem.m_externPorts.copyMe());
+
+				if (inputConnTable.elements){
+					for (let inputItemIndex = 0; inputItemIndex < inputConnTable.elements.count; inputItemIndex++){
+						let inputConnections = serviceEditorContainer.serviceData.m_inputConnections
+						let inputItem = inputConnTable.elements.get(inputItemIndex).item
+						
+						if (inputConnections.get(inputItemIndex).item.m_description !== inputItem.m_description){
+							inputConnections.setProperty(inputItemIndex, "m_description", inputItem.m_description);
+						}
+						
+						if (inputItem.m_connectionParam){
+							if (!inputConnections.get(inputItemIndex).item.m_connectionParam.isEqualWithModel(inputItem.m_connectionParam)){
+								inputConnections.setProperty(inputItemIndex, "m_connectionParam", inputItem.m_connectionParam.copyMe());
+							}
+						}
+
+						// if (!inputConnections.get(inputItemIndex).item.m_externPorts.isEqualWithModel(inputItem.m_externPorts)){
+						// 	inputConnections.setProperty(inputItemIndex, "m_externPorts", inputItem.m_externPorts.copyMe());
+						// }
 					}
 				}
 				
-				for (let outputItemIndex = 0; outputItemIndex < ouputConnTable.elements.count; outputItemIndex++){
-					let outputItem = ouputConnTable.elements.get(outputItemIndex).item
-					let outputConnections = serviceEditorContainer.serviceData.m_outputConnections
-					
-					if (outputConnections.get(outputItemIndex).item.m_description !== outputItem.m_description){
-						outputConnections.setProperty(outputItemIndex, "m_description", outputItem.m_description);
-					}
-					
-					if (outputConnections.get(outputItemIndex).item.m_dependantConnectionId !== outputItem.m_dependantConnectionId){
-						outputConnections.setProperty(outputItemIndex, "m_dependantConnectionId", outputItem.m_dependantConnectionId);
-					}
-					
-					if (outputItem.m_url){
-						if (!outputConnections.get(outputItemIndex).item.m_url.isEqualWithModel(outputItem.m_url)){
-							outputConnections.setProperty(outputItemIndex, "m_url", outputItem.m_url.copyMe());
+				if (ouputConnTable.elements){
+					for (let outputItemIndex = 0; outputItemIndex < ouputConnTable.elements.count; outputItemIndex++){
+						let outputItem = ouputConnTable.elements.get(outputItemIndex).item
+						let outputConnections = serviceEditorContainer.serviceData.m_outputConnections
+						
+						if (outputConnections.get(outputItemIndex).item.m_description !== outputItem.m_description){
+							outputConnections.setProperty(outputItemIndex, "m_description", outputItem.m_description);
+						}
+						
+						if (outputConnections.get(outputItemIndex).item.m_dependantConnectionId !== outputItem.m_dependantConnectionId){
+							outputConnections.setProperty(outputItemIndex, "m_dependantConnectionId", outputItem.m_dependantConnectionId);
+						}
+						
+						if (outputItem.m_connectionParam){
+							if (!outputConnections.get(outputItemIndex).item.m_connectionParam.isEqualWithModel(outputItem.m_connectionParam)){
+								outputConnections.setProperty(outputItemIndex, "m_connectionParam", outputItem.m_connectionParam.copyMe());
+							}
 						}
 					}
 				}
-				
 				console.log("updateModel end")
 			}
 			
@@ -533,11 +550,13 @@ ViewBase {
 						}
 						
 						onHeadersChanged: {
-							inputConnTable.setColumnContentById("description", textInputComp)
-							inputConnTable.setColumnContentById("port", portInputComp)
-							inputConnTable.setColumnContentById("externPorts", externCompEditComp)
+							inputConnTable.setColumnContentById("connectionName", textInputComp)
+							inputConnTable.setColumnContentById("wsPort", wsPortInputComp)
+							inputConnTable.setColumnContentById("httpPort", httpPortInputComp)
+							inputConnTable.setColumnContentById("isSecure", secureColumnComp)
+							// inputConnTable.setColumnContentById("externPorts", externCompEditComp)
 							
-							inputConnTable.tableDecorator = inputTableDecoratorModel;
+							// inputConnTable.tableDecorator = inputTableDecoratorModel;
 						}
 						
 						onSelectionChanged: {
@@ -551,22 +570,27 @@ ViewBase {
 								let index = headersModel.insertNewItem();
 								
 								headersModel.setData("id", "connectionName", index)
-								headersModel.setData("name", qsTr("Usage"), index)
+								headersModel.setData("name", qsTr("Connection Name"), index)
+
+								index = headersModel.insertNewItem();
+								
+								headersModel.setData("id", "wsPort", index)
+								headersModel.setData("name", qsTr("Web Socket Port"), index)
 								
 								index = headersModel.insertNewItem();
 								
-								headersModel.setData("id", "description", index)
-								headersModel.setData("name", qsTr("Description"), index)
+								headersModel.setData("id", "httpPort", index)
+								headersModel.setData("name", qsTr("Http Port"), index)
 								
 								index = headersModel.insertNewItem();
 								
-								headersModel.setData("id", "port", index)
-								headersModel.setData("name", qsTr("Port"), index)
+								headersModel.setData("id", "isSecure", index)
+								headersModel.setData("name", qsTr("Secure Connection"), index)
 								
-								index = headersModel.insertNewItem();
+								// index = headersModel.insertNewItem();
 								
-								headersModel.setData("id", "externPorts", index)
-								headersModel.setData("name", qsTr("Extern Addresses"), index)
+								// headersModel.setData("id", "externPorts", index)
+								// headersModel.setData("name", qsTr("Extern Addresses"), index)
 								
 								inputConnTable.headers = headersModel;
 							}
@@ -606,33 +630,88 @@ ViewBase {
 						}
 						
 						Component {
-							id: portInputComp;
+							id: secureColumnComp;
+							
+							TableCellDelegateBase {
+								id: secureColumnCellDelegate
+								SwitchCustom {
+									id: switchCustom
+									onCheckedChanged: {
+										if (secureColumnCellDelegate.rowIndex >= 0){
+											serviceEditorContainer.serviceData.m_inputConnections.get(secureColumnCellDelegate.rowIndex).item.m_connectionParam.m_isSecure = checked
+										}
+									}
+								}
+								
+								onReused: {
+									if (rowIndex >= 0){
+										let isSecure = serviceEditorContainer.serviceData.m_inputConnections.get(rowIndex).item.m_connectionParam.m_isSecure
+										switchCustom.checked = isSecure
+									}
+								}
+							}
+						}
+						
+						Component {
+							id: httpPortInputComp;
 							
 							TextInputCellContentComp {
 								id: textInputContent;
 								
-								property int port: rowDelegate && rowDelegate.dataModel ? rowDelegate.dataModel.item.m_url.m_port : -1
+								property int port: rowDelegate && rowDelegate.dataModel ? rowDelegate.dataModel.item.m_connectionParam.m_httpPort : -1
 								onPortChanged: {
 									reused()
 								}
 								
 								onEditingFinished: {
 									console.log("port onEditingFinished", port)
-									let actualPort = serviceEditorContainer.serviceData.m_inputConnections.get(rowIndex).item.m_url.m_port
+									let actualPort = serviceEditorContainer.serviceData.m_inputConnections.get(rowIndex).item.m_connectionParam.m_httpPort
 									if (actualPort !== port){
 										serviceEditorContainer.doUpdateModel()
 									}
 								}
 								
 								function getValue(){
-									return rowDelegate.dataModel.item.m_url.m_port;
+									return rowDelegate.dataModel.item.m_connectionParam.m_httpPort
 								}
 								
 								function setValue(value){
 									console.log("port setValue", value)
-									let urlParam = rowDelegate.dataModel.item.m_url;
-									urlParam.m_port = value;
-									rowDelegate.dataModel.item.m_url = urlParam;
+									let urlParam = rowDelegate.dataModel.item.m_connectionParam;
+									urlParam.m_httpPort = value;
+									rowDelegate.dataModel.item.m_connectionParam = urlParam;
+								}
+							}
+						}
+						
+						Component {
+							id: wsPortInputComp;
+							
+							TextInputCellContentComp {
+								id: textInputContent;
+								
+								property int port: rowDelegate && rowDelegate.dataModel ? rowDelegate.dataModel.item.m_connectionParam.m_wsPort : -1
+								onPortChanged: {
+									reused()
+								}
+								
+								onEditingFinished: {
+									console.log("port onEditingFinished", port)
+									let actualPort = serviceEditorContainer.serviceData.m_inputConnections.get(rowIndex).item.m_connectionParam.m_wsPort
+									if (actualPort !== port){
+										serviceEditorContainer.doUpdateModel()
+									}
+								}
+								
+								function getValue(){
+									return rowDelegate.dataModel.item.m_connectionParam.m_wsPort
+								}
+								
+								function setValue(value){
+									console.log("port setValue", value)
+									let urlParam = rowDelegate.dataModel.item.m_connectionParam;
+									urlParam.m_wsPort = value;
+									rowDelegate.dataModel.item.m_connectionParam = urlParam;
 								}
 							}
 						}
@@ -787,14 +866,14 @@ ViewBase {
 									reused()
 								}
 								
-								property var url: rowDelegate && rowDelegate.dataModel ? rowDelegate.dataModel.item.m_url : ""
+								property var url: rowDelegate && rowDelegate.dataModel ? rowDelegate.dataModel.item.m_connectionParam : ""
 								
 								onReused: {
 									if (rowIndex >= 0){
 										let item = ouputConnTable.elements.get(bodyItem.rowIndex).item;
 										
 										let dependantConnectionId = item.m_dependantConnectionId;
-										let elementsModel = item.m_elements;
+										let elementsModel = item.m_dependantConnectionList;
 										
 										textLabel.text = "";
 										cb.model = elementsModel;
@@ -847,7 +926,7 @@ ViewBase {
 											let item = cb.model.get(cb.currentIndex).item;
 											dependantConnectionId = item.m_id
 											name = item.m_name
-											url = item.m_url
+											url = item.m_connectionParam
 										}
 										
 										textLabel.text = name;
@@ -855,7 +934,7 @@ ViewBase {
 										let outputItem = ouputConnTable.elements.get(bodyItem.rowIndex).item;
 										outputItem.m_dependantConnectionId = dependantConnectionId;
 										if (url){
-											outputItem.m_url = url.copyMe();
+											outputItem.m_connectionParam = url.copyMe();
 										}
 										
 										if (serviceEditorContainer.serviceData.m_outputConnections.get(bodyItem.rowIndex).item.m_dependantConnectionId != dependantConnectionId){
@@ -900,11 +979,11 @@ ViewBase {
 								let index = headersModel2.insertNewItem();
 								
 								headersModel2.setData("id", "connectionName", index)
-								headersModel2.setData("name", qsTr("Usage"), index)
+								headersModel2.setData("name", qsTr("Connection Name"), index)
 								
 								index = headersModel2.insertNewItem();
 								
-								headersModel2.setData("id", "serviceTypeName", index)
+								headersModel2.setData("id", "serviceTypeId", index)
 								headersModel2.setData("name", qsTr("Service"), index)
 								
 								index = headersModel2.insertNewItem();
@@ -954,13 +1033,13 @@ ViewBase {
 			anchors.fill: parent;
 			
 			function getHeaders(){
-				if (serviceEditorContainer.serviceTypeName === ""){
+				if (serviceEditorContainer.serviceTypeId === ""){
 					console.error("Unable to get additional parameters. Product-ID is empty");
 					return null;
 				}
 				
 				let obj = serviceEditorContainer.getHeaders();
-				obj["productId"] = serviceEditorContainer.serviceTypeName;
+				obj["productId"] = serviceEditorContainer.serviceTypeId;
 				obj["token"] = userTokenProvider.accessToken;
 				
 				return obj;
@@ -968,7 +1047,7 @@ ViewBase {
 			
 			UserTokenProvider {
 				id: userTokenProvider
-				productId: serviceEditorContainer.serviceTypeName;
+				productId: serviceEditorContainer.serviceTypeId;
 				isTokenGlobal: false
 				
 				function getHeaders(){
@@ -984,7 +1063,7 @@ ViewBase {
 			AuthorizationPage {
 				id: authorizationPage
 				anchors.fill: parent;
-				appName: serviceEditorContainer.serviceTypeName
+				appName: serviceEditorContainer.serviceTypeId
 				canRegisterUser: false
 				canRecoveryPassword: false
 				onLogin: {
@@ -1045,7 +1124,7 @@ ViewBase {
 						id: administrationView;
 						AdministrationView {
 							anchors.fill: parent;
-							productId: serviceEditorContainer.serviceTypeName;
+							productId: serviceEditorContainer.serviceTypeId;
 							documentManager: singleDocumentWorkspaceView.documentManager;
 							
 							function getHeaders(){

@@ -116,13 +116,10 @@ bool CUrlConnectionLinkParamRepresentationController::GetRepresentationFromDataM
 	}
 
 	QByteArray dependantServiceConnectionId = urlConnectionParamPtr->GetDependantServiceConnectionId();
-	QString serviceTypeName = urlConnectionParamPtr->GetServiceTypeName();
-	QByteArray usageId = urlConnectionParamPtr->GetUsageId();
+	QString serviceTypeId = urlConnectionParamPtr->GetServiceTypeId();
 
-	representation.SetData("Id", usageId);
-	representation.SetData("UsageId", usageId);
 	representation.SetData("DependantConnectionId", dependantServiceConnectionId);
-	representation.SetData("ServiceTypeName", serviceTypeName);
+	representation.SetData("ServiceTypeName", serviceTypeId);
 
 	if (paramsPtr != nullptr){
 		iprm::TParamsPtr<imtbase::IObjectCollection> agentCollectionPtr(paramsPtr, "AgentCollection");
@@ -148,18 +145,6 @@ bool CUrlConnectionLinkParamRepresentationController::GetDataModelFromRepresenta
 	imtservice::CUrlConnectionLinkParam* urlConnectionParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(&dataModel);
 	if (urlConnectionParamPtr == nullptr){
 		return false;
-	}
-
-	if (representation.ContainsKey("UsageId")){
-		QByteArray usageId = representation.GetData("UsageId").toByteArray();
-
-		urlConnectionParamPtr->SetUsageId(usageId);
-	}
-
-	if (representation.ContainsKey("ServiceTypeName")){
-		QByteArray serviceTypeName = representation.GetData("ServiceTypeName").toByteArray();
-
-		urlConnectionParamPtr->SetServiceTypeName(serviceTypeName);
 	}
 
 	if (representation.ContainsKey("DependantConnectionId")){

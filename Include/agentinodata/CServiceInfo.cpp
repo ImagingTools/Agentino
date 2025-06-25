@@ -25,7 +25,7 @@ namespace agentinodata
 
 CServiceInfo::CServiceInfo(const QString &typeName, SettingsType settingsType):
 	m_settingsType(settingsType),
-	m_serviceTypeName(typeName),
+	m_serviceTypeId(typeName),
 	m_tracingLevel(-1),
 	m_isAutoStart(true)
 {
@@ -109,12 +109,12 @@ void CServiceInfo::SetIsAutoStart(bool isAutoStart)
 }
 
 
-void CServiceInfo::SetServiceTypeName(const QByteArray& serviceTypeName)
+void CServiceInfo::SetServiceTypeId(const QByteArray& serviceTypeName)
 {
-	if (m_serviceTypeName != serviceTypeName){
+	if (m_serviceTypeId != serviceTypeName){
 		istd::CChangeNotifier changeNotifier(this);
 
-		m_serviceTypeName = serviceTypeName;
+		m_serviceTypeId = serviceTypeName;
 	}
 }
 
@@ -153,9 +153,9 @@ QString CServiceInfo::GetServiceVersion() const
 }
 
 
-QString CServiceInfo::GetServiceTypeName() const
+QString CServiceInfo::GetServiceTypeId() const
 {
-	return m_serviceTypeName;
+	return m_serviceTypeId;
 }
 
 
@@ -250,7 +250,7 @@ bool CServiceInfo::Serialize(iser::IArchive &archive)
 
 	iser::CArchiveTag serviceTypeNameTag("TypeName", "TypeName", iser::CArchiveTag::TT_LEAF);
 	retVal = retVal && archive.BeginTag(serviceTypeNameTag);
-	retVal = retVal && archive.Process(m_serviceTypeName);
+	retVal = retVal && archive.Process(m_serviceTypeId);
 	retVal = retVal && archive.EndTag(serviceTypeNameTag);
 
 	iser::CArchiveTag pathTag("Path", "Path", iser::CArchiveTag::TT_LEAF);
@@ -350,7 +350,7 @@ bool CServiceInfo::CopyFrom(const IChangeable &object, CompatibilityMode /*mode*
 		m_settingsType = sourcePtr->m_settingsType;
 		m_serviceName = sourcePtr->m_serviceName;
 		m_serviceDescription = sourcePtr->m_serviceDescription;
-		m_serviceTypeName = sourcePtr->m_serviceTypeName;
+		m_serviceTypeId = sourcePtr->m_serviceTypeId;
 		m_path = sourcePtr->m_path;
 		m_startScriptPath =sourcePtr->m_startScriptPath;
 		m_stopScriptPath =sourcePtr->m_stopScriptPath;
@@ -391,7 +391,7 @@ bool CServiceInfo::ResetData(CompatibilityMode /*mode*/)
 	m_path.clear();
 	m_serviceName.clear();
 	m_serviceDescription.clear();
-	m_serviceTypeName.clear();
+	m_serviceTypeId.clear();
 	m_settingsPath = nullptr;
 	m_arguments.clear();
 	m_isAutoStart = true;

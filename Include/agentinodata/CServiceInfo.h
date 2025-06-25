@@ -26,7 +26,7 @@ public:
 	virtual void SetStopScriptPath(const QByteArray& stopScriptPath);
 	virtual void SetServiceArguments(const QByteArrayList& serviceArguments);
 	virtual void SetIsAutoStart(bool isAutoStart);
-	virtual void SetServiceTypeName(const QByteArray& serviceTypeName);
+	virtual void SetServiceTypeId(const QByteArray& serviceTypeName);
 	virtual void SetServiceVersion(const QString& serviceVersion);
 
 	// reimplemented (agentinodata::IServiceInfo)
@@ -34,7 +34,7 @@ public:
 	virtual QString GetServiceDescription() const override;
 	virtual SettingsType GetSettingsType() const override;
 	virtual QString GetServiceVersion() const override;
-	virtual QString GetServiceTypeName() const override;
+	virtual QString GetServiceTypeId() const override;
 	virtual QByteArray GetServicePath() const override;
 	virtual QByteArray GetServiceSettingsPath() const override;
 	virtual QByteArrayList GetServiceArguments() const override;
@@ -62,7 +62,7 @@ protected:
 	QString m_serviceVersion;
 	QString m_serviceName;
 	QString m_serviceDescription;
-	QString m_serviceTypeName;
+	QString m_serviceTypeId;
 	QByteArray m_path;
 	QByteArray m_settingsPath;
 	QByteArray m_startScriptPath;
