@@ -9,6 +9,7 @@ target_link_libraries(${PROJECT_NAME}
 	imtbase
 	imtbasesdl
 	imtcol
+	imtcom
 	imtgql
 	imtgui
 	imtwidgets
