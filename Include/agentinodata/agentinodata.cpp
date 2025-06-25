@@ -487,7 +487,7 @@ bool GetRepresentationFromUrlServerConnectionParam(
 	int flags = serverConnectionParam.GetConnectionFlags();
 
 	switch (flags){
-	case imtcom::IServerConnectionInterface::CF_NONE:
+	case imtcom::IServerConnectionInterface::CF_DEFAULT:
 		sdlRepresentation.isSecure = false;
 		break;
 	case imtcom::IServerConnectionInterface::CF_SECURE:

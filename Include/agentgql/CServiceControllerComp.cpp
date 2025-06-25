@@ -1,6 +1,9 @@
 #include <agentgql/CServiceControllerComp.h>
 
 
+// ImtCore includes
+#include <imtcom/CServerConnectionInterfaceParam.h>
+
 // Agentino includes
 #include <agentinodata/agentinodata.h>
 
@@ -155,23 +158,23 @@ sdl::agentino::Services::CUpdateConnectionUrlResponse CServiceControllerComp::On
 	}
 	
 	if (!arguments.input.Version_1_0->serviceId.has_value()){
-		errorMessage = QString("Unable to start service with empty ID");
+		errorMessage = QString("ServiceId is invalid");
 		return response;
 	}
 	
 	QByteArray serviceId = *arguments.input.Version_1_0->serviceId;
 	QByteArray connectionId = *arguments.input.Version_1_0->connectionId;
-	sdl::agentino::Services::CUrlParameter::V1_0 urlParam = *arguments.input.Version_1_0->url;
-	
-	QUrl url;
-	if (!agentinodata::GetUrlParamFromRepresentation(url, urlParam)){
-		errorMessage = QString("Unable to start service with empty ID");
+	sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam = *arguments.input.Version_1_0->connectionParam;
+	imtcom::CServerConnectionInterfaceParam serverConnectionParam;
+
+	if (!agentinodata::GetServerConnectionParamFromRepresentation(serverConnectionParam, connectionParam)){
+		errorMessage = QString("ServerConnectionParam is invalid");
 		return response;
 	}
 	
 	std::shared_ptr<imtservice::IConnectionCollection> connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollection(serviceId);
 	if (connectionCollectionPtr != nullptr){
-		bool ok = connectionCollectionPtr->SetUrl(connectionId, url);
+		bool ok = connectionCollectionPtr->SetServerConnectionInterface(connectionId,serverConnectionParam);
 		
 		response.Version_1_0->succesful = ok;
 	}
