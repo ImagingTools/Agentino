@@ -80,7 +80,11 @@ QByteArray CServiceCompositeInfoComp::GetServiceId(const QUrl& url) const
 
 									QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
 									for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-										if (incomingConnection.url == url){
+										QUrl incomingConnectionUrl;
+										incomingConnectionUrl.setHost(incomingConnection.host);
+										incomingConnectionUrl.setPort(incomingConnection.httpPort);
+
+										if (incomingConnectionUrl.host() == url.host() && incomingConnectionUrl.port() == url.port()){
 											return serviceElementId;
 										}
 									}

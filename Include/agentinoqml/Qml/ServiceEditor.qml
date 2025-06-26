@@ -20,7 +20,7 @@ ViewBase {
 	}
 	
 	property bool serviceRunning: false
-
+	
 	property string serviceTypeId: serviceData ? serviceData.m_serviceTypeId : ""
 	onServiceTypeIdChanged: {
 		let tabId = "Administration"
@@ -55,17 +55,38 @@ ViewBase {
 		currentIndex: 0;
 	}
 	
+	function getInputConnection(){
+		let inputConnections = serviceEditorContainer.serviceData.m_inputConnections
+		if (inputConnections){
+			if (inputConnections.count > 0){
+				return inputConnections.get(0).item
+			}
+		}
+		
+		return null
+	}
+	
 	Component {
 		id: mainEditorComp;
 		
 		Flickable {
 			id: flickable;
 			
-			anchors.fill: parent
+			anchors.left: parent.left;
+			anchors.leftMargin: Style.marginXL;
 			
-			contentWidth: bodyContainer.width;
-			contentHeight: bodyContainer.height + 200;
+			anchors.top: parent.top;
+			anchors.topMargin: Style.marginXL;
 			
+			anchors.bottom: parent.bottom;
+			anchors.bottomMargin: Style.marginXL;
+			
+			anchors.right: scrollbar.left;
+			anchors.rightMargin: Style.marginXL;
+			
+			contentWidth: bodyColumn.width;
+			contentHeight: bodyColumn.height + 2 * Style.marginXL + 100
+
 			boundsBehavior: Flickable.StopAtBounds;
 			
 			clip: true;
@@ -87,65 +108,70 @@ ViewBase {
 				tracingLevelInput.currentIndex = serviceEditorContainer.serviceData.m_tracingLevel;
 				
 				if (serviceEditorContainer.serviceData.m_startScript !== ""){
-					startScriptChecked.checkState = Qt.Checked
+					startScriptChecked.checked = true
 					startScriptInput.text = serviceEditorContainer.serviceData.m_startScript
 				}
 				else{
-					startScriptChecked.checkState = Qt.Unchecked
+					startScriptChecked.checked = false
 					startScriptInput.text = ""
 				}
 				
 				if (serviceEditorContainer.serviceData.m_stopScript !== ""){
-					stopScriptChecked.checkState = Qt.Checked
+					stopScriptChecked.checked = true
 					stopScriptInput.text = serviceEditorContainer.serviceData.m_stopScript
 				}
 				else{
-					stopScriptChecked.checkState = Qt.Unchecked
+					stopScriptChecked.checked = false
 				}
 				
-				if (!inputConnTable.elements){
-					if (serviceEditorContainer.serviceData.m_inputConnections){
-						inputConnTable.elements = serviceEditorContainer.serviceData.m_inputConnections.copyMe()
+				let inputConnectionEditorVisible = false
+				
+				let inputConnection = serviceEditorContainer.getInputConnection()
+				if (inputConnection){
+					if (inputConnection.m_connectionParam){
+						inputConnectionEditor.host = inputConnection.m_connectionParam.m_host
+						inputConnectionEditor.httpPort = inputConnection.m_connectionParam.m_httpPort
+						inputConnectionEditor.wsPort = inputConnection.m_connectionParam.m_wsPort
+						inputConnectionEditor.isSecure = inputConnection.m_connectionParam.m_isSecure
+						
+						inputConnectionEditorVisible = true
 					}
-				}
-				else{
-					for (let inputItemIndex = 0; inputItemIndex < inputConnTable.elements.count; inputItemIndex++){
-						let inputItem = inputConnTable.elements.get(inputItemIndex).item
-						let originalItem = serviceEditorContainer.serviceData.m_inputConnections.get(inputItemIndex).item
-						
-						inputItem.m_description = originalItem.m_description
-						
-						if (originalItem.m_connectionParam){
-							inputItem.m_connectionParam = originalItem.m_connectionParam.copyMe()
+					
+					if (inputConnection.m_externConnectionList){
+						let values = []
+						for (let i = 0; i < inputConnection.m_externConnectionList.count; i++){
+							let externConnection = inputConnection.m_externConnectionList.get(i).item
+							if (externConnection){
+								values.push(externConnection.m_connectionParam.m_host + ":" + externConnection.m_connectionParam.m_httpPort)
+							}
 						}
-
-						if (originalItem.m_externPorts){
-							inputItem.m_externPorts = originalItem.m_externPorts.copyMe()
+						
+						if (values.length > 0){
+							externConnectionsView.description = values.join('\n')
+						}
+						else{
+							externConnectionsView.description = ""
 						}
 					}
 				}
 				
-				if (!ouputConnTable.elements){
-					if (serviceEditorContainer.serviceData.m_outputConnections){
-						ouputConnTable.elements = serviceEditorContainer.serviceData.m_outputConnections.copyMe()
-					}
-				}
-				else{
-					for (let outputItemIndex = 0; outputItemIndex < ouputConnTable.elements.count; outputItemIndex++){
-						let outputItem = ouputConnTable.elements.get(outputItemIndex).item
-						let originalItem = serviceEditorContainer.serviceData.m_outputConnections.get(outputItemIndex).item
-						if (originalItem.m_connectionParam){
-							outputItem.m_connectionParam = originalItem.m_connectionParam.copyMe()
-						}
+				inputConnectionEditor.visible = inputConnectionEditorVisible
 
-						outputItem.m_description = originalItem.m_description
-						outputItem.m_dependantConnectionId = originalItem.m_dependantConnectionId
+				if (serviceEditorContainer.serviceData.m_outputConnections){
+					outputConnectionListView.model = 0
+					outputConnectionListView.model = serviceEditorContainer.serviceData.m_outputConnections
+					let count = serviceEditorContainer.serviceData.m_outputConnections.count
+					
+					for (let i = 0; i < outputConnectionListView.count; i++){
+						let item = outputConnectionListView.itemAtIndex(i)
+						if (item){
+							item.updateGui()
+						}
 					}
 				}
 			}
 			
 			function updateModel(){
-				console.log("updateModel begin")
 				serviceEditorContainer.serviceData.m_name = nameInput.text;
 				serviceEditorContainer.serviceData.m_description = descriptionInput.text;
 				serviceEditorContainer.serviceData.m_path = pathInput.text;
@@ -163,62 +189,38 @@ ViewBase {
 					serviceEditorContainer.serviceData.m_tracingLevel = -1;
 				}
 				
-				if(startScriptChecked.checkState === Qt.Checked){
+				if(startScriptChecked.checked){
 					serviceEditorContainer.serviceData.m_startScript = startScriptInput.text;
 				}
 				else{
 					serviceEditorContainer.serviceData.m_startScript = "";
 				}
 				
-				if(stopScriptChecked.checkState === Qt.Checked){
+				if(stopScriptChecked.checked){
 					serviceEditorContainer.serviceData.m_stopScript = stopScriptInput.text;
 				}
 				else{
 					serviceEditorContainer.serviceData.m_stopScript = "";
 				}
-
-				if (inputConnTable.elements){
-					for (let inputItemIndex = 0; inputItemIndex < inputConnTable.elements.count; inputItemIndex++){
-						let inputConnections = serviceEditorContainer.serviceData.m_inputConnections
-						let inputItem = inputConnTable.elements.get(inputItemIndex).item
-						
-						if (inputConnections.get(inputItemIndex).item.m_description !== inputItem.m_description){
-							inputConnections.setProperty(inputItemIndex, "m_description", inputItem.m_description);
-						}
-						
-						if (inputItem.m_connectionParam){
-							if (!inputConnections.get(inputItemIndex).item.m_connectionParam.isEqualWithModel(inputItem.m_connectionParam)){
-								inputConnections.setProperty(inputItemIndex, "m_connectionParam", inputItem.m_connectionParam.copyMe());
-							}
-						}
-
-						// if (!inputConnections.get(inputItemIndex).item.m_externPorts.isEqualWithModel(inputItem.m_externPorts)){
-						// 	inputConnections.setProperty(inputItemIndex, "m_externPorts", inputItem.m_externPorts.copyMe());
-						// }
+				
+				let inputConnection = serviceEditorContainer.getInputConnection()
+				if (inputConnection){
+					if (inputConnection.m_connectionParam){
+						inputConnection.m_connectionParam.m_host = inputConnectionEditor.host
+						inputConnection.m_connectionParam.m_httpPort = inputConnectionEditor.httpPort
+						inputConnection.m_connectionParam.m_wsPort = inputConnectionEditor.wsPort
+						inputConnection.m_connectionParam.m_isSecure = inputConnectionEditor.isSecure
 					}
 				}
 				
-				if (ouputConnTable.elements){
-					for (let outputItemIndex = 0; outputItemIndex < ouputConnTable.elements.count; outputItemIndex++){
-						let outputItem = ouputConnTable.elements.get(outputItemIndex).item
-						let outputConnections = serviceEditorContainer.serviceData.m_outputConnections
-						
-						if (outputConnections.get(outputItemIndex).item.m_description !== outputItem.m_description){
-							outputConnections.setProperty(outputItemIndex, "m_description", outputItem.m_description);
-						}
-						
-						if (outputConnections.get(outputItemIndex).item.m_dependantConnectionId !== outputItem.m_dependantConnectionId){
-							outputConnections.setProperty(outputItemIndex, "m_dependantConnectionId", outputItem.m_dependantConnectionId);
-						}
-						
-						if (outputItem.m_connectionParam){
-							if (!outputConnections.get(outputItemIndex).item.m_connectionParam.isEqualWithModel(outputItem.m_connectionParam)){
-								outputConnections.setProperty(outputItemIndex, "m_connectionParam", outputItem.m_connectionParam.copyMe());
-							}
+				if (serviceEditorContainer.serviceData.m_outputConnections){
+					for (let i = 0; i < outputConnectionListView.count; i++){
+						let item = outputConnectionListView.itemAtIndex(i)
+						if (item){
+							item.updateModel()
 						}
 					}
 				}
-				console.log("updateModel end")
 			}
 			
 			CustomScrollbar {
@@ -235,40 +237,23 @@ ViewBase {
 				visible: parent.visible;
 			}
 			
-			Item {
-				id: bodyContainer
-				width: flickable.width
-				height: bodyColumn.height + Style.marginXL * 2
+			Column {
+				id: bodyColumn;
+				width: 700
+				spacing: Style.marginXL;
+				GroupHeaderView {
+					title: qsTr("General Information")
+					width: parent.width
+					groupView: generalGroup
+				}
 				
-				Column {
-					id: bodyColumn;
+				GroupElementView {
+					id: generalGroup
+					width: parent.width
 					
-					anchors.top: bodyContainer.top
-					anchors.left: bodyContainer.left;
-					anchors.right: bodyContainer.right
-					anchors.margins: Style.marginXL
-					
-					spacing: Style.marginM;
-					
-					Text {
-						id: titleName;
-						
-						anchors.left: parent.left;
-						
-						color: Style.textColor;
-						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeM;
-						
-						text: qsTr("Name");
-					}
-					
-					CustomTextField {
-						id: nameInput;
-						
-						width: parent.width;
-						height: Style.itemSizeM;
-						autoEditingFinished: false
-						
+					TextInputElementView {
+						id: nameInput
+						name: qsTr("Name")
 						placeHolderText: qsTr("Enter the name");
 						
 						onEditingFinished: {
@@ -278,24 +263,9 @@ ViewBase {
 						KeyNavigation.tab: descriptionInput;
 					}
 					
-					Text {
-						id: descriptionName;
-						
-						anchors.left: parent.left;
-						
-						color: Style.textColor;
-						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeM;
-						
-						text: qsTr("Description");
-					}
-					
-					CustomTextField {
-						id: descriptionInput;
-						
-						width: parent.width;
-						height: Style.itemSizeM;
-						
+					TextInputElementView {
+						id: descriptionInput
+						name: qsTr("Description")
 						placeHolderText: qsTr("Enter the description");
 						
 						onEditingFinished: {
@@ -305,24 +275,9 @@ ViewBase {
 						KeyNavigation.tab: pathInput;
 					}
 					
-					Text {
-						id: titlePath;
-						
-						anchors.left: parent.left;
-						
-						color: Style.textColor;
-						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeM;
-						
-						text: qsTr("Path");
-					}
-					
-					CustomTextField {
-						id: pathInput;
-						
-						width: flickable.parent.width;
-						height: Style.itemSizeM;
-						
+					TextInputElementView {
+						id: pathInput
+						name: qsTr("Path")
 						placeHolderText: qsTr("Enter the path");
 						
 						onEditingFinished: {
@@ -332,24 +287,9 @@ ViewBase {
 						KeyNavigation.tab: argumentsInput;
 					}
 					
-					Text {
-						id: titleArguments;
-						
-						anchors.left: parent.left;
-						
-						color: Style.textColor;
-						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeM;
-						
-						text: qsTr("Arguments");
-					}
-					
-					CustomTextField {
-						id: argumentsInput;
-						
-						width: parent.width;
-						height: Style.itemSizeM;
-						
+					TextInputElementView {
+						id: argumentsInput
+						name: qsTr("Arguments")
 						placeHolderText: qsTr("Enter the arguments");
 						
 						onEditingFinished: {
@@ -358,670 +298,326 @@ ViewBase {
 						
 						KeyNavigation.tab: nameInput;
 					}
+				}
+				
+				GroupHeaderView {
+					title: qsTr("Additional Information")
+					width: parent.width
+					groupView: additionalGroup
+				}
+				
+				GroupElementView {
+					id: additionalGroup
+					width: parent.width
 					
-					Text {
-						id: titleAutoStart;
-						
-						anchors.left: parent.left;
-						
-						width: parent.width;
-						
-						color: Style.textColor;
-						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeM;
-						
-						text: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("on") : qsTr("off")) + ")";
-					}
-					
-					SwitchCustom {
+					SwitchElementView {
 						id: switchAutoStart
-						
-						backgroundColor: "#D4D4D4"
+						name: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("on") : qsTr("off")) + ")";
 						onCheckedChanged: {
 							serviceEditorContainer.doUpdateModel();
 						}
 					}
 					
-					Text {
-						id: titleVerboseMessage;
-						
-						anchors.left: parent.left;
-						
-						width: parent.width;
-						
-						color: Style.textColor;
-						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeM;
-						
-						text: qsTr("Verbose message (") + (switchVerboseMessage.checked ? qsTr("on") : qsTr("off")) + ")";
-					}
-					
-					Row {
-						height:  Style.itemSizeM;
-						spacing: Style.marginM;
-						
-						SwitchCustom {
-							id: switchVerboseMessage
-							anchors.verticalCenter: parent.verticalCenter
-							onCheckedChanged: {
-								serviceEditorContainer.doUpdateModel();
-							}
-						}
-						
-						Item {
-							width: Style.marginM;
-							height: Style.itemSizeM
-						}
-						
-						Text {
-							id: titleTracingLevel;
-							anchors.verticalCenter: parent.verticalCenter
-							
-							visible: switchVerboseMessage.checked
-							color: Style.textColor;
-							font.family: Style.fontFamily;
-							font.pixelSize: Style.fontSizeM;
-							
-							text: qsTr("Tracing level");
-						}
-						
-						ComboBox {
-							id: tracingLevelInput
-							anchors.verticalCenter: parent.verticalCenter
-							height: Style.itemSizeM * 0.75;
-							width: Style.itemSizeL;
-							visible: switchVerboseMessage.checked
-							
-							model: TreeItemModel {
-							}
-							Component.onCompleted: {
-								let index = model.insertNewItem()
-								model.setData("id", "0", index)
-								model.setData("name", "0", index)
-								
-								index = model.insertNewItem()
-								model.setData("id", "1", index)
-								model.setData("name", "1", index)
-								
-								index = model.insertNewItem()
-								model.setData("id", "2", index)
-								model.setData("name", "2", index)
-								
-								index = model.insertNewItem()
-								model.setData("id", "3", index)
-								model.setData("name", "3", index)
-								
-								index = model.insertNewItem()
-								model.setData("id", "4", index)
-								model.setData("name", "4", index)
-								
-								index = model.insertNewItem()
-								model.setData("id", "5", index)
-								model.setData("name", "5", index)
-							}
-							onCurrentIndexChanged: {
-								serviceEditorContainer.doUpdateModel();
-							}
+					SwitchElementView {
+						id: switchVerboseMessage
+						name: qsTr("Verbose Message")
+						onCheckedChanged: {
+							serviceEditorContainer.doUpdateModel();
 						}
 					}
 					
-					CheckBox {
+					ComboBoxElementView {
+						id: tracingLevelInput
+						name: qsTr("Tracing level");
+						visible: switchVerboseMessage.checked
+						model: TreeItemModel {
+						}
+						Component.onCompleted: {
+							let index = model.insertNewItem()
+							model.setData("id", "0", index)
+							model.setData("name", "0", index)
+							
+							index = model.insertNewItem()
+							model.setData("id", "1", index)
+							model.setData("name", "1", index)
+							
+							index = model.insertNewItem()
+							model.setData("id", "2", index)
+							model.setData("name", "2", index)
+							
+							index = model.insertNewItem()
+							model.setData("id", "3", index)
+							model.setData("name", "3", index)
+							
+							index = model.insertNewItem()
+							model.setData("id", "4", index)
+							model.setData("name", "4", index)
+							
+							index = model.insertNewItem()
+							model.setData("id", "5", index)
+							model.setData("name", "5", index)
+						}
+						onCurrentIndexChanged: {
+							serviceEditorContainer.doUpdateModel();
+						}
+					}
+					
+					SwitchElementView {
 						id: startScriptChecked
-						text: qsTr("Start script")
-						onCheckStateChanged: {
+						name: qsTr("Start script")
+						onCheckedChanged: {
 							serviceEditorContainer.doUpdateModel();
 						}
 					}
 					
-					CustomTextField {
-						id: startScriptInput;
-						
-						width: parent.width;
-						height: Style.itemSizeM;
-						visible: startScriptChecked.checkState === Qt.Checked
-						
+					TextInputElementView {
+						id: startScriptInput
+						visible: startScriptChecked.checked
 						placeHolderText: qsTr("Enter the start script path");
-						
+						name: qsTr("Start Script Path")
 						onEditingFinished: {
 							serviceEditorContainer.doUpdateModel();
 						}
-						
-						KeyNavigation.tab: nameInput;
 					}
 					
-					CheckBox {
+					SwitchElementView {
 						id: stopScriptChecked
-						text: qsTr("Stop script")
-						onCheckStateChanged: {
+						name: qsTr("Stop script")
+						onCheckedChanged: {
 							serviceEditorContainer.doUpdateModel();
 						}
 					}
 					
-					CustomTextField {
-						id: stopScriptInput;
-						
-						width: parent.width;
-						height: Style.itemSizeM;
-						visible: stopScriptChecked.checkState === Qt.Checked
-						
+					TextInputElementView {
+						id: stopScriptInput
+						visible: stopScriptChecked.checked
 						placeHolderText: qsTr("Enter the stop script path");
-						
+						name: qsTr("Stop Script Path")
 						onEditingFinished: {
 							serviceEditorContainer.doUpdateModel();
 						}
-						
-						KeyNavigation.tab: nameInput;
+					}
+				}
+				
+				GroupHeaderView {
+					title: qsTr("Input Connection")
+					width: parent.width
+					groupView: inputConnectionEditor
+					visible: inputConnectionEditor.visible
+				}
+				
+				ServerConnectionParamElementView {
+					id: inputConnectionEditor
+					width: parent.width
+					readOnly: serviceEditorContainer.readOnly
+					visible: false
+					onParamsChanged: {
+						serviceEditorContainer.doUpdateModel()
 					}
 					
-					Text {
-						id: inputConnectionsTitle;
-						
-						anchors.left: parent.left;
-						
-						color: Style.textColor;
-						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeM;
-						
-						text: qsTr("Incoming Connections");
-						
-						visible: false;
+					ButtonElementView {
+						id: externConnectionsView
+						name: qsTr("Extern Connections")
+						text: qsTr("Edit")
+						onClicked: {
+							ModalDialogManager.openDialog(externPortsDialogComp, {});
+						}
 					}
-					
-					Table {
-						id: inputConnTable;
-						
-						width: parent.width;
-						height: contentHeight + headerHeight + 15;
-						
-						canMoveColumns: true;
-						canFitHeight: true;
-						wrapMode_deleg: Text.WordWrap;
-						
-						radius: 0;
-						selectable: false
-						
-						visible: false;
-						
-						onElementsChanged: {
-							let count = elements.getItemsCount();
-							
-							inputConnectionsTitle.visible = count > 0;
-							inputConnTable.visible = count > 0;
-						}
-						
-						onHeadersChanged: {
-							inputConnTable.setColumnContentById("connectionName", textInputComp)
-							inputConnTable.setColumnContentById("wsPort", wsPortInputComp)
-							inputConnTable.setColumnContentById("httpPort", httpPortInputComp)
-							inputConnTable.setColumnContentById("isSecure", secureColumnComp)
-							// inputConnTable.setColumnContentById("externPorts", externCompEditComp)
-							
-							// inputConnTable.tableDecorator = inputTableDecoratorModel;
-						}
-						
-						onSelectionChanged: {
-							ouputConnTable.resetSelection();
-						}
-						
-						TreeItemModel {
-							id: headersModel;
-							
-							Component.onCompleted: {
-								let index = headersModel.insertNewItem();
-								
-								headersModel.setData("id", "connectionName", index)
-								headersModel.setData("name", qsTr("Connection Name"), index)
+				}
 
-								index = headersModel.insertNewItem();
-								
-								headersModel.setData("id", "wsPort", index)
-								headersModel.setData("name", qsTr("Web Socket Port"), index)
-								
-								index = headersModel.insertNewItem();
-								
-								headersModel.setData("id", "httpPort", index)
-								headersModel.setData("name", qsTr("Http Port"), index)
-								
-								index = headersModel.insertNewItem();
-								
-								headersModel.setData("id", "isSecure", index)
-								headersModel.setData("name", qsTr("Secure Connection"), index)
-								
-								// index = headersModel.insertNewItem();
-								
-								// headersModel.setData("id", "externPorts", index)
-								// headersModel.setData("name", qsTr("Extern Addresses"), index)
-								
-								inputConnTable.headers = headersModel;
-							}
-						}
-						
-						TreeItemModel {
-							id: inputTableDecoratorModel;
-							
-							Component.onCompleted: {
-								var cellWidthModel = inputTableDecoratorModel.addTreeModel("CellWidth");
-								
-								let index = cellWidthModel.insertNewItem();
-								cellWidthModel.setData("Width", 150, index);
-								
-								index = cellWidthModel.insertNewItem();
-								cellWidthModel.setData("Width", 300, index);
-								
-								index = cellWidthModel.insertNewItem();
-								cellWidthModel.setData("Width", 100, index);
-								
-								index = cellWidthModel.insertNewItem();
-								cellWidthModel.setData("Width", -1, index);
-							}
-						}
-						
-						Component {
-							id: textInputComp;
-							
-							TextInputCellContentComp {
-								onEditingFinished: {
-									let actual = serviceEditorContainer.serviceData.m_inputConnections.get(rowIndex).item.m_description
-									if (actual != text){
-										serviceEditorContainer.doUpdateModel()
-									}
-								}
-							}
-						}
-						
-						Component {
-							id: secureColumnComp;
-							
-							TableCellDelegateBase {
-								id: secureColumnCellDelegate
-								SwitchCustom {
-									id: switchCustom
-									onCheckedChanged: {
-										if (secureColumnCellDelegate.rowIndex >= 0){
-											serviceEditorContainer.serviceData.m_inputConnections.get(secureColumnCellDelegate.rowIndex).item.m_connectionParam.m_isSecure = checked
-										}
-									}
-								}
-								
-								onReused: {
-									if (rowIndex >= 0){
-										let isSecure = serviceEditorContainer.serviceData.m_inputConnections.get(rowIndex).item.m_connectionParam.m_isSecure
-										switchCustom.checked = isSecure
-									}
-								}
-							}
-						}
-						
-						Component {
-							id: httpPortInputComp;
-							
-							TextInputCellContentComp {
-								id: textInputContent;
-								
-								property int port: rowDelegate && rowDelegate.dataModel ? rowDelegate.dataModel.item.m_connectionParam.m_httpPort : -1
-								onPortChanged: {
-									reused()
-								}
-								
-								onEditingFinished: {
-									console.log("port onEditingFinished", port)
-									let actualPort = serviceEditorContainer.serviceData.m_inputConnections.get(rowIndex).item.m_connectionParam.m_httpPort
-									if (actualPort !== port){
-										serviceEditorContainer.doUpdateModel()
-									}
-								}
-								
-								function getValue(){
-									return rowDelegate.dataModel.item.m_connectionParam.m_httpPort
-								}
-								
-								function setValue(value){
-									console.log("port setValue", value)
-									let urlParam = rowDelegate.dataModel.item.m_connectionParam;
-									urlParam.m_httpPort = value;
-									rowDelegate.dataModel.item.m_connectionParam = urlParam;
-								}
-							}
-						}
-						
-						Component {
-							id: wsPortInputComp;
-							
-							TextInputCellContentComp {
-								id: textInputContent;
-								
-								property int port: rowDelegate && rowDelegate.dataModel ? rowDelegate.dataModel.item.m_connectionParam.m_wsPort : -1
-								onPortChanged: {
-									reused()
-								}
-								
-								onEditingFinished: {
-									console.log("port onEditingFinished", port)
-									let actualPort = serviceEditorContainer.serviceData.m_inputConnections.get(rowIndex).item.m_connectionParam.m_wsPort
-									if (actualPort !== port){
-										serviceEditorContainer.doUpdateModel()
-									}
-								}
-								
-								function getValue(){
-									return rowDelegate.dataModel.item.m_connectionParam.m_wsPort
-								}
-								
-								function setValue(value){
-									console.log("port setValue", value)
-									let urlParam = rowDelegate.dataModel.item.m_connectionParam;
-									urlParam.m_wsPort = value;
-									rowDelegate.dataModel.item.m_connectionParam = urlParam;
-								}
-							}
-						}
-						
-						Component {
-							id: externCompEditComp;
-							TableCellDelegateBase {
-								id: content;
-								
-								onReused: {
-									if (rowIndex >= 0){
-										let valueModel = getValue();
-										if (valueModel){
-											let values = []
-											for (let i = 0; i < valueModel.count; i++){
-												let item = valueModel.get(i).item;
-												values.push(item.m_url.m_host + ":" + item.m_url.m_port)
-											}
-											textLabel.text = values.join('\n')
-										}
-									}
-								}
-								
-								Text {
-									id: textLabel;
-									
-									anchors.verticalCenter: parent.verticalCenter;
-									anchors.left: parent.left;
-									anchors.right: button.left;
-									
-									elide: Text.ElideRight;
-									wrapMode: Text.WordWrap;
-									
-									clip: true;
-									
-									color: Style.textColor;
-									font.family: Style.fontFamily;
-									font.pixelSize: Style.fontSizeM;
-									lineHeight: 1.5;
-									
-									onTextChanged: {
-										if (content.tableCellDelegate){
-											let columnIndex = content.tableCellDelegate.columnIndex;
-											content.tableCellDelegate.pTableDelegateContainer.setHeightModelElememt(columnIndex, textLabel.height);
-											content.tableCellDelegate.pTableDelegateContainer.setCellHeight();
-										}
-									}
-								}
-								
-								ToolButton {
-									id: button;
-									
-									anchors.verticalCenter: parent.verticalCenter;
-									anchors.right: parent.right;
-									anchors.rightMargin: Style.marginM
-									
-									width: 18;
-									height: width;
-									
-									iconSource: "../../../../" + Style.getIconPath("Icons/Edit", Icon.State.Off, Icon.Mode.Normal);
-									
-									visible: !serviceEditorContainer.readOnly;
-									
-									onClicked: {
-										ModalDialogManager.openDialog(externPortsDialogComp, {});
-									}
-								}
-								
-								Component {
-									id: externPortsDialogComp;
-									
-									ExternPortsDialog {
-										onStarted: {
-											let externPorts = content.rowDelegate.dataModel.item.m_externPorts
-											console.log("onStarted externPorts", externPorts.toJson())
-											portsModel = externPorts.copyMe()
-										}
-										
-										onFinished: {
-											if (buttonId == Enums.save){
-												content.rowDelegate.dataModel.item.m_externPorts = portsModel.copyMe()
-												portsModel = content.rowDelegate.dataModel.item.m_externPorts.copyMe()
-												serviceEditorContainer.doUpdateModel()
-											}
-										}
-									}
-								}
-							}
-						}
-					}
+				Component {
+					id: externPortsDialogComp;
 					
-					Text {
-						id: dependantServicesTitle;
-						
-						anchors.left: parent.left;
-						
-						color: Style.textColor;
-						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeM;
-						
-						text: qsTr("Dependant Services");
-						
-						visible: false;
-					}
-					
-					Table {
-						id: ouputConnTable;
-						
-						width: parent.width;
-						height: visible ? contentHeight + headerHeight + 15 : 0;
-						
-						canMoveColumns: true;
-						radius: 0;
-						selectable: false;
-						
-						visible: false;
-						
-						onHeadersChanged: {
-							ouputConnTable.setColumnContentComponent(2, textInputComp2)
-							ouputConnTable.setColumnContentComponent(3, comboBoxComp2)
-							
-							ouputConnTable.tableDecorator = outputTableDecoratorModel;
-						}
-						
-						onElementsChanged: {
-							let count = elements.getItemsCount();
-							
-							dependantServicesTitle.visible = count > 0;
-							ouputConnTable.visible = count > 0;
-						}
-						
-						Component {
-							id: textInputComp2;
-							TextInputCellContentComp {
-								onEditingFinished: {
-									let actual = serviceEditorContainer.serviceData.m_outputConnections.get(rowIndex).item.m_description
-									if (actual != text){
-										serviceEditorContainer.doUpdateModel()
-									}
+					ExternPortsDialog {
+						onStarted: {
+							let inputConnection = serviceEditorContainer.getInputConnection()
+							if (inputConnection){
+								if (inputConnection.m_externConnectionList){
+									connectionListModel = inputConnection.m_externConnectionList.copyMe()
 								}
 							}
 						}
 						
-						Component {
-							id: comboBoxComp2;
-							
-							TableCellDelegateBase {
-								id: bodyItem;
-								
-								property string dependantConnectionId: rowDelegate && rowDelegate.dataModel ? rowDelegate.dataModel.item.m_dependantConnectionId : ""
-								onDependantConnectionIdChanged: {
-									reused()
+						onFinished: {
+							if (buttonId == Enums.save){
+								let inputConnection = serviceEditorContainer.getInputConnection()
+								if (inputConnection){
+									inputConnection.m_externConnectionList = connectionListModel.copyMe()
+									serviceEditorContainer.doUpdateModel()
+									
+									serviceEditorContainer.doUpdateGui()
 								}
-								
-								property var url: rowDelegate && rowDelegate.dataModel ? rowDelegate.dataModel.item.m_connectionParam : ""
-								
-								onReused: {
-									if (rowIndex >= 0){
-										let item = ouputConnTable.elements.get(bodyItem.rowIndex).item;
-										
-										let dependantConnectionId = item.m_dependantConnectionId;
-										let elementsModel = item.m_dependantConnectionList;
-										
-										textLabel.text = "";
-										cb.model = elementsModel;
-										
-										if (cb.model){
-											for (let i = 0; i < cb.model.count; i++){
-												if (cb.model.get(i).item.m_id == dependantConnectionId){
-													cb.currentIndex = i;
-													let item = cb.model.get(cb.currentIndex).item;
-													textLabel.text = item.m_name
-													break;
-												}
-											}
-										}
-									}
-								}
-								
-								Text {
-									id: textLabel;
-									
-									anchors.verticalCenter: parent.verticalCenter;
-									
-									width: parent.width;
-									
-									elide: Text.ElideRight;
-									wrapMode: Text.NoWrap;
-									
-									color: Style.textColor;
-									font.family: Style.fontFamily;
-									font.pixelSize: Style.fontSizeM;
-								}
-								
-								ComboBox {
-									id: cb;
-									
-									width: parent.width;
-									height: 25;
-									nameId: "m_name";
-									
-									visible: false;
-									
-									onCurrentIndexChanged: {
-										cb.visible = false;
-										
-										let dependantConnectionId = ""
-										let name = ""
-										let url = undefined
-										
-										if (currentIndex >= 0 && cb.model){
-											let item = cb.model.get(cb.currentIndex).item;
-											dependantConnectionId = item.m_id
-											name = item.m_name
-											url = item.m_connectionParam
-										}
-										
-										textLabel.text = name;
-										
-										let outputItem = ouputConnTable.elements.get(bodyItem.rowIndex).item;
-										outputItem.m_dependantConnectionId = dependantConnectionId;
-										if (url){
-											outputItem.m_connectionParam = url.copyMe();
-										}
-										
-										if (serviceEditorContainer.serviceData.m_outputConnections.get(bodyItem.rowIndex).item.m_dependantConnectionId != dependantConnectionId){
-											serviceEditorContainer.doUpdateModel()
-										}
-									}
-									
-									onFinished: {
-										cb.visible = false;
-									}
-									
-									onFocusChanged: {
-										if (!focus){
-											cb.visible = false;
-										}
-									}
-								}
-								
-								MouseArea {
-									id: ma;
-									
-									anchors.fill: parent;
-									
-									visible: !serviceEditorContainer.readOnly;
-									
-									onDoubleClicked: {
-										if (cb.model && cb.model.count > 0){
-											cb.visible = true;
-											cb.z = ma.z + 1;
-											cb.forceActiveFocus();
-											cb.openPopupMenu();
-										}
-									}
-								}
-							}
-						}
-						
-						TreeItemModel {
-							id: headersModel2;
-							
-							Component.onCompleted: {
-								let index = headersModel2.insertNewItem();
-								
-								headersModel2.setData("id", "connectionName", index)
-								headersModel2.setData("name", qsTr("Connection Name"), index)
-								
-								index = headersModel2.insertNewItem();
-								
-								headersModel2.setData("id", "serviceTypeId", index)
-								headersModel2.setData("name", qsTr("Service"), index)
-								
-								index = headersModel2.insertNewItem();
-								
-								headersModel2.setData("id", "description", index)
-								headersModel2.setData("name", qsTr("Description"), index)
-								
-								index = headersModel2.insertNewItem();
-								
-								headersModel2.setData("id", "url", index)
-								headersModel2.setData("name", qsTr("Url"), index)
-								
-								ouputConnTable.headers = headersModel2;
-							}
-						}
-						
-						TreeItemModel {
-							id: outputTableDecoratorModel;
-							
-							Component.onCompleted: {
-								var cellWidthModel = outputTableDecoratorModel.addTreeModel("CellWidth");
-								
-								let index = cellWidthModel.insertNewItem();
-								cellWidthModel.setData("Width", 150, index);
-								
-								index = cellWidthModel.insertNewItem();
-								cellWidthModel.setData("Width", 80, index);
-								
-								index = cellWidthModel.insertNewItem();
-								cellWidthModel.setData("Width", 350, index);
-								
-								index = cellWidthModel.insertNewItem();
-								cellWidthModel.setData("Width", -1, index);
 							}
 						}
 					}
-				}//Column bodyColumn
-			}
+				}
+				
+				GroupHeaderView {
+					title: qsTr("Output Connections")
+					width: parent.width
+					visible: outputConnectionListView.count > 0
+				}
+				
+				TreeItemModel {
+					id: headersModel
+					Component.onCompleted: {
+						let index = headersModel.insertNewItem()
+						headersModel.setData("id", "host", index)
+						headersModel.setData("name", qsTr("Host"), index)
+						
+						index = headersModel.insertNewItem()
+						headersModel.setData("id", "httpPort", index)
+						headersModel.setData("name", qsTr("HTTP Port"), index)
+						
+						index = headersModel.insertNewItem()
+						headersModel.setData("id", "wsPort", index)
+						headersModel.setData("name", qsTr("Web Socket Port"), index)
+					}
+				}
+				
+				ListView  {
+					id: outputConnectionListView
+					width: parent.width
+					height: contentHeight
+					cacheBuffer: 1000
+					boundsBehavior: Flickable.StopAtBounds
+					spacing: Style.marginXL
+					delegate: GroupElementView {
+						id: outputDelegate
+						width: outputConnectionListView.width
+						
+						property var connectionParam: model && model.item ? model.item.m_connectionParam : null
+						property var modelData: model ? model.item : null
+						
+						TextInputElementView {
+							name: qsTr("Service Type")
+							readOnly: true
+							text: model.item.m_serviceTypeId
+						}
+						
+						TextInputElementView {
+							name: qsTr("Connection Name")
+							readOnly: true
+							text: model.item.m_connectionName
+						}
+
+						TableElementView {
+							id: tableElementView
+							name: qsTr("Available Connections")
+							description: table && table.elementsCount == 0 ? qsTr("No available connections") : qsTr("Select one of the available connections")
+							onTableChanged: {
+								if (table){
+									table.isMultiCheckable = false
+									table.checkable = true
+									table.headers = headersModel
+									
+									table.setColumnContentById("host", hostCellDelegateComp);
+									table.setColumnContentById("httpPort", httpPortCellDelegateComp);
+									table.setColumnContentById("wsPort", wsPortCellDelegateComp);
+									
+									table.elements = model.item.m_dependantConnectionList
+								}
+							}
+							
+							Connections {
+								target: tableElementView.table
+								function onCheckedItemsChanged(){
+									console.log("onCheckedItemsChanged")
+									serviceEditorContainer.doUpdateModel()
+								}
+							}
+							
+							Component {
+								id: hostCellDelegateComp
+								
+								TableCellTextDelegate{
+									function getValue(){
+										let connectionItem = outputDelegate.modelData.m_dependantConnectionList.get(rowIndex).item.m_connectionParam
+										if (connectionItem){
+											return connectionItem.m_host
+										}
+
+										return ""
+									}
+								}
+							}
+							
+							Component {
+								id: httpPortCellDelegateComp
+								
+								TableCellTextDelegate{
+									function getValue(){
+										let connectionItem = outputDelegate.modelData.m_dependantConnectionList.get(rowIndex).item.m_connectionParam
+										if (connectionItem){
+											return connectionItem.m_httpPort
+										}
+
+										return ""
+									}
+								}
+							}
+							
+							Component {
+								id: wsPortCellDelegateComp
+								
+								TableCellTextDelegate{
+									function getValue(){
+										let connectionItem = outputDelegate.modelData.m_dependantConnectionList.get(rowIndex).item.m_connectionParam
+										if (connectionItem){
+											return connectionItem.m_wsPort
+										}
+
+										return ""
+									}
+								}
+							}
+						}
+						
+						function updateGui(){
+							if (!tableElementView.table){
+								return
+							}
+
+							let dependantId = model.item.m_dependantConnectionId;
+							if (dependantId === ""){
+								tableElementView.table.uncheckAll()
+							}
+							else{
+								let connectionList = model.item.m_dependantConnectionList
+								for (let i = 0; i < connectionList.count; i++){
+									let connectionInfo = connectionList.get(i).item
+									if (connectionInfo.m_id == dependantId){
+										tableElementView.table.checkItem(i)
+										break
+									}
+								}
+							}
+						}
+						
+						function updateModel(){
+							if (tableElementView.table){
+								let indexes = tableElementView.table.getCheckedItems();
+								if (indexes.length > 0){
+									let index = indexes[0]
+									let connectionList = model.item.m_dependantConnectionList
+									let connectionInfo = connectionList.get(index).item
+									model.item.m_dependantConnectionId = connectionInfo.m_id
+									
+									model.item.m_connectionParam.m_host = connectionInfo.m_connectionParam.m_host
+									model.item.m_connectionParam.m_httpPort = connectionInfo.m_connectionParam.m_httpPort
+									model.item.m_connectionParam.m_wsPort = connectionInfo.m_connectionParam.m_wsPort
+								}
+								else{
+									model.item.m_dependantConnectionId = ""
+									model.item.m_connectionParam.m_host = "localhost"
+									model.item.m_connectionParam.m_httpPort = -1
+									model.item.m_connectionParam.m_wsPort = -1
+								}
+							}
+						}
+					}
+				}
+			}//Column bodyColumn
 		}
 	}
 	

@@ -13,20 +13,20 @@ Dialog {
 	
 	title: qsTr("Edit ports");
 	
-	property BaseModel portsModel: BaseModel {}
+	property BaseModel connectionListModel: BaseModel {}
 	
 	Component.onCompleted: {
 		addButton(Enums.save, qsTr("Save"), true)
 		addButton(Enums.cancel, qsTr("Cancel"), true)
 	}
 	
-	onPortsModelChanged: {
+	onconnectionListModelChanged: {
 		updateGui();
 	}
 	
 	Component {
 		id: externPortComp;
-		ExternPort {
+		ExternConnectionInfo {
 		}
 	}
 	
@@ -49,7 +49,9 @@ Dialog {
 	}
 	
 	function updateGui(){
-		portsDialog.contentItem.tableView.elements = portsDialog.portsModel;
+		if (portsDialog.contentItem){
+			portsDialog.contentItem.tableView.elements = portsDialog.connectionListModel;
+		}
 	}
 	
 	contentComp: Component{ Item {
@@ -63,16 +65,16 @@ Dialog {
 			property TreeItemModel headersModel: TreeItemModel {
 				Component.onCompleted: {
 					let index = dialogBody.headersModel.insertNewItem();
-					dialogBody.headersModel.setData("id", "scheme", index);
-					dialogBody.headersModel.setData("name", qsTr("Scheme"), index);
-					
-					index = dialogBody.headersModel.insertNewItem();
 					dialogBody.headersModel.setData("id", "host", index);
 					dialogBody.headersModel.setData("name", qsTr("Host"), index);
 					
 					index = dialogBody.headersModel.insertNewItem();
-					dialogBody.headersModel.setData("id", "port", index);
-					dialogBody.headersModel.setData("name", qsTr("Port"), index);
+					dialogBody.headersModel.setData("id", "httpPort", index);
+					dialogBody.headersModel.setData("name", qsTr("Http Port"), index);
+					
+					index = dialogBody.headersModel.insertNewItem();
+					dialogBody.headersModel.setData("id", "wsPort", index);
+					dialogBody.headersModel.setData("name", qsTr("Web Socket Port"), index);
 					
 					index = dialogBody.headersModel.insertNewItem();
 					dialogBody.headersModel.setData("id", "description", index);
@@ -80,7 +82,7 @@ Dialog {
 					
 					tableTreeView.headers = dialogBody.headersModel;
 					
-					tableTreeView.elements = portsDialog.portsModel
+					tableTreeView.elements = portsDialog.connectionListModel
 				}
 			}
 			
@@ -127,21 +129,18 @@ Dialog {
 					
 					onCommandActivated: {
 						if (commandId == "Add"){
-							let portObj = externPortComp.createObject(portsDialog.portsModel);
-							portObj.m_id = UuidGenerator.generateUUID();
-							portObj.m_name = "";
-							portObj.m_description = "";
+							let connectionInfo = externPortComp.createObject(portsDialog.connectionListModel);
+							connectionInfo.m_id = UuidGenerator.generateUUID();
 							
-							let urlObj = urlParamComp.createObject(portObj);
+							let connectionParamObj = urlParamComp.createObject(connectionInfo);
 							
-							urlObj.m_scheme = "http";
-							urlObj.m_host = "localhost";
-							urlObj.m_port = 80;
+							connectionParamObj.m_host = "localhost";
+							connectionParamObj.m_httpPort = 80;
+							connectionParamObj.m_wsPort = 90;
 							
-							portObj.m_url = urlObj;
+							connectionInfo.m_connectionParam = connectionParamObj;
 							
-							console.log("add portObj", portObj, portObj.toJson())
-							portsDialog.portsModel.addElement(portObj);
+							portsDialog.connectionListModel.addElement(connectionInfo);
 							
 							portsDialog.updateGui()
 						}
@@ -150,7 +149,7 @@ Dialog {
 							if (indexes.length > 0){
 								let index = indexes[0];
 								
-								portsDialog.portsModel.removeElement(index)
+								portsDialog.connectionListModel.removeElement(index)
 								
 								tableTreeView.resetSelection();
 								portsDialog.updateGui()
@@ -167,17 +166,33 @@ Dialog {
 				}
 				
 				Component {
-					id: portInputComp;
+					id: wsPortInputComp;
 					
 					TextInputCellContentComp {
 						function getValue(){
-							return rowDelegate.dataModel.item.m_url.m_port;
+							return rowDelegate.dataModel.item.m_connectionParam.m_wsPort;
 						}
 					
 						function setValue(value){
-							let urlParam = rowDelegate.dataModel.item.m_url;
-							urlParam.m_port = value;
-							rowDelegate.dataModel.item.m_url = urlParam;
+							let urlParam = rowDelegate.dataModel.item.m_connectionParam;
+							urlParam.m_wsPort = value;
+							rowDelegate.dataModel.item.m_connectionParam = urlParam;
+						}
+					}
+				}
+				
+				Component {
+					id: httpPortInputComp;
+					
+					TextInputCellContentComp {
+						function getValue(){
+							return rowDelegate.dataModel.item.m_connectionParam.m_httpPort;
+						}
+					
+						function setValue(value){
+							let urlParam = rowDelegate.dataModel.item.m_connectionParam;
+							urlParam.m_httpPort = value;
+							rowDelegate.dataModel.item.m_connectionParam = urlParam;
 						}
 					}
 				}
@@ -187,53 +202,14 @@ Dialog {
 					
 					TextInputCellContentComp {
 						function getValue(){
-							return rowDelegate.dataModel.item.m_url.m_host;
+							return rowDelegate.dataModel.item.m_connectionParam.m_host;
 						}
 					
 						function setValue(value){
-							let urlParam = rowDelegate.dataModel.item.m_url;
+							let urlParam = rowDelegate.dataModel.item.m_connectionParam;
 							urlParam.m_host = value;
-							rowDelegate.dataModel.item.m_url = urlParam;
+							rowDelegate.dataModel.item.m_connectionParam = urlParam;
 						}
-					}
-				}
-				
-				Component {
-					id: comboBoxCellContentComp;
-					ComboBoxCellContentComp {
-						model: schemesModel;
-						
-						function getValue(){
-							return rowDelegate.dataModel.item.m_url.m_scheme;
-						}
-					
-						function setValue(value){
-							let urlParam = rowDelegate.dataModel.item.m_url;
-							urlParam.m_scheme = value;
-							rowDelegate.dataModel.item.m_url = urlParam;
-						}
-					}
-				}
-				
-				TreeItemModel {
-					id: schemesModel;
-					
-					Component.onCompleted: {
-						let index = schemesModel.insertNewItem();
-						schemesModel.setData("id", "http", index);
-						schemesModel.setData("scheme", "http", index);
-						
-						index = schemesModel.insertNewItem();
-						schemesModel.setData("id", "https", index);
-						schemesModel.setData("scheme", "https", index);
-						
-						index = schemesModel.insertNewItem();
-						schemesModel.setData("id", "ws", index);
-						schemesModel.setData("scheme", "ws", index);
-						
-						index = schemesModel.insertNewItem();
-						schemesModel.setData("id", "wss", index);
-						schemesModel.setData("scheme", "wss", index);
 					}
 				}
 				
@@ -246,15 +222,14 @@ Dialog {
 					radius: 0;
 
 					onHeadersChanged: {
-						tableTreeView.setColumnContentById("scheme", comboBoxCellContentComp)
 						tableTreeView.setColumnContentById("host", hostInputComp)
-						tableTreeView.setColumnContentById("port", portInputComp)
+						tableTreeView.setColumnContentById("wsPort", wsPortInputComp)
+						tableTreeView.setColumnContentById("httpPort", httpPortInputComp)
 						tableTreeView.setColumnContentById("description", textInputComp)
 					}
 					
 					onSelectionChanged: {
 						let isEnabled = selection.length > 0;
-						
 						commandsDecorator.setCommandIsEnabled("Remove", isEnabled);
 					}
 				}

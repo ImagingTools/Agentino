@@ -210,38 +210,38 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 
 		return nullptr;
 	}
-	
+
 	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoImplPtr, serviceDataRepresentation, errorMessage)){
 		errorMessage = QString("Unable to create service from representation. Error: Representation invalid");
 		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 		return nullptr;
 	}
-	
+
 	if (serviceDataRepresentation.id){
 		newObjectId = *serviceDataRepresentation.id;
-		
+
 		serviceInfoImplPtr->SetObjectUuid(newObjectId);
 	}
-	
+
 	QByteArray serviceName = serviceInfoImplPtr->GetServiceName().toUtf8();
 	QByteArray servicePath = serviceInfoImplPtr->GetServicePath();
-	
+
 	QFileInfo fileInfo(servicePath);
 	if (!fileInfo.exists()){
 		errorMessage = QString("Unable to create service from representation. Error: Service path '%1' not exists").arg(qPrintable(servicePath));
 		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 		return nullptr;
 	}
-	
+
 	std::shared_ptr<imtservice::IConnectionCollection> connectionCollectionPtr = GetConnectionCollection(serviceName, servicePath);
 	if (connectionCollectionPtr != nullptr){
 		serviceInfoImplPtr->SetTracingLevel(connectionCollectionPtr->GetTracingLevel());
 		serviceInfoImplPtr->SetServiceVersion(connectionCollectionPtr->GetServiceVersion());
 		serviceInfoImplPtr->SetServiceTypeId(connectionCollectionPtr->GetServiceTypeId().toUtf8());
-		
+
 		imtbase::IObjectCollection* incomingConnectionCollectionPtr = serviceInfoImplPtr->GetInputConnections();
 		imtbase::IObjectCollection* dependantConnectionCollectionPtr = serviceInfoImplPtr->GetDependantServiceConnections();
-		
+
 		const imtbase::ICollectionInfo* collectionInfo = static_cast<const imtbase::ICollectionInfo*>(connectionCollectionPtr->GetServerConnectionList());
 		const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
 		if (objectCollection != nullptr){
@@ -251,34 +251,41 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 				if (connectionParamPtr == nullptr){
 					continue;
 				}
-				
-				const imtcom::IServerConnectionInterface* serverConnectionPtr  = connectionCollectionPtr->GetServerConnection(id);
-				if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT){
-					istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
-					urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam);
-					
-					QString connectionName = objectCollection->GetElementInfo(id, imtbase::IObjectCollection::EIT_NAME).toString();
-					QString connectionDescription = collectionInfo->GetElementInfo(id, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
-					
-					urlConnectionParamPtr->SetServiceTypeId(connectionParamPtr->GetServiceTypeId());
 
-					urlConnectionParamPtr->SetDefaultServiceInterface(connectionParamPtr->GetDefaultInterface());
-					
-					urlConnectionParamPtr->SetConnectionType(connectionParamPtr->GetConnectionType());
-					
-					incomingConnectionCollectionPtr->InsertNewObject("ConnectionInfo", connectionName, connectionDescription, urlConnectionParamPtr.PopPtr(), id);
+				imtservice::IServiceConnectionInfo::ConnectionType connectionType = connectionParamPtr->GetConnectionType();
+				istd::TDelPtr<imtservice::CServiceConnectionInfo> urlConnectionParamPtr;
+				if (connectionType == imtservice::IServiceConnectionInfo::CT_INPUT){
+					urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam);
 				}
 				else{
-					istd::TDelPtr<imtservice::CUrlConnectionLinkParam> urlConnectionLinkParamPtr;
-					urlConnectionLinkParamPtr.SetPtr(new imtservice::CUrlConnectionLinkParam);
-					
-					QString connectionName = objectCollection->GetElementInfo(id, imtbase::IObjectCollection::EIT_NAME).toString();
-					QString connectionDescription = collectionInfo->GetElementInfo(id, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
-					
-					urlConnectionLinkParamPtr->SetServiceTypeId(connectionParamPtr->GetServiceTypeId());
-					urlConnectionLinkParamPtr->SetDefaultServiceInterface(connectionParamPtr->GetDefaultInterface());
+					urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionLinkParam);
+				}
 
-					dependantConnectionCollectionPtr->InsertNewObject("ConnectionLink", connectionName, connectionDescription, urlConnectionLinkParamPtr.PopPtr(), id);
+				urlConnectionParamPtr->SetConnectionType(connectionType);
+
+				QByteArray serviceTypeId = connectionParamPtr->GetServiceTypeId();
+				urlConnectionParamPtr->SetServiceTypeId(serviceTypeId);
+
+				const imtcom::IServerConnectionInterface& connectionInterface = connectionParamPtr->GetDefaultInterface();
+				urlConnectionParamPtr->SetDefaultServiceInterface(connectionInterface);
+
+				QString defaultHost = connectionInterface.GetHost();
+				urlConnectionParamPtr->SetHost(defaultHost);
+
+				int defaultHttpPort = connectionInterface.GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
+				urlConnectionParamPtr->SetPort(imtcom::IServerConnectionInterface::PT_HTTP, defaultHttpPort);
+
+				int defaultWsPort = connectionInterface.GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
+				urlConnectionParamPtr->SetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET, defaultWsPort);
+
+				QString connectionName = objectCollection->GetElementInfo(id, imtbase::IObjectCollection::EIT_NAME).toString();
+				QString connectionDescription = collectionInfo->GetElementInfo(id, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
+				
+				if (connectionType == imtservice::IServiceConnectionInfo::CT_INPUT){
+					incomingConnectionCollectionPtr->InsertNewObject(QByteArrayLiteral("ConnectionInfo"), connectionName, connectionDescription, urlConnectionParamPtr.PopPtr(), id);
+				}
+				else{
+					dependantConnectionCollectionPtr->InsertNewObject(QByteArrayLiteral("ConnectionLink"), connectionName, connectionDescription, urlConnectionParamPtr.PopPtr(), id);
 				}
 			}
 		}
@@ -286,7 +293,7 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 
 	istd::IChangeableUniquePtr retVal;
 	retVal.MoveCastedPtr<agentinodata::IServiceInfo>(serviceInstancePtr);
-	
+
 	return retVal;
 }
 

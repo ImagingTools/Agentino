@@ -44,7 +44,7 @@ bool GetRepresentationFromUrlConnectionLink(
 bool GetServerConnectionParamFromRepresentation(
 			imtcom::CServerConnectionInterfaceParam& serverConnectionParam,
 			const sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0& serverConnectionRepresentation);
-bool GetRepresentationFromUrlServerConnectionParam(
+bool GetRepresentationFromServerConnectionParam(
 			const imtcom::CServerConnectionInterfaceParam& serverConnectionParam,
 			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0& serverConnectionRepresentation);
 

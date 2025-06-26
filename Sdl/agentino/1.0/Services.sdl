@@ -36,9 +36,8 @@ type ServiceListPayload{
 	items: [ServiceItem]!
 }
 
-type ExternPort {
+type ExternConnectionInfo {
 	id: ID
-	name: String
 	description: String
 	connectionParam: ServerConnectionParam
 }
@@ -49,7 +48,7 @@ type InputConnection {
 	description: String
 	serviceName: String
 	serviceTypeId: String
-	externPorts: [ExternPort]
+	externConnectionList: [ExternConnectionInfo]
 	connectionParam: ServerConnectionParam
 }
 

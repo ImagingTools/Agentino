@@ -66,7 +66,7 @@ QUrl CUrlConnectionLinkParamRepresentationController::GetDependantConnectionUrl(
 							QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
 							for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
 								if (incomingConnection.id == dependantId){
-									return incomingConnection.url;
+									// return incomingConnection.url;
 								}
 							}
 						}

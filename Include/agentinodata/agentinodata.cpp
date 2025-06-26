@@ -309,33 +309,34 @@ bool GetUrlConnectionFromRepresentation(
 		}
 	}
 
-	if (connectionRepresentation.externPorts){
-		QList<sdl::agentino::Services::CExternPort::V1_0> externPorts = *connectionRepresentation.externPorts;
+	if (connectionRepresentation.externConnectionList){
+		QList<sdl::agentino::Services::CExternConnectionInfo::V1_0> externConnectionList = *connectionRepresentation.externConnectionList;
 		
-		for (const sdl::agentino::Services::CExternPort::V1_0& externPort : externPorts){
+		for (const sdl::agentino::Services::CExternConnectionInfo::V1_0& externPort : externConnectionList){
 			imtservice::IServiceConnectionParam::IncomingConnectionParam incomingConnection;
-			
+
 			if (externPort.id){
 				incomingConnection.id = *externPort.id;
 			}
-			
-			if (externPort.name){
-				incomingConnection.name = *externPort.name;
-			}
-			
+
 			if (externPort.description){
 				incomingConnection.description = *externPort.description;
 			}
 
-			QUrl externalUrl;
 			if (externPort.connectionParam){
-				// if (!GetServerConnectionParamFromRepresentation(externalUrl, *externPort.url)){
-				// 	return false;
-				// }
+				if (externPort.connectionParam->host){
+					incomingConnection.host = *externPort.connectionParam->host;
+				}
+
+				if (externPort.connectionParam->httpPort){
+					incomingConnection.httpPort = *externPort.connectionParam->httpPort;
+				}
+	
+				if (externPort.connectionParam->wsPort){
+					incomingConnection.wsPort = *externPort.connectionParam->wsPort;
+				}
 			}
 
-			incomingConnection.url = externalUrl;
-			 
 			connectionInfo.AddExternConnection(incomingConnection);
 		}
 	}
@@ -353,32 +354,31 @@ bool GetRepresentationFromUrlConnection(
 	connectionRepresentation.serviceTypeId = serviceTypeId;
 
 	sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParamRepresentation;
-	if (!GetRepresentationFromUrlServerConnectionParam(connectionInfo, connectionParamRepresentation)){
+	if (!GetRepresentationFromServerConnectionParam(connectionInfo, connectionParamRepresentation)){
 		return false;
 	}
 
 	connectionRepresentation.connectionParam = connectionParamRepresentation;
 
-	// QList<sdl::agentino::Services::CExternPort::V1_0> portList;
+	QList<sdl::agentino::Services::CExternConnectionInfo::V1_0> externConnectionList;
 	
-	// QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionInfo.GetIncomingConnections();
-	// for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-	// 	sdl::agentino::Services::CExternPort::V1_0 port;
-	// 	port.id = incomingConnection.id;
-	// 	port.name = incomingConnection.name;
-	// 	port.description = incomingConnection.description;
-		
-	// 	sdl::agentino::Services::CUrlParameter::V1_0 incomingPortUrlRepresentation;
-	// 	if (!GetRepresentationFromUrlParam(incomingConnection.url, incomingPortUrlRepresentation)){
-	// 		return false;
-	// 	}
-		
-	// 	port.url = incomingPortUrlRepresentation;
-		
-	// 	portList << port;
-	// }
+	QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionInfo.GetIncomingConnections();
+	for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
+		sdl::agentino::Services::CExternConnectionInfo::V1_0 externConnectionInfo;
+		externConnectionInfo.description = incomingConnection.description;
+		externConnectionInfo.id = incomingConnection.id;
+
+		sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam;
+		connectionParam.host = incomingConnection.host;
+		connectionParam.wsPort = incomingConnection.wsPort;
+		connectionParam.httpPort = incomingConnection.httpPort;
+
+		externConnectionInfo.connectionParam = connectionParam;
+
+		externConnectionList << externConnectionInfo;
+	}
 	
-	// connectionRepresentation.externPorts = portList;
+	connectionRepresentation.externConnectionList = externConnectionList;
 	
 	return true;
 }
@@ -422,7 +422,7 @@ bool GetRepresentationFromUrlConnectionLink(
 	connectionRepresentation.serviceTypeId = serviceTypeId;
 
 	sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParamRepresentation;
-	if (!GetRepresentationFromUrlServerConnectionParam(connectionInfo, connectionParamRepresentation)){
+	if (!GetRepresentationFromServerConnectionParam(connectionInfo, connectionParamRepresentation)){
 		return false;
 	}
 
@@ -462,7 +462,7 @@ bool GetServerConnectionParamFromRepresentation(
 }
 
 
-bool GetRepresentationFromUrlServerConnectionParam(
+bool GetRepresentationFromServerConnectionParam(
 			const imtcom::CServerConnectionInterfaceParam& serverConnectionParam,
 			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0& sdlRepresentation)
 {

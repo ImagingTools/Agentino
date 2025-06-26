@@ -83,7 +83,7 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 			std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr = GetDependantServerConnectionParam(id);
 			if (serverConnectionInterfacePtr != nullptr){
 				sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 urlRepresentation;
-				if (agentinodata::GetRepresentationFromUrlServerConnectionParam(*serverConnectionInterfacePtr.get(), urlRepresentation)){
+				if (agentinodata::GetRepresentationFromServerConnectionParam(*serverConnectionInterfacePtr.get(), urlRepresentation)){
 					outputConnection.connectionParam = urlRepresentation;
 				}
 			}
@@ -661,7 +661,7 @@ QList<sdl::agentino::Services::CDependantConnectionInfo::V1_0> CServiceControlle
 				imtservice::IServiceConnectionInfo::ConnectionType connectionType = connectionParamPtr->GetConnectionType();
 				if (connectionType == imtservice::IServiceConnectionInfo::CT_INPUT && connectionElementId == connectionUsageId){
 					sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 sdlRepresentation;
-					if (agentinodata::GetRepresentationFromUrlServerConnectionParam(*connectionParamPtr, sdlRepresentation)){
+					if (agentinodata::GetRepresentationFromServerConnectionParam(*connectionParamPtr, sdlRepresentation)){
 						sdl::agentino::Services::CDependantConnectionInfo::V1_0 dependantConnectionInfo;
 
 						QString host = connectionParamPtr->GetHost();
@@ -677,21 +677,25 @@ QList<sdl::agentino::Services::CDependantConnectionInfo::V1_0> CServiceControlle
 
 						retVal << dependantConnectionInfo;
 						
-						// QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
+						QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
 						
-						// for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-						// 	sdl::agentino::Services::CDependantConnectionInfo::V1_0 incomingConnectionInfo;
-						// 	incomingConnectionInfo.id = incomingConnection.id;
-						// 	incomingConnectionInfo.name = incomingConnection.url.toString();
+						for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
+							sdl::agentino::Services::CDependantConnectionInfo::V1_0 incomingConnectionInfo;
+							incomingConnectionInfo.id = incomingConnection.id;
 							
-						// 	sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 incomingConnectionRepresentation;
-							
-						// 	if (agentinodata::GetRepresentationFromUrlServerConnectionParam(incomingConnection.url, incomingConnectionRepresentation)){
-						// 		incomingElement.url = urlRepresentation;
-								
-						// 		retVal << incomingConnectionInfo;
-						// 	}
-						// }
+							QString incomingHost = incomingConnection.host;
+							int port = incomingConnection.httpPort;
+							incomingConnectionInfo.name = incomingHost + "/" + QString::number(port);
+
+							sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam;
+							connectionParam.host = incomingHost;
+							connectionParam.wsPort = incomingConnection.wsPort;
+							connectionParam.httpPort = incomingConnection.httpPort;
+	
+							incomingConnectionInfo.connectionParam = connectionParam;
+
+							retVal << incomingConnectionInfo;
+						}
 					}
 				}
 			}
@@ -765,7 +769,7 @@ void CServiceControllerProxyComp::UpdateUrlFromDependantConnection(sdl::agentino
 			std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr = GetDependantServerConnectionParam(dependantConnectionId);
 
 			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 serverConnectionRepresentation;
-			if (agentinodata::GetRepresentationFromUrlServerConnectionParam(*serverConnectionInterfacePtr.get(), serverConnectionRepresentation)){
+			if (agentinodata::GetRepresentationFromServerConnectionParam(*serverConnectionInterfacePtr.get(), serverConnectionRepresentation)){
 				connection.connectionParam = serverConnectionRepresentation;
 				connections[i] = connection;
 			}
