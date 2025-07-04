@@ -22,8 +22,9 @@ public:
 	I_END_COMPONENT;
 
 protected:
-	QStringList GetConnectionInfoAboutDependOnService(const QUrl& url, const QByteArray& connectionId) const;
+	QStringList GetConnectionInfoAboutDependOnService(const QByteArray& connectionId) const;
 	QStringList GetConnectionInfoAboutServiceDepends(const QByteArray& connectionId) const;
+	const imtcom::IServerConnectionInterface* GetConnectionInfo(const QByteArray& connectionId) const;
 
 	// reimplemented (imtgql::CObjectCollectionControllerCompBase)
 	virtual bool SetupGqlItem(
