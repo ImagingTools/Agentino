@@ -39,14 +39,17 @@ protected:
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
 	virtual sdl::agentino::Services::CServiceStatusResponse OnGetServiceStatus(
-		const sdl::agentino::Services::CGetServiceStatusGqlRequest& getServiceStatusRequest,
-		const ::imtgql::CGqlRequest& gqlRequest,
-		QString& errorMessage) const override;
+				const sdl::agentino::Services::CGetServiceStatusGqlRequest& getServiceStatusRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
 	virtual sdl::agentino::Services::CUpdateConnectionUrlResponse OnUpdateConnectionUrl(
-		const sdl::agentino::Services::CUpdateConnectionUrlGqlRequest& updateConnectionUrlRequest,
-		const ::imtgql::CGqlRequest& gqlRequest,
-		QString& errorMessage) const override;
-	
+				const sdl::agentino::Services::CUpdateConnectionUrlGqlRequest& updateConnectionUrlRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	virtual sdl::agentino::Services::CPluginInfo OnLoadPlugin(
+				const sdl::agentino::Services::CLoadPluginGqlRequest& loadPluginRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
 protected:
 	I_REF(agentinodata::IServiceController, m_serviceControllerCompPtr);
 	I_REF(imtservice::IConnectionCollectionProvider, m_connectionCollectionProviderCompPtr);

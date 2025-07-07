@@ -223,7 +223,6 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 		serviceInfoImplPtr->SetObjectUuid(newObjectId);
 	}
 
-	QByteArray serviceName = serviceInfoImplPtr->GetServiceName().toUtf8();
 	QByteArray servicePath = serviceInfoImplPtr->GetServicePath();
 
 	QFileInfo fileInfo(servicePath);
@@ -233,7 +232,7 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 		return nullptr;
 	}
 
-	std::shared_ptr<imtservice::IConnectionCollection> connectionCollectionPtr = GetConnectionCollection(serviceName, servicePath);
+	std::shared_ptr<imtservice::IConnectionCollection> connectionCollectionPtr = GetConnectionCollectionByServicePath(servicePath);
 	if (connectionCollectionPtr != nullptr){
 		serviceInfoImplPtr->SetTracingLevel(connectionCollectionPtr->GetTracingLevel());
 		serviceInfoImplPtr->SetServiceVersion(connectionCollectionPtr->GetServiceVersion());
@@ -280,12 +279,18 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 
 				QString connectionName = objectCollection->GetElementInfo(id, imtbase::IObjectCollection::EIT_NAME).toString();
 				QString connectionDescription = collectionInfo->GetElementInfo(id, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
-				
+
 				if (connectionType == imtservice::IServiceConnectionInfo::CT_INPUT){
-					incomingConnectionCollectionPtr->InsertNewObject(QByteArrayLiteral("ConnectionInfo"), connectionName, connectionDescription, urlConnectionParamPtr.PopPtr(), id);
+					imtbase::ICollectionInfo::Ids elementIds = incomingConnectionCollectionPtr->GetElementIds();
+					if (!elementIds.contains(id)){
+						incomingConnectionCollectionPtr->InsertNewObject(QByteArrayLiteral("ConnectionInfo"), connectionName, connectionDescription, urlConnectionParamPtr.PopPtr(), id);
+					}
 				}
 				else{
-					dependantConnectionCollectionPtr->InsertNewObject(QByteArrayLiteral("ConnectionLink"), connectionName, connectionDescription, urlConnectionParamPtr.PopPtr(), id);
+					imtbase::ICollectionInfo::Ids elementIds = dependantConnectionCollectionPtr->GetElementIds();
+					if (!elementIds.contains(id)){
+						dependantConnectionCollectionPtr->InsertNewObject(QByteArrayLiteral("ConnectionLink"), connectionName, connectionDescription, urlConnectionParamPtr.PopPtr(), id);
+					}
 				}
 			}
 		}
@@ -342,7 +347,7 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 	
 	QByteArray serviceTypeName = serviceInfoPtr->GetServiceTypeId().toUtf8();
 	
-	std::shared_ptr<imtservice::IConnectionCollection> connectionCollectionPtr = GetConnectionCollection(objectId);
+	std::shared_ptr<imtservice::IConnectionCollection> connectionCollectionPtr = GetConnectionCollectionByServiceId(objectId);
 	if (connectionCollectionPtr != nullptr){
 		QString serviceVersion = connectionCollectionPtr->GetServiceVersion();
 		serviceInfoPtr->SetServiceVersion(serviceVersion);
@@ -381,34 +386,75 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 
 // reimplemented (imtservice::IConnectionCollectionProvider)
 
-std::shared_ptr<imtservice::IConnectionCollection> CServiceCollectionControllerComp::GetConnectionCollection(const QByteArray& serviceId) const
+std::shared_ptr<imtservice::IConnectionCollection> CServiceCollectionControllerComp::GetConnectionCollectionByServicePath(const QString& servicePath) const
+{
+	QFileInfo fileInfo(servicePath);
+	if (!fileInfo.exists()){
+		return nullptr;
+	}
+
+	QString pluginPath = fileInfo.path() + "/Plugins";
+
+	istd::TDelPtr<PluginManager>& pluginManagerPtr = m_pluginMap[servicePath.toUtf8()];
+	pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), nullptr));
+
+	if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")){
+		SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(qPrintable(servicePath)), "CServiceCollectionControllerComp");
+		m_pluginMap.remove(servicePath.toUtf8());
+	}
+
+	if (!m_pluginMap.contains(servicePath.toUtf8())){
+		SendErrorMessage(0,
+						QString("Unable to get connection collection. Error: Plugin with name '%1' not found").arg(servicePath),
+						"CServiceCollectionControllerComp");
+		return nullptr;
+	}
+
+	const imtservice::IConnectionCollectionPlugin::IConnectionCollectionFactory* connectionCollectionFactoryPtr = nullptr;
+	for (int index = 0; index < m_pluginMap[servicePath.toUtf8()]->m_plugins.count(); index++){
+		imtservice::IConnectionCollectionPlugin* pluginPtr = m_pluginMap[servicePath.toUtf8()]->m_plugins[index].pluginPtr;
+		if (pluginPtr != nullptr){
+			connectionCollectionFactoryPtr = pluginPtr->GetConnectionCollectionFactory();
+			
+			break;
+		}
+	}
+
+	Q_ASSERT(connectionCollectionFactoryPtr != nullptr);
+
+	std::shared_ptr<imtservice::IConnectionCollection> connectionCollection;
+	connectionCollection.reset(connectionCollectionFactoryPtr->CreateInstance());
+
+	return connectionCollection;
+}
+
+
+std::shared_ptr<imtservice::IConnectionCollection> CServiceCollectionControllerComp::GetConnectionCollectionByServiceId(const QByteArray& serviceId) const
 {
 	std::shared_ptr<imtservice::IConnectionCollection> connectionCollection;
-	
+
 	const agentinodata::IServiceInfo* serviceInfoPtr = nullptr;
 	imtbase::IObjectCollection::DataPtr dataPtr;
 	if (m_objectCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
 		serviceInfoPtr = dynamic_cast<const agentinodata::IServiceInfo*>(dataPtr.GetPtr());
 	}
-	
+
 	if (serviceInfoPtr == nullptr){
 		SendErrorMessage(0,
 						 QString("Unable to get connection collection for service '%1'. Error: Service is invalid").arg(qPrintable(serviceId)),
 						 "CServiceCollectionControllerComp");
 		return nullptr;
 	}
-	
+
 	QByteArray servicePath = serviceInfoPtr->GetServicePath();
-	QByteArray serviceName = serviceInfoPtr->GetServiceTypeId().toUtf8();
-	
 	if (servicePath.isEmpty()){
 		SendErrorMessage(0,
 						 QString("Unable to get connection collection for service '%1'. Error: Service path is empty").arg(qPrintable(serviceId)),
 						 "CServiceCollectionControllerComp");
 		return nullptr;
 	}
-	
-	return GetConnectionCollection(serviceName, servicePath);
+
+	return GetConnectionCollectionByServicePath(servicePath);
 }
 
 
@@ -521,52 +567,6 @@ bool CServiceCollectionControllerComp::UpdateConnectionCollectionFromService(age
 	connectionCollection.SetTracingLevel(serviceInfo.GetTracingLevel());
 	
 	return true;
-}
-
-
-std::shared_ptr<imtservice::IConnectionCollection> CServiceCollectionControllerComp::GetConnectionCollection(
-	const QByteArray& serviceTypeId,
-	const QString& servicePath) const
-{
-	QFileInfo fileInfo(servicePath);
-	if (!fileInfo.exists()){
-		return nullptr;
-	}
-	
-	QString pluginPath = fileInfo.path() + "/Plugins";
-	
-	istd::TDelPtr<PluginManager>& pluginManagerPtr = m_pluginMap[serviceTypeId];
-	pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), nullptr));
-	
-	if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")){
-		SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(qPrintable(serviceTypeId)), "CServiceCollectionControllerComp");
-		m_pluginMap.remove(serviceTypeId);
-	}
-	
-	if (!m_pluginMap.contains(serviceTypeId)){
-		SendErrorMessage(0,
-						 QString("Unable to get connection collection for service '%1'. Error: Plugin with name '%2' not found")
-							 .arg(qPrintable(serviceTypeId), qPrintable(serviceTypeId)),
-						 "CServiceCollectionControllerComp");
-		return nullptr;
-	}
-	
-	const imtservice::IConnectionCollectionPlugin::IConnectionCollectionFactory* connectionCollectionFactoryPtr = nullptr;
-	for (int index = 0; index < m_pluginMap[serviceTypeId]->m_plugins.count(); index++){
-		imtservice::IConnectionCollectionPlugin* pluginPtr = m_pluginMap[serviceTypeId]->m_plugins[index].pluginPtr;
-		if (pluginPtr != nullptr){
-			connectionCollectionFactoryPtr = pluginPtr->GetConnectionCollectionFactory();
-			
-			break;
-		}
-	}
-	
-	Q_ASSERT(connectionCollectionFactoryPtr != nullptr);
-	
-	std::shared_ptr<imtservice::IConnectionCollection> connectionCollection;
-	connectionCollection.reset(connectionCollectionFactoryPtr->CreateInstance());
-	
-	return connectionCollection;
 }
 
 

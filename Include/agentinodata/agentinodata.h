@@ -8,12 +8,12 @@
 #include <imtservice/CUrlConnectionParam.h>
 #include <imtcom/CServerConnectionInterfaceParam.h>
 #include <imtservice/CUrlConnectionLinkParam.h>
+#include <imtservice/IConnectionCollection.h>
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtBaseTypes.h>
 
 // Agentino includes
 #include <agentinodata/CServiceInfo.h>
-
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
-#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtBaseTypes.h>
 
 
 namespace agentinodata
@@ -47,6 +47,10 @@ bool GetServerConnectionParamFromRepresentation(
 bool GetRepresentationFromServerConnectionParam(
 			const imtcom::CServerConnectionInterfaceParam& serverConnectionParam,
 			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0& serverConnectionRepresentation);
+
+bool GetRepresentationFromConnectionCollection(
+			imtservice::IConnectionCollection& connectionCollection,
+			sdl::agentino::Services::CPluginInfo::V1_0& connectionCollectionRepresentation);
 
 
 } // namespace agentinodata

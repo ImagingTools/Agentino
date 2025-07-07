@@ -490,6 +490,65 @@ bool GetRepresentationFromServerConnectionParam(
 }
 
 
+
+bool GetRepresentationFromConnectionCollection(
+			imtservice::IConnectionCollection& connectionCollection,
+			sdl::agentino::Services::CPluginInfo::V1_0& connectionCollectionRepresentation)
+{
+	const imtbase::ICollectionInfo* collectionInfo = static_cast<const imtbase::ICollectionInfo*>(connectionCollection.GetServerConnectionList());
+	const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
+	if (objectCollection != nullptr){
+		QList<sdl::agentino::Services::CInputConnection::V1_0> inputConnectionList;
+		QList<sdl::agentino::Services::COutputConnection::V1_0> outputConnectionList;
+
+		imtbase::ICollectionInfo::Ids elementIds = collectionInfo->GetElementIds();
+		for (const QByteArray& elementId: elementIds){
+			const imtservice::IServiceConnectionInfo* connectionParamPtr = connectionCollection.GetConnectionMetaInfo(elementId);
+			if (connectionParamPtr == nullptr){
+				continue;
+			}
+
+			QString connectionName = objectCollection->GetElementInfo(elementId, imtbase::IObjectCollection::EIT_NAME).toString();
+			QString connectionDescription = objectCollection->GetElementInfo(elementId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
+
+			QByteArray serviceTypeId = connectionParamPtr->GetServiceTypeId();
+
+			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParamRepresentation;
+			const imtcom::CServerConnectionInterfaceParam& defaultConnectionParam = dynamic_cast<const imtcom::CServerConnectionInterfaceParam&>(connectionParamPtr->GetDefaultInterface());
+			if (!GetRepresentationFromServerConnectionParam(defaultConnectionParam, connectionParamRepresentation)){
+				return false;
+			}
+
+			if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT){
+				sdl::agentino::Services::CInputConnection::V1_0 inputConnection;
+				inputConnection.id = elementId;
+				inputConnection.serviceTypeId = serviceTypeId;
+				inputConnection.connectionName = connectionName;
+				inputConnection.description = connectionDescription;
+				inputConnection.connectionParam = connectionParamRepresentation;
+				inputConnectionList << inputConnection;
+			}
+			else{
+				sdl::agentino::Services::COutputConnection::V1_0 outputConnection;
+				outputConnection.id = elementId;
+				outputConnection.serviceTypeId = serviceTypeId;
+				outputConnection.connectionName = connectionName;
+				outputConnection.description = connectionDescription;
+				outputConnection.connectionParam = connectionParamRepresentation;
+				outputConnectionList << outputConnection;
+			}
+		}
+
+		connectionCollectionRepresentation.inputConnections = inputConnectionList;
+		connectionCollectionRepresentation.outputConnections = outputConnectionList;
+
+		return true;
+	}
+
+	return false;
+}
+
+
 } // namespace agentinodata
 
 

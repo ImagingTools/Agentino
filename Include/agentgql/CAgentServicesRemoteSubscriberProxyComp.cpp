@@ -60,7 +60,7 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 	QUrl url;
 	QByteArray serviceTypeName;
 	
-	std::shared_ptr<imtservice::IConnectionCollection> connectionCollection = m_connectionCollectionProviderCompPtr->GetConnectionCollection(serviceId);
+	std::shared_ptr<imtservice::IConnectionCollection> connectionCollection = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
 	if (connectionCollection == nullptr){
 		return false;
 	}

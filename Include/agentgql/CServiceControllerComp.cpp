@@ -175,13 +175,59 @@ sdl::agentino::Services::CUpdateConnectionUrlResponse CServiceControllerComp::On
 		return response;
 	}
 	
-	std::shared_ptr<imtservice::IConnectionCollection> connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollection(serviceId);
+	std::shared_ptr<imtservice::IConnectionCollection> connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
 	if (connectionCollectionPtr != nullptr){
-		bool ok = connectionCollectionPtr->SetServerConnectionInterface(connectionId,serverConnectionParam);
+		bool ok = connectionCollectionPtr->SetServerConnectionInterface(connectionId, serverConnectionParam);
 		
 		response.Version_1_0->succesful = ok;
 	}
 	
+	return response;
+}
+
+
+sdl::agentino::Services::CPluginInfo CServiceControllerComp::OnLoadPlugin(
+			const sdl::agentino::Services::CLoadPluginGqlRequest& loadPluginRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	sdl::agentino::Services::CPluginInfo response;
+	if (!m_connectionCollectionProviderCompPtr.IsValid()){
+		Q_ASSERT(false);
+		return response;
+	}
+
+	sdl::agentino::Services::LoadPluginRequestArguments arguments = loadPluginRequest.GetRequestedArguments();
+	if (!arguments.input.Version_1_0.has_value()){
+		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
+		return response;
+	}
+
+	if (!arguments.input.Version_1_0.has_value()){
+		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
+		return response;
+	}
+
+	if (!arguments.input.Version_1_0->servicePath.has_value()){
+		errorMessage = QString("Unable to load plugin. Error: Service path is invalid");
+		return response;
+	}
+
+	response.Version_1_0.emplace();
+
+	QString servicePath = *arguments.input.Version_1_0->servicePath;
+	std::shared_ptr<imtservice::IConnectionCollection> connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServicePath(servicePath);
+	if (connectionCollectionPtr != nullptr){
+		sdl::agentino::Services::CPluginInfo::V1_0 pluginRepresentation;
+		if (!agentinodata::GetRepresentationFromConnectionCollection(*connectionCollectionPtr, pluginRepresentation)){
+			errorMessage = QString("Unable to load plugin. Error: Service path is invalid");
+			return response;
+		}
+
+		response.Version_1_0 = std::make_optional(pluginRepresentation);
+		response.Version_1_0->servicePath = servicePath;
+	}
+
 	return response;
 }
 

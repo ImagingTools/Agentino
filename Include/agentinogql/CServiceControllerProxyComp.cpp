@@ -18,31 +18,31 @@ namespace agentinogql
 // protected methods
 
 sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
-	const sdl::agentino::Services::CGetServiceGqlRequest& getServiceRequest,
-	const ::imtgql::CGqlRequest& gqlRequest,
-	QString& errorMessage) const
+			const sdl::agentino::Services::CGetServiceGqlRequest& getServiceRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
 {
 	if (!m_serviceManagerCompPtr.IsValid()){
 		Q_ASSERT_X(false, "Attribute 'ServiceManager' was not set", "CServiceControllerProxyComp");
 		return sdl::agentino::Services::CServiceData();
 	}
-	
+
 	sdl::agentino::Services::GetServiceRequestArguments arguments = getServiceRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
 		return sdl::agentino::Services::CServiceData();
 	}
-	
+
 	const imtgql::CGqlParamObject* inputParamPtr = gqlRequest.GetParamObject("input");
 	Q_ASSERT(inputParamPtr != nullptr);
 	if (inputParamPtr == nullptr){
 		return sdl::agentino::Services::CServiceData();
 	}
-	
+
 	QByteArray serviceId;
 	if (arguments.input.Version_1_0->id){
 		serviceId = *arguments.input.Version_1_0->id;
 	}
-	
+
 	sdl::agentino::Services::CServiceData::V1_0 response;
 	if (!SendModelRequest<
 			sdl::agentino::Services::CServiceData::V1_0,
@@ -50,9 +50,9 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::agentino::Services::CServiceData();
 	}
-	
+
 	QByteArray agentId = gqlRequest.GetHeader("clientid");
-	
+
 	istd::TDelPtr<agentinodata::CServiceInfo> serviceInfoPtr;
 	serviceInfoPtr.SetCastedOrRemove(m_serviceManagerCompPtr->GetService(agentId, serviceId));
 	if (!serviceInfoPtr.IsValid()){
@@ -60,26 +60,26 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::agentino::Services::CServiceData();
 	}
-	
+
 	// Syncronise service with agent
 	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, response, errorMessage)){
 		errorMessage = QString("Unable to get service '%1'. Error: %2").arg(qPrintable(serviceId), errorMessage);
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::agentino::Services::CServiceData();
 	}
-	
+
 	if (!m_serviceManagerCompPtr->SetService(agentId, serviceId, *serviceInfoPtr, "", "", true)){
 		errorMessage = QString("Unable to set service '%1'. Error: Set service to collection failed").arg(qPrintable(serviceId));
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::agentino::Services::CServiceData();
 	}
-	
+
 	if (response.outputConnections){
 		QList<sdl::agentino::Services::COutputConnection::V1_0> outputConnections = *response.outputConnections;
 		for (sdl::agentino::Services::COutputConnection::V1_0& outputConnection : outputConnections){
 			QByteArray id = *outputConnection.id;
 			outputConnection.dependantConnectionList = GetConnectionsModel(id);
-			
+
 			std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr = GetDependantServerConnectionParam(id);
 			if (serverConnectionInterfacePtr != nullptr){
 				sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 urlRepresentation;
@@ -88,39 +88,39 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 				}
 			}
 		}
-		
+
 		response.outputConnections = outputConnections;
 	}
-	
+
 	sdl::agentino::Services::CServiceData retVal;
 	retVal.Version_1_0 = std::make_optional(response);
-	
+
 	return retVal;
 }
 
 
 sdl::imtbase::ImtCollection::CUpdatedNotificationPayload CServiceControllerProxyComp::OnUpdateService(
-	const sdl::agentino::Services::CUpdateServiceGqlRequest& updateServiceRequest,
-	const ::imtgql::CGqlRequest& gqlRequest,
-	QString& errorMessage) const
+			const sdl::agentino::Services::CUpdateServiceGqlRequest& updateServiceRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
 {
 	if (!m_serviceManagerCompPtr.IsValid()){
 		Q_ASSERT_X(false, "Attribute 'ServiceManager' was not set", "CServiceControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CUpdatedNotificationPayload();
 	}
-	
+
 	sdl::imtbase::ImtCollection::CUpdatedNotificationPayload::V1_0 response;
-	
+
 	sdl::agentino::Services::UpdateServiceRequestArguments arguments = updateServiceRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
 		return sdl::imtbase::ImtCollection::CUpdatedNotificationPayload();
 	}
-	
+
 	QByteArray serviceId;
 	if (arguments.input.Version_1_0->id){
 		serviceId = *arguments.input.Version_1_0->id;
 	}
-	
+
 	const imtgql::CGqlParamObject* inputParamPtr = gqlRequest.GetParamObject("input");
 	Q_ASSERT(inputParamPtr != nullptr);
 
@@ -137,18 +137,18 @@ sdl::imtbase::ImtCollection::CUpdatedNotificationPayload CServiceControllerProxy
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CUpdatedNotificationPayload();
 	}
-	
+
 	istd::TDelPtr<agentinodata::CServiceInfo> serviceInfoPtr;
 	serviceInfoPtr.SetCastedOrRemove(m_serviceManagerCompPtr->GetService(agentId, serviceId));
 	if (!serviceInfoPtr.IsValid()){
 		return sdl::imtbase::ImtCollection::CUpdatedNotificationPayload();
 	}
-	
+
 	// Обновление всех сервисов зависимых от портов текущего
 	sdl::agentino::Services::CServiceData::V1_0 currentServiceData;
 	if (agentinodata::GetRepresentationFromService(currentServiceData, *serviceInfoPtr.GetPtr())){
 		QByteArrayList connectionIds = GetChangedConnectionUrl(currentServiceData, serviceData);
-		
+
 		for (const QByteArray& connectionId : connectionIds){
 			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 newConnectionParam = GetServerConnectionParam(serviceData, connectionId);
 			QByteArrayList dependentServiceIds = GetServiceIdsByDependantId(connectionId);
@@ -157,75 +157,74 @@ sdl::imtbase::ImtCollection::CUpdatedNotificationPayload CServiceControllerProxy
 			}
 		}
 	}
-	
+
 	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr.GetPtr(), serviceData, errorMessage)){
 		errorMessage = QString("Unable to get service from representation");
-
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 
 		return sdl::imtbase::ImtCollection::CUpdatedNotificationPayload();
 	}
-	
+
 	QString serviceName;
 	QString serviceDescription;
 	
 	if (!m_serviceManagerCompPtr->SetService(agentId, serviceId, *serviceInfoPtr.PopPtr(), serviceName, serviceDescription)){
 		return sdl::imtbase::ImtCollection::CUpdatedNotificationPayload();
 	}
-	
+
 	sdl::imtbase::ImtCollection::CUpdatedNotificationPayload retVal;
 	retVal.Version_1_0 = std::make_optional(response);
-	
+
 	return retVal;
 }
 
 
 sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyComp::OnAddService(
-	const sdl::agentino::Services::CAddServiceGqlRequest& addServiceRequest,
-	const ::imtgql::CGqlRequest& gqlRequest,
-	QString& errorMessage) const
+			const sdl::agentino::Services::CAddServiceGqlRequest& addServiceRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
 {
 	if (!m_serviceManagerCompPtr.IsValid()){
 		Q_ASSERT_X(false, "Attribute 'ServiceManager' was not set", "CServiceControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CAddedNotificationPayload();
 	}
-	
+
 	sdl::imtbase::ImtCollection::CAddedNotificationPayload::V1_0 response;
-	
+
 	sdl::agentino::Services::AddServiceRequestArguments arguments = addServiceRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
 		return sdl::imtbase::ImtCollection::CAddedNotificationPayload();
 	}
-	
+
 	QByteArray serviceId;
 	if (arguments.input.Version_1_0->id){
 		serviceId = *arguments.input.Version_1_0->id;
 	}
-	
+
 	const imtgql::CGqlParamObject* inputParamPtr = gqlRequest.GetParamObject("input");
 	Q_ASSERT(inputParamPtr != nullptr);
-	
+
 	QByteArray agentId = gqlRequest.GetHeader("clientid");
-	
+
 	if (!SendModelRequest<
 			sdl::imtbase::ImtCollection::CAddedNotificationPayload::V1_0,
 			sdl::imtbase::ImtCollection::CAddedNotificationPayload>(gqlRequest, response, errorMessage)){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CAddedNotificationPayload();
 	}
-	
+
 	SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);
-	
+
 	sdl::agentino::Services::CServiceData::V1_0 serviceData;
 	if (arguments.input.Version_1_0->item){
 		serviceData = *arguments.input.Version_1_0->item;
 	}
-	
+
 	// We take the document from the agent immediately after adding it to download the connection information.
 	sdl::agentino::Services::GetServiceRequestArguments getArguments;
 	getArguments.input.Version_1_0.emplace();
 	getArguments.input.Version_1_0->id = serviceId;
-	
+
 	imtgql::CGqlRequest getGqlRequest;
 	getGqlRequest.SetGqlContext(dynamic_cast<imtgql::IGqlContext*>(gqlRequest.GetRequestContext()->CloneMe()));
 	if (sdl::agentino::Services::CGetServiceGqlRequest::SetupGqlRequest(getGqlRequest, getArguments)){
@@ -240,7 +239,7 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 
 	istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInfoPtr;
 	serviceInfoPtr.SetPtr(new agentinodata::CIdentifiableServiceInfo);
-	
+
 	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, serviceData, errorMessage)){
 		errorMessage = QString("Unable to get service from representation");
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
@@ -251,46 +250,45 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 	
 	QString serviceName = serviceInfoPtr->GetServiceName();
 	QString serviceDescription = serviceInfoPtr->GetServiceDescription();
-	
+
 	if (!m_serviceManagerCompPtr->AddService(agentId, *serviceInfoPtr.PopPtr(), serviceId, serviceName, serviceDescription)){
 		errorMessage = QString("Unable to add service '%1'").arg(qPrintable(serviceId));
 		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CAddedNotificationPayload();
 	}
-	
+
 	sdl::imtbase::ImtCollection::CAddedNotificationPayload retVal;
 	retVal.Version_1_0 = std::make_optional(response);
-	
+
 	return retVal;
 }
 
 
 // reimplemented (sdl::agentino::Services::CGraphQlHandlerCompBase)
 
-
 sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnStartService(
-	const sdl::agentino::Services::CStartServiceGqlRequest& startServiceRequest,
-	const ::imtgql::CGqlRequest& gqlRequest,
-	QString& errorMessage) const
+			const sdl::agentino::Services::CStartServiceGqlRequest& startServiceRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
 {
 	sdl::agentino::Services::CServiceStatusResponse::V1_0 response;
-	
+
 	response.status = sdl::agentino::Services::ServiceStatus::UNDEFINED;
-	
+
 	sdl::agentino::Services::StartServiceRequestArguments arguments = startServiceRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
 		return sdl::agentino::Services::CServiceStatusResponse();
 	}
-	
+
 	QByteArray serviceId;
 	if (arguments.input.Version_1_0->serviceId){
 		serviceId = *arguments.input.Version_1_0->serviceId;
 	}
-	
+
 	istd::CChangeGroup changeGroup(m_serviceStatusCollectionCompPtr.GetPtr());
-	
+
 	SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_STARTING);
-	
+
 	if (!SendModelRequest<
 			sdl::agentino::Services::CServiceStatusResponse::V1_0,
 			sdl::agentino::Services::CServiceStatusResponse>(gqlRequest, response, errorMessage)){
@@ -299,40 +297,40 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnS
 
 		return sdl::agentino::Services::CServiceStatusResponse();
 	}
-	
+
 	if (response.status.has_value()){
 		SetServiceStatus(serviceId, *response.status);
 	}
-	
+
 	sdl::agentino::Services::CServiceStatusResponse retVal;
 	retVal.Version_1_0 = std::make_optional(response);
-	
+
 	return retVal;
 }
 
 
 sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnStopService(
-	const sdl::agentino::Services::CStopServiceGqlRequest& stopServiceRequest,
-	const ::imtgql::CGqlRequest& gqlRequest,
-	QString& errorMessage) const
+			const sdl::agentino::Services::CStopServiceGqlRequest& stopServiceRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
 {
 	sdl::agentino::Services::CServiceStatusResponse::V1_0 response;
 	response.status = sdl::agentino::Services::ServiceStatus::UNDEFINED;
-	
+
 	sdl::agentino::Services::StopServiceRequestArguments arguments = stopServiceRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
 		return sdl::agentino::Services::CServiceStatusResponse();
 	}
-	
+
 	QByteArray serviceId;
 	if (arguments.input.Version_1_0->serviceId){
 		serviceId = *arguments.input.Version_1_0->serviceId;
 	}
-	
+
 	istd::CChangeGroup changeGroup(m_serviceStatusCollectionCompPtr.GetPtr());
-	
+
 	SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_STOPPING);
-	
+
 	if (!SendModelRequest<
 			sdl::agentino::Services::CServiceStatusResponse::V1_0,
 			sdl::agentino::Services::CServiceStatusResponse>(gqlRequest, response, errorMessage)){
@@ -344,26 +342,26 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnS
 	if (response.status.has_value()){
 		SetServiceStatus(serviceId, *response.status);
 	}
-	
+
 	sdl::agentino::Services::CServiceStatusResponse retVal;
 	retVal.Version_1_0 = std::make_optional(response);
-	
+
 	return retVal;
 }
 
 
 sdl::imtbase::ImtCollection::CRemovedNotificationPayload CServiceControllerProxyComp::OnServicesRemove(
-	const sdl::agentino::Services::CServicesRemoveGqlRequest& removeServiceRequest,
-	const ::imtgql::CGqlRequest& gqlRequest,
-	QString& errorMessage) const
+			const sdl::agentino::Services::CServicesRemoveGqlRequest& removeServiceRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
 {
 	sdl::imtbase::ImtCollection::CRemovedNotificationPayload::V1_0 response;
-	
+
 	if (!m_serviceManagerCompPtr.IsValid()){
 		Q_ASSERT_X(false, "Attribute 'ServiceManager' was not set", "CServiceControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CRemovedNotificationPayload();
 	}
-	
+
 	sdl::agentino::Services::ServicesRemoveRequestArguments arguments = removeServiceRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
 		return sdl::imtbase::ImtCollection::CRemovedNotificationPayload();
@@ -376,78 +374,110 @@ sdl::imtbase::ImtCollection::CRemovedNotificationPayload CServiceControllerProxy
 
 	const imtgql::CGqlParamObject* inputParamPtr = gqlRequest.GetParamObject("input");
 	Q_ASSERT(inputParamPtr != nullptr);
-	
+
 	QByteArray agentId = gqlRequest.GetHeader("clientid");
-	
+
 	if (!SendModelRequest<
 			sdl::imtbase::ImtCollection::CRemovedNotificationPayload::V1_0,
 			sdl::imtbase::ImtCollection::CRemovedNotificationPayload>(gqlRequest, response, errorMessage)){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CRemovedNotificationPayload();
 	}
-	
+
 	if (!m_serviceManagerCompPtr->RemoveServices(agentId, imtbase::ICollectionInfo::Ids(serviceIds.begin(), serviceIds.end()))){
 		SendErrorMessage(
 			0,
 			QString("Unable to remove service '%1' from agent '%2'").arg(qPrintable(serviceIds.join(';')), qPrintable(agentId)),
 			"CServiceControllerProxyComp");
 	}
-	
+
 	sdl::imtbase::ImtCollection::CRemovedNotificationPayload retVal;
 	retVal.Version_1_0 = std::make_optional(response);
-	
+
 	return retVal;
 }
 
 
 sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnGetServiceStatus(
-	const sdl::agentino::Services::CGetServiceStatusGqlRequest& getServiceStatusRequest,
-	const ::imtgql::CGqlRequest& gqlRequest,
-	QString& errorMessage) const
+			const sdl::agentino::Services::CGetServiceStatusGqlRequest& getServiceStatusRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
 {
 	sdl::agentino::Services::CServiceStatusResponse::V1_0 response;
-	
+
 	sdl::agentino::Services::GetServiceStatusRequestArguments arguments = getServiceStatusRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
 		return sdl::agentino::Services::CServiceStatusResponse();
 	}
-	
-	QByteArray serviceId;
-	if (arguments.input.Version_1_0->id){
-		serviceId = *arguments.input.Version_1_0->id;
-	}
-	
+
 	if (!SendModelRequest<
 			sdl::agentino::Services::CServiceStatusResponse::V1_0,
 			sdl::agentino::Services::CServiceStatusResponse>(gqlRequest, response, errorMessage)){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::agentino::Services::CServiceStatusResponse();
 	}
-	
+
 	sdl::agentino::Services::CServiceStatusResponse retVal;
 	retVal.Version_1_0 = std::make_optional(response);
-	
+
 	return retVal;
 }
 
 
 sdl::agentino::Services::CUpdateConnectionUrlResponse CServiceControllerProxyComp::OnUpdateConnectionUrl(
-	const sdl::agentino::Services::CUpdateConnectionUrlGqlRequest& /*updateConnectionUrlRequest*/,
-	const ::imtgql::CGqlRequest& /*gqlRequest*/,
-	QString& /*errorMessage*/) const
+			const sdl::agentino::Services::CUpdateConnectionUrlGqlRequest& /*updateConnectionUrlRequest*/,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& /*errorMessage*/) const
 {
 	return sdl::agentino::Services::CUpdateConnectionUrlResponse();
+}
+
+
+sdl::agentino::Services::CPluginInfo CServiceControllerProxyComp::OnLoadPlugin(
+			const sdl::agentino::Services::CLoadPluginGqlRequest& loadPluginRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
+{
+	sdl::agentino::Services::CPluginInfo::V1_0 response;
+
+	sdl::agentino::Services::LoadPluginRequestArguments arguments = loadPluginRequest.GetRequestedArguments();
+	if (!arguments.input.Version_1_0.has_value()){
+		return sdl::agentino::Services::CPluginInfo();
+	}
+
+	if (!SendModelRequest<
+			sdl::agentino::Services::CPluginInfo::V1_0,
+			sdl::agentino::Services::CPluginInfo>(gqlRequest, response, errorMessage)){
+		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
+		return sdl::agentino::Services::CPluginInfo();
+	}
+
+	// Update dependant connections elements
+	if (response.outputConnections){
+		QList<sdl::agentino::Services::COutputConnection::V1_0> outputConnections = *response.outputConnections;
+		for (sdl::agentino::Services::COutputConnection::V1_0& outputConnection : outputConnections){
+			QByteArray id = *outputConnection.id;
+			outputConnection.dependantConnectionList = GetConnectionsModel(id);
+		}
+
+		response.outputConnections = outputConnections;
+	}
+
+	sdl::agentino::Services::CPluginInfo retVal;
+	retVal.Version_1_0 = std::make_optional(response);
+
+	return retVal;
 }
 
 
 // reimplemented (sdl::agentino::Services::CGraphQlHandlerCompBase)
 
 imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
-	const imtgql::CGqlRequest& gqlRequest,
-	QString& errorMessage) const
+			const imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
 {
 	QByteArray commandId = gqlRequest.GetCommandId();
-	
+
 	if (sdl::agentino::Services::CGetServiceGqlRequest::GetCommandId() == commandId){
 		return CreateResponse<
 			sdl::agentino::Services::CGetServiceGqlRequest,
@@ -508,7 +538,17 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 				return OnServicesRemove(req, gqlReq, err);
 			});
 	}
-	
+	else if (sdl::agentino::Services::CLoadPluginGqlRequest::GetCommandId() == commandId){
+		return CreateResponse<
+			sdl::agentino::Services::CLoadPluginGqlRequest,
+			sdl::agentino::Services::CPluginInfo>(
+			gqlRequest,
+			errorMessage,
+			[&](const auto& req, const auto& gqlReq, QString& err){
+				return OnLoadPlugin(req, gqlReq, err);
+			});
+	}
+
 	return nullptr;
 }
 
@@ -517,32 +557,32 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 
 template<class SdlGqlRequest, class SdlResponse>
 imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateResponse(
-	const imtgql::CGqlRequest& gqlRequest,
-	QString& errorMessage,
-	std::function<SdlResponse(const SdlGqlRequest&, const imtgql::CGqlRequest&, QString&)> func) const
+			const imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage,
+			std::function<SdlResponse(const SdlGqlRequest&, const imtgql::CGqlRequest&, QString&)> func) const
 {
 	QByteArray commandId = gqlRequest.GetCommandId();
-	
+
 	SdlGqlRequest serviceGqlRequest(gqlRequest, true);
-	
+
 	Q_ASSERT(serviceGqlRequest.IsValid());
 	if (!serviceGqlRequest.IsValid()){
 		return nullptr;
 	}
-	
+
 	SdlResponse retVal = func(serviceGqlRequest, gqlRequest, errorMessage);
 	if (!errorMessage.isEmpty()){
 		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 		return nullptr;
 	}
-	
+
 	istd::TDelPtr<imtbase::CTreeItemModel> resultModelPtr(new imtbase::CTreeItemModel);
 	if (!retVal.WriteToModel(*resultModelPtr.GetPtr())){
 		errorMessage = QString("Unable to create response for command '%1'. Error: Writing to tree model failed").arg(qPrintable(commandId));
 		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 		return nullptr;
 	}
-	
+
 	return resultModelPtr.PopPtr();
 }
 
@@ -553,14 +593,14 @@ bool CServiceControllerProxyComp::SetServiceStatus(const QByteArray& serviceId, 
 		Q_ASSERT_X(false, "Attribute 'ServiceStatusCollection' was not set", "CServiceStatusControllerProxyComp");
 		return false;
 	}
-	
+
 	QByteArrayList serviceIds = m_serviceStatusCollectionCompPtr->GetElementIds();
 	if (serviceIds.contains(serviceId)){
 		imtbase::IObjectCollection::DataPtr dataPtr;
 		if (m_serviceStatusCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
 			agentinodata::CServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::CServiceStatusInfo*>(dataPtr.GetPtr());
 			serviceStatusInfoPtr->SetServiceStatus(status);
-			
+
 			if (!m_serviceStatusCollectionCompPtr->SetObjectData(serviceId, *serviceStatusInfoPtr)){
 				return false;
 			}
@@ -569,16 +609,16 @@ bool CServiceControllerProxyComp::SetServiceStatus(const QByteArray& serviceId, 
 	else{
 		istd::TDelPtr<agentinodata::CServiceStatusInfo> serviceStatusInfoPtr;
 		serviceStatusInfoPtr.SetPtr(new agentinodata::CServiceStatusInfo);
-		
+
 		serviceStatusInfoPtr->SetServiceStatus(status);
 		serviceStatusInfoPtr->SetServiceId(serviceId);
-		
+
 		QByteArray retVal = m_serviceStatusCollectionCompPtr->InsertNewObject("ServiceStatusInfo", "", "", serviceStatusInfoPtr.PopPtr(), serviceId);
 		if (retVal.isEmpty()){
 			return false;
 		}
 	}
-	
+
 	return true;
 }
 
@@ -598,19 +638,19 @@ bool CServiceControllerProxyComp::SetServiceStatus(const QByteArray& serviceId, 
 	else if (status == sdl::agentino::Services::ServiceStatus::STOPPING){
 		serviceStatus = agentinodata::IServiceStatusInfo::SS_STOPPING;
 	}
-	
+
 	return SetServiceStatus(serviceId, serviceStatus);
 }
 
 
 QList<sdl::agentino::Services::CDependantConnectionInfo::V1_0> CServiceControllerProxyComp::GetConnectionsModel(
-	const QByteArray& connectionUsageId) const
+			const QByteArray& connectionUsageId) const
 {
 	QList<sdl::agentino::Services::CDependantConnectionInfo::V1_0> retVal;
 	if (!m_agentCollectionCompPtr.IsValid()){
 		return retVal;
 	}
-	
+
 	imtbase::ICollectionInfo::Ids elementIds = m_agentCollectionCompPtr->GetElementIds();
 	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
 		agentinodata::CAgentInfo* agentInfoPtr = nullptr;
@@ -618,16 +658,16 @@ QList<sdl::agentino::Services::CDependantConnectionInfo::V1_0> CServiceControlle
 		if (m_agentCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
 			agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(agentDataPtr.GetPtr());
 		}
-		
+
 		if (agentInfoPtr == nullptr){
 			continue;
 		}
-		
+
 		imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 		if (serviceCollectionPtr == nullptr){
 			continue;
 		}
-		
+
 		imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
 		for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
 			agentinodata::IServiceInfo* serviceInfoPtr = nullptr;
@@ -635,17 +675,17 @@ QList<sdl::agentino::Services::CDependantConnectionInfo::V1_0> CServiceControlle
 			if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
 				serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
 			}
-			
+
 			if (serviceInfoPtr == nullptr){
 				continue;
 			}
-			
+
 			// Get Connections
 			imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
 			if (connectionCollectionPtr == nullptr){
 				continue;
 			}
-			
+
 			imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
 			for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
 				imtservice::CUrlConnectionParam* connectionParamPtr = nullptr;
@@ -653,11 +693,11 @@ QList<sdl::agentino::Services::CDependantConnectionInfo::V1_0> CServiceControlle
 				if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
 					connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
 				}
-				
+
 				if (connectionParamPtr == nullptr){
 					continue;
 				}
-				
+
 				imtservice::IServiceConnectionInfo::ConnectionType connectionType = connectionParamPtr->GetConnectionType();
 				if (connectionType == imtservice::IServiceConnectionInfo::CT_INPUT && connectionElementId == connectionUsageId){
 					sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 sdlRepresentation;
@@ -676,13 +716,13 @@ QList<sdl::agentino::Services::CDependantConnectionInfo::V1_0> CServiceControlle
 						dependantConnectionInfo.connectionParam = sdlRepresentation;
 
 						retVal << dependantConnectionInfo;
-						
+
 						QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
-						
+
 						for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
 							sdl::agentino::Services::CDependantConnectionInfo::V1_0 incomingConnectionInfo;
 							incomingConnectionInfo.id = incomingConnection.id;
-							
+
 							QString incomingHost = incomingConnection.host;
 							int port = incomingConnection.httpPort;
 							incomingConnectionInfo.name = incomingHost + "/" + QString::number(port);
@@ -701,19 +741,19 @@ QList<sdl::agentino::Services::CDependantConnectionInfo::V1_0> CServiceControlle
 			}
 		}
 	}
-	
+
 	return retVal;
 }
 
 
 bool CServiceControllerProxyComp::GetConnectionObjectData(
-	const imtbase::IObjectCollection::Id& connectionId,
-	imtbase::IObjectCollection::DataPtr& connectionDataPtr) const
+			const imtbase::IObjectCollection::Id& connectionId,
+			imtbase::IObjectCollection::DataPtr& connectionDataPtr) const
 {
 	if (connectionId.isEmpty()){
 		return false;
 	}
-	
+
 	if (m_agentCollectionCompPtr.IsValid()){
 		imtbase::ICollectionInfo::Ids elementIds = m_agentCollectionCompPtr->GetElementIds();
 		for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
@@ -748,7 +788,7 @@ bool CServiceControllerProxyComp::GetConnectionObjectData(
 			}
 		}
 	}
-	
+
 	return false;
 }
 
@@ -757,10 +797,10 @@ void CServiceControllerProxyComp::UpdateUrlFromDependantConnection(sdl::agentino
 {
 	if (serviceData.outputConnections){
 		QList<sdl::agentino::Services::COutputConnection::V1_0> connections = *serviceData.outputConnections;
-		
+
 		for (int i = 0; i < connections.size(); i++){
 			sdl::agentino::Services::COutputConnection::V1_0 connection = connections[i];
-			
+
 			QByteArray dependantConnectionId;
 			if (connection.dependantConnectionId){
 				dependantConnectionId = (*connection.dependantConnectionId).toUtf8();
@@ -786,7 +826,7 @@ std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> CServiceControlle
 		Q_ASSERT_X(false, "Attribute 'AgentCollection' was not set", "CServiceControllerProxyComp");
 		return nullptr;
 	}
-	
+
 	imtbase::ICollectionInfo::Ids agentIds = m_agentCollectionCompPtr->GetElementIds();
 	for (const imtbase::ICollectionInfo::Id& agentId: agentIds){
 		imtbase::IObjectCollection::DataPtr agentDataPtr;
@@ -795,12 +835,12 @@ std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> CServiceControlle
 			if (agentInfoPtr == nullptr){
 				continue;
 			}
-			
+
 			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 			if (serviceCollectionPtr == nullptr){
 				continue;
 			}
-			
+
 			imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
 			for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
 				imtbase::IObjectCollection::DataPtr serviceDataPtr;
@@ -809,12 +849,12 @@ std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> CServiceControlle
 					if (serviceInfoPtr == nullptr){
 						continue;
 					}
-					
+
 					imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
 					if (connectionCollectionPtr == nullptr){
 						continue;
 					}
-					
+
 					imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
 					for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
 						imtbase::IObjectCollection::DataPtr connectionParamDataPtr;
@@ -823,13 +863,13 @@ std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> CServiceControlle
 							if (connectionParamPtr == nullptr){
 								break;
 							}
-							
+
 							if (connectionElementId == dependantId){
 								std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr;
 								serverConnectionInterfacePtr.reset(dynamic_cast<imtcom::CServerConnectionInterfaceParam*>(connectionParamPtr->CloneMe()));
 								return serverConnectionInterfacePtr;
 							}
-							
+
 							// QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
 							// for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
 							// 	if (incomingConnection.id == dependantId){
@@ -842,18 +882,18 @@ std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> CServiceControlle
 			}
 		}
 	}
-	
+
 	return nullptr;
 }
 
 
 sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 CServiceControllerProxyComp::GetServerConnectionParam(
-	const sdl::agentino::Services::CServiceData::V1_0& serviceData,
-	const QByteArray& connectionId) const
+			const sdl::agentino::Services::CServiceData::V1_0& serviceData,
+			const QByteArray& connectionId) const
 {
 	if (serviceData.inputConnections){
 		QList<sdl::agentino::Services::CInputConnection::V1_0> connections = *serviceData.inputConnections;
-		
+
 		for (const sdl::agentino::Services::CInputConnection::V1_0& connection : connections){
 			if (connectionId == *connection.id){
 				return *connection.connectionParam;
@@ -866,15 +906,15 @@ sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 CServiceControllerProxy
 
 
 QByteArrayList CServiceControllerProxyComp::GetChangedConnectionUrl(
-	const sdl::agentino::Services::CServiceData::V1_0& serviceData1,
-	const sdl::agentino::Services::CServiceData::V1_0& serviceData2) const
+			const sdl::agentino::Services::CServiceData::V1_0& serviceData1,
+			const sdl::agentino::Services::CServiceData::V1_0& serviceData2) const
 {
 	QByteArrayList retVal;
-	
+
 	if (serviceData1.inputConnections && serviceData2.inputConnections){
 		QList<sdl::agentino::Services::CInputConnection::V1_0> connections1 = *serviceData1.inputConnections;
 		QList<sdl::agentino::Services::CInputConnection::V1_0> connections2 = *serviceData2.inputConnections;
-		
+
 		for (int i = 0; i < connections1.size(); i++){
 			sdl::agentino::Services::CInputConnection::V1_0 connection1 = connections1[i];
 			sdl::agentino::Services::CInputConnection::V1_0 connection2 = connections2[i];
@@ -889,7 +929,7 @@ QByteArrayList CServiceControllerProxyComp::GetChangedConnectionUrl(
 			}
 		}
 	}
-	
+
 	return retVal;
 }
 
@@ -905,12 +945,12 @@ QByteArrayList CServiceControllerProxyComp::GetServiceIdsByDependantId(const QBy
 			if (agentInfoPtr == nullptr){
 				continue;
 			}
-			
+
 			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 			if (serviceCollectionPtr == nullptr){
 				continue;
 			}
-			
+
 			imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
 			for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
 				imtbase::IObjectCollection::DataPtr serviceDataPtr;
@@ -919,13 +959,12 @@ QByteArrayList CServiceControllerProxyComp::GetServiceIdsByDependantId(const QBy
 					if (serviceInfoPtr == nullptr){
 						continue;
 					}
-					
-					
+
 					imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
 					if (connectionCollectionPtr == nullptr){
 						continue;
 					}
-					
+
 					imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
 					for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
 						imtbase::IObjectCollection::DataPtr connectionParamDataPtr;
@@ -944,30 +983,30 @@ QByteArrayList CServiceControllerProxyComp::GetServiceIdsByDependantId(const QBy
 			}
 		}
 	}
-	
+
 	return retVal;
 }
 
 
 bool CServiceControllerProxyComp::UpdateConnectionForService(
-	const QByteArray& serviceId,
-	const QByteArray& agentId,
-	const QByteArray& connectionId,
-	const sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0& connectionParam) const
+			const QByteArray& serviceId,
+			const QByteArray& agentId,
+			const QByteArray& connectionId,
+			const sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0& connectionParam) const
 {
 	sdl::agentino::Services::UpdateConnectionUrlRequestArguments arguments;
 	arguments.input.Version_1_0 = sdl::agentino::Services::CConnectionUrlInput::V1_0();
 	arguments.input.Version_1_0->serviceId = serviceId;
 	arguments.input.Version_1_0->connectionId = connectionId;
 	arguments.input.Version_1_0->connectionParam = connectionParam;
-	
+
 	imtgql::CGqlRequest gqlRequest;
 	imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
 	imtgql::IGqlContext::Headers headers;
 	headers.insert("clientid", agentId);
 	gqlContextPtr->SetHeaders(headers);
 	gqlRequest.SetGqlContext(gqlContextPtr);
-	
+
 	if (!sdl::agentino::Services::CUpdateConnectionUrlGqlRequest::SetupGqlRequest(gqlRequest, arguments)){
 		return false;
 	}

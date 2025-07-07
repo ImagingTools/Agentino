@@ -19,7 +19,11 @@ ViewBase {
 		tabPanel.addTab("General", qsTr("General"), mainEditorComp);
 	}
 	
+	signal loadPlugin()
+	
 	property bool serviceRunning: false
+	property bool pluginLoaded: false
+	property string pluginServicePath: ""
 	
 	property string serviceTypeId: serviceData ? serviceData.m_serviceTypeId : ""
 	onServiceTypeIdChanged: {
@@ -32,6 +36,9 @@ ViewBase {
 	onServiceDataChanged: {
 		if (serviceData){
 			serviceRunning = serviceData.m_status === "running"
+			if (pluginServicePath === ""){
+				pluginServicePath = serviceData.m_path
+			}
 		}
 	}
 	
@@ -54,7 +61,7 @@ ViewBase {
 		anchors.fill: parent;
 		currentIndex: 0;
 	}
-	
+
 	function getInputConnection(){
 		let inputConnections = serviceEditorContainer.serviceData.m_inputConnections
 		if (inputConnections){
@@ -282,6 +289,17 @@ ViewBase {
 						
 						onEditingFinished: {
 							serviceEditorContainer.doUpdateModel();
+
+							let path = serviceEditorContainer.serviceData.m_path
+							if (path === serviceEditorContainer.pluginServicePath){
+								serviceEditorContainer.pluginLoaded = true
+							}
+							else{
+								if (serviceEditorContainer.pluginLoaded){
+									serviceEditorContainer.pluginLoaded = false
+									ModalDialogManager.showWarningDialog(qsTr("You have changed the Path for which the plugin was loaded, reload the plugin"))
+								}
+							}
 						}
 						
 						KeyNavigation.tab: argumentsInput;
@@ -400,6 +418,27 @@ ViewBase {
 				}
 				
 				GroupHeaderView {
+					title: qsTr("Plugin information")
+					width: parent.width
+					groupView: pluginGroup
+				}
+				
+				GroupElementView {
+					id: pluginGroup
+					width: parent.width
+					ButtonElementView {
+						id: loadPluginButton
+						name: qsTr("Load Plugin")
+						text: qsTr("Load")
+						description: buttonEnabled ? qsTr("Click if you want to load the plugin data") : qsTr("Plugin succesfully loaded")
+						buttonEnabled: !serviceEditorContainer.pluginLoaded
+						onClicked: {
+							serviceEditorContainer.loadPlugin()
+						}
+					}
+				}
+
+				GroupHeaderView {
 					title: qsTr("Input Connection")
 					width: parent.width
 					groupView: inputConnectionEditor
@@ -506,6 +545,10 @@ ViewBase {
 							name: qsTr("Available Connections")
 							description: table && table.elementsCount == 0 ? qsTr("No available connections") : qsTr("Select one of the available connections")
 							onTableChanged: {
+								if (!model.item){
+									return
+								}
+
 								if (table){
 									table.isMultiCheckable = false
 									table.checkable = true
@@ -532,6 +575,10 @@ ViewBase {
 								
 								TableCellTextDelegate{
 									function getValue(){
+										if (!outputDelegate.modelData){
+											return ""
+										}
+
 										let connectionItem = outputDelegate.modelData.m_dependantConnectionList.get(rowIndex).item.m_connectionParam
 										if (connectionItem){
 											return connectionItem.m_host
@@ -547,6 +594,10 @@ ViewBase {
 								
 								TableCellTextDelegate{
 									function getValue(){
+										if (!outputDelegate.modelData){
+											return ""
+										}
+										
 										let connectionItem = outputDelegate.modelData.m_dependantConnectionList.get(rowIndex).item.m_connectionParam
 										if (connectionItem){
 											return connectionItem.m_httpPort
@@ -562,6 +613,10 @@ ViewBase {
 								
 								TableCellTextDelegate{
 									function getValue(){
+										if (!outputDelegate.modelData){
+											return ""
+										}
+										
 										let connectionItem = outputDelegate.modelData.m_dependantConnectionList.get(rowIndex).item.m_connectionParam
 										if (connectionItem){
 											return connectionItem.m_wsPort
@@ -574,7 +629,7 @@ ViewBase {
 						}
 						
 						function updateGui(){
-							if (!tableElementView.table){
+							if (!tableElementView.table || !model.item){
 								return
 							}
 
@@ -595,7 +650,7 @@ ViewBase {
 						}
 						
 						function updateModel(){
-							if (tableElementView.table){
+							if (tableElementView.table || !model.item){
 								let indexes = tableElementView.table.getCheckedItems();
 								if (indexes.length > 0){
 									let index = indexes[0]

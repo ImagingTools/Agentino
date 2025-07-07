@@ -119,6 +119,16 @@ type ServiceStatusResponse {
 	status: ServiceStatus!
 }
 
+type LoadPluginInput {
+	servicePath: String!
+}
+
+type PluginInfo {
+	servicePath: String!
+	inputConnections: [InputConnection]
+	outputConnections: [OutputConnection]
+}
+
 type Query {
 	ServicesList (input: ServiceListInput): ServiceListPayload!
 	GetService (input: InputId): ServiceData!
@@ -126,6 +136,7 @@ type Query {
 }
 
 type Mutation {
+	LoadPlugin (input: LoadPluginInput): PluginInfo!
 	UpdateService (input: ServiceDataInput): UpdatedNotificationPayload!
 	AddService (input: ServiceDataInput): AddedNotificationPayload!
 	

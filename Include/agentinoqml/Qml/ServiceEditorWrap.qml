@@ -14,6 +14,16 @@ ServiceEditor {
 	property string clientId
 	property string serviceId: serviceEditor.serviceData ? serviceEditor.serviceData.m_id : ""
 	property var documentManager
+	
+	onLoadPlugin: {
+		serviceEditor.pluginLoaded = false
+		if (!serviceEditor.serviceData){
+			return
+		}
+
+		loadPluginInput.m_servicePath = serviceEditor.serviceData.m_path
+		loadPluginRequestSender.send(loadPluginInput)
+	}
 
 	commandsDelegateComp: Component {ViewCommandsDelegateBase {
 			view: serviceEditor;
@@ -78,6 +88,8 @@ ServiceEditor {
 				documentManager.setBlockUndoManager(documentId, false)
 				documentManager.clearUndoManager(documentId)
 				serviceEditor.doUpdateGui()
+				serviceEditor.pluginServicePath = serviceEditor.serviceData.m_path
+				serviceEditor.pluginLoaded = true
 			}
 		}
 	}
@@ -97,8 +109,11 @@ ServiceEditor {
 			if (data.containsKey("serviceid")){
 				let serviceId = data.getData("serviceid")
 				if (serviceId === serviceEditor.serviceData.m_id){
-					serviceDocumentDataController.documentId = serviceId
-					serviceDocumentDataController.updateDocumentModel()
+					if (serviceEditor.serviceData.m_inputConnections.count == 0){
+						serviceEditor.pluginLoaded = false
+						serviceDocumentDataController.documentId = serviceId
+						serviceDocumentDataController.updateDocumentModel()
+					}
 				}
 			}
 		}
@@ -143,6 +158,42 @@ ServiceEditor {
 					serviceEditor.commandsController.setCommandIsEnabled("Stop", status === "RUNNING")
 				}
 				
+			}
+		}
+		
+		function getHeaders(){
+			return serviceEditor.getHeaders()
+		}
+	}
+	
+	LoadPluginInput {
+		id: loadPluginInput
+	}
+	
+	GqlSdlRequestSender {
+		id: loadPluginRequestSender
+		gqlCommandId: AgentinoServicesSdlCommandIds.s_loadPlugin
+		requestType: 1
+		sdlObjectComp: Component {
+			PluginInfo {
+				onFinished: {
+					if (!serviceEditor.serviceData){
+						return
+					}
+					let documentManager = serviceEditor.documentManager
+					if (!documentManager){
+						return
+					}
+
+					documentManager.setBlockUndoManager(serviceEditor.serviceId, true)
+					serviceEditor.serviceData.m_inputConnections = m_inputConnections.copyMe()
+					serviceEditor.serviceData.m_outputConnections = m_outputConnections.copyMe()
+					documentManager.setBlockUndoManager(serviceEditor.serviceId, false)
+					serviceEditor.doUpdateGui()
+					
+					serviceEditor.pluginServicePath = serviceEditor.serviceData.m_path
+					serviceEditor.pluginLoaded = true
+				}
 			}
 		}
 		
