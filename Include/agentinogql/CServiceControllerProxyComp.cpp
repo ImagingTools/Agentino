@@ -93,7 +93,7 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 	}
 
 	sdl::agentino::Services::CServiceData retVal;
-	retVal.Version_1_0 = std::make_optional(response);
+	retVal.Version_1_0 = response;
 
 	return retVal;
 }
@@ -173,7 +173,7 @@ sdl::imtbase::ImtCollection::CUpdatedNotificationPayload CServiceControllerProxy
 	}
 
 	sdl::imtbase::ImtCollection::CUpdatedNotificationPayload retVal;
-	retVal.Version_1_0 = std::make_optional(response);
+	retVal.Version_1_0 = response;
 
 	return retVal;
 }
@@ -258,7 +258,7 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 	}
 
 	sdl::imtbase::ImtCollection::CAddedNotificationPayload retVal;
-	retVal.Version_1_0 = std::make_optional(response);
+	retVal.Version_1_0 = response;
 
 	return retVal;
 }
@@ -303,7 +303,7 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnS
 	}
 
 	sdl::agentino::Services::CServiceStatusResponse retVal;
-	retVal.Version_1_0 = std::make_optional(response);
+	retVal.Version_1_0 = response;
 
 	return retVal;
 }
@@ -344,7 +344,7 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnS
 	}
 
 	sdl::agentino::Services::CServiceStatusResponse retVal;
-	retVal.Version_1_0 = std::make_optional(response);
+	retVal.Version_1_0 = response;
 
 	return retVal;
 }
@@ -392,7 +392,7 @@ sdl::imtbase::ImtCollection::CRemovedNotificationPayload CServiceControllerProxy
 	}
 
 	sdl::imtbase::ImtCollection::CRemovedNotificationPayload retVal;
-	retVal.Version_1_0 = std::make_optional(response);
+	retVal.Version_1_0 = response;
 
 	return retVal;
 }
@@ -418,7 +418,7 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnG
 	}
 
 	sdl::agentino::Services::CServiceStatusResponse retVal;
-	retVal.Version_1_0 = std::make_optional(response);
+	retVal.Version_1_0 = response;
 
 	return retVal;
 }
@@ -464,7 +464,7 @@ sdl::agentino::Services::CPluginInfo CServiceControllerProxyComp::OnLoadPlugin(
 	}
 
 	sdl::agentino::Services::CPluginInfo retVal;
-	retVal.Version_1_0 = std::make_optional(response);
+	retVal.Version_1_0 = response;
 
 	return retVal;
 }

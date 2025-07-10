@@ -224,7 +224,7 @@ sdl::agentino::Services::CPluginInfo CServiceControllerComp::OnLoadPlugin(
 			return response;
 		}
 
-		response.Version_1_0 = std::make_optional(pluginRepresentation);
+		response.Version_1_0 = pluginRepresentation;
 		response.Version_1_0->servicePath = servicePath;
 	}
 
