@@ -3,7 +3,7 @@ TARGET = AgentinoDataPck
 include($(ACFDIR)/Config/QMake/ComponentConfig.pri)
 include($(IMTCOREDIR)/Config/QMake/ImtCore.pri)
 
-LIBS += -L$(IMTCOREDIR)/Lib/$$COMPILER_DIR -limtguigql -limtbase -limtgql -limtgui -limtwidgets -limtlic -limtdb -limtservice
+LIBS += -L$(IMTCOREDIR)/Lib/$$COMPILER_DIR -limtguigql -limtbase -limtgql -limtgui -limtwidgets -limtlic -limtdb -limtservice -limtcom
 LIBS += -L../../../Lib/$$COMPILER_DIR -lagentinogql -lagentinodata
 
 include($(ACFDIR)/Config/QMake/AcfQt.pri)

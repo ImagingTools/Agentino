@@ -1,5 +1,5 @@
 // Qt includes
-#include <QtCore/QtTranslation>
+#include <QtCore/qglobal.h>
 
 // ImtCore includes
 #include <imtlic/CProductInfo.h>

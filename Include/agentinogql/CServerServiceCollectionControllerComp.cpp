@@ -59,11 +59,11 @@ QStringList CServerServiceCollectionControllerComp::GetConnectionInfoAboutDepend
 					imtservice::CUrlConnectionParam* inputConnectionParamPtr = nullptr;
 					imtbase::IObjectCollection* inputConnectionCollectionPtr = serviceInfoPtr->GetInputConnections();
 					if (inputConnectionCollectionPtr != nullptr){
-						imtbase::ICollectionInfo::Ids elementIds = inputConnectionCollectionPtr->GetElementIds();
-						if (!elementIds.isEmpty()){
-							imtbase::ICollectionInfo::Id elementId = elementIds[0];
+						imtbase::ICollectionInfo::Ids incommingConnectionIds = inputConnectionCollectionPtr->GetElementIds();
+						if (!incommingConnectionIds.isEmpty()){
+							imtbase::ICollectionInfo::Id incommingConnectionId = incommingConnectionIds[0];
 
-							if (inputConnectionCollectionPtr->GetObjectData(elementId, inputConnectionDataPtr)){
+							if (inputConnectionCollectionPtr->GetObjectData(incommingConnectionId, inputConnectionDataPtr)){
 								inputConnectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(inputConnectionDataPtr.GetPtr());
 							}
 						}

@@ -709,10 +709,10 @@ QList<sdl::agentino::Services::CDependantConnectionInfo::V1_0> CServiceControlle
 							host = "localhost";
 						}
 
-						int port = connectionParamPtr->GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
+						int httpPort = connectionParamPtr->GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
 
 						dependantConnectionInfo.id = connectionElementId;
-						dependantConnectionInfo.name = host + "/" + QString::number(port);
+						dependantConnectionInfo.name = host + "/" + QString::number(httpPort);
 						dependantConnectionInfo.connectionParam = sdlRepresentation;
 
 						retVal << dependantConnectionInfo;
@@ -724,8 +724,8 @@ QList<sdl::agentino::Services::CDependantConnectionInfo::V1_0> CServiceControlle
 							incomingConnectionInfo.id = incomingConnection.id;
 
 							QString incomingHost = incomingConnection.host;
-							int port = incomingConnection.httpPort;
-							incomingConnectionInfo.name = incomingHost + "/" + QString::number(port);
+							int incommingHttpPort = incomingConnection.httpPort;
+							incomingConnectionInfo.name = incomingHost + "/" + QString::number(incommingHttpPort);
 
 							sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam;
 							connectionParam.host = incomingHost;
