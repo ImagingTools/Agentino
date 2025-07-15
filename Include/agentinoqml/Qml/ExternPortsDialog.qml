@@ -33,6 +33,7 @@ Dialog {
 	Component {
 		id: urlParamComp;
 		ServerConnectionParam {
+			m_isSecure: false
 		}
 	}
 	
