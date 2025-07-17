@@ -2,19 +2,20 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5398" Description="ACF"/>
+            <Version Id="0" Number="5405" Description="ACF"/>
             <Version Id="1" Number="2250" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
         <Element ComponentName="Agent" X="900" Y="200" Note=""/>
-        <Element ComponentName="AgentServer" X="750" Y="500" Note=""/>
         <Element ComponentName="AgentinoServer" X="300" Y="200" Note=""/>
         <Element ComponentName="ClientId" X="801.414213562" Y="350" Note=""/>
         <Element ComponentName="FileAutoPersistence" X="575" Y="50" Note=""/>
         <Element ComponentName="Name" X="1000" Y="350" Note=""/>
         <Element ComponentName="Preferences" X="575" Y="200" Note=""/>
+        <Element ComponentName="ServerConnectionInterface" X="650" Y="625" Note=""/>
+        <Element ComponentName="ServerConnectionParams" X="650" Y="450" Note=""/>
         <Element ComponentName="WebSocketAgentinoServerUrl" X="300" Y="350" Note=""/>
     </PositionMap>
     <EmbeddedRegistries/>

@@ -25,6 +25,17 @@ ServiceEditor {
 		loadPluginRequestSender.send(loadPluginInput)
 	}
 
+	onServiceDataChanged: {
+		if (serviceData){
+			if (serviceData.hasInputConnections() && serviceData.m_inputConnections.count > 0){
+				pluginLoaded = true
+			}
+		}
+		else{
+			pluginLoaded = false
+		}
+	}
+
 	commandsDelegateComp: Component {ViewCommandsDelegateBase {
 			view: serviceEditor;
 			
@@ -109,7 +120,12 @@ ServiceEditor {
 			if (data.containsKey("serviceid")){
 				let serviceId = data.getData("serviceid")
 				if (serviceId === serviceEditor.serviceData.m_id){
-					if (serviceEditor.serviceData.m_inputConnections.count == 0){
+					let ok = true
+					if (serviceEditor.serviceData.hasInputConnections()){
+						ok = serviceEditor.serviceData.m_inputConnections.count === 0
+					}
+
+					if (ok){
 						serviceEditor.pluginLoaded = false
 						serviceDocumentDataController.documentId = serviceId
 						serviceDocumentDataController.updateDocumentModel()
@@ -184,10 +200,19 @@ ServiceEditor {
 					if (!documentManager){
 						return
 					}
-
+					
+					console.log("PluginInfo", this.toJson())
+					console.log("m_inputConnections", m_inputConnections)
 					documentManager.setBlockUndoManager(serviceEditor.serviceId, true)
-					serviceEditor.serviceData.m_inputConnections = m_inputConnections.copyMe()
-					serviceEditor.serviceData.m_outputConnections = m_outputConnections.copyMe()
+
+					if (hasInputConnections()){
+						serviceEditor.serviceData.m_inputConnections = m_inputConnections.copyMe()
+					}
+
+					if (hasOutputConnections()){
+						serviceEditor.serviceData.m_outputConnections = m_outputConnections.copyMe()
+					}
+
 					documentManager.setBlockUndoManager(serviceEditor.serviceId, false)
 					serviceEditor.doUpdateGui()
 					

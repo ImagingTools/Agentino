@@ -36,7 +36,7 @@ ViewBase {
 	onServiceDataChanged: {
 		if (serviceData){
 			serviceRunning = serviceData.m_status === "running"
-			if (pluginServicePath === ""){
+			if (pluginServicePath === "" && serviceData.hasPath()){
 				pluginServicePath = serviceData.m_path
 			}
 		}

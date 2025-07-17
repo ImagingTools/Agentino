@@ -2,7 +2,7 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5398" Description="ACF"/>
+            <Version Id="0" Number="5405" Description="ACF"/>
             <Version Id="1" Number="2250" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
@@ -133,9 +133,6 @@
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="MigrationPath" Type="String" ExportId="">
-                        <Data IsEnabled="true" Value="Migrations"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>

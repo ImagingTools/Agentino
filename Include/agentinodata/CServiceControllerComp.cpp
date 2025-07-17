@@ -452,18 +452,14 @@ void CServiceControllerComp::UpdateServiceVersion(const QByteArray& serviceId)
 					}
 				}
 
-				// istd::TDelPtr<imtservice::IConnectionCollection> connectionCollection = nullptr;
-				// if (connectionCollectionFactoryPtr != nullptr){
-				// 	connectionCollection = connectionCollectionFactoryPtr->CreateInstance();
-				// }
-				
-				imtservice::IConnectionCollection* connectionCollectionPtr = connectionCollectionFactoryPtr->CreateInstance();
-				// imtservice::IConnectionCollectionPlugin::IConnectionCollectionUniquePtr connectionCollectionPtr(connectionCollectionFactoryPtr->CreateInstance());
-				if (connectionCollectionPtr != nullptr){
-					QString serviceVersion = connectionCollectionPtr->GetServiceVersion();
-					if (serviceInfoPtr->GetServiceVersion() != serviceVersion){
-						serviceInfoPtr->SetServiceVersion(serviceVersion);
-						m_serviceCollectionCompPtr->SetObjectData(serviceId, *serviceInfoPtr);
+				if (connectionCollectionFactoryPtr != nullptr){
+					imtservice::IConnectionCollection* connectionCollectionPtr = connectionCollectionFactoryPtr->CreateInstance();
+					if (connectionCollectionPtr != nullptr){
+						QString serviceVersion = connectionCollectionPtr->GetServiceVersion();
+						if (serviceInfoPtr->GetServiceVersion() != serviceVersion){
+							serviceInfoPtr->SetServiceVersion(serviceVersion);
+							m_serviceCollectionCompPtr->SetObjectData(serviceId, *serviceInfoPtr);
+						}
 					}
 				}
 			}

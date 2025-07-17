@@ -46,7 +46,6 @@ type InputConnection {
 	id: ID
 	connectionName: String
 	description: String
-	serviceName: String
 	serviceTypeId: String
 	externConnectionList: [ExternConnectionInfo]
 	connectionParam: ServerConnectionParam

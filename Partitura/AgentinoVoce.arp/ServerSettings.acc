@@ -2,7 +2,7 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5398" Description="ACF"/>
+            <Version Id="0" Number="5405" Description="ACF"/>
             <Version Id="1" Number="2250" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
@@ -29,21 +29,6 @@
                     </AttributeInfo>
                     <AttributeInfo Id="TypeId" Type="Id" ExportId="">
                         <Data IsEnabled="true" Value="Default"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="AgentServer" PackageId="ImtHttpServerVoce" ComponentId="AuthorizableServerConnectionParams">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="DefaultHttpPort" Type="Integer" ExportId="DefaultHttpPort">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DefaultPumaHost" Type="String" ExportId="">
-                        <Data IsEnabled="true" Value="localhost"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DefaultWebSocketPort" Type="Integer" ExportId="DefaultWebSocketPort">
-                        <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -127,7 +112,7 @@
                             <Values>
                                 <Value>Agent</Value>
                                 <Value>AgentinoServer</Value>
-                                <Value>AgentServer</Value>
+                                <Value>ServerConnectionParams</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -137,6 +122,44 @@
                                 <Value>Agent</Value>
                                 <Value>AgentinoServer</Value>
                                 <Value>AgentServer</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TypeId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="Default"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="ServerConnectionInterface" PackageId="ImtComPck" ComponentId="ServerConnectionInterfaceParam">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="DefaultHost" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="localhost"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DefaultHttpPort" Type="Integer" ExportId="DefaultHttpPort">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DefaultWebSocketPort" Type="Integer" ExportId="DefaultWebSocketPort">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="ServerConnectionParams" PackageId="BasePck" ComponentId="ComposedParamsSet">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="Parameters" Type="Reference[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>ServerConnectionInterface</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ParametersId" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>ServerConnectionInterface</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -180,8 +203,7 @@
         <Component ExportedId="AutoPersistence" ComponentId="FileAutoPersistence/AutoPersistence"/>
         <Component ExportedId="ClientId2" ComponentId="ClientId"/>
         <Component ExportedId="Preferences" ComponentId="Preferences"/>
-        <Component ExportedId="PumaConnectionInterface" ComponentId="AgentServer/PumaConnectionInterface"/>
-        <Component ExportedId="ServerConnectionInterface" ComponentId="AgentServer/ServerConnectionInterface"/>
+        <Component ExportedId="ServerConnectionInterface" ComponentId="ServerConnectionInterface"/>
         <Component ExportedId="WebSocketAgentinoServerUrl" ComponentId="WebSocketAgentinoServerUrl"/>
     </ExportedComponents>
 </Acf>
