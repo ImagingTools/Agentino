@@ -11,6 +11,7 @@ endif()
 message("PUMADIR ${PUMADIR}")
 
 include_directories("${PUMADIR}/AuxInclude/${TARGETNAME}")
+include_directories("${PUMADIR}/AuxInclude/${TARGETNAME}/GeneratedFiles")
 include_directories("${PUMADIR}/Include")
 include_directories("${PUMADIR}/Impl")
 

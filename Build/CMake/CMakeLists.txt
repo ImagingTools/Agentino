@@ -39,6 +39,7 @@ set(SDL_DIR "${CMAKE_CURRENT_LIST_DIR}/../../Sdl")
 set(AUX_INCLUDE_DIR "${BUILDDIR}/Agentino/AuxInclude/${TARGETNAME}/GeneratedFiles")
 
 include_directories("${AUX_INCLUDE_DIR}/../")
+include_directories("${AUX_INCLUDE_DIR}/")
 
 # Include
 add_subdirectory("${INCLUDE_DIR}/agentinodata/CMake" "${AUX_INCLUDE_DIR}/agentinodata")
@@ -53,19 +54,10 @@ add_dependencies(agentgql agentinosdl)
 add_subdirectory("${INCLUDE_DIR}/agentinoqml/CMake" "${AUX_INCLUDE_DIR}/agentinoqml")
 add_dependencies(agentinoqml agentinosdl)
 
-# Sdl
-include("${IMTCOREDIR}/Config/CMake/ImtCoreSdlCustomConfig.cmake")
-# initialize SDL
-if (NOT IMT_DevAll_BUILD)
-	get_filename_component(CACHE_BASE_DIR_PATH "${IMTCOREDIR}/AuxInclude/${TARGETNAME}" ABSOLUTE)
-	
-	ImtCoreAddSdlHeaderIncludePath("${CACHE_BASE_DIR_PATH}")
-	ImtCoreAddSdlModulesPath("${CACHE_BASE_DIR_PATH}")
-	ImtCoreAddSdlHeaderIncludePath("${AUX_INCLUDE_DIR}/..")
-endif()
-add_subdirectory("${SDL_DIR}/agentino/CMake" "${AUX_INCLUDE_DIR}/agentinosdl")
+
 
 # Impl
+add_subdirectory("${SDL_DIR}/agentino/CMake" "${AUX_INCLUDE_DIR}/agentinosdl")
 add_subdirectory("${IMPL_DIR}/AgentinoGqlPck/CMake" "${AUX_INCLUDE_DIR}/AgentinoGqlPck")
 add_dependencies(AgentinoGqlPck agentinogql)
 
