@@ -1,8 +1,4 @@
-#pragma once
-
-
-// Agentino includes
-#include <agentinodata/IServiceStatusProvider.h>
+#include <agentinodata/IServiceController.h>
 
 
 namespace agentinodata
