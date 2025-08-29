@@ -2,7 +2,6 @@ schema {
 	query: Query
 	mutation: Mutation
 	subscription: Subscription
-	name: Agents
 	namespace: agentino
 	version: 1.0
 }
