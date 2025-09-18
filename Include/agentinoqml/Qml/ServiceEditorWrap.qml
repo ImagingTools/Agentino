@@ -201,8 +201,6 @@ ServiceEditor {
 						return
 					}
 					
-					console.log("PluginInfo", this.toJson())
-					console.log("m_inputConnections", m_inputConnections)
 					documentManager.setBlockUndoManager(serviceEditor.serviceId, true)
 
 					if (hasInputConnections()){

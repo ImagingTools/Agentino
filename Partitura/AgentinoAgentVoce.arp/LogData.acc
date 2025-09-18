@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5332" Description="ACF"/>
-            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5423" Description="ACF"/>
+            <Version Id="1" Number="2252" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -13,6 +13,9 @@
         <Element Id="AgentMessageCollectionController" PackageId="AgentGqlPck" ComponentId="AgentMessageCollectionController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="CollectionId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="AgentLog"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
@@ -84,10 +87,18 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="MessageHeadersDataProvider" PackageId="ImtServerGqlPck" ComponentId="HeadersDataProvider">
+        <Element Id="MessageHeadersDataProvider" PackageId="ImtColPck" ComponentId="CollectionHeadersProvider">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
-                    <AttributeInfo Id="HeadersIds" Type="String[]" ExportId="">
+                    <AttributeInfo Id="FilterableHeaderIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>text</Value>
+                                <Value>source</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="HeaderIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>text</Value>
@@ -96,7 +107,7 @@
                             </Values>
                         </Data>
                     </AttributeInfo>
-                    <AttributeInfo Id="HeadersNames" Type="Text[]" ExportId="">
+                    <AttributeInfo Id="HeaderNames" Type="Text[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>Description</Value>
@@ -105,22 +116,14 @@
                             </Values>
                         </Data>
                     </AttributeInfo>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="SearchByFilterIds" Type="String[]" ExportId="">
+                    <AttributeInfo Id="SortableHeaderIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>text</Value>
+                                <Value>timestamp</Value>
                                 <Value>source</Value>
                             </Values>
                         </Data>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ShowComponentId" Type="Boolean" ExportId="">
-                        <Data IsEnabled="true" Value="true"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                        <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -128,6 +131,9 @@
         <Element Id="ServiceMessageCollectionController" PackageId="AgentGqlPck" ComponentId="MessageCollectionController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="CollectionId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="ServiceLog"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>

@@ -67,7 +67,9 @@ RemoteCollectionView {
 			id: singleDocumentManager
 			anchors.fill: parent;
 			documentManager: DocumentManager {}
-			visualStatusProvider: GqlBasedObjectVisualStatusProvider {}
+			visualStatusProvider: GqlBasedObjectVisualStatusProvider {
+				collectionId: "Services"
+			}
 			Component.onCompleted: {
 				MainDocumentManager.registerDocumentManager("Services", documentManager);
 				

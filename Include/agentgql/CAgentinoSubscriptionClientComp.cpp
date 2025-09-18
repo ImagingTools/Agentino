@@ -52,6 +52,7 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 			clientId = m_clientIdCompPtr->GetText();
 		}
 		inputDataParams.InsertParam("id", QVariant(clientId));
+		inputDataParams.InsertParam("collectionId", QVariant("Agents"));
 
 		QString localHostName = QHostInfo::localHostName();
 		QString domainMain = QHostInfo::localDomainName();

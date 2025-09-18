@@ -144,7 +144,7 @@ ViewBase {
 				topologyPage.commandsController.setCommandIsEnabled("Edit", true)
 				
 				metaInfo.contentVisible = true;
-				metaInfoProvider.getMetaInfo(selectedService);
+				collectionDataProvider.getObjectMetaInfo(selectedService)
 			}
 			else{
 				selectedService = ""
@@ -162,8 +162,9 @@ ViewBase {
 				if(objectsModel.count > selectedIndex && selectedIndex >= 0){
 					let item = scheme.objectsModel.get(scheme.selectedIndex).item
 					let serviceId = item.m_id;
+					let serviceName = item.m_mainText;
 					
-					documentManager.openDocument(serviceId, "Service", "ServiceView");
+					documentManager.openDocument(serviceId, serviceName, "Service", "ServiceView");
 				}
 			}
 		}
@@ -179,13 +180,11 @@ ViewBase {
 		width: 250;
 	}
 	
-	MetaInfoProvider {
-		id: metaInfoProvider;
-		
-		getMetaInfoGqlCommand: "GetServiceMetaInfo";
-		
-		onMetaInfoModelChanged: {
-			metaInfo.metaInfoModel = metaInfoModel;
+	CollectionRepresentation {
+		id: collectionDataProvider
+		collectionId: "Services"
+		onObjectMetaInfoReceived: {
+			metaInfo.elementMetaInfo = metaInfoData
 		}
 		
 		function getHeaders(){
@@ -304,7 +303,7 @@ ViewBase {
 				}
 				
 				if (serviceId === scheme.selectedService){
-					metaInfoProvider.getMetaInfo(scheme.selectedService);
+					collectionDataProvider.getObjectMetaInfo(scheme.selectedService)
 				}
 			}
 

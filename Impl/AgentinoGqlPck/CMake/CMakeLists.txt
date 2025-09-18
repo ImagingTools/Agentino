@@ -18,6 +18,7 @@ target_link_libraries(${PROJECT_NAME}
 	imtrest
 	imtclientgql
 	imtservergql
+	imtserverapp
 	imtguigql
 	imtbase
 	imtgui

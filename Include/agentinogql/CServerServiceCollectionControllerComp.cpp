@@ -165,6 +165,201 @@ const imtcom::IServerConnectionInterface* CServerServiceCollectionControllerComp
 }
 
 
+sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollectionControllerComp::OnGetElementMetaInfo(
+			const sdl::imtbase::ImtCollection::CGetElementMetaInfoGqlRequest& getElementMetaInfoRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
+{
+	sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload response;
+	response.Version_1_0.Emplace();
+
+	sdl::imtbase::ImtCollection::GetElementMetaInfoRequestArguments arguments = getElementMetaInfoRequest.GetRequestedArguments();
+	if (!arguments.input.Version_1_0){
+		Q_ASSERT(false);
+		return response;
+	}
+
+	QByteArray serviceId;
+	if (arguments.input.Version_1_0->elementId){
+		serviceId = *arguments.input.Version_1_0->elementId;
+	}
+
+	QByteArray agentId = gqlRequest.GetHeader("clientid");
+
+	sdl::imtbase::ImtCollection::CElementMetaInfo::V1_0 elementMetaInfo;
+	QList<sdl::imtbase::ImtBaseTypes::CParameter::V1_0> infoParams;
+
+	imtbase::IObjectCollection* serviceCollectionPtr = nullptr;
+	imtbase::IObjectCollection::DataPtr dataPtr;
+	if (m_objectCollectionCompPtr->GetObjectData(agentId, dataPtr)){
+		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(dataPtr.GetPtr());
+		if (agentInfoPtr != nullptr){
+			serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+		}
+	}
+	
+	if (serviceCollectionPtr == nullptr){
+		return response;
+	}
+	
+	QByteArray languageId;
+	const imtgql::IGqlContext* gqlContextPtr = gqlRequest.GetRequestContext();
+	if (gqlContextPtr != nullptr){
+		languageId = gqlContextPtr->GetLanguageId();
+	}
+	
+	imtbase::IObjectCollection* dependantCollectionPtr = nullptr;
+	imtbase::IObjectCollection* inputCollectionPtr = nullptr;
+	
+	imtbase::IObjectCollection::DataPtr serviceDataPtr;
+	if (serviceCollectionPtr->GetObjectData(serviceId, serviceDataPtr)){
+		agentinodata::CServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::CServiceInfo*>(serviceDataPtr.GetPtr());
+		if (serviceInfoPtr != nullptr){
+			dependantCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
+			inputCollectionPtr = serviceInfoPtr->GetInputConnections();
+		}
+	}
+	
+	if (inputCollectionPtr != nullptr){
+		imtbase::ICollectionInfo::Ids connectionIds = inputCollectionPtr->GetElementIds();
+		if (!connectionIds.isEmpty()){
+			QString incomingConnectionStr = QT_TR_NOOP("Incoming Connections");
+			
+			if (m_translationManagerCompPtr.IsValid()){
+				incomingConnectionStr = iqt::GetTranslation(
+											m_translationManagerCompPtr.GetPtr(),
+											incomingConnectionStr.toUtf8(),
+											languageId,
+											"agentinogql::CServerServiceCollectionControllerComp"
+											);
+			}
+			
+			sdl::imtbase::ImtBaseTypes::CParameter::V1_0 parameter;
+			parameter.id = QByteArrayLiteral("IncomingConnections");
+			parameter.typeId = parameter.id;
+			parameter.name = incomingConnectionStr;
+
+			QString incomingConnectionsData;
+			QStringList connectionInfos;
+			for (const imtbase::ICollectionInfo::Id& connectionId : connectionIds){
+				imtbase::IObjectCollection::DataPtr connectionDataPtr;
+				if (inputCollectionPtr->GetObjectData(connectionId, connectionDataPtr)){
+					imtservice::CUrlConnectionParam* urlConnectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
+					if (urlConnectionParamPtr != nullptr){
+						const QString host = urlConnectionParamPtr->GetHost();
+						const int httpPort = urlConnectionParamPtr->GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
+						const int wsPort = urlConnectionParamPtr->GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
+
+						incomingConnectionsData += host + QString(" (http: %1; ws: %2)").arg(QString::number(httpPort), QString::number(wsPort)) + "\n";
+						connectionInfos << GetConnectionInfoAboutDependOnService(connectionId);
+				
+						imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections = urlConnectionParamPtr->GetIncomingConnections();
+						for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
+							connectionInfos << GetConnectionInfoAboutDependOnService(incomingConnection.id);
+						}
+					}
+				}
+			}
+			
+			parameter.data = incomingConnectionsData;
+			infoParams << parameter;
+			
+			if (!connectionInfos.isEmpty()){
+				sdl::imtbase::ImtBaseTypes::CParameter::V1_0 dependantParameter;
+				dependantParameter.id = QByteArrayLiteral("DependantConnections");
+				dependantParameter.typeId = dependantParameter.id;
+
+				QString dependantServicesStr = QT_TR_NOOP("Dependant services on port");
+				if (m_translationManagerCompPtr.IsValid()){
+					dependantServicesStr = iqt::GetTranslation(
+												m_translationManagerCompPtr.GetPtr(),
+												dependantServicesStr.toUtf8(),
+												languageId,
+												"agentinogql::CServerServiceCollectionControllerComp"
+											);
+				}
+				dependantParameter.name = dependantServicesStr;
+				dependantParameter.data = connectionInfos.join('\n');
+				
+				infoParams << dependantParameter;
+			}
+		}
+	}
+	
+	if (dependantCollectionPtr != nullptr){
+		imtbase::ICollectionInfo::Ids connectionIds = dependantCollectionPtr->GetElementIds();
+		if (!connectionIds.isEmpty()){
+			sdl::imtbase::ImtBaseTypes::CParameter::V1_0 serviceDependsParameter;
+			serviceDependsParameter.id = QByteArrayLiteral("IncomingConnections");
+			serviceDependsParameter.typeId = serviceDependsParameter.id;
+
+			QString serviceDependsOnStr = QT_TR_NOOP("Service depends on");
+			if (m_translationManagerCompPtr.IsValid()){
+				serviceDependsOnStr = iqt::GetTranslation(
+										  m_translationManagerCompPtr.GetPtr(),
+										  serviceDependsOnStr.toUtf8(),
+										  languageId,
+										  "agentinogql::CServerServiceCollectionControllerComp"
+										  );
+			}
+
+			serviceDependsParameter.name = serviceDependsOnStr;
+			QString serviceDependsData;
+			for (const imtbase::ICollectionInfo::Id& connectionId : connectionIds){
+				imtbase::IObjectCollection::DataPtr connectionDataPtr;
+				if (dependantCollectionPtr->GetObjectData(connectionId, connectionDataPtr)){
+					imtservice::CUrlConnectionLinkParam* urlConnectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
+					if (urlConnectionLinkParamPtr != nullptr){
+						QByteArray dependantServiceConnectionId = urlConnectionLinkParamPtr->GetDependantServiceConnectionId();
+						
+						istd::TDelPtr<const imtcom::IServerConnectionInterface> inputConnectionPtr = GetConnectionInfo(dependantServiceConnectionId);
+						if (inputConnectionPtr.IsValid()){
+							const QString host = inputConnectionPtr->GetHost();
+							const int httpPort = inputConnectionPtr->GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
+							const int wsPort = inputConnectionPtr->GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
+							serviceDependsData += host + " (http: " + QString::number(httpPort)+ ";" + "ws: " + QString::number(wsPort) + ")\n";
+						}
+					}
+				}
+			}
+			serviceDependsParameter.data = serviceDependsData;
+			infoParams << serviceDependsParameter;
+		}
+	}
+
+	agentinodata::IServiceStatusInfo::ServiceStatus serviceStatus =  m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceId);
+	agentinodata::IServiceCompositeInfo::StateOfRequiredServices stateOfRequiredServices = m_serviceCompositeInfoCompPtr->GetStateOfRequiredServices(serviceId);
+	QString dependantStatus = agentinodata::IServiceCompositeInfo::ToString(stateOfRequiredServices);
+	if (serviceStatus == agentinodata::IServiceStatusInfo::SS_RUNNING && stateOfRequiredServices != agentinodata::IServiceCompositeInfo::SORS_RUNNING){
+		sdl::imtbase::ImtBaseTypes::CParameter::V1_0 informationParameter;
+		informationParameter.id = QByteArrayLiteral("Information");
+		informationParameter.typeId = informationParameter.id;
+
+		QString serviceDependsOnStr = QT_TR_NOOP("Information");
+		
+		if (m_translationManagerCompPtr.IsValid()){
+			serviceDependsOnStr = iqt::GetTranslation(
+									  m_translationManagerCompPtr.GetPtr(),
+									  serviceDependsOnStr.toUtf8(),
+									  languageId,
+									  "agentinogql::CServerServiceCollectionControllerComp"
+									  );
+		}
+		informationParameter.name = serviceDependsOnStr;
+
+		QStringList dependantStatusInfo = GetDependantStatusInfo(serviceId);
+		informationParameter.data = dependantStatusInfo.join("; ");
+
+		infoParams << informationParameter;
+	}
+	
+	elementMetaInfo.infoParams = infoParams;
+	response.Version_1_0->elementMetaInfo = elementMetaInfo;
+
+	return response;
+}
+
+
 // reimplemented (imtgql::CObjectCollectionControllerCompBase)
 
 bool CServerServiceCollectionControllerComp::SetupGqlItem(
@@ -379,201 +574,8 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::ListObjects(
 }
 
 
-imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::GetMetaInfo(const imtgql::CGqlRequest& gqlRequest, QString& /*errorMessage*/) const
-{
-	if (!m_objectCollectionCompPtr.IsValid() || !m_serviceCompositeInfoCompPtr.IsValid()){
-		Q_ASSERT(0);
-		
-		return nullptr;
-	}
-	
-	QByteArray agentId = gqlRequest.GetHeader("clientid");
-	
-	QByteArray serviceId;
-	const imtgql::CGqlParamObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
-	if (gqlInputParamPtr != nullptr){
-		serviceId = gqlInputParamPtr->GetParamArgumentValue("id").toByteArray();
-	}
-	
-	imtbase::IObjectCollection* serviceCollectionPtr = nullptr;
-	imtbase::IObjectCollection::DataPtr dataPtr;
-	if (m_objectCollectionCompPtr->GetObjectData(agentId, dataPtr)){
-		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(dataPtr.GetPtr());
-		if (agentInfoPtr != nullptr){
-			serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-		}
-	}
-	
-	if (serviceCollectionPtr == nullptr){
-		return nullptr;
-	}
-	
-	QByteArray languageId;
-	const imtgql::IGqlContext* gqlContextPtr = gqlRequest.GetRequestContext();
-	if (gqlContextPtr != nullptr){
-		languageId = gqlContextPtr->GetLanguageId();
-	}
-	
-	imtbase::IObjectCollection* dependantCollectionPtr = nullptr;
-	imtbase::IObjectCollection* inputCollectionPtr = nullptr;
-	
-	imtbase::IObjectCollection::DataPtr serviceDataPtr;
-	if (serviceCollectionPtr->GetObjectData(serviceId, serviceDataPtr)){
-		agentinodata::CServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::CServiceInfo*>(serviceDataPtr.GetPtr());
-		if (serviceInfoPtr != nullptr){
-			dependantCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
-			inputCollectionPtr = serviceInfoPtr->GetInputConnections();
-		}
-	}
-	
-	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel);
-	imtbase::CTreeItemModel* dataModelPtr = rootModelPtr->AddTreeModel("data");
-	
-	if (inputCollectionPtr != nullptr){
-		imtbase::ICollectionInfo::Ids connectionIds = inputCollectionPtr->GetElementIds();
-		if (!connectionIds.isEmpty()){
-			int index = dataModelPtr->InsertNewItem();
-			
-			QString incomingConnectionStr = QT_TR_NOOP("Incoming Connections");
-			
-			if (m_translationManagerCompPtr.IsValid()){
-				incomingConnectionStr = iqt::GetTranslation(
-											m_translationManagerCompPtr.GetPtr(),
-											incomingConnectionStr.toUtf8(),
-											languageId,
-											"agentinogql::CServerServiceCollectionControllerComp"
-											);
-			}
-			
-			dataModelPtr->SetData("name", incomingConnectionStr, index);
-			
-			QStringList connectionInfos;
-			
-			imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("children", index);
-			for (const imtbase::ICollectionInfo::Id& connectionId : connectionIds){
-				imtbase::IObjectCollection::DataPtr connectionDataPtr;
-				if (inputCollectionPtr->GetObjectData(connectionId, connectionDataPtr)){
-					imtservice::CUrlConnectionParam* urlConnectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
-					if (urlConnectionParamPtr != nullptr){
-						const QString host = urlConnectionParamPtr->GetHost();
-						const int httpPort = urlConnectionParamPtr->GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
-						const int wsPort = urlConnectionParamPtr->GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
-						
-						int childIndex = contentModelPtr->InsertNewItem();
+// private methods
 
-						contentModelPtr->SetData("value", host + QString(" (http: %1; ws: %2)").arg(QString::number(httpPort), QString::number(wsPort)), childIndex);
-						connectionInfos << GetConnectionInfoAboutDependOnService(connectionId);
-				
-						imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections = urlConnectionParamPtr->GetIncomingConnections();
-						for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-							connectionInfos << GetConnectionInfoAboutDependOnService(incomingConnection.id);
-						}
-					}
-				}
-			}
-			
-			if (!connectionInfos.isEmpty()){
-				index = dataModelPtr->InsertNewItem();
-				
-				QString dependantServicesStr = QT_TR_NOOP("Dependant services on port");
-				
-				if (m_translationManagerCompPtr.IsValid()){
-					dependantServicesStr = iqt::GetTranslation(
-												m_translationManagerCompPtr.GetPtr(),
-												dependantServicesStr.toUtf8(),
-												languageId,
-												"agentinogql::CServerServiceCollectionControllerComp"
-											);
-				}
-				dataModelPtr->SetData("name", dependantServicesStr, index);
-				
-				imtbase::CTreeItemModel* childContentModelPtr = dataModelPtr->AddTreeModel("children", index);
-				
-				for (const QString& info : connectionInfos){
-					int childIndex = childContentModelPtr->InsertNewItem();
-					childContentModelPtr->SetData("value", info, childIndex);
-				}
-			}
-		}
-	}
-	
-	if (dependantCollectionPtr != nullptr){
-		imtbase::ICollectionInfo::Ids connectionIds = dependantCollectionPtr->GetElementIds();
-		if (!connectionIds.isEmpty()){
-			int index = dataModelPtr->InsertNewItem();
-			
-			QString serviceDependsOnStr = QT_TR_NOOP("Service depends on");
-			
-			if (m_translationManagerCompPtr.IsValid()){
-				serviceDependsOnStr = iqt::GetTranslation(
-										  m_translationManagerCompPtr.GetPtr(),
-										  serviceDependsOnStr.toUtf8(),
-										  languageId,
-										  "agentinogql::CServerServiceCollectionControllerComp"
-										  );
-			}
-			dataModelPtr->SetData(	"name", serviceDependsOnStr, index);
-			
-			imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("children", index);
-			
-			for (const imtbase::ICollectionInfo::Id& connectionId : connectionIds){
-				imtbase::IObjectCollection::DataPtr connectionDataPtr;
-				if (dependantCollectionPtr->GetObjectData(connectionId, connectionDataPtr)){
-					imtservice::CUrlConnectionLinkParam* urlConnectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
-					if (urlConnectionLinkParamPtr != nullptr){
-						int childIndex = contentModelPtr->InsertNewItem();
-						QByteArray dependantServiceConnectionId = urlConnectionLinkParamPtr->GetDependantServiceConnectionId();
-						
-						istd::TDelPtr<const imtcom::IServerConnectionInterface> inputConnectionPtr = GetConnectionInfo(dependantServiceConnectionId);
-						if (inputConnectionPtr.IsValid()){
-							const QString host = inputConnectionPtr->GetHost();
-							const int httpPort = inputConnectionPtr->GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
-							const int wsPort = inputConnectionPtr->GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
-							contentModelPtr->SetData("value", host + " (http: " + QString::number(httpPort)+ ";" + "ws: " + QString::number(wsPort) + ")", childIndex);
-						}
-					}
-				}
-			}
-		} 
-	}
-	
-	agentinodata::IServiceStatusInfo::ServiceStatus serviceStatus =  m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceId);
-	agentinodata::IServiceCompositeInfo::StateOfRequiredServices stateOfRequiredServices = m_serviceCompositeInfoCompPtr->GetStateOfRequiredServices(serviceId);
-	QString dependantStatus = agentinodata::IServiceCompositeInfo::ToString(stateOfRequiredServices);
-	if (serviceStatus == agentinodata::IServiceStatusInfo::SS_RUNNING && stateOfRequiredServices != agentinodata::IServiceCompositeInfo::SORS_RUNNING){
-		int index = dataModelPtr->InsertNewItem();
-		
-		QString serviceDependsOnStr = QT_TR_NOOP("Information");
-		
-		if (m_translationManagerCompPtr.IsValid()){
-			serviceDependsOnStr = iqt::GetTranslation(
-									  m_translationManagerCompPtr.GetPtr(),
-									  serviceDependsOnStr.toUtf8(),
-									  languageId,
-									  "agentinogql::CServerServiceCollectionControllerComp"
-									  );
-		}
-		dataModelPtr->SetData("name", serviceDependsOnStr, index);
-		
-		imtbase::CTreeItemModel* contentModelPtr = dataModelPtr->AddTreeModel("children", index);
-		int childIndex = contentModelPtr->InsertNewItem();
-		QStringList dependantStatusInfo = GetDependantStatusInfo(serviceId);
-		
-		contentModelPtr->SetData("value", dependantStatusInfo.join("; "), childIndex);
-		
-		if (stateOfRequiredServices == agentinodata::IServiceCompositeInfo::SORS_NOT_RUNNING){
-			contentModelPtr->SetData("icon", "Icons/Error", childIndex);
-		}
-		else {
-			contentModelPtr->SetData("icon", "Icons/Warning", childIndex);
-		}
-	}
-	
-	return rootModelPtr.PopPtr();
-}
-
-
-//private methods implemented
 QStringList CServerServiceCollectionControllerComp::GetDependantStatusInfo(const QByteArray& serviceId) const
 {
 	if (!m_agentCollectionCompPtr.IsValid() || !m_serviceCompositeInfoCompPtr.IsValid()){

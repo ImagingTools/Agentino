@@ -22,6 +22,7 @@ target_link_libraries(${PROJECT_NAME}
 	imtwidgets
 	imtauth
 	imtservergql
+	imtserverapp
 	agentinodata
 	agentinosdl
 	agentgql

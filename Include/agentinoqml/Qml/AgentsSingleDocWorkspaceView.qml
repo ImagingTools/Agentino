@@ -12,7 +12,9 @@ SingleDocumentWorkspaceView {
 	
 	anchors.fill: parent;
 	documentManager: DocumentManager {}
-	visualStatusProvider: GqlBasedObjectVisualStatusProvider {}
+	visualStatusProvider: GqlBasedObjectVisualStatusProvider {
+		collectionId: "Agents"
+	}
 	
 	Component.onCompleted: {
 		documentManager.registerDocumentView("Agent", "AgentEditor", agentEditorComp);

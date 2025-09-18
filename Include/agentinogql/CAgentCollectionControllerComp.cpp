@@ -393,8 +393,8 @@ bool CAgentCollectionControllerComp::UpdateServiceStatusFromAgent(const QByteArr
 	}
 	
 	QString errorMessage;
-	servicessdl::CServiceStatusResponse::V1_0 response;
-	if (!SendModelRequest<servicessdl::CServiceStatusResponse::V1_0, servicessdl::CServiceStatusResponse>(gqlRequest, response, errorMessage)){
+	servicessdl::CServiceStatusResponse response = SendModelRequest<servicessdl::CServiceStatusResponse>(gqlRequest, errorMessage);
+	if (!errorMessage.isEmpty()){
 		SendErrorMessage(0, QString("Unable to update status for service '%1'. Error: %2").arg(qPrintable(serviceId), errorMessage), "CAgentCollectionControllerComp");
 		return false;
 	}
@@ -404,7 +404,7 @@ bool CAgentCollectionControllerComp::UpdateServiceStatusFromAgent(const QByteArr
 	
 	serviceStatusInfoPtr->SetServiceId(serviceId);
 
-	servicessdl::ServiceStatus status = *response.status;
+	servicessdl::ServiceStatus status = *response.Version_1_0->status;
 	switch (status){
 	case servicessdl::ServiceStatus::NOT_RUNNING:
 		serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);

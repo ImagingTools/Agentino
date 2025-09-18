@@ -26,6 +26,11 @@ protected:
 	QStringList GetConnectionInfoAboutServiceDepends(const QByteArray& connectionId) const;
 	const imtcom::IServerConnectionInterface* GetConnectionInfo(const QByteArray& connectionId) const;
 
+	virtual sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload OnGetElementMetaInfo(
+				const sdl::imtbase::ImtCollection::CGetElementMetaInfoGqlRequest& getElementMetaInfoRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+
 	// reimplemented (imtgql::CObjectCollectionControllerCompBase)
 	virtual bool SetupGqlItem(
 				const imtgql::CGqlRequest& gqlRequest,
@@ -34,7 +39,6 @@ protected:
 				const QByteArray& collectionId,
 				QString& errorMessage) const override;
 	virtual imtbase::CTreeItemModel* ListObjects(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
-	virtual imtbase::CTreeItemModel* GetMetaInfo(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 
 private:
 	QStringList GetDependantStatusInfo(const QByteArray& serviceId) const;

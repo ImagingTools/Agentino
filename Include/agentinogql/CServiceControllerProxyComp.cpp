@@ -43,12 +43,10 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 		serviceId = *arguments.input.Version_1_0->id;
 	}
 
-	sdl::agentino::Services::CServiceData::V1_0 response;
-	if (!SendModelRequest<
-			sdl::agentino::Services::CServiceData::V1_0,
-			sdl::agentino::Services::CServiceData>(gqlRequest, response, errorMessage)){
+	sdl::agentino::Services::CServiceData response = SendModelRequest<sdl::agentino::Services::CServiceData>(gqlRequest, errorMessage);
+	if (!errorMessage.isEmpty()){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
-		return sdl::agentino::Services::CServiceData();
+		return response;
 	}
 
 	QByteArray agentId = gqlRequest.GetHeader("clientid");
@@ -62,7 +60,7 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 	}
 
 	// Syncronise service with agent
-	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, response, errorMessage)){
+	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, *response.Version_1_0, errorMessage)){
 		errorMessage = QString("Unable to get service '%1'. Error: %2").arg(qPrintable(serviceId), errorMessage);
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::agentino::Services::CServiceData();
@@ -74,8 +72,8 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 		return sdl::agentino::Services::CServiceData();
 	}
 
-	if (response.outputConnections){
-		QList<sdl::agentino::Services::COutputConnection::V1_0> outputConnections = *response.outputConnections;
+	if (response.Version_1_0->outputConnections){
+		QList<sdl::agentino::Services::COutputConnection::V1_0> outputConnections = *response.Version_1_0->outputConnections;
 		for (sdl::agentino::Services::COutputConnection::V1_0& outputConnection : outputConnections){
 			QByteArray id = *outputConnection.id;
 			outputConnection.dependantConnectionList = GetConnectionsModel(id);
@@ -89,13 +87,10 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 			}
 		}
 
-		response.outputConnections = outputConnections;
+		response.Version_1_0->outputConnections = outputConnections;
 	}
 
-	sdl::agentino::Services::CServiceData retVal;
-	retVal.Version_1_0 = response;
-
-	return retVal;
+	return response;
 }
 
 
@@ -108,8 +103,6 @@ sdl::imtbase::ImtCollection::CUpdatedNotificationPayload CServiceControllerProxy
 		Q_ASSERT_X(false, "Attribute 'ServiceManager' was not set", "CServiceControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CUpdatedNotificationPayload();
 	}
-
-	sdl::imtbase::ImtCollection::CUpdatedNotificationPayload::V1_0 response;
 
 	sdl::agentino::Services::UpdateServiceRequestArguments arguments = updateServiceRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
@@ -131,9 +124,9 @@ sdl::imtbase::ImtCollection::CUpdatedNotificationPayload CServiceControllerProxy
 		serviceData = *arguments.input.Version_1_0->item;
 	}
 
-	if (!SendModelRequest<
-			sdl::imtbase::ImtCollection::CUpdatedNotificationPayload::V1_0,
-			sdl::imtbase::ImtCollection::CUpdatedNotificationPayload>(gqlRequest, response, errorMessage)){
+	sdl::imtbase::ImtCollection::CUpdatedNotificationPayload retVal = 
+			SendModelRequest<sdl::imtbase::ImtCollection::CUpdatedNotificationPayload>(gqlRequest, errorMessage);
+	if (!errorMessage.isEmpty()){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CUpdatedNotificationPayload();
 	}
@@ -172,9 +165,6 @@ sdl::imtbase::ImtCollection::CUpdatedNotificationPayload CServiceControllerProxy
 		return sdl::imtbase::ImtCollection::CUpdatedNotificationPayload();
 	}
 
-	sdl::imtbase::ImtCollection::CUpdatedNotificationPayload retVal;
-	retVal.Version_1_0 = response;
-
 	return retVal;
 }
 
@@ -188,8 +178,6 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 		Q_ASSERT_X(false, "Attribute 'ServiceManager' was not set", "CServiceControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CAddedNotificationPayload();
 	}
-
-	sdl::imtbase::ImtCollection::CAddedNotificationPayload::V1_0 response;
 
 	sdl::agentino::Services::AddServiceRequestArguments arguments = addServiceRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
@@ -206,9 +194,8 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 
 	QByteArray agentId = gqlRequest.GetHeader("clientid");
 
-	if (!SendModelRequest<
-			sdl::imtbase::ImtCollection::CAddedNotificationPayload::V1_0,
-			sdl::imtbase::ImtCollection::CAddedNotificationPayload>(gqlRequest, response, errorMessage)){
+	sdl::imtbase::ImtCollection::CAddedNotificationPayload retVal = SendModelRequest<sdl::imtbase::ImtCollection::CAddedNotificationPayload>(gqlRequest, errorMessage);
+	if (!errorMessage.isEmpty()){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CAddedNotificationPayload();
 	}
@@ -228,10 +215,8 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 	imtgql::CGqlRequest getGqlRequest;
 	getGqlRequest.SetGqlContext(dynamic_cast<imtgql::IGqlContext*>(gqlRequest.GetRequestContext()->CloneMe()));
 	if (sdl::agentino::Services::CGetServiceGqlRequest::SetupGqlRequest(getGqlRequest, getArguments)){
-		sdl::agentino::Services::CServiceData::V1_0 getServiceResponse;
-		if (!SendModelRequest<
-				sdl::agentino::Services::CServiceData::V1_0,
-				sdl::agentino::Services::CServiceData>(getGqlRequest, serviceData, errorMessage)){
+		sdl::agentino::Services::CServiceData getServiceResponse = SendModelRequest<sdl::agentino::Services::CServiceData>(getGqlRequest, errorMessage);
+		if (!errorMessage.isEmpty()){
 			SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 			return sdl::imtbase::ImtCollection::CAddedNotificationPayload();
 		}
@@ -257,9 +242,6 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 		return sdl::imtbase::ImtCollection::CAddedNotificationPayload();
 	}
 
-	sdl::imtbase::ImtCollection::CAddedNotificationPayload retVal;
-	retVal.Version_1_0 = response;
-
 	return retVal;
 }
 
@@ -271,10 +253,6 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnS
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	sdl::agentino::Services::CServiceStatusResponse::V1_0 response;
-
-	response.status = sdl::agentino::Services::ServiceStatus::UNDEFINED;
-
 	sdl::agentino::Services::StartServiceRequestArguments arguments = startServiceRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
 		return sdl::agentino::Services::CServiceStatusResponse();
@@ -289,21 +267,17 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnS
 
 	SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_STARTING);
 
-	if (!SendModelRequest<
-			sdl::agentino::Services::CServiceStatusResponse::V1_0,
-			sdl::agentino::Services::CServiceStatusResponse>(gqlRequest, response, errorMessage)){
+	sdl::agentino::Services::CServiceStatusResponse retVal = SendModelRequest<sdl::agentino::Services::CServiceStatusResponse>(gqlRequest, errorMessage);
+	if (!errorMessage.isEmpty()){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_UNDEFINED);
 
 		return sdl::agentino::Services::CServiceStatusResponse();
 	}
 
-	if (response.status.has_value()){
-		SetServiceStatus(serviceId, *response.status);
+	if (retVal.Version_1_0->status.has_value()){
+		SetServiceStatus(serviceId, *retVal.Version_1_0->status);
 	}
-
-	sdl::agentino::Services::CServiceStatusResponse retVal;
-	retVal.Version_1_0 = response;
 
 	return retVal;
 }
@@ -314,9 +288,6 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnS
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	sdl::agentino::Services::CServiceStatusResponse::V1_0 response;
-	response.status = sdl::agentino::Services::ServiceStatus::UNDEFINED;
-
 	sdl::agentino::Services::StopServiceRequestArguments arguments = stopServiceRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
 		return sdl::agentino::Services::CServiceStatusResponse();
@@ -331,20 +302,16 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnS
 
 	SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_STOPPING);
 
-	if (!SendModelRequest<
-			sdl::agentino::Services::CServiceStatusResponse::V1_0,
-			sdl::agentino::Services::CServiceStatusResponse>(gqlRequest, response, errorMessage)){
+	sdl::agentino::Services::CServiceStatusResponse retVal = SendModelRequest<sdl::agentino::Services::CServiceStatusResponse>(gqlRequest, errorMessage);
+	if (!errorMessage.isEmpty()){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_UNDEFINED);
 		return sdl::agentino::Services::CServiceStatusResponse();
 	}
 	
-	if (response.status.has_value()){
-		SetServiceStatus(serviceId, *response.status);
+	if (retVal.Version_1_0->status.has_value()){
+		SetServiceStatus(serviceId, *retVal.Version_1_0->status);
 	}
-
-	sdl::agentino::Services::CServiceStatusResponse retVal;
-	retVal.Version_1_0 = response;
 
 	return retVal;
 }
@@ -355,8 +322,6 @@ sdl::imtbase::ImtCollection::CRemovedNotificationPayload CServiceControllerProxy
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	sdl::imtbase::ImtCollection::CRemovedNotificationPayload::V1_0 response;
-
 	if (!m_serviceManagerCompPtr.IsValid()){
 		Q_ASSERT_X(false, "Attribute 'ServiceManager' was not set", "CServiceControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CRemovedNotificationPayload();
@@ -377,9 +342,8 @@ sdl::imtbase::ImtCollection::CRemovedNotificationPayload CServiceControllerProxy
 
 	QByteArray agentId = gqlRequest.GetHeader("clientid");
 
-	if (!SendModelRequest<
-			sdl::imtbase::ImtCollection::CRemovedNotificationPayload::V1_0,
-			sdl::imtbase::ImtCollection::CRemovedNotificationPayload>(gqlRequest, response, errorMessage)){
+	sdl::imtbase::ImtCollection::CRemovedNotificationPayload retVal = SendModelRequest<sdl::imtbase::ImtCollection::CRemovedNotificationPayload>(gqlRequest, errorMessage);
+	if (!errorMessage.isEmpty()){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::imtbase::ImtCollection::CRemovedNotificationPayload();
 	}
@@ -391,9 +355,6 @@ sdl::imtbase::ImtCollection::CRemovedNotificationPayload CServiceControllerProxy
 			"CServiceControllerProxyComp");
 	}
 
-	sdl::imtbase::ImtCollection::CRemovedNotificationPayload retVal;
-	retVal.Version_1_0 = response;
-
 	return retVal;
 }
 
@@ -403,22 +364,16 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerProxyComp::OnG
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	sdl::agentino::Services::CServiceStatusResponse::V1_0 response;
-
 	sdl::agentino::Services::GetServiceStatusRequestArguments arguments = getServiceStatusRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
 		return sdl::agentino::Services::CServiceStatusResponse();
 	}
 
-	if (!SendModelRequest<
-			sdl::agentino::Services::CServiceStatusResponse::V1_0,
-			sdl::agentino::Services::CServiceStatusResponse>(gqlRequest, response, errorMessage)){
+	sdl::agentino::Services::CServiceStatusResponse retVal = SendModelRequest<sdl::agentino::Services::CServiceStatusResponse>(gqlRequest, errorMessage);
+	if (!errorMessage.isEmpty()){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::agentino::Services::CServiceStatusResponse();
 	}
-
-	sdl::agentino::Services::CServiceStatusResponse retVal;
-	retVal.Version_1_0 = response;
 
 	return retVal;
 }
@@ -438,33 +393,27 @@ sdl::agentino::Services::CPluginInfo CServiceControllerProxyComp::OnLoadPlugin(
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	sdl::agentino::Services::CPluginInfo::V1_0 response;
-
 	sdl::agentino::Services::LoadPluginRequestArguments arguments = loadPluginRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
 		return sdl::agentino::Services::CPluginInfo();
 	}
 
-	if (!SendModelRequest<
-			sdl::agentino::Services::CPluginInfo::V1_0,
-			sdl::agentino::Services::CPluginInfo>(gqlRequest, response, errorMessage)){
+	sdl::agentino::Services::CPluginInfo retVal = SendModelRequest<sdl::agentino::Services::CPluginInfo>(gqlRequest, errorMessage);
+	if (!errorMessage.isEmpty()){
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::agentino::Services::CPluginInfo();
 	}
 
 	// Update dependant connections elements
-	if (response.outputConnections){
-		QList<sdl::agentino::Services::COutputConnection::V1_0> outputConnections = *response.outputConnections;
+	if (retVal.Version_1_0->outputConnections){
+		QList<sdl::agentino::Services::COutputConnection::V1_0> outputConnections = *retVal.Version_1_0->outputConnections;
 		for (sdl::agentino::Services::COutputConnection::V1_0& outputConnection : outputConnections){
 			QByteArray id = *outputConnection.id;
 			outputConnection.dependantConnectionList = GetConnectionsModel(id);
 		}
 
-		response.outputConnections = outputConnections;
+		retVal.Version_1_0->outputConnections = outputConnections;
 	}
-
-	sdl::agentino::Services::CPluginInfo retVal;
-	retVal.Version_1_0 = response;
 
 	return retVal;
 }
@@ -1012,15 +961,13 @@ bool CServiceControllerProxyComp::UpdateConnectionForService(
 	}
 
 	QString errorMessage;
-	sdl::agentino::Services::CUpdateConnectionUrlResponse::V1_0 response;
-	if (!SendModelRequest<
-			sdl::agentino::Services::CUpdateConnectionUrlResponse::V1_0,
-			sdl::agentino::Services::CUpdateConnectionUrlResponse>(gqlRequest, response, errorMessage)){
+	sdl::agentino::Services::CUpdateConnectionUrlResponse retVal = SendModelRequest<sdl::agentino::Services::CUpdateConnectionUrlResponse>(gqlRequest, errorMessage);
+	if (!errorMessage.isEmpty()){
 		return false;
 	}
 
-	if (response.succesful.has_value()){
-		return *response.succesful;
+	if (retVal.Version_1_0->succesful.has_value()){
+		return *retVal.Version_1_0->succesful;
 	}
 
 	return false;

@@ -41,7 +41,7 @@ DocumentCollectionViewDelegate {
 
                 let documentManager = MainDocumentManager.getDocumentManager("AgentsSingleDocument");
                 if (documentManager){
-                    documentManager.openDocument(itemId, "Agent", "AgentEditor");
+                    documentManager.openDocument(itemId, "", "Agent", "AgentEditor");
                 }
             }
         }
