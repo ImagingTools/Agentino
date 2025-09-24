@@ -109,32 +109,32 @@ bool GetServiceFromRepresentation(
 	}
 	
 	if (serviceDataRepresentation.inputConnections){
-		QList<sdl::agentino::Services::CInputConnection::V1_0> connections = *serviceDataRepresentation.inputConnections;
+		istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::CInputConnection::V1_0>> connections = *serviceDataRepresentation.inputConnections;
 		
 		imtbase::IObjectCollection* incomingConnectionCollectionPtr = serviceInfo.GetInputConnections();
 		if (incomingConnectionCollectionPtr != nullptr){
 			incomingConnectionCollectionPtr->ResetData();
 			
-			for (const sdl::agentino::Services::CInputConnection::V1_0& connection : connections){
+			for (const istd::TSharedNullable<sdl::agentino::Services::CInputConnection::V1_0>& connection : *connections){
 				QByteArray id;
-				if (connection.id){
-					id = *connection.id;
+				if (connection->id){
+					id = *connection->id;
 				}
 				
 				QString name;
-				if (connection.connectionName){
-					name = *connection.connectionName;
+				if (connection->connectionName){
+					name = *connection->connectionName;
 				}
 				
 				QString description;
-				if (connection.description){
-					description = *connection.description;
+				if (connection->description){
+					description = *connection->description;
 				}
 				
 				istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
 				urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam);
 				
-				if (!GetUrlConnectionFromRepresentation(*urlConnectionParamPtr.GetPtr(), connection)){
+				if (!GetUrlConnectionFromRepresentation(*urlConnectionParamPtr.GetPtr(), *connection)){
 					return false;
 				}
 				
@@ -147,32 +147,32 @@ bool GetServiceFromRepresentation(
 	}
 	
 	if (serviceDataRepresentation.outputConnections){
-		QList<sdl::agentino::Services::COutputConnection::V1_0> connections = *serviceDataRepresentation.outputConnections;
+		istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::COutputConnection::V1_0>> connections = *serviceDataRepresentation.outputConnections;
 		
 		imtbase::IObjectCollection* dependantConnectionCollectionPtr = serviceInfo.GetDependantServiceConnections();
 		if (dependantConnectionCollectionPtr != nullptr){
 			dependantConnectionCollectionPtr->ResetData();
 			
-			for (const sdl::agentino::Services::COutputConnection::V1_0& connection : connections){
+			for (const istd::TSharedNullable<sdl::agentino::Services::COutputConnection::V1_0>& connection : *connections){
 				QByteArray id;
-				if (connection.id){
-					id = *connection.id;
+				if (connection->id){
+					id = *connection->id;
 				}
 				
 				QString name;
-				if (connection.connectionName){
-					name = *connection.connectionName;
+				if (connection->connectionName){
+					name = *connection->connectionName;
 				}
 				
 				QString description;
-				if (connection.description){
-					description = *connection.description;
+				if (connection->description){
+					description = *connection->description;
 				}
 				
 				istd::TDelPtr<imtservice::CUrlConnectionLinkParam> urlConnectionLinkParamPtr;
 				urlConnectionLinkParamPtr.SetPtr(new imtservice::CUrlConnectionLinkParam);
 				
-				if (!GetUrlConnectionLinkFromRepresentation(*urlConnectionLinkParamPtr.GetPtr(), connection)){
+				if (!GetUrlConnectionLinkFromRepresentation(*urlConnectionLinkParamPtr.GetPtr(), *connection)){
 					return false;
 				}
 				
@@ -254,7 +254,8 @@ bool GetRepresentationFromService(
 		}
 	}
 	
-	serviceDataRepresentation.inputConnections = inputConnectionList;
+	serviceDataRepresentation.inputConnections.Emplace();
+	serviceDataRepresentation.inputConnections->FromList(inputConnectionList);
 	
 	QList<sdl::agentino::Services::COutputConnection::V1_0> outputConnectionList;
 	
@@ -284,7 +285,8 @@ bool GetRepresentationFromService(
 		}
 	}
 	
-	serviceDataRepresentation.outputConnections = outputConnectionList;
+	serviceDataRepresentation.outputConnections.Emplace();
+	serviceDataRepresentation.outputConnections->FromList(outputConnectionList);
 
 	return true;
 }
@@ -310,30 +312,30 @@ bool GetUrlConnectionFromRepresentation(
 	}
 
 	if (connectionRepresentation.externConnectionList){
-		QList<sdl::agentino::Services::CExternConnectionInfo::V1_0> externConnectionList = *connectionRepresentation.externConnectionList;
+		istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::CExternConnectionInfo::V1_0>> externConnectionList = *connectionRepresentation.externConnectionList;
 		
-		for (const sdl::agentino::Services::CExternConnectionInfo::V1_0& externPort : externConnectionList){
+		for (const istd::TSharedNullable<sdl::agentino::Services::CExternConnectionInfo::V1_0>& externPort : *externConnectionList){
 			imtservice::IServiceConnectionParam::IncomingConnectionParam incomingConnection;
 
-			if (externPort.id){
-				incomingConnection.id = *externPort.id;
+			if (externPort->id){
+				incomingConnection.id = *externPort->id;
 			}
 
-			if (externPort.description){
-				incomingConnection.description = *externPort.description;
+			if (externPort->description){
+				incomingConnection.description = *externPort->description;
 			}
 
-			if (externPort.connectionParam){
-				if (externPort.connectionParam->host){
-					incomingConnection.host = *externPort.connectionParam->host;
+			if (externPort->connectionParam){
+				if (externPort->connectionParam->host){
+					incomingConnection.host = *externPort->connectionParam->host;
 				}
 
-				if (externPort.connectionParam->httpPort){
-					incomingConnection.httpPort = *externPort.connectionParam->httpPort;
+				if (externPort->connectionParam->httpPort){
+					incomingConnection.httpPort = *externPort->connectionParam->httpPort;
 				}
 	
-				if (externPort.connectionParam->wsPort){
-					incomingConnection.wsPort = *externPort.connectionParam->wsPort;
+				if (externPort->connectionParam->wsPort){
+					incomingConnection.wsPort = *externPort->connectionParam->wsPort;
 				}
 			}
 
@@ -377,7 +379,8 @@ bool GetRepresentationFromUrlConnection(
 
 		externConnectionList << externConnectionInfo;
 	}
-	connectionRepresentation.externConnectionList = externConnectionList;
+	connectionRepresentation.externConnectionList.Emplace();
+	connectionRepresentation.externConnectionList->FromList(externConnectionList);
 
 	return true;
 }
@@ -538,8 +541,10 @@ bool GetRepresentationFromConnectionCollection(
 			}
 		}
 
-		connectionCollectionRepresentation.inputConnections = inputConnectionList;
-		connectionCollectionRepresentation.outputConnections = outputConnectionList;
+		connectionCollectionRepresentation.inputConnections.Emplace();
+		connectionCollectionRepresentation.inputConnections->FromList(inputConnectionList);
+		connectionCollectionRepresentation.outputConnections.Emplace();
+		connectionCollectionRepresentation.outputConnections->FromList(outputConnectionList);
 
 		return true;
 	}

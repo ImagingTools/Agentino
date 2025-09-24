@@ -73,16 +73,16 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 	}
 
 	if (response.Version_1_0->outputConnections){
-		QList<sdl::agentino::Services::COutputConnection::V1_0> outputConnections = *response.Version_1_0->outputConnections;
-		for (sdl::agentino::Services::COutputConnection::V1_0& outputConnection : outputConnections){
-			QByteArray id = *outputConnection.id;
-			outputConnection.dependantConnectionList = GetConnectionsModel(id);
+		istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::COutputConnection::V1_0>> outputConnections = *response.Version_1_0->outputConnections;
+		for (istd::TSharedNullable<sdl::agentino::Services::COutputConnection::V1_0>& outputConnection : *outputConnections){
+			QByteArray id = *outputConnection->id;
+			outputConnection->dependantConnectionList = GetConnectionsModel(id);
 
 			std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr = GetDependantServerConnectionParam(id);
 			if (serverConnectionInterfacePtr != nullptr){
 				sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 urlRepresentation;
 				if (agentinodata::GetRepresentationFromServerConnectionParam(*serverConnectionInterfacePtr.get(), urlRepresentation)){
-					outputConnection.connectionParam = urlRepresentation;
+					outputConnection->connectionParam = urlRepresentation;
 				}
 			}
 		}
@@ -334,7 +334,7 @@ sdl::imtbase::ImtCollection::CRemovedNotificationPayload CServiceControllerProxy
 	
 	QByteArrayList serviceIds;
 	if (arguments.input.Version_1_0->elementIds){
-		serviceIds = *arguments.input.Version_1_0->elementIds;
+		serviceIds = (*arguments.input.Version_1_0->elementIds).ToList();
 	}
 
 	const imtgql::CGqlParamObject* inputParamPtr = gqlRequest.GetParamObject("input");
@@ -406,10 +406,10 @@ sdl::agentino::Services::CPluginInfo CServiceControllerProxyComp::OnLoadPlugin(
 
 	// Update dependant connections elements
 	if (retVal.Version_1_0->outputConnections){
-		QList<sdl::agentino::Services::COutputConnection::V1_0> outputConnections = *retVal.Version_1_0->outputConnections;
-		for (sdl::agentino::Services::COutputConnection::V1_0& outputConnection : outputConnections){
-			QByteArray id = *outputConnection.id;
-			outputConnection.dependantConnectionList = GetConnectionsModel(id);
+		istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::COutputConnection::V1_0>> outputConnections = *retVal.Version_1_0->outputConnections;
+		for (istd::TSharedNullable<sdl::agentino::Services::COutputConnection::V1_0>& outputConnection : *outputConnections){
+			QByteArray id = *outputConnection->id;
+			outputConnection->dependantConnectionList = GetConnectionsModel(id);
 		}
 
 		retVal.Version_1_0->outputConnections = outputConnections;
@@ -592,10 +592,12 @@ bool CServiceControllerProxyComp::SetServiceStatus(const QByteArray& serviceId, 
 }
 
 
-QList<sdl::agentino::Services::CDependantConnectionInfo::V1_0> CServiceControllerProxyComp::GetConnectionsModel(
+istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::CDependantConnectionInfo::V1_0>> CServiceControllerProxyComp::GetConnectionsModel(
 			const QByteArray& connectionUsageId) const
 {
-	QList<sdl::agentino::Services::CDependantConnectionInfo::V1_0> retVal;
+	istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::CDependantConnectionInfo::V1_0>> retVal;
+	retVal.Emplace();
+
 	if (!m_agentCollectionCompPtr.IsValid()){
 		return retVal;
 	}
@@ -664,7 +666,7 @@ QList<sdl::agentino::Services::CDependantConnectionInfo::V1_0> CServiceControlle
 						dependantConnectionInfo.name = host + "/" + QString::number(httpPort);
 						dependantConnectionInfo.connectionParam = sdlRepresentation;
 
-						retVal << dependantConnectionInfo;
+						*retVal << dependantConnectionInfo;
 
 						QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
 
@@ -683,7 +685,7 @@ QList<sdl::agentino::Services::CDependantConnectionInfo::V1_0> CServiceControlle
 	
 							incomingConnectionInfo.connectionParam = connectionParam;
 
-							retVal << incomingConnectionInfo;
+							*retVal << incomingConnectionInfo;
 						}
 					}
 				}
@@ -745,22 +747,22 @@ bool CServiceControllerProxyComp::GetConnectionObjectData(
 void CServiceControllerProxyComp::UpdateUrlFromDependantConnection(sdl::agentino::Services::CServiceData::V1_0& serviceData) const
 {
 	if (serviceData.outputConnections){
-		QList<sdl::agentino::Services::COutputConnection::V1_0> connections = *serviceData.outputConnections;
+		istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::COutputConnection::V1_0>> connections = *serviceData.outputConnections;
 
-		for (int i = 0; i < connections.size(); i++){
-			sdl::agentino::Services::COutputConnection::V1_0 connection = connections[i];
+		for (int i = 0; i < connections->size(); i++){
+			istd::TSharedNullable<sdl::agentino::Services::COutputConnection::V1_0> connection = (*connections)[i];
 
 			QByteArray dependantConnectionId;
-			if (connection.dependantConnectionId){
-				dependantConnectionId = (*connection.dependantConnectionId).toUtf8();
+			if (connection->dependantConnectionId){
+				dependantConnectionId = (*connection->dependantConnectionId).toUtf8();
 			}
 
 			std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr = GetDependantServerConnectionParam(dependantConnectionId);
 
 			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 serverConnectionRepresentation;
 			if (agentinodata::GetRepresentationFromServerConnectionParam(*serverConnectionInterfacePtr.get(), serverConnectionRepresentation)){
-				connection.connectionParam = serverConnectionRepresentation;
-				connections[i] = connection;
+				connection->connectionParam = serverConnectionRepresentation;
+				(*connections)[i] = connection;
 			}
 		}
 
@@ -841,11 +843,11 @@ sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 CServiceControllerProxy
 			const QByteArray& connectionId) const
 {
 	if (serviceData.inputConnections){
-		QList<sdl::agentino::Services::CInputConnection::V1_0> connections = *serviceData.inputConnections;
+		istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::CInputConnection::V1_0>> connections = *serviceData.inputConnections;
 
-		for (const sdl::agentino::Services::CInputConnection::V1_0& connection : connections){
-			if (connectionId == *connection.id){
-				return *connection.connectionParam;
+		for (const istd::TSharedNullable<sdl::agentino::Services::CInputConnection::V1_0>& connection : *connections){
+			if (connectionId == *connection->id){
+				return *connection->connectionParam;
 			}
 		}
 	}
@@ -861,20 +863,20 @@ QByteArrayList CServiceControllerProxyComp::GetChangedConnectionUrl(
 	QByteArrayList retVal;
 
 	if (serviceData1.inputConnections && serviceData2.inputConnections){
-		QList<sdl::agentino::Services::CInputConnection::V1_0> connections1 = *serviceData1.inputConnections;
-		QList<sdl::agentino::Services::CInputConnection::V1_0> connections2 = *serviceData2.inputConnections;
+		istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::CInputConnection::V1_0>> connections1 = *serviceData1.inputConnections;
+		istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::CInputConnection::V1_0>> connections2 = *serviceData2.inputConnections;
 
-		for (int i = 0; i < connections1.size(); i++){
-			sdl::agentino::Services::CInputConnection::V1_0 connection1 = connections1[i];
-			sdl::agentino::Services::CInputConnection::V1_0 connection2 = connections2[i];
+		for (int i = 0; i < connections1->size(); i++){
+			istd::TSharedNullable<sdl::agentino::Services::CInputConnection::V1_0> connection1 = (*connections1)[i];
+			istd::TSharedNullable<sdl::agentino::Services::CInputConnection::V1_0> connection2 = (*connections2)[i];
 
-			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam1 = *connection1.connectionParam;
-			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam2 = *connection2.connectionParam;
+			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam1 = *connection1->connectionParam;
+			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam2 = *connection2->connectionParam;
 
 			if (*connectionParam1.host != *connectionParam2.host ||
 				*connectionParam1.httpPort != *connectionParam2.httpPort ||
 				*connectionParam1.wsPort != *connectionParam2.wsPort){
-				retVal << *connection1.id;
+				retVal << *connection1->id;
 			}
 		}
 	}

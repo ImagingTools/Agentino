@@ -125,16 +125,18 @@ sdl::agentino::Topology::CTopology CTopologyControllerComp::OnGetTopology(
 						}
 					}
 					
-					service.links = linkList;
+					service.links.Emplace();
+					service.links->FromList(linkList);
 					
 					services << service;
 				}
 			}
 		}
 	}
-	
-	response.Version_1_0->services = services;
-	
+
+	response.Version_1_0->services.Emplace();
+	response.Version_1_0->services->FromList(services);
+
 	return response;
 }
 
@@ -147,28 +149,32 @@ sdl::agentino::Topology::CSaveTopologyResponse CTopologyControllerComp::OnSaveTo
 	sdl::agentino::Topology::CSaveTopologyResponse response;
 	response.Version_1_0.emplace();
 	response.Version_1_0->successful = false;
-	
+
 	if (!m_topologyCollectionCompPtr.IsValid()){
 		Q_ASSERT_X(false, "Attribute 'TopologyCollection' was not set", "CTopologyControllerComp");
 		return response;
 	}
-		
+
 	sdl::agentino::Topology::SaveTopologyRequestArguments arguments = saveTopologyRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
 		errorMessage = QString("Unable to save topology. Error: GraphQL version 1.0 is invalid");
 		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
 		return response;
 	}
-	
+
 	m_topologyCollectionCompPtr->ResetData();
-	
-	QList<sdl::agentino::Topology::CService::V1_0> serviceList = *arguments.input.Version_1_0->services;
-	for (const sdl::agentino::Topology::CService::V1_0& service : serviceList){
-		int x = *service.x;
-		int y = *service.y;
-		QByteArray id = *service.id;
+	if (!arguments.input.Version_1_0->services.has_value()){
+		errorMessage = QString("Unable to save topology. Error: Input params is invalid");
+		return response;
+	}
+
+	istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Topology::CService::V1_0>> serviceList = *arguments.input.Version_1_0->services;
+	for (const istd::TSharedNullable<sdl::agentino::Topology::CService::V1_0>& service : *serviceList.GetPtr()){
+		int x = *service->x;
+		int y = *service->y;
+		QByteArray id = *service->id;
 		QPoint point(x,y);
-		
+
 		if (!SetServiceCoordinate(id, point)){
 			response.Version_1_0->successful = false;
 			return response;

@@ -352,8 +352,9 @@ sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollection
 
 		infoParams << informationParameter;
 	}
-	
-	elementMetaInfo.infoParams = infoParams;
+
+	elementMetaInfo.infoParams.Emplace();
+	elementMetaInfo.infoParams->FromList(infoParams);
 	response.Version_1_0->elementMetaInfo = elementMetaInfo;
 
 	return response;
@@ -529,7 +530,7 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::ListObjects(
 			serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 		}
 	}
-	
+
 	if (serviceCollectionPtr == nullptr){
 		errorMessage = QString("Unable to get list objects. Internal error.");
 		SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
