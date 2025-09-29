@@ -41,7 +41,7 @@ DocumentCollectionViewDelegate {
 
                 let documentManager = MainDocumentManager.getDocumentManager("AgentsSingleDocument");
                 if (documentManager){
-                    documentManager.openDocument(itemId, "", "Agent", "AgentEditor");
+                    documentManager.openDocument(itemId, "Agent", "");
                 }
             }
         }
@@ -50,7 +50,7 @@ DocumentCollectionViewDelegate {
     function onNew(){
         let documentManager = MainDocumentManager.getDocumentManager("AgentsSingleDocument");
         if (documentManager){
-            documentManager.insertNewDocument("Agent", "AgentEditor");
+            documentManager.insertNewDocument("Agent");
         }
     }
 }

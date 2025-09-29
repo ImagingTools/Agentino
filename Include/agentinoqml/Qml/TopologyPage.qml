@@ -164,7 +164,7 @@ ViewBase {
 					let serviceId = item.m_id;
 					let serviceName = item.m_mainText;
 					
-					documentManager.openDocument(serviceId, serviceName, "Service", "ServiceView");
+					documentManager.openDocument(serviceId, "Service", serviceName);
 				}
 			}
 		}
