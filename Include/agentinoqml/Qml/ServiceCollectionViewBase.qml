@@ -48,11 +48,8 @@ RemoteCollectionView {
 		}
 
 		if (documentManager){
-			console.log("registerDocumentView")
-			
-			documentManager.registerDocumentView("Service", "ServiceEditor", serviceEditorComp);
+			documentManager.registerDocumentView("Service", serviceEditorComp);
 			documentManager.registerDocumentDataController("Service", serviceDataControllerComp);
-			// documentManagerPtr.registerDocumentValidator("Service", serviceValidatorComp);
 		}
 	}
 	

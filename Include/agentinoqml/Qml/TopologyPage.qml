@@ -25,7 +25,7 @@ ViewBase {
 	
 	Component.onCompleted: {
 		if (documentManager){
-			documentManager.registerDocumentView("Service", "ServiceView", serviceEditorComp);
+			documentManager.registerDocumentView("Service", serviceEditorComp);
 			documentManager.registerDocumentDataController("Service", serviceDataControllerComp);
 			documentManager.registerDocumentValidator("Service", serviceValidatorComp);
 		}

@@ -17,7 +17,7 @@ SingleDocumentWorkspaceView {
 	}
 	
 	Component.onCompleted: {
-		documentManager.registerDocumentView("Agent", "AgentEditor", agentEditorComp);
+		documentManager.registerDocumentView("Agent", agentEditorComp);
 		documentManager.registerDocumentDataController("Agent", agentDataControllerComp);
 		
 		MainDocumentManager.registerDocumentManager("AgentsSingleDocument", documentManager);
