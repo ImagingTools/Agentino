@@ -227,11 +227,10 @@ sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollection
 			
 			if (m_translationManagerCompPtr.IsValid()){
 				incomingConnectionStr = iqt::GetTranslation(
-											m_translationManagerCompPtr.GetPtr(),
-											incomingConnectionStr.toUtf8(),
-											languageId,
-											"agentinogql::CServerServiceCollectionControllerComp"
-											);
+							m_translationManagerCompPtr.GetPtr(),
+							incomingConnectionStr.toUtf8(),
+							languageId,
+							"agentinogql::CServerServiceCollectionControllerComp");
 			}
 			
 			sdl::imtbase::ImtBaseTypes::CParameter::V1_0 parameter;
@@ -272,12 +271,12 @@ sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollection
 				QString dependantServicesStr = QT_TR_NOOP("Dependant services on port");
 				if (m_translationManagerCompPtr.IsValid()){
 					dependantServicesStr = iqt::GetTranslation(
-												m_translationManagerCompPtr.GetPtr(),
-												dependantServicesStr.toUtf8(),
-												languageId,
-												"agentinogql::CServerServiceCollectionControllerComp"
-											);
+								m_translationManagerCompPtr.GetPtr(),
+								dependantServicesStr.toUtf8(),
+								languageId,
+								"agentinogql::CServerServiceCollectionControllerComp");
 				}
+
 				dependantParameter.name = dependantServicesStr;
 				dependantParameter.data = connectionInfos.join('\n');
 				
@@ -296,11 +295,10 @@ sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollection
 			QString serviceDependsOnStr = QT_TR_NOOP("Service depends on");
 			if (m_translationManagerCompPtr.IsValid()){
 				serviceDependsOnStr = iqt::GetTranslation(
-										  m_translationManagerCompPtr.GetPtr(),
-										  serviceDependsOnStr.toUtf8(),
-										  languageId,
-										  "agentinogql::CServerServiceCollectionControllerComp"
-										  );
+							m_translationManagerCompPtr.GetPtr(),
+							serviceDependsOnStr.toUtf8(),
+							languageId,
+							"agentinogql::CServerServiceCollectionControllerComp");
 			}
 
 			serviceDependsParameter.name = serviceDependsOnStr;
@@ -339,11 +337,10 @@ sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollection
 		
 		if (m_translationManagerCompPtr.IsValid()){
 			serviceDependsOnStr = iqt::GetTranslation(
-									  m_translationManagerCompPtr.GetPtr(),
-									  serviceDependsOnStr.toUtf8(),
-									  languageId,
-									  "agentinogql::CServerServiceCollectionControllerComp"
-									  );
+						m_translationManagerCompPtr.GetPtr(),
+						serviceDependsOnStr.toUtf8(),
+						languageId,
+						"agentinogql::CServerServiceCollectionControllerComp");
 		}
 		informationParameter.name = serviceDependsOnStr;
 
@@ -503,8 +500,8 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 
 
 imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::ListObjects(
-		const imtgql::CGqlRequest& gqlRequest,
-		QString& errorMessage) const
+			const imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
 {
 	const imtgql::CGqlParamObject& inputParams = gqlRequest.GetParams();
 	
@@ -615,9 +612,9 @@ QStringList CServerServiceCollectionControllerComp::GetDependantStatusInfo(const
 										if (connectionLinkParamPtr != nullptr){
 											QByteArray dependantServiceId =  m_serviceCompositeInfoCompPtr->GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
 											agentinodata::IServiceStatusInfo::ServiceStatus serviceStatus = m_serviceCompositeInfoCompPtr->GetServiceStatus(dependantServiceId);
-											QString serviceName = m_serviceCompositeInfoCompPtr->GetServiceName(dependantServiceId)
-																  + "@"
-																  + m_serviceCompositeInfoCompPtr->GetServiceAgentName(dependantServiceId);
+											QString serviceName = 
+														m_serviceCompositeInfoCompPtr->GetServiceName(dependantServiceId) + "@" +
+														m_serviceCompositeInfoCompPtr->GetServiceAgentName(dependantServiceId);
 											QString info;
 											
 											if (serviceStatus == agentinodata::IServiceStatusInfo::SS_UNDEFINED){
