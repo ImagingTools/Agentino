@@ -20,7 +20,7 @@ Dialog {
 		addButton(Enums.cancel, qsTr("Cancel"), true)
 	}
 	
-	onconnectionListModelChanged: {
+	onConnectionListModelChanged: {
 		updateGui();
 	}
 	
