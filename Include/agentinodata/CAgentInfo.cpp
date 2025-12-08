@@ -169,11 +169,11 @@ bool CAgentInfo::CopyFrom(const IChangeable &object, CompatibilityMode /*mode*/)
 }
 
 
-istd::IChangeable *CAgentInfo::CloneMe(CompatibilityMode mode) const
+istd::IChangeableUniquePtr CAgentInfo::CloneMe(CompatibilityMode mode) const
 {
-	istd::TDelPtr<CAgentInfo> clonePtr(new CAgentInfo);
+	istd::IChangeableUniquePtr clonePtr(new CAgentInfo);
 	if (clonePtr->CopyFrom(*this, mode)){
-		return clonePtr.PopPtr();
+		return clonePtr;
 	}
 
 	return nullptr;

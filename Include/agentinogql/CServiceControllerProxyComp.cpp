@@ -78,10 +78,10 @@ sdl::agentino::Services::CServiceData CServiceControllerProxyComp::OnGetService(
 			QByteArray id = *outputConnection->id;
 			outputConnection->dependantConnectionList = GetConnectionsModel(id);
 
-			std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr = GetDependantServerConnectionParam(id);
-			if (serverConnectionInterfacePtr != nullptr){
+			istd::TSharedInterfacePtr<imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr = GetDependantServerConnectionParam(id);
+			if (serverConnectionInterfacePtr.IsValid()){
 				sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 urlRepresentation;
-				if (agentinodata::GetRepresentationFromServerConnectionParam(*serverConnectionInterfacePtr.get(), urlRepresentation)){
+				if (agentinodata::GetRepresentationFromServerConnectionParam(*serverConnectionInterfacePtr.GetPtr(), urlRepresentation)){
 					outputConnection->connectionParam = urlRepresentation;
 				}
 			}
@@ -213,7 +213,11 @@ sdl::imtbase::ImtCollection::CAddedNotificationPayload CServiceControllerProxyCo
 	getArguments.input.Version_1_0->id = serviceId;
 
 	imtgql::CGqlRequest getGqlRequest;
-	getGqlRequest.SetGqlContext(dynamic_cast<imtgql::IGqlContext*>(gqlRequest.GetRequestContext()->CloneMe()));
+
+	imtgql::IGqlContextSharedPtr contextPtr;
+	contextPtr.MoveCastedPtr(gqlRequest.GetRequestContext()->CloneMe());
+	getGqlRequest.SetGqlContext(contextPtr);
+
 	if (sdl::agentino::Services::CGetServiceGqlRequest::SetupGqlRequest(getGqlRequest, getArguments)){
 		sdl::agentino::Services::CServiceData getServiceResponse = SendModelRequest<sdl::agentino::Services::CServiceData>(getGqlRequest, errorMessage);
 		if (!errorMessage.isEmpty()){
@@ -757,10 +761,10 @@ void CServiceControllerProxyComp::UpdateUrlFromDependantConnection(sdl::agentino
 				dependantConnectionId = (*connection->dependantConnectionId).toUtf8();
 			}
 
-			std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr = GetDependantServerConnectionParam(dependantConnectionId);
+			istd::TSharedInterfacePtr<imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr = GetDependantServerConnectionParam(dependantConnectionId);
 
 			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 serverConnectionRepresentation;
-			if (agentinodata::GetRepresentationFromServerConnectionParam(*serverConnectionInterfacePtr.get(), serverConnectionRepresentation)){
+			if (agentinodata::GetRepresentationFromServerConnectionParam(*serverConnectionInterfacePtr.GetPtr(), serverConnectionRepresentation)){
 				connection->connectionParam = serverConnectionRepresentation;
 				(*connections)[i] = connection;
 			}
@@ -771,7 +775,7 @@ void CServiceControllerProxyComp::UpdateUrlFromDependantConnection(sdl::agentino
 }
 
 
-std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> CServiceControllerProxyComp::GetDependantServerConnectionParam(const QByteArray& dependantId) const
+istd::TSharedInterfacePtr<imtcom::CServerConnectionInterfaceParam> CServiceControllerProxyComp::GetDependantServerConnectionParam(const QByteArray& dependantId) const
 {
 	if (!m_agentCollectionCompPtr.IsValid()){
 		Q_ASSERT_X(false, "Attribute 'AgentCollection' was not set", "CServiceControllerProxyComp");
@@ -816,8 +820,9 @@ std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> CServiceControlle
 							}
 
 							if (connectionElementId == dependantId){
-								std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr;
-								serverConnectionInterfacePtr.reset(dynamic_cast<imtcom::CServerConnectionInterfaceParam*>(connectionParamPtr->CloneMe()));
+								istd::TSharedInterfacePtr<imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr;
+								serverConnectionInterfacePtr.MoveCastedPtr(connectionParamPtr->CloneMe());
+							
 								return serverConnectionInterfacePtr;
 							}
 

@@ -143,12 +143,12 @@ IServiceInfo* CAgentCollectionComp::GetService(const QByteArray& agentId, const 
 		return nullptr;
 	}
 	
-	istd::TDelPtr<IServiceInfo> serviceInfoPtr;
-	if (!serviceInfoPtr.SetCastedOrRemove(dataPtr.GetPtr()->CloneMe())){
+	istd::TUniqueInterfacePtr<IServiceInfo> serviceInfoPtr;
+	if (!serviceInfoPtr.MoveCastedPtr(dataPtr->CloneMe())){
 		return nullptr;
 	}
 	
-	return serviceInfoPtr.PopPtr();
+	return serviceInfoPtr.PopInterfacePtr();
 }
 
 

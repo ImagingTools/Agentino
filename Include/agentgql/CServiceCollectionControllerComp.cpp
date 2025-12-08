@@ -472,12 +472,12 @@ imtbase::IObjectCollection* CServiceCollectionControllerComp::GetObjectCollectio
 		return nullptr;
 	}
 	
-	istd::TDelPtr<istd::IChangeable> collectionPtr = m_objectCollectionCompPtr->CloneMe();
+	istd::IChangeableUniquePtr collectionPtr = m_objectCollectionCompPtr->CloneMe();
 	if (!collectionPtr.IsValid()){
 		return nullptr;
 	}
 	
-	return dynamic_cast<imtbase::IObjectCollection*>(collectionPtr.PopPtr());
+	return dynamic_cast<imtbase::IObjectCollection*>(collectionPtr.PopInterfacePtr());
 }
 
 

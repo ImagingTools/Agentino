@@ -110,7 +110,7 @@ QStringList CServerServiceCollectionControllerComp::GetConnectionInfoAboutServic
 }
 
 
-const imtcom::IServerConnectionInterface* CServerServiceCollectionControllerComp::GetConnectionInfo(const QByteArray& connectionId) const
+istd::TSharedInterfacePtr<imtcom::IServerConnectionInterface> CServerServiceCollectionControllerComp::GetConnectionInfo(const QByteArray& connectionId) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		return nullptr;
@@ -152,7 +152,10 @@ const imtcom::IServerConnectionInterface* CServerServiceCollectionControllerComp
 						if (connectionElementId == connectionId){
 							imtbase::IObjectCollection::DataPtr connectionDataPtr;
 							if (inputConnectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
-								return dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr()->CloneMe());
+								istd::TSharedInterfacePtr<imtcom::IServerConnectionInterface> retVal;
+								retVal.MoveCastedPtr(connectionDataPtr.GetPtr()->CloneMe());
+
+								return retVal;
 							}
 						}
 					}
@@ -168,7 +171,7 @@ const imtcom::IServerConnectionInterface* CServerServiceCollectionControllerComp
 sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollectionControllerComp::OnGetElementMetaInfo(
 			const sdl::imtbase::ImtCollection::CGetElementMetaInfoGqlRequest& getElementMetaInfoRequest,
 			const ::imtgql::CGqlRequest& gqlRequest,
-			QString& errorMessage) const
+			QString& /*errorMessage*/) const
 {
 	sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload response;
 	response.Version_1_0.Emplace();
@@ -310,7 +313,7 @@ sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollection
 					if (urlConnectionLinkParamPtr != nullptr){
 						QByteArray dependantServiceConnectionId = urlConnectionLinkParamPtr->GetDependantServiceConnectionId();
 						
-						istd::TDelPtr<const imtcom::IServerConnectionInterface> inputConnectionPtr = GetConnectionInfo(dependantServiceConnectionId);
+						istd::TSharedInterfacePtr<imtcom::IServerConnectionInterface> inputConnectionPtr = GetConnectionInfo(dependantServiceConnectionId);
 						if (inputConnectionPtr.IsValid()){
 							const QString host = inputConnectionPtr->GetHost();
 							const int httpPort = inputConnectionPtr->GetPort(imtcom::IServerConnectionInterface::PT_HTTP);

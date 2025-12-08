@@ -102,11 +102,11 @@ bool CServiceStatusInfo::CopyFrom(const IChangeable &object, CompatibilityMode /
 }
 
 
-istd::IChangeable *CServiceStatusInfo::CloneMe(CompatibilityMode mode) const
+istd::IChangeableUniquePtr CServiceStatusInfo::CloneMe(CompatibilityMode mode) const
 {
-	istd::TDelPtr<CServiceStatusInfo> clonePtr(new CServiceStatusInfo);
+	istd::IChangeableUniquePtr clonePtr(new CServiceStatusInfo);
 	if (clonePtr->CopyFrom(*this, mode)){
-		return clonePtr.PopPtr();
+		return clonePtr;
 	}
 
 	return nullptr;

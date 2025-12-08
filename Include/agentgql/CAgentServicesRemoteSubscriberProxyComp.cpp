@@ -46,16 +46,12 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 		return false;
 	}
 	
-	imtgql::CGqlRequest* gqlRequestPtr = dynamic_cast<imtgql::CGqlRequest*>(gqlRequest.CloneMe());
-	if (gqlRequestPtr == nullptr){
+	istd::TSharedInterfacePtr<imtgql::IGqlRequest> gqlRequestPtr;
+	gqlRequestPtr.MoveCastedPtr(gqlRequest.CloneMe());
+	if (!gqlRequestPtr.IsValid()){
 		return false;
 	}
-	
-	imtclientgql::IGqlClient::GqlRequestPtr clientRequestPtr(dynamic_cast<imtgql::IGqlRequest*>(gqlRequestPtr));
-	if (clientRequestPtr.isNull()){
-		return false;
-	}
-	
+
 	QByteArray serviceId = gqlRequest.GetHeader("serviceid");
 	QUrl url;
 	QByteArray serviceTypeName;
@@ -112,7 +108,7 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 	if (!m_requestMap.contains(subscriptionId)){
 		RequestInfo requestInfo;
 		requestInfo.serviceId = serviceId;
-		requestInfo.gqlRequestPtr = clientRequestPtr;
+		requestInfo.gqlRequestPtr = gqlRequestPtr;
 		requestInfo.networkRequestPtr = &networkRequest;
 		
 		m_requestMap.insert(subscriptionId, requestInfo);
@@ -288,7 +284,7 @@ void CAgentServicesRemoteSubscriberProxyComp::TryReconnect(const QByteArray& ser
 		RequestInfo requestInfo = it.value();
 		
 		if (requestInfo.serviceId == serviceId){
-			imtgql::CGqlRequest* gqlRequestPtr = dynamic_cast<imtgql::CGqlRequest*>(requestInfo.gqlRequestPtr.get());
+			imtgql::CGqlRequest* gqlRequestPtr = dynamic_cast<imtgql::CGqlRequest*>(requestInfo.gqlRequestPtr.GetPtr());
 			if (gqlRequestPtr != nullptr && requestInfo.networkRequestPtr != nullptr){
 				RegisterSubscription(subscriptionId, *gqlRequestPtr, *requestInfo.networkRequestPtr, errorMessage);
 			}

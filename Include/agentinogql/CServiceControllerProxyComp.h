@@ -87,7 +87,7 @@ private:
 		const imtbase::IObjectCollection::Id& connectionId,
 		imtbase::IObjectCollection::DataPtr& connectionDataPtr) const;
 	void UpdateUrlFromDependantConnection(sdl::agentino::Services::CServiceData::V1_0& serviceData) const;
-	std::shared_ptr<const imtcom::CServerConnectionInterfaceParam> GetDependantServerConnectionParam(const QByteArray& dependantId) const;
+	istd::TSharedInterfacePtr<imtcom::CServerConnectionInterfaceParam> GetDependantServerConnectionParam(const QByteArray& dependantId) const;
 
 	sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 GetServerConnectionParam(
 		const sdl::agentino::Services::CServiceData::V1_0& serviceData,
