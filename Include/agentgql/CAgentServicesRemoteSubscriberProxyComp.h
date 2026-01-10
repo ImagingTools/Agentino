@@ -2,8 +2,8 @@
 
 
 // Qt includes
-#include <QtWebSockets/QWebSocket>
 #include <QtCore/QTimer>
+#include <QtWebSockets/QWebSocket>
 
 // ACF includes
 #include <istd/TDelPtr.h>
@@ -55,7 +55,7 @@ private Q_SLOTS:
 private:
 	void TryReconnect(const QByteArray& serviceId);
 	QByteArray GetServiceId(const QWebSocket& webSocket) const;
-	
+
 	class NetworkOperation
 	{
 	public:
@@ -67,7 +67,7 @@ private:
 		bool timerFlag;
 		QTimer timer;
 	};
-	
+
 	struct RequestInfo
 	{
 		QByteArray serviceId;

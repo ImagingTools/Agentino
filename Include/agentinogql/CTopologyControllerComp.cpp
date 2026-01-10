@@ -159,6 +159,7 @@ sdl::agentino::Topology::CSaveTopologyResponse CTopologyControllerComp::OnSaveTo
 	if (!arguments.input.Version_1_0.has_value()){
 		errorMessage = QString("Unable to save topology. Error: GraphQL version 1.0 is invalid");
 		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
 		return response;
 	}
 

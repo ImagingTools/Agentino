@@ -22,7 +22,7 @@ public:
 protected:
 	// reimplemented (imtgql::IGqlRequestHandler)
 	virtual bool IsRequestSupported(const imtgql::CGqlRequest& gqlRequest) const override;
-	
+
 protected:
 	I_MULTIATTR(QByteArray, m_typeIdsAttrPtr);
 };
@@ -37,22 +37,22 @@ bool TVisualStatusControllerCompWrap<RemoteControllerComp>::IsRequestSupported(c
 	if (!isSupported){
 		return false;
 	}
-	
+
 	sdl::imtbase::ImtCollection::CGetObjectVisualStatusGqlRequest getVisualStatusRequest(gqlRequest, false);
 	if (getVisualStatusRequest.IsValid()){
 		sdl::imtbase::ImtCollection::GetObjectVisualStatusRequestArguments arguments = getVisualStatusRequest.GetRequestedArguments();
 		if (!arguments.input.Version_1_0.has_value()){
 			return false;
 		}
-		
+
 		QByteArray typeId;
 		if (arguments.input.Version_1_0->typeId){
 			typeId = *getVisualStatusRequest.GetRequestedArguments().input.Version_1_0->typeId;
 		}
-		
+
 		return m_typeIdsAttrPtr.FindValue(typeId) >= 0;
 	}
-	
+
 	return true;
 }
 

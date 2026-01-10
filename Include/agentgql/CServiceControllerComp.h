@@ -17,7 +17,7 @@ namespace agentgql
 class CServiceControllerComp: public sdl::agentino::Services::CGraphQlHandlerCompBase
 {
 public:
-	typedef sdl::agentino::Services::CGraphQlHandlerCompBase BaseClass;
+	typedef CGraphQlHandlerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceControllerComp);
 		I_ASSIGN(m_serviceControllerCompPtr, "ServiceController", "Service controller used to manage services", true, "ServiceController");

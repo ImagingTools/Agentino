@@ -1,10 +1,6 @@
 #include <agentinogql/CAgentinoGqlRemoteRepresentationControllerComp.h>
 
 
-// ImtCore includes
-#include <imtgql/CGqlResponse.h>
-
-
 namespace agentinogql
 {
 

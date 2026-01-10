@@ -44,7 +44,7 @@ protected:
 				QString& errorMessage) const override;
 	virtual bool CreateRepresentationFromObject(
 				const istd::IChangeable& data,
-				const sdl::agentino::Agents::CGetAgentGqlRequest& getAgentRequest,
+				const sdl::agentino::Agents::CGetAgentGqlRequest& agentItemRequest,
 				sdl::agentino::Agents::CAgentData::V1_0& representationPayload,
 				QString& errorMessage) const override;
 	virtual bool UpdateObjectFromRepresentationRequest(

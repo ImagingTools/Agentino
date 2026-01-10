@@ -5,9 +5,6 @@
 #include <iser/IObject.h>
 #include <ilog/ITracingConfiguration.h>
 
-// Agentino includes
-#include <agentinodata/IServiceMetaInfo.h>
-
 // ImtCore includes
 #include <imtbase/IObjectCollection.h>
 
@@ -39,17 +36,17 @@ public:
 		*/
 		ST_PLUGIN
 	};
-	
+
 	/**
 		Get name of the service.
 	*/
 	virtual QString GetServiceName() const = 0;
-	
+
 	/**
 		Get description of the service.
 	*/
 	virtual QString GetServiceDescription() const = 0;
-	
+
 	/**
 		Get type of the service.
 	*/

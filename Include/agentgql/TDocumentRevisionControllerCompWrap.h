@@ -22,7 +22,7 @@ public:
 protected:
 	// reimplemented (imtgql::IGqlRequestHandler)
 	virtual bool IsRequestSupported(const imtgql::CGqlRequest& gqlRequest) const override;
-	
+
 protected:
 	I_MULTIATTR(QByteArray, m_collectionIdsAttrPtr);
 };
@@ -37,18 +37,18 @@ bool TDocumentRevisionControllerCompWrap<RemoteControllerComp>::IsRequestSupport
 	if (!isSupported){
 		return false;
 	}
-	
+
 	const imtgql::CGqlParamObject* inputObjectPtr = gqlRequest.GetParamObject("input");
 	if (inputObjectPtr == nullptr){
 		return false;
 	}
-	
+
 	QByteArray collectionId = inputObjectPtr->GetParamArgumentValue(
 												sdl::imtbase::DocumentRevision::CGetRevisionInfoListInput::V1_0::GetRevisionInfoListInputFields::CollectionId.toUtf8()).toByteArray();
 	if (collectionId.isEmpty()){
 		return false;
 	}
-	
+
 	return m_collectionIdsAttrPtr.FindValue(collectionId) >= 0;
 }
 

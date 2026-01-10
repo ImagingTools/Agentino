@@ -1,9 +1,6 @@
 #include <agentgql/CServiceLogSubscriberControllerComp.h>
 
 
-// ImtCore includes
-#include <imtrest/IProtocolEngine.h>
-
 // Agentino includes
 #include <agentinodata/IServiceController.h>
 #include <agentinodata/CServiceInfo.h>
@@ -56,7 +53,7 @@ void CServiceLogSubscriberControllerComp::OnUpdate(const istd::IChangeable::Chan
 			m_servicesMessageInfo.remove(serviceId);
 		}
 	}
-	
+
 	for (const QByteArray& serviceId: serviceIds){
 		if (!m_pluginMap.contains(serviceId)){
 			agentinodata::CServiceInfo* serviceInfoPtr = nullptr;
@@ -114,8 +111,7 @@ void CServiceLogSubscriberControllerComp::OnUpdate(const istd::IChangeable::Chan
 
 void CServiceLogSubscriberControllerComp::TimerUpdate()
 {
-	QByteArrayList keys = m_servicesMessageInfo.keys();
-	for (QByteArray serviceId: keys){
+	for (const QByteArray& serviceId: m_servicesMessageInfo.keys()){
 		imtbase::IObjectCollection* messageCollection = m_servicesMessageInfo[serviceId].messageCollectionPtr.GetPtr();
 		if (messageCollection != nullptr){
 			int messageCount = messageCollection->GetElementsCount();

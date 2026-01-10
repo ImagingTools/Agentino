@@ -6,9 +6,6 @@
 #include <agentinodata/CServiceStatusInfo.h>
 #include <agentinodata/CAgentInfo.h>
 
-// Qt includes
-#include <QtCore/QDebug>
-
 
 namespace agentinogql
 {

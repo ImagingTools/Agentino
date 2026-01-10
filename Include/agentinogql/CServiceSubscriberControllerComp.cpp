@@ -40,8 +40,7 @@ void CServiceSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeS
 {
 	agentinodata::IServiceController::NotifierStatusInfo notifierStatusInfo = changeSet.GetChangeInfo(
 				agentinodata::IServiceController::CN_STATUS_CHANGED).value<agentinodata::IServiceController::NotifierStatusInfo>();
-	QString status;
-	status = agentinodata::IServiceStatusInfo::ToString(notifierStatusInfo.serviceStatus);
+	QString status = agentinodata::IServiceStatusInfo::ToString(notifierStatusInfo.serviceStatus);
 
 	QByteArray serviceId = notifierStatusInfo.serviceId;
 	if (serviceId.isEmpty()){

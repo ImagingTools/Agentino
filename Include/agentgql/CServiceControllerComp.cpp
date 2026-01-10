@@ -22,37 +22,35 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerComp::OnStartS
 			QString& errorMessage) const
 {
 	sdl::agentino::Services::CServiceStatusResponse response;
-	
+
 	if (!m_serviceControllerCompPtr.IsValid()){
 		Q_ASSERT_X(false, "Attribute 'ServiceController' was not set", "CServiceControllerComp");
+
 		return response;
 	}
-	
+
 	sdl::agentino::Services::StartServiceRequestArguments arguments = startServiceRequest.GetRequestedArguments();
-	
+
 	if (!arguments.input.Version_1_0.has_value()){
 		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
+
 		return response;
 	}
-	
+
 	response.Version_1_0.emplace();
-	
 	response.Version_1_0->status = sdl::agentino::Services::ServiceStatus::UNDEFINED;
 
 	if (!arguments.input.Version_1_0->serviceId.has_value()){
 		errorMessage = QString("Unable to start service with empty ID");
 		SendErrorMessage(0, errorMessage, "CServiceControllerComp");
+
 		return response;
 	}
-	
 	QByteArray serviceId = *arguments.input.Version_1_0->serviceId;
-	
 	m_serviceControllerCompPtr->StartService(serviceId);
-
 	agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
-	
 	response.Version_1_0->status = (sdl::agentino::Services::ServiceStatus) state;
-	
+
 	return response;
 }
 
@@ -63,33 +61,31 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerComp::OnStopSe
 			QString& errorMessage) const
 {
 	sdl::agentino::Services::CServiceStatusResponse response;
-	
+
 	if (!m_serviceControllerCompPtr.IsValid()){
 		Q_ASSERT_X(false, "Attribute 'ServiceController' was not set", "CServiceControllerComp");
+
 		return response;
 	}
-	
+
 	sdl::agentino::Services::StopServiceRequestArguments arguments = stopServiceRequest.GetRequestedArguments();
-	
 	if (!arguments.input.Version_1_0.has_value()){
 		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
+
 		return response;
 	}
-	
+
 	response.Version_1_0.emplace();
 	response.Version_1_0->status = sdl::agentino::Services::ServiceStatus::UNDEFINED;
-	
+
 	if (!arguments.input.Version_1_0->serviceId.has_value()){
 		errorMessage = QString("Unable to start service with empty ID");
 		return response;
 	}
-	
-	QByteArray serviceId = *arguments.input.Version_1_0->serviceId;
-	
-	m_serviceControllerCompPtr->StopService(serviceId);
 
+	QByteArray serviceId = *arguments.input.Version_1_0->serviceId;
+	m_serviceControllerCompPtr->StopService(serviceId);
 	agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
-	
 	response.Version_1_0->status = (sdl::agentino::Services::ServiceStatus) state;
 
 	return response;
@@ -113,26 +109,29 @@ sdl::agentino::Services::CServiceStatusResponse CServiceControllerComp::OnGetSer
 	sdl::agentino::Services::CServiceStatusResponse response;
 	if (!m_serviceControllerCompPtr.IsValid()){
 		Q_ASSERT_X(false, "Attribute 'ServiceController' was not set", "CServiceControllerComp");
+
 		return response;
 	}
-	
+
 	sdl::agentino::Services::GetServiceStatusRequestArguments arguments = getServiceStatusRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
 		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
+
 		return response;
 	}
-	
+
 	if (!arguments.input.Version_1_0->id.has_value()){
 		errorMessage = QString("Unable to start service with empty ID");
+
 		return response;
 	}
-	
+
 	response.Version_1_0.emplace();
-	
+
 	QByteArray serviceId = *arguments.input.Version_1_0->id;
 	agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
 	response.Version_1_0->status = (sdl::agentino::Services::ServiceStatus) state;
-	
+
 	return response;
 }
 
@@ -143,25 +142,25 @@ sdl::agentino::Services::CUpdateConnectionUrlResponse CServiceControllerComp::On
 			QString& errorMessage) const
 {
 	sdl::agentino::Services::CUpdateConnectionUrlResponse response;
-	
 	if (!m_connectionCollectionProviderCompPtr.IsValid()){
 		return response;
 	}
-	
+
 	response.Version_1_0.emplace();
 	response.Version_1_0->succesful = false;
-	
 	sdl::agentino::Services::UpdateConnectionUrlRequestArguments arguments = updateConnectionUrlRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
 		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
+
 		return response;
 	}
-	
+
 	if (!arguments.input.Version_1_0->serviceId.has_value()){
 		errorMessage = QString("ServiceId is invalid");
+
 		return response;
 	}
-	
+
 	QByteArray serviceId = *arguments.input.Version_1_0->serviceId;
 	QByteArray connectionId = *arguments.input.Version_1_0->connectionId;
 	sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam = *arguments.input.Version_1_0->connectionParam;
@@ -172,16 +171,17 @@ sdl::agentino::Services::CUpdateConnectionUrlResponse CServiceControllerComp::On
 
 	if (!agentinodata::GetServerConnectionParamFromRepresentation(serverConnectionParam, connectionParam)){
 		errorMessage = QString("ServerConnectionParam is invalid");
+
 		return response;
 	}
-	
+
 	std::shared_ptr<imtservice::IConnectionCollection> connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
 	if (connectionCollectionPtr != nullptr){
 		bool ok = connectionCollectionPtr->SetServerConnectionInterface(connectionId, serverConnectionParam);
-		
+
 		response.Version_1_0->succesful = ok;
 	}
-	
+
 	return response;
 }
 
@@ -194,12 +194,14 @@ sdl::agentino::Services::CPluginInfo CServiceControllerComp::OnLoadPlugin(
 	sdl::agentino::Services::CPluginInfo response;
 	if (!m_connectionCollectionProviderCompPtr.IsValid()){
 		Q_ASSERT(false);
+
 		return response;
 	}
 
 	sdl::agentino::Services::LoadPluginRequestArguments arguments = loadPluginRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0.has_value()){
 		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
+
 		return response;
 	}
 
@@ -210,6 +212,7 @@ sdl::agentino::Services::CPluginInfo CServiceControllerComp::OnLoadPlugin(
 
 	if (!arguments.input.Version_1_0->servicePath.has_value()){
 		errorMessage = QString("Unable to load plugin. Error: Service path is invalid");
+
 		return response;
 	}
 
@@ -221,6 +224,7 @@ sdl::agentino::Services::CPluginInfo CServiceControllerComp::OnLoadPlugin(
 		sdl::agentino::Services::CPluginInfo::V1_0 pluginRepresentation;
 		if (!agentinodata::GetRepresentationFromConnectionCollection(*connectionCollectionPtr, pluginRepresentation)){
 			errorMessage = QString("Unable to load plugin. Error: Service path is invalid");
+
 			return response;
 		}
 

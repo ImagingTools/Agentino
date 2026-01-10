@@ -16,7 +16,7 @@
 #endif
 
 // Qt includes
-#include<QFileInfo>
+#include<QtCore/QFileInfo>
 
 // ACF includes
 #include <istd/TDelPtr.h>
@@ -40,10 +40,10 @@ IServiceStatusInfo::ServiceStatus  CServiceControllerComp::GetServiceStatus(cons
 		return IServiceStatusInfo::ServiceStatus::SS_UNDEFINED;
 	}
 
-	agentinodata::IServiceInfo* serviceInfoPtr = nullptr;
+	IServiceInfo* serviceInfoPtr = nullptr;
 	imtbase::IObjectCollection::DataPtr serviceDataPtr;
 	if (m_serviceCollectionCompPtr->GetObjectData(serviceId, serviceDataPtr)){
-		serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+		serviceInfoPtr = dynamic_cast<IServiceInfo*>(serviceDataPtr.GetPtr());
 	}
 
 	if (serviceInfoPtr == nullptr){
@@ -75,10 +75,10 @@ bool CServiceControllerComp::StartService(const QByteArray& serviceId)
 
 	UpdateServiceVersion(serviceId);
 
-	agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = nullptr;
+	CIdentifiableServiceInfo* serviceInfoPtr = nullptr;
 	imtbase::IObjectCollection::DataPtr serviceDataPtr;
 	if (m_serviceCollectionCompPtr->GetObjectData(serviceId, serviceDataPtr)){
-		serviceInfoPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(serviceDataPtr.GetPtr());
+		serviceInfoPtr = dynamic_cast<CIdentifiableServiceInfo*>(serviceDataPtr.GetPtr());
 	}
 
 	if (serviceInfoPtr == nullptr){
@@ -155,7 +155,7 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 
 	if (!m_serviceCollectionCompPtr.IsValid()){
 		Q_ASSERT(false);
-		return IServiceStatusInfo::ServiceStatus::SS_UNDEFINED;
+		return false;
 	}
 
 	QString serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::ICollectionInfo::EIT_NAME).toString();
@@ -163,7 +163,7 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 	agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = nullptr;
 	imtbase::IObjectCollection::DataPtr serviceDataPtr;
 	if (m_serviceCollectionCompPtr->GetObjectData(serviceId, serviceDataPtr)){
-		serviceInfoPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(serviceDataPtr.GetPtr());
+		serviceInfoPtr = dynamic_cast<CIdentifiableServiceInfo*>(serviceDataPtr.GetPtr());
 	}
 
 	if (serviceInfoPtr == nullptr){
@@ -235,10 +235,10 @@ void CServiceControllerComp::OnComponentCreated()
 	imtbase::IObjectCollection::Ids ids = m_serviceCollectionCompPtr->GetElementIds();
 
 	for(const QByteArray& serviceId: ids){
-		agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = nullptr;
+		CIdentifiableServiceInfo* serviceInfoPtr = nullptr;
 		imtbase::IObjectCollection::DataPtr serviceDataPtr;
 		if (m_serviceCollectionCompPtr->GetObjectData(serviceId, serviceDataPtr)){
-			serviceInfoPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(serviceDataPtr.GetPtr());
+			serviceInfoPtr = dynamic_cast<CIdentifiableServiceInfo*>(serviceDataPtr.GetPtr());
 		}
 
 		if (serviceInfoPtr != nullptr){
@@ -399,7 +399,11 @@ QByteArray CServiceControllerComp::GetModuleName(QByteArray servicePath) const
 	}
 
 	closedir(dir);
+#else
+	Q_UNUSED(servicePath)
 #endif
+
+
 
 	return retVal;
 }
@@ -423,7 +427,7 @@ void CServiceControllerComp::UpdateServiceVersion(const QByteArray& serviceId)
 	}
 	imtbase::IObjectCollection::DataPtr dataPtr;
 	if (m_serviceCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
-		agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(dataPtr.GetPtr());
+		CIdentifiableServiceInfo* serviceInfoPtr = dynamic_cast<CIdentifiableServiceInfo*>(dataPtr.GetPtr());
 		if (serviceInfoPtr != nullptr){
 			QByteArray serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_NAME).toByteArray();
 			QString servicePath = serviceInfoPtr->GetServicePath();
@@ -475,7 +479,7 @@ void CServiceControllerComp::OnTimeout()
 	for (const QByteArray& serviceId: keys){
 		imtbase::IObjectCollection::DataPtr serviceDataPtr;
 		if (m_serviceCollectionCompPtr->GetObjectData(serviceId, serviceDataPtr)){
-			agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+			IServiceInfo* serviceInfoPtr = dynamic_cast<IServiceInfo*>(serviceDataPtr.GetPtr());
 			if (serviceInfoPtr != nullptr){
 				QByteArray servicePath = serviceInfoPtr->GetServicePath();
 				QByteArray moduleName = GetModuleName(servicePath);
@@ -498,9 +502,8 @@ void CServiceControllerComp::OnTimeout()
 
 								continue;
 							}
-							else{
-								StartService(serviceId);
-							}
+
+							StartService(serviceId);
 						}
 						else{
 							EmitChangeSignal(serviceId, IServiceStatusInfo::SS_NOT_RUNNING);
@@ -533,11 +536,11 @@ void CServiceControllerComp::EmitChangeSignal(const QByteArray& serviceId, IServ
 
 	istd::IChangeable::ChangeSet changeSet(istd::IChangeable::CF_ANY);
 
-	IServiceController::NotifierStatusInfo notifierStatusInfo;
+	NotifierStatusInfo notifierStatusInfo;
 	notifierStatusInfo.serviceId = serviceId;
 	notifierStatusInfo.serviceStatus = serviceStatus;
 
-	changeSet.SetChangeInfo(IServiceController::CN_STATUS_CHANGED, QVariant::fromValue(notifierStatusInfo));
+	changeSet.SetChangeInfo(CN_STATUS_CHANGED, QVariant::fromValue(notifierStatusInfo));
 	changeSet.SetChangeInfo("serviceid", serviceId);
 
 	istd::CChangeNotifier notifier(this, &changeSet);

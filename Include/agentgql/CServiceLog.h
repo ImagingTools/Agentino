@@ -3,9 +3,9 @@
 
 // ImtCore includes
 #include <imtbase/PluginInterface.h>
-#include <imtbase/IObjectCollection.h>
 #include <imtbase/TPluginManager.h>
 #include <imtservice/IObjectCollectionPlugin.h>
+
 
 IMT_DECLARE_PLUGIN_INTERFACE(ServiceLog, imtservice::IObjectCollectionPlugin);
 

@@ -28,13 +28,11 @@ bool CAgentMessageCollectionControllerComp::SetupGqlItem(
 		}
 
 		if (messagePtr != nullptr){
-			QByteArray serviceId;
 			for (const QByteArray& informationId : informationIds){
 				QVariant elementInformation;
 
 				if(informationId == "id"){
-					serviceId = objectCollectionIterator->GetObjectId();
-					elementInformation = serviceId;
+					elementInformation = objectCollectionIterator->GetObjectId();
 				}
 				else if(informationId == "text"){
 					elementInformation = messagePtr->GetInformationDescription();

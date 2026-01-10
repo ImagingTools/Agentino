@@ -1,9 +1,6 @@
 #include <agentinodata/CServiceCompositeInfoComp.h>
 
 
-// Qt includes
-#include <QtCore/QDebug>
-
 // ImtCore includes
 #include <imtservice/CUrlConnectionParam.h>
 #include <imtservice/CUrlConnectionLinkParam.h>
@@ -14,8 +11,6 @@
 #include <agentinodata/IServiceInfo.h>
 #include <agentinodata/IServiceStatusInfo.h>
 
-// Qt includes
-#include <QtCore/QDebug>
 
 
 namespace agentinodata
@@ -36,7 +31,7 @@ QByteArray CServiceCompositeInfoComp::GetServiceId(const QUrl& url) const
 	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
 		imtbase::IObjectCollection::DataPtr agentDataPtr;
 		if (m_agentCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
-			agentinodata::IAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::IAgentInfo*>(agentDataPtr.GetPtr());
+			IAgentInfo* agentInfoPtr = dynamic_cast<IAgentInfo*>(agentDataPtr.GetPtr());
 			if (agentInfoPtr == nullptr){
 				continue;
 			}
@@ -49,7 +44,7 @@ QByteArray CServiceCompositeInfoComp::GetServiceId(const QUrl& url) const
 			for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
 				imtbase::IObjectCollection::DataPtr serviceDataPtr;
 				if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
-					agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+					IServiceInfo* serviceInfoPtr = dynamic_cast<IServiceInfo*>(serviceDataPtr.GetPtr());
 					if (serviceInfoPtr == nullptr){
 						continue;
 					}
@@ -111,7 +106,7 @@ QByteArray CServiceCompositeInfoComp::GetServiceId(const QByteArray& dependantSe
 	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
 		imtbase::IObjectCollection::DataPtr agentDataPtr;
 		if (m_agentCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
-			agentinodata::IAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::IAgentInfo*>(agentDataPtr.GetPtr());
+			IAgentInfo* agentInfoPtr = dynamic_cast<IAgentInfo*>(agentDataPtr.GetPtr());
 			if (agentInfoPtr == nullptr){
 				continue;
 			}
@@ -124,7 +119,7 @@ QByteArray CServiceCompositeInfoComp::GetServiceId(const QByteArray& dependantSe
 			for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
 				imtbase::IObjectCollection::DataPtr serviceDataPtr;
 				if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
-					agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+					IServiceInfo* serviceInfoPtr = dynamic_cast<IServiceInfo*>(serviceDataPtr.GetPtr());
 					if (serviceInfoPtr == nullptr){
 						continue;
 					}
@@ -138,7 +133,7 @@ QByteArray CServiceCompositeInfoComp::GetServiceId(const QByteArray& dependantSe
 						if (connectionElementId == dependantServiceConnectionId){
 							return serviceElementId;
 						}
-						
+
 						imtbase::IObjectCollection::DataPtr connectionDataPtr;
 						if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
 							imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
@@ -182,16 +177,16 @@ IServiceCompositeInfo::StateOfRequiredServices CServiceCompositeInfoComp::GetSta
 {
 	IServiceStatusInfo::ServiceStatus serviceStatus = GetServiceStatus(serviceId);
 	if (serviceStatus == IServiceStatusInfo::SS_UNDEFINED || serviceStatus == IServiceStatusInfo::SS_NOT_RUNNING){
-		return IServiceCompositeInfo::SORS_UNDEFINED;
+		return SORS_UNDEFINED;
 	}
 
-	IServiceCompositeInfo::StateOfRequiredServices retVal = IServiceCompositeInfo::SORS_RUNNING;
+	StateOfRequiredServices retVal = SORS_RUNNING;
 
 	imtbase::ICollectionInfo::Ids elementIds = m_agentCollectionCompPtr->GetElementIds();
 	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
 		imtbase::IObjectCollection::DataPtr agentDataPtr;
 		if (m_agentCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
-			agentinodata::IAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::IAgentInfo*>(agentDataPtr.GetPtr());
+			IAgentInfo* agentInfoPtr = dynamic_cast<IAgentInfo*>(agentDataPtr.GetPtr());
 			if (agentInfoPtr != nullptr){
 				// Get Services
 				imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
@@ -200,7 +195,7 @@ IServiceCompositeInfo::StateOfRequiredServices CServiceCompositeInfoComp::GetSta
 					if (serviceElementIds.contains(serviceId)){
 						imtbase::IObjectCollection::DataPtr serviceDataPtr;
 						if (serviceCollectionPtr->GetObjectData(serviceId, serviceDataPtr)){
-							agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+							IServiceInfo* serviceInfoPtr = dynamic_cast<IServiceInfo*>(serviceDataPtr.GetPtr());
 							if (serviceInfoPtr == nullptr){
 								continue;
 							}
@@ -216,13 +211,14 @@ IServiceCompositeInfo::StateOfRequiredServices CServiceCompositeInfoComp::GetSta
 											QByteArray dependantServiceId =  GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
 											IServiceStatusInfo::ServiceStatus dependantServiceStatus = GetServiceStatus(dependantServiceId);
 											if (dependantServiceStatus == IServiceStatusInfo::SS_UNDEFINED){
-												return IServiceCompositeInfo::SORS_UNDEFINED;
+												return SORS_UNDEFINED;
 											}
-											else if (dependantServiceStatus == IServiceStatusInfo::SS_NOT_RUNNING){
-												retVal = IServiceCompositeInfo::SORS_NOT_RUNNING;
+
+											if (dependantServiceStatus == IServiceStatusInfo::SS_NOT_RUNNING){
+												retVal = SORS_NOT_RUNNING;
 											}
-											else if (dependantServiceStatus == IServiceStatusInfo::SS_RUNNING && retVal != IServiceCompositeInfo::SORS_NOT_RUNNING){
-												retVal = IServiceCompositeInfo::SORS_RUNNING;
+											else if (dependantServiceStatus == IServiceStatusInfo::SS_RUNNING && retVal != SORS_NOT_RUNNING){
+												retVal = SORS_RUNNING;
 											}
 										}
 									}
@@ -253,17 +249,17 @@ QByteArrayList CServiceCompositeInfoComp::GetDependencyServices(const QByteArray
 	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
 		imtbase::IObjectCollection::DataPtr agentDataPtr;
 		if (m_agentCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
-			agentinodata::IAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::IAgentInfo*>(agentDataPtr.GetPtr());
+			IAgentInfo* agentInfoPtr = dynamic_cast<IAgentInfo*>(agentDataPtr.GetPtr());
 			QString agentName = m_agentCollectionCompPtr->GetElementInfo(elementId, imtbase::ICollectionInfo::EIT_NAME).toString();
 			if (agentInfoPtr != nullptr){
 				// Get Services
 				imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 				if (serviceCollectionPtr != nullptr){
 					imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
-					for (QByteArray serviceElementId:serviceElementIds){
+					for (const QByteArray& serviceElementId: serviceElementIds){
 						imtbase::IObjectCollection::DataPtr serviceDataPtr;
 						if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
-							agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+							IServiceInfo* serviceInfoPtr = dynamic_cast<IServiceInfo*>(serviceDataPtr.GetPtr());
 							if (serviceInfoPtr == nullptr){
 								continue;
 							}
@@ -310,7 +306,7 @@ QString CServiceCompositeInfoComp::GetServiceName(const QByteArray& serviceId) c
 					if (serviceElementIds.contains(serviceId)){
 						imtbase::IObjectCollection::DataPtr dataPtr;
 						if (serviceCollectionPtr->GetObjectData(serviceId, dataPtr)){
-							agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(dataPtr.GetPtr());
+							IServiceInfo* serviceInfoPtr = dynamic_cast<IServiceInfo*>(dataPtr.GetPtr());
 							if (serviceInfoPtr != nullptr){
 								return serviceInfoPtr->GetServiceName();
 							}
@@ -331,7 +327,7 @@ QString CServiceCompositeInfoComp::GetServiceAgentName(const QByteArray& service
 	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
 		imtbase::IObjectCollection::DataPtr agentDataPtr;
 		if (m_agentCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
-			agentinodata::IAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::IAgentInfo*>(agentDataPtr.GetPtr());
+			IAgentInfo* agentInfoPtr = dynamic_cast<IAgentInfo*>(agentDataPtr.GetPtr());
 			if (agentInfoPtr != nullptr){
 				// Get Services
 				imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();

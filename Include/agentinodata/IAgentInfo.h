@@ -8,9 +8,6 @@
 #include <iser/IObject.h>
 #include <ilog/ITracingConfiguration.h>
 
-// ImtCore includes
-#include <imtbase/IObjectCollection.h>
-
 
 namespace agentinodata
 {

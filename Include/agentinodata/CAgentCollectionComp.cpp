@@ -20,24 +20,24 @@ bool CAgentCollectionComp::AddService(
 {
 	ObjectInfo* objectInfoPtr = GetObjectInfo(agentId);
 	if (objectInfoPtr != nullptr){
-		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(objectInfoPtr->dataPtr.GetPtr());
+		CAgentInfo* agentInfoPtr = dynamic_cast<CAgentInfo*>(objectInfoPtr->dataPtr.GetPtr());
 		if (agentInfoPtr != nullptr){
 			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 			if (serviceCollectionPtr != nullptr){
 				QByteArray objectId = serviceCollectionPtr->InsertNewObject("ServiceInfo", serviceName, serviceDescription, &serviceInfo, serviceId);
 				if (!objectId.isEmpty()){
-					ChangeSet changeSet(agentinodata::IServiceManager::CF_SERVICE_ADDED);
+					ChangeSet changeSet(CF_SERVICE_ADDED);
 					changeSet.SetChangeInfo("agentid", agentId);
 					changeSet.SetChangeInfo("serviceid", objectId);
-					
+
 					istd::CChangeNotifier changeNotifier(this, &changeSet);
 				}
-				
+
 				return !objectId.isEmpty();
 			}
 		}
 	}
-	
+
 	return false;
 }
 
@@ -54,15 +54,15 @@ bool CAgentCollectionComp::RemoveServices(
 			if (serviceCollectionPtr != nullptr){
 				bool result = serviceCollectionPtr->RemoveElements(serviceIds);
 				if (result){
-					ChangeSet changeSet(agentinodata::IServiceManager::CF_SERVICE_REMOVED);
+					ChangeSet changeSet(CF_SERVICE_REMOVED);
 					istd::CChangeNotifier changeNotifier(this, &changeSet);
 				}
-				
+
 				return result;
 			}
 		}
 	}
-	
+
 	return false;
 }
 
@@ -77,29 +77,29 @@ bool CAgentCollectionComp::SetService(
 {
 	ObjectInfo* objectInfoPtr = GetObjectInfo(agentId);
 	if (objectInfoPtr != nullptr){
-		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(objectInfoPtr->dataPtr.GetPtr());
+		CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(objectInfoPtr->dataPtr.GetPtr());
 		if (agentInfoPtr != nullptr){
-			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+			IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 			if (serviceCollectionPtr != nullptr){
 				bool result = serviceCollectionPtr->SetObjectData(serviceId, serviceInfo);
 				if (result){
 					serviceCollectionPtr->SetElementName(serviceId, serviceName);
 					serviceCollectionPtr->SetElementDescription(serviceId, serviceDescription);
-					
-					ChangeSet changeSet(agentinodata::IServiceManager::CF_SERVICE_UPDATED);
+
+					ChangeSet changeSet(CF_SERVICE_UPDATED);
 					changeSet.SetChangeInfo("agentid", agentId);
 					changeSet.SetChangeInfo("serviceid", serviceId);
-					
+
 					if (!beQuiet){
 						istd::CChangeNotifier changeNotifier(this, &changeSet);
 					}
 				}
-				
+
 				return result;
 			}
 		}
 	}
-	
+
 	return false;
 }
 
@@ -108,15 +108,15 @@ bool CAgentCollectionComp::ServiceExists(const QByteArray& agentId, const QByteA
 {
 	ObjectInfo* objectInfoPtr = GetObjectInfo(agentId);
 	if (objectInfoPtr != nullptr){
-		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(objectInfoPtr->dataPtr.GetPtr());
+		CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(objectInfoPtr->dataPtr.GetPtr());
 		if (agentInfoPtr != nullptr){
-			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+			IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 			if (serviceCollectionPtr != nullptr){
 				return serviceCollectionPtr->GetElementIds().contains(serviceId);
 			}
 		}
 	}
-	
+
 	return false;
 }
 
@@ -127,27 +127,27 @@ IServiceInfo* CAgentCollectionComp::GetService(const QByteArray& agentId, const 
 	if (objectInfoPtr == nullptr){
 		return nullptr;
 	}
-	
-	agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(objectInfoPtr->dataPtr.GetPtr());
+
+	CAgentInfo* agentInfoPtr = dynamic_cast<CAgentInfo*>(objectInfoPtr->dataPtr.GetPtr());
 	if (agentInfoPtr == nullptr){
 		return nullptr;
 	}
-	
-	imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+
+	IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 	if (serviceCollectionPtr == nullptr){
 		return nullptr;
 	}
 
-	imtbase::IObjectCollection::DataPtr dataPtr;
+	DataPtr dataPtr;
 	if (!serviceCollectionPtr->GetObjectData(serviceId, dataPtr)){
 		return nullptr;
 	}
-	
+
 	istd::TUniqueInterfacePtr<IServiceInfo> serviceInfoPtr;
 	if (!serviceInfoPtr.MoveCastedPtr(dataPtr->CloneMe())){
 		return nullptr;
 	}
-	
+
 	return serviceInfoPtr.PopInterfacePtr();
 }
 

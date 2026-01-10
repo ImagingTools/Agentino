@@ -81,12 +81,12 @@ void CAgentsSubscriberProxyControllerComp::OnResponseReceived(const QByteArray &
 		if (registerSubscriptionId.isEmpty()){
 			return;
 		}
-		
+
 		QJsonObject jsonData = document.object().value(subscriptionTypeId).toObject();
 		QJsonDocument documentBody;
 		documentBody.setObject(jsonData);
 		QByteArray body = documentBody.toJson(QJsonDocument::Compact);
-		
+
 		for (RequestNetworks& requestNetworks: m_registeredSubscribers){
 			if (requestNetworks.networkRequests.contains(registerSubscriptionId)){
 				PublishData(subscriptionTypeId, body);

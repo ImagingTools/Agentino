@@ -54,11 +54,11 @@ void CServiceStatusCollectionSubscriberControllerComp::OnUpdate(const istd::ICha
 
 		state = m_serviceCompositeInfoCompPtr->GetStateOfRequiredServices(dependencyServices[index]);
 		QString statusStr = GetDependencyStatus(state);
-		
+
 		dependencyData += statusStr + "\"}";
 	}
 	dependencyData += "]";
-	
+
 	QString statusStr;
 	agentinodata::IServiceStatusInfo::ServiceStatus status = m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceId);
 	if (status == agentinodata::IServiceStatusInfo::ServiceStatus::SS_RUNNING){
@@ -79,7 +79,7 @@ void CServiceStatusCollectionSubscriberControllerComp::OnUpdate(const istd::ICha
 	else{
 		statusStr = "UNDEFINED";
 	}
-	
+
 	QString data = QString("{ \"serviceid\": \"%1\", \"serviceStatus\": \"%2\", \"dependencyStatus\": %3}")
 					   .arg(qPrintable(serviceId)).arg(statusStr).arg(qPrintable(dependencyData));
 
@@ -92,7 +92,7 @@ void CServiceStatusCollectionSubscriberControllerComp::OnUpdate(const istd::ICha
 QString CServiceStatusCollectionSubscriberControllerComp::GetDependencyStatus(agentinodata::IServiceCompositeInfo::StateOfRequiredServices status) const
 {
 	QString statusStr;
-	
+
 	if (status == agentinodata::IServiceCompositeInfo::StateOfRequiredServices::SORS_RUNNING){
 		statusStr = "RUNNING";
 	}
@@ -102,7 +102,7 @@ QString CServiceStatusCollectionSubscriberControllerComp::GetDependencyStatus(ag
 	else{
 		statusStr = "UNDEFINED";
 	}
-	
+
 	return statusStr;
 }
 

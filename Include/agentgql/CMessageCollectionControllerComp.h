@@ -3,7 +3,9 @@
 
 // Agentino includes
 #include <agentgql/CServiceLog.h>
-#include <GeneratedFiles/agentinosdl//SDL/1.0/CPP/ServiceLog.h>
+
+// Generated includes
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/ServiceLog.h>
 
 
 namespace agentgql
@@ -15,7 +17,7 @@ class CMessageCollectionControllerComp:
 									public CServiceLog
 {
 public:
-	typedef sdl::agentino::ServiceLog::CServiceLogCollectionControllerCompBase BaseClass;
+	typedef CServiceLogCollectionControllerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CMessageCollectionControllerComp);
 	I_END_COMPONENT;

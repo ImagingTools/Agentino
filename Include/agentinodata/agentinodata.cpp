@@ -55,89 +55,90 @@ bool GetServiceFromRepresentation(
 		QString name = *serviceDataRepresentation.name;
 		serviceInfo.SetServiceName(name);
 	}
-	
+
 	if (serviceDataRepresentation.description){
 		QString description = *serviceDataRepresentation.description;
 		serviceInfo.SetServiceDescription(description);
 	}
-	
+
 	if (serviceDataRepresentation.path){
 		QString path = *serviceDataRepresentation.path;
-		
+
 		QFileInfo fileInfo(path);
 		if (!fileInfo.exists()){
 			errorMessage = QString("Service path '%1' not exists").arg(qPrintable(path));
+
 			return false;
 		}
-		
+
 		serviceInfo.SetServicePath(path.toUtf8());
 	}
-	
+
 	if (serviceDataRepresentation.startScript){
 		QString path = *serviceDataRepresentation.startScript;
 		serviceInfo.SetStartScriptPath(path.toUtf8());
 	}
-	
+
 	if (serviceDataRepresentation.stopScript){
 		QString path = *serviceDataRepresentation.stopScript;
 		serviceInfo.SetStopScriptPath(path.toUtf8());
 	}
-	
+
 	if (serviceDataRepresentation.arguments){
 		QByteArray arguments = (*serviceDataRepresentation.arguments).toUtf8();
 		serviceInfo.SetServiceArguments(arguments.split(' '));
 	}
-	
+
 	if (serviceDataRepresentation.isAutoStart){
 		bool isAutoStart = *serviceDataRepresentation.isAutoStart;
 		serviceInfo.SetIsAutoStart(isAutoStart);
 	}
-	
+
 	if (serviceDataRepresentation.tracingLevel){
 		int tracingLevel = *serviceDataRepresentation.tracingLevel;
 		serviceInfo.SetTracingLevel(tracingLevel);
 	}
-	
+
 	if (serviceDataRepresentation.serviceTypeId){
 		QString serviceTypeId = *serviceDataRepresentation.serviceTypeId;
 		serviceInfo.SetServiceTypeId(serviceTypeId.toUtf8());
 	}
-	
+
 	if (serviceDataRepresentation.version){
 		QString version = *serviceDataRepresentation.version;
 		serviceInfo.SetServiceVersion(version);
 	}
-	
+
 	if (serviceDataRepresentation.inputConnections){
 		istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::CInputConnection::V1_0>> connections = *serviceDataRepresentation.inputConnections;
-		
+
 		imtbase::IObjectCollection* incomingConnectionCollectionPtr = serviceInfo.GetInputConnections();
 		if (incomingConnectionCollectionPtr != nullptr){
 			incomingConnectionCollectionPtr->ResetData();
-			
+
 			for (const istd::TSharedNullable<sdl::agentino::Services::CInputConnection::V1_0>& connection : *connections){
 				QByteArray id;
 				if (connection->id){
 					id = *connection->id;
 				}
-				
+
 				QString name;
 				if (connection->connectionName){
 					name = *connection->connectionName;
 				}
-				
+
 				QString description;
 				if (connection->description){
 					description = *connection->description;
 				}
-				
+
 				istd::TDelPtr<imtservice::CUrlConnectionParam> urlConnectionParamPtr;
 				urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam);
-				
+
 				if (!GetUrlConnectionFromRepresentation(*urlConnectionParamPtr.GetPtr(), *connection)){
 					return false;
 				}
-				
+
 				QByteArray retVal = incomingConnectionCollectionPtr->InsertNewObject("ConnectionInfo", name, description, urlConnectionParamPtr.PopPtr(), id);
 				if (retVal.isEmpty()){
 					return false;
@@ -145,37 +146,37 @@ bool GetServiceFromRepresentation(
 			}
 		}
 	}
-	
+
 	if (serviceDataRepresentation.outputConnections){
 		istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::COutputConnection::V1_0>> connections = *serviceDataRepresentation.outputConnections;
-		
+
 		imtbase::IObjectCollection* dependantConnectionCollectionPtr = serviceInfo.GetDependantServiceConnections();
 		if (dependantConnectionCollectionPtr != nullptr){
 			dependantConnectionCollectionPtr->ResetData();
-			
+
 			for (const istd::TSharedNullable<sdl::agentino::Services::COutputConnection::V1_0>& connection : *connections){
 				QByteArray id;
 				if (connection->id){
 					id = *connection->id;
 				}
-				
+
 				QString name;
 				if (connection->connectionName){
 					name = *connection->connectionName;
 				}
-				
+
 				QString description;
 				if (connection->description){
 					description = *connection->description;
 				}
-				
+
 				istd::TDelPtr<imtservice::CUrlConnectionLinkParam> urlConnectionLinkParamPtr;
 				urlConnectionLinkParamPtr.SetPtr(new imtservice::CUrlConnectionLinkParam);
-				
+
 				if (!GetUrlConnectionLinkFromRepresentation(*urlConnectionLinkParamPtr.GetPtr(), *connection)){
 					return false;
 				}
-				
+
 				QByteArray retVal = dependantConnectionCollectionPtr->InsertNewObject("ConnectionLink", name, description, urlConnectionLinkParamPtr.PopPtr(), id);
 				if (retVal.isEmpty()){
 					return false;
@@ -190,44 +191,44 @@ bool GetServiceFromRepresentation(
 
 bool GetRepresentationFromService(
 	sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation,
-	const agentinodata::CServiceInfo& serviceInfo,
+	const CServiceInfo& serviceInfo,
 	const iprm::IParamsSet* paramsPtr)
 {
-	agentinodata::CServiceInfo* serviceInfoPtr = const_cast<agentinodata::CServiceInfo*>(&serviceInfo);
+	CServiceInfo* serviceInfoPtr = const_cast<CServiceInfo*>(&serviceInfo);
 	Q_ASSERT(serviceInfoPtr != nullptr);
-	
+
 	QString serviceName = serviceInfo.GetServiceName();
 	serviceDataRepresentation.name = serviceName;
-	
+
 	QString description = serviceInfo.GetServiceDescription();
 	serviceDataRepresentation.description = description;
-	
+
 	QString servicePath = serviceInfo.GetServicePath();
 	serviceDataRepresentation.path = servicePath;
-	
+
 	QString startScriptPath = serviceInfo.GetStartScriptPath();
 	serviceDataRepresentation.startScript = startScriptPath;
-	
+
 	QString stopScriptPath = serviceInfo.GetStopScriptPath();
 	serviceDataRepresentation.stopScript = stopScriptPath;
 
 	QString arguments = serviceInfo.GetServiceArguments().join(' ');
 	serviceDataRepresentation.arguments = arguments;
-	
+
 	bool isAutoStart = serviceInfo.IsAutoStart();
 	serviceDataRepresentation.isAutoStart = isAutoStart;
 
 	int tracingLevel = serviceInfo.GetTracingLevel();
 	serviceDataRepresentation.tracingLevel = tracingLevel;
-	
+
 	QString serviceTypeId = serviceInfo.GetServiceTypeId();
 	serviceDataRepresentation.serviceTypeId = serviceTypeId;
-	
+
 	QString serviceVersion = serviceInfo.GetServiceVersion();
 	serviceDataRepresentation.version = serviceVersion;
-	
+
 	QList<sdl::agentino::Services::CInputConnection::V1_0> inputConnectionList;
-	
+
 	imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
 	if (connectionCollectionPtr != nullptr){
 		imtbase::ICollectionInfo::Ids elementIds = connectionCollectionPtr->GetElementIds();
@@ -240,25 +241,25 @@ bool GetRepresentationFromService(
 					if (!GetRepresentationFromUrlConnection(representaion, *connectionParamPtr, paramsPtr)){
 						return false;
 					}
-					
+
 					QString connectionName = connectionCollectionPtr->GetElementInfo(elementId, imtbase::IObjectCollection::EIT_NAME).toString();
 					QString connectionDescription = connectionCollectionPtr->GetElementInfo(elementId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
-					
+
 					representaion.id = elementId;
 					representaion.connectionName = connectionName;
 					representaion.description = connectionDescription;
-					
+
 					inputConnectionList << representaion;
 				}
 			}
 		}
 	}
-	
+
 	serviceDataRepresentation.inputConnections.Emplace();
 	serviceDataRepresentation.inputConnections->FromList(inputConnectionList);
-	
+
 	QList<sdl::agentino::Services::COutputConnection::V1_0> outputConnectionList;
-	
+
 	imtbase::IObjectCollection* dependantServiceCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
 	if (dependantServiceCollectionPtr != nullptr){
 		imtbase::ICollectionInfo::Ids elementIds = dependantServiceCollectionPtr->GetElementIds();
@@ -271,20 +272,20 @@ bool GetRepresentationFromService(
 					if (!GetRepresentationFromUrlConnectionLink(representationModel, *connectionLinkParamPtr, paramsPtr)){
 						return false;
 					}
-					
+
 					QString connectionName = dependantServiceCollectionPtr->GetElementInfo(elementId, imtbase::IObjectCollection::EIT_NAME).toString();
 					QString connectionDescription = dependantServiceCollectionPtr->GetElementInfo(elementId, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
-					
+
 					representationModel.id = elementId;
 					representationModel.connectionName = connectionName;
 					representationModel.description = connectionDescription;
-					
+
 					outputConnectionList << representationModel;
 				}
 			}
 		}
 	}
-	
+
 	serviceDataRepresentation.outputConnections.Emplace();
 	serviceDataRepresentation.outputConnections->FromList(outputConnectionList);
 
@@ -313,7 +314,7 @@ bool GetUrlConnectionFromRepresentation(
 
 	if (connectionRepresentation.externConnectionList){
 		istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::CExternConnectionInfo::V1_0>> externConnectionList = *connectionRepresentation.externConnectionList;
-		
+
 		for (const istd::TSharedNullable<sdl::agentino::Services::CExternConnectionInfo::V1_0>& externPort : *externConnectionList){
 			imtservice::IServiceConnectionParam::IncomingConnectionParam incomingConnection;
 
@@ -333,7 +334,7 @@ bool GetUrlConnectionFromRepresentation(
 				if (externPort->connectionParam->httpPort){
 					incomingConnection.httpPort = *externPort->connectionParam->httpPort;
 				}
-	
+
 				if (externPort->connectionParam->wsPort){
 					incomingConnection.wsPort = *externPort->connectionParam->wsPort;
 				}
@@ -342,7 +343,7 @@ bool GetUrlConnectionFromRepresentation(
 			connectionInfo.AddExternConnection(incomingConnection);
 		}
 	}
-	
+
 	return true;
 }
 
@@ -396,18 +397,18 @@ bool GetUrlConnectionLinkFromRepresentation(
 		QString serviceTypeId = *connectionRepresentation.serviceTypeId;
 		connectionInfo.SetServiceTypeId(serviceTypeId.toUtf8());
 	}
-	
+
 	if (connectionRepresentation.dependantConnectionId){
 		QString dependantConnectionId = *connectionRepresentation.dependantConnectionId;
 		connectionInfo.SetDependantServiceConnectionId(dependantConnectionId.toUtf8());
 	}
-	
+
 	if (connectionRepresentation.connectionParam){
 		if (!GetServerConnectionParamFromRepresentation(connectionInfo, *connectionRepresentation.connectionParam)){
 			return false;
 		}
 	}
-	
+
 	return true;
 }
 

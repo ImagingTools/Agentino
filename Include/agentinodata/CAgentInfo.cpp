@@ -2,12 +2,14 @@
 
 
 // ACF includes
-#include <istd/TDelPtr.h>
 #include <istd/CChangeNotifier.h>
 #include <iser/IArchive.h>
 #include <iser/CArchiveTag.h>
 #include <iser/CPrimitiveTypesSerializer.h>
 #include <istd/TSingleFactory.h>
+
+// ImtCore includes
+#include <imtcore/Version.h>
 
 // Agentino includes
 #include <agentinodata/CServiceInfo.h>

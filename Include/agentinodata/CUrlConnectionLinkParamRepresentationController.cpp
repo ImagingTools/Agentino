@@ -26,7 +26,7 @@ QUrl CUrlConnectionLinkParamRepresentationController::GetDependantConnectionUrl(
 	for (const imtbase::ICollectionInfo::Id& agentId: agentIds){
 		imtbase::IObjectCollection::DataPtr agentDataPtr;
 		if (objectCollection.GetObjectData(agentId, agentDataPtr)){
-			agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(agentDataPtr.GetPtr());
+			CAgentInfo* agentInfoPtr = dynamic_cast<CAgentInfo*>(agentDataPtr.GetPtr());
 			if (agentInfoPtr == nullptr){
 				continue;
 			}
@@ -40,7 +40,7 @@ QUrl CUrlConnectionLinkParamRepresentationController::GetDependantConnectionUrl(
 			for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
 				imtbase::IObjectCollection::DataPtr serviceDataPtr;
 				if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
-					agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+					IServiceInfo* serviceInfoPtr = dynamic_cast<IServiceInfo*>(serviceDataPtr.GetPtr());
 					if (serviceInfoPtr == nullptr){
 						continue;
 					}
@@ -93,11 +93,8 @@ QByteArray CUrlConnectionLinkParamRepresentationController::GetModelId() const
 bool CUrlConnectionLinkParamRepresentationController::IsModelSupported(const istd::IChangeable& dataModel) const
 {
 	const imtservice::CUrlConnectionLinkParam* urlConnectionParamPtr = dynamic_cast<const imtservice::CUrlConnectionLinkParam*>(&dataModel);
-	if (urlConnectionParamPtr != nullptr){
-		return true;
-	}
 
-	return false;
+	return urlConnectionParamPtr != nullptr;
 }
 
 

@@ -13,7 +13,7 @@ class CAgentStatusInfo: virtual public IAgentStatusInfo
 {
 public:
 	CAgentStatusInfo();
-	CAgentStatusInfo(const QByteArray& serviceId, AgentStatus serviceStatus);
+	CAgentStatusInfo(const QByteArray& agentId, AgentStatus serviceStatus);
 
 	virtual void SetAgentId(const QByteArray& agentId);
 	virtual void SetAgentStatus(AgentStatus status);

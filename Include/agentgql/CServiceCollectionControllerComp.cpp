@@ -9,7 +9,6 @@
 #undef StartService
 
 // ACF includes
-#include <idoc/IDocumentMetaInfo.h>
 #include <iprm/CTextParam.h>
 
 // ImtCore includes
@@ -196,7 +195,6 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 	istd::TUniqueInterfacePtr<agentinodata::IServiceInfo> serviceInstancePtr = m_serviceInfoFactCompPtr.CreateInstance();
 	if (!serviceInstancePtr.IsValid()){
 		errorMessage = QString("Unable to create service instance. Object is invalid");
-
 		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 		
 		return nullptr;
@@ -205,7 +203,6 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 	agentinodata::CIdentifiableServiceInfo* serviceInfoImplPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(serviceInstancePtr.GetPtr());
 	if (serviceInfoImplPtr == nullptr) {
 		errorMessage = QString("Unable to create service instance. Object is invalid");
-
 		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 
 		return nullptr;
@@ -214,6 +211,7 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoImplPtr, serviceDataRepresentation, errorMessage)){
 		errorMessage = QString("Unable to create service from representation. Error: Representation invalid");
 		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
 		return nullptr;
 	}
 
@@ -229,6 +227,7 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 	if (!fileInfo.exists()){
 		errorMessage = QString("Unable to create service from representation. Error: Service path '%1' not exists").arg(qPrintable(servicePath));
 		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
 		return nullptr;
 	}
 
@@ -311,28 +310,33 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 {
 	if (!m_serviceControllerCompPtr.IsValid()){
 		Q_ASSERT_X(0, "Attribute 'ServiceController' was not set", "CServiceCollectionControllerComp");
+
 		return false;
 	}
 	
 	sdl::agentino::Services::UpdateServiceRequestArguments arguments = updateServiceRequest.GetRequestedArguments();
 	if (!arguments.input.Version_1_0){
 		I_CRITICAL();
+
 		return false;
 	}
 	
 	if (!arguments.input.Version_1_0->id.has_value()){
 		I_CRITICAL();
+
 		return false;
 	}
 	
 	if (!arguments.input.Version_1_0->item.has_value()){
 		I_CRITICAL();
+
 		return false;
 	}
 	
 	agentinodata::CServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::CServiceInfo*>(&object);
 	if (serviceInfoPtr == nullptr){
 		I_CRITICAL();
+
 		return false;
 	}
 	
@@ -342,6 +346,7 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, serviceData, errorMessage)){
 		errorMessage = QString("Unable to update service from representation. Error: %1").arg(errorMessage);
 		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
 		return false;
 	}
 	
@@ -361,6 +366,7 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 			if (!wasStopped){
 				errorMessage = QString("Service '%1' cannot be stopped").arg(qPrintable(serviceTypeName));
 				SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
 				return false;
 			}
 		}
@@ -368,6 +374,7 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 		if (!UpdateConnectionCollectionFromService(*serviceInfoPtr, *connectionCollectionPtr)){
 			errorMessage = QString("Unable to update connection from the service '%1'").arg(qPrintable(serviceTypeName));
 			SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
 			return false;
 		}
 		
@@ -375,6 +382,7 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 			if (!m_serviceControllerCompPtr->StartService(objectId)){
 				errorMessage = QString("Service '%1' cannot be started").arg(qPrintable(serviceTypeName));
 				SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
 				return false;
 			}
 		}
@@ -407,6 +415,7 @@ std::shared_ptr<imtservice::IConnectionCollection> CServiceCollectionControllerC
 		SendErrorMessage(0,
 						QString("Unable to get connection collection. Error: Plugin with name '%1' not found").arg(servicePath),
 						"CServiceCollectionControllerComp");
+
 		return nullptr;
 	}
 
@@ -415,7 +424,7 @@ std::shared_ptr<imtservice::IConnectionCollection> CServiceCollectionControllerC
 		imtservice::IConnectionCollectionPlugin* pluginPtr = m_pluginMap[servicePath.toUtf8()]->m_plugins[index].pluginPtr;
 		if (pluginPtr != nullptr){
 			connectionCollectionFactoryPtr = pluginPtr->GetConnectionCollectionFactory();
-			
+
 			break;
 		}
 	}
@@ -432,7 +441,6 @@ std::shared_ptr<imtservice::IConnectionCollection> CServiceCollectionControllerC
 std::shared_ptr<imtservice::IConnectionCollection> CServiceCollectionControllerComp::GetConnectionCollectionByServiceId(const QByteArray& serviceId) const
 {
 	std::shared_ptr<imtservice::IConnectionCollection> connectionCollection;
-
 	const agentinodata::IServiceInfo* serviceInfoPtr = nullptr;
 	imtbase::IObjectCollection::DataPtr dataPtr;
 	if (m_objectCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
@@ -443,6 +451,7 @@ std::shared_ptr<imtservice::IConnectionCollection> CServiceCollectionControllerC
 		SendErrorMessage(0,
 						 QString("Unable to get connection collection for service '%1'. Error: Service is invalid").arg(qPrintable(serviceId)),
 						 "CServiceCollectionControllerComp");
+
 		return nullptr;
 	}
 
@@ -451,6 +460,7 @@ std::shared_ptr<imtservice::IConnectionCollection> CServiceCollectionControllerC
 		SendErrorMessage(0,
 						 QString("Unable to get connection collection for service '%1'. Error: Service path is empty").arg(qPrintable(serviceId)),
 						 "CServiceCollectionControllerComp");
+
 		return nullptr;
 	}
 
@@ -461,7 +471,7 @@ std::shared_ptr<imtservice::IConnectionCollection> CServiceCollectionControllerC
 void CServiceCollectionControllerComp::OnComponentDestroyed()
 {
 	m_pluginMap.clear();
-	
+
 	BaseClass::OnComponentDestroyed();
 }
 
@@ -476,7 +486,7 @@ imtbase::IObjectCollection* CServiceCollectionControllerComp::GetObjectCollectio
 	if (!collectionPtr.IsValid()){
 		return nullptr;
 	}
-	
+
 	return dynamic_cast<imtbase::IObjectCollection*>(collectionPtr.PopInterfacePtr());
 }
 
@@ -507,7 +517,7 @@ bool CServiceCollectionControllerComp::CheckInputPortsUpdated(
 			}
 		}
 	}
-	
+
 	return false;
 }
 
@@ -532,13 +542,13 @@ bool CServiceCollectionControllerComp::UpdateConnectionCollectionFromService(age
 					for (const imtcom::CServerConnectionInterfaceParam::ProtocolType& protocolType: protocols){
 						serverConnectionParam.SetPort(protocolType, connectionParamPtr->GetPort(protocolType));
 					}
-					
+
 					connectionCollection.SetServerConnectionInterface(elementId, serverConnectionParam);
 				}
 			}
 		}
 	}
-	
+
 	imtbase::IObjectCollection* dependantServiceCollectionPtr = serviceInfo.GetDependantServiceConnections();
 	if (dependantServiceCollectionPtr != nullptr){
 		imtbase::ICollectionInfo::Ids elementIds = dependantServiceCollectionPtr->GetElementIds();
@@ -563,9 +573,9 @@ bool CServiceCollectionControllerComp::UpdateConnectionCollectionFromService(age
 			}
 		}
 	}
-	
+
 	connectionCollection.SetTracingLevel(serviceInfo.GetTracingLevel());
-	
+
 	return true;
 }
 

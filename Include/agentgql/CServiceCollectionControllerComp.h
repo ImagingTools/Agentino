@@ -13,6 +13,7 @@
 #include <agentinodata/IServiceController.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
 
+
 IMT_DECLARE_PLUGIN_INTERFACE(ServiceSettings, imtservice::IConnectionCollectionPlugin);
 
 
@@ -28,7 +29,7 @@ class CServiceCollectionControllerComp:
 			virtual public imtservice::IConnectionCollectionProvider
 {
 public:
-	typedef sdl::agentino::Services::CServiceCollectionControllerCompBase BaseClass;
+	typedef CServiceCollectionControllerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceCollectionControllerComp);
 		I_REGISTER_INTERFACE(imtservice::IConnectionCollectionProvider)
@@ -52,7 +53,7 @@ protected:
 	virtual bool CreateRepresentationFromObject(
 				const istd::IChangeable& data,
 				const sdl::agentino::Services::CGetServiceGqlRequest& getServiceRequest,
-				sdl::agentino::Services::CServiceData::V1_0& representationPayload,
+				sdl::agentino::Services::CServiceData::V1_0& serviceData,
 				QString& errorMessage) const override;
 	virtual istd::IChangeableUniquePtr CreateObjectFromRepresentation(
 				const sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation,

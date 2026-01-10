@@ -1,9 +1,9 @@
 #include <agentinodata/CServiceMetaInfo.h>
 
+
 // ACF includes
-#include <iser/CPrimitiveTypesSerializer.h>
 #include <istd/CChangeNotifier.h>
-#include <istd/TDelPtr.h>
+#include <iser/CPrimitiveTypesSerializer.h>
 
 // ServiceManager includes
 #include <agentino/Version.h>
@@ -34,7 +34,7 @@ bool CServiceMetaInfo::Serialize(iser::IArchive &archive)
 	iser::CArchiveTag elementTag("Dependency", "Single element", iser::CArchiveTag::TT_LEAF, &elementsTag);
 
 	bool isStoring = archive.IsStoring();
-	int elementsCount = m_dependencyList.count();
+	int elementsCount = m_dependencyList.size();
 
 	retVal = retVal && archive.BeginMultiTag(elementsTag, elementTag, elementsCount);
 	if (!retVal){

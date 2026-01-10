@@ -5,14 +5,13 @@
 #include <QtCore/QByteArrayList>
 
 // ACF includes
-#include <istd/TDelPtr.h>
 #include <istd/CChangeNotifier.h>
 #include <iser/IArchive.h>
 #include <iser/CArchiveTag.h>
-#include <iser/CPrimitiveTypesSerializer.h>
 #include <istd/TSingleFactory.h>
 
 // ImtCore includes
+#include <imtcore/Version.h>
 #include <imtservice/CUrlConnectionParam.h>
 #include <imtservice/CUrlConnectionLinkParam.h>
 
@@ -41,7 +40,7 @@ void CServiceInfo::SetServiceName(const QString& name)
 {
 	if (m_serviceName != name){
 		istd::CChangeNotifier changeNotifier(this);
-		
+
 		m_serviceName = name;
 	}
 }
@@ -51,7 +50,7 @@ void CServiceInfo::SetServiceDescription(const QString& description)
 {
 	if (m_serviceDescription != description){
 		istd::CChangeNotifier changeNotifier(this);
-		
+
 		m_serviceDescription = description;
 	}
 }
@@ -322,7 +321,7 @@ bool CServiceInfo::Serialize(iser::IArchive &archive)
 		retVal = retVal && archive.BeginTag(nameTag);
 		retVal = retVal && archive.Process(m_serviceName);
 		retVal = retVal && archive.EndTag(nameTag);
-		
+
 		iser::CArchiveTag descriptionTag("Description", "Service Description", iser::CArchiveTag::TT_LEAF);
 		retVal = retVal && archive.BeginTag(descriptionTag);
 		retVal = retVal && archive.Process(m_serviceDescription);

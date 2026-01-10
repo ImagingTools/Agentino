@@ -10,7 +10,6 @@
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
-#include <QtCore/QLibrary>
 
 // Agentino includes
 #include <agentinodata/CServiceInfo.h>
