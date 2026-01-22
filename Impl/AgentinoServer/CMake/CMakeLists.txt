@@ -20,7 +20,7 @@ include(${ACFDIR}/Config/CMake/CustomBuild.cmake)
 include(${ACFDIR}/Config/CMake/ApplicationConfig.cmake)
 
 target_link_libraries(${PROJECT_NAME} AgentinoLoc ImtCoreLoc AcfLoc AcfSlnLoc)
-target_link_libraries(${PROJECT_NAME} agentinosdl imtauthsdl imtappsdl imtbasesdl imtcolorsdl)
+target_link_libraries(${PROJECT_NAME} agentinosdl imtauthsdl imtappsdl imtbasesdl imtcolorsdl imt2dsdl)
 target_link_libraries(${PROJECT_NAME} agentinoqml agentinogql agentgql agentinodata)
 target_link_libraries(${PROJECT_NAME} imtqml imtstyle imtauthgui imtauthgql imtstylecontrolsqml imtgui imtguigql imtlic imtauth imtcrypt)
 target_link_libraries(${PROJECT_NAME} imtcol imtstylecontrolsqml imtcontrolsqml imtdocguiqml imtcolguiqml imtguiqml imtguigqlqml imtauthguiqml imtlicguiqml imtservergql imtserverapp)
