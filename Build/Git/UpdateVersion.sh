@@ -1,5 +1,8 @@
 #!/bin/bash
 # Update version information from git for macOS/Linux
+# This script replaces placeholders in a template file with git revision information:
+# - $WCREV$ is replaced with the git revision count
+# - $WCMODS?1:0$ is replaced with 1 if there are uncommitted changes, 0 otherwise
 
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -35,7 +38,8 @@ echo "Processing file: $FILE"
 OUT="${FILE%.xtrsvn}"
 
 # Process the file and replace placeholders
-# Using double quotes and proper escaping for $
+# Note: We need to escape $ as \$ for sed, and then escape \ as \\ for the shell (double quotes)
+# This gives us \\$ which the shell passes to sed as \$
 sed -e "s/\\\$WCREV\\\$/$REV/g" -e "s/\\\$WCMODS?1:0\\\$/$DIRTY/g" "$FILE" > "$OUT"
 
 echo "Wrote $OUT with WCREV=$REV and WCMODS=$DIRTY"
