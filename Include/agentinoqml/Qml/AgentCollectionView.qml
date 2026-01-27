@@ -100,7 +100,7 @@ SplitView {
 
 					onChangedSignal: {
 						if (!sourceGroupFilter.hasFieldFilters()){
-							sourceGroupFilter.createFieldFilters()
+							sourceGroupFilter.emplaceFieldFilters()
 						}
 
 						sourceGroupFilter.m_fieldFilters.clear()
