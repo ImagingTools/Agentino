@@ -2,7 +2,6 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "AgentinoAgent"
-#define MyAppVersion GetEnv('APP_VERSION')
 #define MyAppPublisher "ImagingTools GmbH"
 #define MyAppURL "http://www.imagingtools.de"
 #define MyAppExeName "AgentinoAgent.exe"
