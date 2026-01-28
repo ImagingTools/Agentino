@@ -4,7 +4,7 @@
 // ImtCore includes
 #include <imtcom/IConnectionController.h>
 #include <imtservergql/CGqlRequestHandlerCompBase.h>
-#include <imtbase/IUrlParam.h>
+#include <imtcom/IServerConnectionInterface.h>
 
 
 namespace agentgql
@@ -17,7 +17,7 @@ public:
 	typedef imtservergql::CGqlRequestHandlerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CAgentSettingsControllerComp);
-		I_ASSIGN(m_agentinoUrlCompPtr, "AgentinoUrl", "Agentino URL to enable connectivity", true, "AgentinoUrl");
+		I_ASSIGN(m_agentinoConnectionInterfaceCompPtr, "AgentinoConnectionInterface", "Agentino ConnectionInterface to enable connectivity", true, "AgentinoConnectionInterface");
 		I_ASSIGN(m_loginCompPtr, "Login", "Web socket login", true, "WebSocketLogin");
 	I_END_COMPONENT;
 
@@ -26,7 +26,7 @@ protected:
 	virtual imtbase::CTreeItemModel* CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 
 protected:
-	I_REF(imtbase::IUrlParam, m_agentinoUrlCompPtr);
+	I_REF(imtcom::IServerConnectionInterface, m_agentinoConnectionInterfaceCompPtr);
 	I_REF(imtcom::IConnectionController, m_loginCompPtr);
 };
 

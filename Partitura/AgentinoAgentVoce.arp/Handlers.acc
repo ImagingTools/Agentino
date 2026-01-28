@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5398" Description="ACF"/>
-            <Version Id="1" Number="2250" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="395264" Description="Qt Framework"/>
+            <Version Id="0" Number="5439" Description="ACF"/>
+            <Version Id="1" Number="2270" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395267" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -126,7 +126,7 @@
                     <AttributeInfo Id="AgentMessageObjectCollection" Type="Reference" ExportId="AgentMessageObjectCollection">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="AgentinoUrl" Type="Reference" ExportId="AgentinoUrl">
+                    <AttributeInfo Id="AgentinoConnectionInterface" Type="Reference" ExportId="AgentinoConnectionInterface">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">

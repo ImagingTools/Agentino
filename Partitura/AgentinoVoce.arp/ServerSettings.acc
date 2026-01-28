@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5405" Description="ACF"/>
-            <Version Id="1" Number="2250" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="395264" Description="Qt Framework"/>
+            <Version Id="0" Number="5439" Description="ACF"/>
+            <Version Id="1" Number="2270" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395267" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -33,13 +33,28 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="AgentinoConnectionInterface" PackageId="ImtComPck" ComponentId="ServerConnectionInterfaceParam">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="DefaultHost" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="localhost"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DefaultHttpPort" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="7111"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DefaultWebSocketPort" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="7112"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="AgentinoServer" PackageId="BasePck" ComponentId="ComposedParamsSet">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="Parameters" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>WebSocketAgentinoServerUrl</Value>
+                                <Value>AgentinoConnectionInterface</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -169,27 +184,6 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="WebSocketAgentinoServerUrl" PackageId="ImtCorePck" ComponentId="UrlParam">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="DefaultHost" Type="String" ExportId="">
-                        <Data IsEnabled="true" Value="127.0.0.1"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DefaultPath" Type="String" ExportId="">
-                        <Data IsEnabled="true" Value="Agentino/wssub"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DefaultPort" Type="Integer" ExportId="">
-                        <Data IsEnabled="true" Value="7112"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DefaultScheme" Type="String" ExportId="">
-                        <Data IsEnabled="true" Value="ws"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DefaultUsername" Type="String" ExportId="">
-                        <Data IsEnabled="true" Value=""/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
     </ElementsList>
     <EmbeddedRegistriesList/>
     <ExportedInterfaces>
@@ -200,10 +194,10 @@
         <Interface InterfaceId="istd::IChangeable" ComponentId="Preferences"/>
     </ExportedInterfaces>
     <ExportedComponents>
+        <Component ExportedId="AgentinoConnectionInterface" ComponentId="AgentinoConnectionInterface"/>
         <Component ExportedId="AutoPersistence" ComponentId="FileAutoPersistence/AutoPersistence"/>
         <Component ExportedId="ClientId2" ComponentId="ClientId"/>
         <Component ExportedId="Preferences" ComponentId="Preferences"/>
         <Component ExportedId="ServerConnectionInterface" ComponentId="ServerConnectionInterface"/>
-        <Component ExportedId="WebSocketAgentinoServerUrl" ComponentId="WebSocketAgentinoServerUrl"/>
     </ExportedComponents>
 </Acf>

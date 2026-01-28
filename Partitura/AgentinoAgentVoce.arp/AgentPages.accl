@@ -2,13 +2,13 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5332" Description="ACF"/>
-            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="395264" Description="Qt Framework"/>
+            <Version Id="0" Number="5439" Description="ACF"/>
+            <Version Id="1" Number="2270" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395267" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
-        <Element ComponentName="CheckPermissionOr" X="525" Y="450" Note=""/>
+        <Element ComponentName="CheckPermissionOr" X="450" Y="450" Note=""/>
         <Element ComponentName="PageData" X="900" Y="325" Note=""/>
         <Element ComponentName="PageDataControllers" X="925" Y="200" Note=""/>
         <Element ComponentName="Pages" X="200" Y="325" Note=""/>
@@ -19,6 +19,13 @@
         <Element ComponentName="SettingsPage" X="125" Y="450" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
+        <EmbededRegistry Id="PagesPermissions">
+            <PositionMap>
+                <Element ComponentName="DevicesPermissions" X="550" Y="400" Note=""/>
+                <Element ComponentName="PagePermissions" X="575" Y="150" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
         <EmbededRegistry Id="PageData">
             <PositionMap>
                 <Element ComponentName="AgentSettingsPage" X="500" Y="225" Note=""/>
@@ -32,13 +39,6 @@
                 <Element ComponentName="FileAutoPersistence" X="800" Y="200" Note=""/>
                 <Element ComponentName="RepresentationService" X="550" Y="300" Note=""/>
                 <Element ComponentName="ServiceCollection" X="525" Y="200" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
-        <EmbededRegistry Id="PagesPermissions">
-            <PositionMap>
-                <Element ComponentName="DevicesPermissions" X="550" Y="400" Note=""/>
-                <Element ComponentName="PagePermissions" X="575" Y="150" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
