@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5405" Description="ACF"/>
-            <Version Id="1" Number="2250" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="395264" Description="Qt Framework"/>
+            <Version Id="0" Number="5439" Description="ACF"/>
+            <Version Id="1" Number="2270" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395267" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -16,8 +16,8 @@
                     <AttributeInfo Id="AgentMessageObjectCollection" Type="Reference" ExportId="AgentMessageObjectCollection">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="AgentinoUrl" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings/WebSocketAgentinoServerUrl"/>
+                    <AttributeInfo Id="AgentinoConnectionInterface" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/AgentinoConnectionInterface"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                         <Data IsEnabled="false"/>
@@ -176,21 +176,6 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServerConnectionInterface" PackageId="ImtComPck" ComponentId="ServerConnectionInterfaceParam">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="DefaultHost" Type="String" ExportId="">
-                        <Data IsEnabled="true" Value="localhost"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DefaultHttpPort" Type="Integer" ExportId="">
-                        <Data IsEnabled="true" Value="7111"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DefaultWebSocketPort" Type="Integer" ExportId="">
-                        <Data IsEnabled="true" Value="7112"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
         <Element Id="ServerSettings" PackageId="AgentinoVoce" ComponentId="ServerSettings">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
@@ -299,7 +284,7 @@
                         <Data IsEnabled="true" Value="AgentHandlers"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerConnectionInterface"/>
+                        <Data IsEnabled="true" Value="ServerSettings/AgentinoConnectionInterface"/>
                     </AttributeInfo>
                     <AttributeInfo Id="WebSocketProtocolEngine" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketServerFramework"/>

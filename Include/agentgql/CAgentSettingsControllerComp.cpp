@@ -9,7 +9,7 @@ imtbase::CTreeItemModel* CAgentSettingsControllerComp::CreateInternalResponse(
 			const imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	if (!m_agentinoUrlCompPtr.IsValid()){
+	if (!m_agentinoConnectionInterfaceCompPtr.IsValid()){
 		Q_ASSERT(0);
 
 		return nullptr;
@@ -32,7 +32,13 @@ imtbase::CTreeItemModel* CAgentSettingsControllerComp::CreateInternalResponse(
 
 	if (gqlRequest.GetRequestType() == imtgql::IGqlRequest::RT_QUERY){
 		imtbase::CTreeItemModel* dataModelPtr = rootModelPtr->AddTreeModel("data");
-		QString agentinoUrl = m_agentinoUrlCompPtr->GetUrl().toString();
+		QUrl url;
+		if (!m_agentinoConnectionInterfaceCompPtr->GetUrl(imtcom::IServerConnectionInterface::PT_WEBSOCKET, url)){
+			SendErrorMessage(0, QString("ServerConnectionInterface is invalid"));
+
+			return nullptr;
+		}
+		QString agentinoUrl = url.toString();
 		dataModelPtr->SetData("Url", agentinoUrl);
 	}
 	else if (gqlRequest.GetRequestType() == imtgql::IGqlRequest::RT_MUTATION){
@@ -67,12 +73,12 @@ imtbase::CTreeItemModel* CAgentSettingsControllerComp::CreateInternalResponse(
 
 		m_loginCompPtr->Disconnect();
 
-		if (m_agentinoUrlCompPtr->SetUrl(url)){
-			imtbase::CTreeItemModel* dataModelPtr = rootModelPtr->AddTreeModel("data");
-			imtbase::CTreeItemModel* notificationModelPtr = dataModelPtr->AddTreeModel("updatedNotification");
-			notificationModelPtr->SetData("Id", "");
-			notificationModelPtr->SetData("Name", "Agent Settings");
-		}
+		m_agentinoConnectionInterfaceCompPtr->SetHost(url.host());
+		m_agentinoConnectionInterfaceCompPtr->SetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET,url.port());
+		imtbase::CTreeItemModel* dataModelPtr = rootModelPtr->AddTreeModel("data");
+		imtbase::CTreeItemModel* notificationModelPtr = dataModelPtr->AddTreeModel("updatedNotification");
+		notificationModelPtr->SetData("Id", "");
+		notificationModelPtr->SetData("Name", "Agent Settings");
 
 		m_loginCompPtr->Connect();
 	}

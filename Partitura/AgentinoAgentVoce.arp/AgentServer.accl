@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5405" Description="ACF"/>
-            <Version Id="1" Number="2250" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="395264" Description="Qt Framework"/>
+            <Version Id="0" Number="5439" Description="ACF"/>
+            <Version Id="1" Number="2270" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395267" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
@@ -14,7 +14,6 @@
         <Element ComponentName="DatabaseEngine" X="475" Y="175" Note=""/>
         <Element ComponentName="HttpServerFramework" X="350" Y="450" Note=""/>
         <Element ComponentName="Repositories" X="750" Y="225" Note=""/>
-        <Element ComponentName="ServerConnectionInterface" X="675" Y="750" Note=""/>
         <Element ComponentName="ServerSettings" X="125" Y="350" Note=""/>
         <Element ComponentName="ServiceCollectionPropvider" X="1025" Y="126" Note=""/>
         <Element ComponentName="ServiceController" X="825" Y="375" Note=""/>
@@ -23,20 +22,20 @@
         <Element ComponentName="WebSocketServerFramework" X="725" Y="475" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="WebSocketClient">
-            <PositionMap>
-                <Element ComponentName="WebSocketClient" X="325" Y="200" Note=""/>
-                <Element ComponentName="WebSocketServlet" X="325" Y="500" Note=""/>
-                <Element ComponentName="WorkerManager" X="725" Y="200" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
         <EmbededRegistry Id="ServiceCollectionController">
             <PositionMap>
                 <Element ComponentName="CheckPermissionOr" X="650" Y="450" Note=""/>
                 <Element ComponentName="RepresentationService" X="625" Y="125" Note=""/>
                 <Element ComponentName="ServiceCollectionController" X="650" Y="275" Note=""/>
                 <Element ComponentName="ServiceHeadersDataProvider" X="225" Y="275" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="WebSocketClient">
+            <PositionMap>
+                <Element ComponentName="WebSocketClient" X="325" Y="200" Note=""/>
+                <Element ComponentName="WebSocketServlet" X="325" Y="500" Note=""/>
+                <Element ComponentName="WorkerManager" X="725" Y="200" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
