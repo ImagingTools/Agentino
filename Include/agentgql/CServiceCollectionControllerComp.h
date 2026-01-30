@@ -66,14 +66,12 @@ protected:
 				QString& errorMessage) const override;
 
 	// reimplemented (imtservice::IConnectionCollectionProvider)
-	virtual std::shared_ptr<imtservice::IConnectionCollection> GetConnectionCollectionByServicePath(const QString& servicePath) const override;
-	std::shared_ptr<imtservice::IConnectionCollection> GetConnectionCollectionByServiceId(const QByteArray& serviceId) const override;
+	virtual imtservice::IConnectionCollection* GetConnectionCollectionByServicePath(const QString& servicePath) const override;
+	virtual imtservice::IConnectionCollection* GetConnectionCollectionByServiceId(const QByteArray& serviceId) const override;
 
 	// reimplemented (icomp::CComponentBase)
 	virtual void OnComponentDestroyed() override;
 
-	virtual imtbase::IObjectCollection* GetObjectCollection(const QByteArray& id = QByteArray()) const;
-	
 private:
 	bool CheckInputPortsUpdated(agentinodata::IServiceInfo& serviceInfo, const imtservice::IConnectionCollection& connectionCollection) const;
 	bool UpdateConnectionCollectionFromService(agentinodata::IServiceInfo& serviceInfo, imtservice::IConnectionCollection& connectionCollection) const;
