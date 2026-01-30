@@ -42,8 +42,8 @@ bool CMessageCollectionControllerComp::CreateRepresentationFromObject(
 		serviceId = headers["serviceid"];
 	}
 
-	istd::TDelPtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(serviceId, errorMessage);
-	if (!messageCollectionPtr.IsValid()){
+	imtbase::IObjectCollection* messageCollectionPtr = GetMessageCollection(serviceId, errorMessage);
+	if (messageCollectionPtr == nullptr){
 		SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
 
 		return false;
@@ -103,8 +103,8 @@ imtbase::CTreeItemModel* CMessageCollectionControllerComp::ListObjects(
 		viewParamsGql = inputObject->GetParamArgumentObjectPtr("viewParams");
 	}
 
-	istd::TDelPtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(serviceid, errorMessage);
-	if (!messageCollectionPtr.IsValid()){
+	imtbase::IObjectCollection* messageCollectionPtr = GetMessageCollection(serviceid, errorMessage);
+	if (messageCollectionPtr == nullptr){
 		SendErrorMessage(0, errorMessage, "CMessageCollectionControllerComp");
 
 		return rootModelPtr.PopPtr();
@@ -197,9 +197,7 @@ imtbase::IObjectCollection* CMessageCollectionControllerComp::GetMessageCollecti
 					}
 				}
 				if (messageCollectionFactoryPtr != nullptr){
-					imtbase::IObjectCollection* messageCollection = messageCollectionFactoryPtr->CreateInstance();
-
-					return messageCollection;
+					return messageCollectionFactoryPtr->CreateInstance();
 				}
 			}
 		}

@@ -53,20 +53,20 @@ imtbase::CTreeItemModel* CAgentGqlRemoteRepresentationControllerComp::CreateInte
 
 	QUrl url;
 	QByteArray serviceTypeName;
-	std::shared_ptr<imtservice::IConnectionCollection> connectionCollection = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
-	if (connectionCollection != nullptr) {
-		const imtbase::ICollectionInfo* collectionInfo = static_cast<const imtbase::ICollectionInfo*>(connectionCollection->GetServerConnectionList());
+	imtservice::IConnectionCollectionPlugin::IConnectionCollectionSharedPtr connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
+	if (connectionCollectionPtr.IsValid()) {
+		const imtbase::ICollectionInfo* collectionInfo = static_cast<const imtbase::ICollectionInfo*>(connectionCollectionPtr->GetServerConnectionList());
 		const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
 		if (objectCollection != nullptr) {
 			imtbase::ICollectionInfo::Ids ids = collectionInfo->GetElementIds();
 			for (const QByteArray& id : ids) {
-				const imtservice::IServiceConnectionInfo* connectionParamPtr = connectionCollection->GetConnectionMetaInfo(id);
+				const imtservice::IServiceConnectionInfo* connectionParamPtr = connectionCollectionPtr->GetConnectionMetaInfo(id);
 				if (connectionParamPtr == nullptr) {
 					continue;
 				}
 
 				if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT) {
-					serviceTypeName = connectionCollection->GetServiceTypeId().toUtf8();
+					serviceTypeName = connectionCollectionPtr->GetServiceTypeId().toUtf8();
 					const imtcom::IServerConnectionInterface& serverConnectionInterface = connectionParamPtr->GetDefaultInterface();
 					if (serverConnectionInterface.GetUrl(imtcom::IServerConnectionInterface::PT_HTTP, url)) {
 						break;
