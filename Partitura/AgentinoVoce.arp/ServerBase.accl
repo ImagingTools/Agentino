@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5405" Description="ACF"/>
-            <Version Id="1" Number="2250" Description="ACF-Solutions"/>
+            <Version Id="0" Number="5715" Description="ACF"/>
+            <Version Id="1" Number="2274" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -23,15 +23,6 @@
         <Element ComponentName="WebSocketServerFramework" X="200" Y="500" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="DatabaseEngine">
-            <PositionMap>
-                <Element ComponentName="DatabaseEngine" X="300" Y="150" Note=""/>
-                <Element ComponentName="MigrationController" X="750" Y="300" Note=""/>
-                <Element ComponentName="MigrationFilePath" X="750" Y="425" Note=""/>
-                <Element ComponentName="SystemLocation" X="750" Y="550" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
         <EmbededRegistry Id="Subscriptions">
             <PositionMap>
                 <Element ComponentName="AgentCollectionSubscriber" X="550" Y="75" Note=""/>
@@ -44,6 +35,15 @@
                 <Element ComponentName="TopologySubscriber" X="950" Y="75" Note=""/>
                 <Element ComponentName="UserGroupsSubscriberController" X="525" Y="525" Note=""/>
                 <Element ComponentName="UsersSubscriberController" X="525" Y="350" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="DatabaseEngine">
+            <PositionMap>
+                <Element ComponentName="DatabaseEngine" X="300" Y="150" Note=""/>
+                <Element ComponentName="MigrationController" X="750" Y="300" Note=""/>
+                <Element ComponentName="MigrationFilePath" X="750" Y="425" Note=""/>
+                <Element ComponentName="SystemLocation" X="750" Y="550" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
