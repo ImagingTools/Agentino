@@ -201,7 +201,7 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 	}
 
 	agentinodata::CIdentifiableServiceInfo* serviceInfoImplPtr = dynamic_cast<agentinodata::CIdentifiableServiceInfo*>(serviceInstancePtr.GetPtr());
-	if (serviceInfoImplPtr == nullptr) {
+	if (serviceInfoImplPtr == nullptr){
 		errorMessage = QString("Unable to create service instance. Object is invalid");
 		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 
@@ -396,42 +396,63 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 
 imtservice::IConnectionCollection* CServiceCollectionControllerComp::GetConnectionCollectionByServicePath(const QString& servicePath) const
 {
-	QFileInfo fileInfo(servicePath);
-	if (!fileInfo.exists()){
+	const QFileInfo fi(servicePath);
+	if (!fi.exists()){
 		return nullptr;
 	}
 
-	QString pluginPath = fileInfo.path() + "/Plugins";
+	const QString pluginPath = fi.dir().absoluteFilePath(QStringLiteral("Plugins"));
+	const QByteArray key = servicePath.toUtf8();
 
-	istd::TDelPtr<PluginManager>& pluginManagerPtr = m_pluginMap[servicePath.toUtf8()];
-	pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings), nullptr));
-
-	if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")){
-		SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(qPrintable(servicePath)), "CServiceCollectionControllerComp");
-		m_pluginMap.remove(servicePath.toUtf8());
+	if (m_pluginMap.contains(key)){
+		return m_pluginMap[key].connectionCollectionPtr;
 	}
 
-	if (!m_pluginMap.contains(servicePath.toUtf8())){
+	PluginInfo& pluginInfo = m_pluginMap[key];
+	pluginInfo.pluginManagerPtr.SetPtr(new PluginManager(
+											IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings),
+											IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings),
+											nullptr));
+	
+	if (!pluginInfo.pluginManagerPtr.IsValid() || !pluginInfo.pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")){
 		SendErrorMessage(0,
-						QString("Unable to get connection collection. Error: Plugin with name '%1' not found").arg(servicePath),
-						"CServiceCollectionControllerComp");
-
+						 QStringLiteral("Unable to load a plugin for '%1'").arg(servicePath),
+						 QStringLiteral("CServiceCollectionControllerComp"));
 		return nullptr;
 	}
 
 	const imtservice::IConnectionCollectionPlugin::IConnectionCollectionFactory* connectionCollectionFactoryPtr = nullptr;
-	for (int index = 0; index < m_pluginMap[servicePath.toUtf8()]->m_plugins.count(); index++){
-		imtservice::IConnectionCollectionPlugin* pluginPtr = m_pluginMap[servicePath.toUtf8()]->m_plugins[index].pluginPtr;
-		if (pluginPtr != nullptr){
-			connectionCollectionFactoryPtr = pluginPtr->GetConnectionCollectionFactory();
-
+	for (int i = 0; i < pluginInfo.pluginManagerPtr->m_plugins.count(); ++i){
+		auto* plugin = pluginInfo.pluginManagerPtr->m_plugins[i].pluginPtr;
+		if (!plugin)
+			continue;
+		
+		connectionCollectionFactoryPtr = plugin->GetConnectionCollectionFactory();
+		if (connectionCollectionFactoryPtr != nullptr){
 			break;
 		}
 	}
 
-	Q_ASSERT(connectionCollectionFactoryPtr != nullptr);
+	if (connectionCollectionFactoryPtr == nullptr){
+		SendErrorMessage(0,
+						 QStringLiteral("Plugin for '%1' does not provide a connection collection factory")
+						 .arg(servicePath),
+						 QStringLiteral("CServiceCollectionControllerComp"));
+		return nullptr;
+	}
 
-	return connectionCollectionFactoryPtr->CreateInstance();
+	imtservice::IConnectionCollection* connectionCollectionPtr = connectionCollectionFactoryPtr->CreateInstance();
+	if (connectionCollectionPtr == nullptr){
+		SendErrorMessage(0,
+						 QStringLiteral("Failed to create connection collection instance for '%1'")
+						 .arg(servicePath),
+						 QStringLiteral("CServiceCollectionControllerComp"));
+		return nullptr;
+	}
+
+	pluginInfo.connectionCollectionPtr = connectionCollectionPtr;
+
+	return connectionCollectionPtr;
 }
 
 
@@ -483,7 +504,7 @@ bool CServiceCollectionControllerComp::CheckInputPortsUpdated(
 	if (connectionCollectionPtr != nullptr){
 		imtbase::ICollectionInfo::Ids elementIds = connectionCollectionPtr->GetElementIds();
 		imtbase::IObjectCollection::DataPtr connectionDataPtr;
-		for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
+		for (const imtbase::ICollectionInfo::Id& elementId: std::as_const(elementIds)){
 			if (connectionCollectionPtr->GetObjectData(elementId, connectionDataPtr)){
 				imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
 				if (connectionParamPtr != nullptr){

@@ -97,7 +97,13 @@ protected:
 		}
 	};
 
-	typedef QMap<QByteArray, istd::TDelPtr<PluginManager>> PluginMap;
+	struct PluginInfo
+	{
+		istd::TDelPtr<PluginManager> pluginManagerPtr;
+		imtservice::IConnectionCollection* connectionCollectionPtr = nullptr;
+	};
+
+	typedef QMap<QByteArray, PluginInfo> PluginMap;
 	mutable PluginMap m_pluginMap;
 };
 

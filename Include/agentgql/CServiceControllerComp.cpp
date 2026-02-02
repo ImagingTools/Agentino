@@ -175,8 +175,8 @@ sdl::agentino::Services::CUpdateConnectionUrlResponse CServiceControllerComp::On
 		return response;
 	}
 
-	imtservice::IConnectionCollectionPlugin::IConnectionCollectionSharedPtr connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
-	if (connectionCollectionPtr.IsValid()){
+	imtservice::IConnectionCollection* connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
+	if (connectionCollectionPtr != nullptr){
 		bool ok = connectionCollectionPtr->SetServerConnectionInterface(connectionId, serverConnectionParam);
 
 		response.Version_1_0->succesful = ok;
