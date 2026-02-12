@@ -18,7 +18,7 @@ namespace agentgql
 bool CMessageCollectionControllerComp::CreateRepresentationFromObject(
 			const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
 			const sdl::agentino::ServiceLog::CGetServiceLogGqlRequest& getServiceLogRequest,
-			sdl::agentino::ServiceLog::CMessageItem::V1_0& representationObject,
+			sdl::imtbase::ImtCollection::CMessageItem::V1_0& representationObject,
 			QString& errorMessage) const
 {
 	QByteArray objectId = objectCollectionIterator.GetObjectId();
