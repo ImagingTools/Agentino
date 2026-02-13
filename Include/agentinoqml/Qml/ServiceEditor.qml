@@ -62,16 +62,7 @@ ViewBase {
 		currentIndex: 0;
 	}
 
-	function getInputConnection(){
-		let inputConnections = serviceEditorContainer.serviceData.m_inputConnections
-		if (inputConnections){
-			if (inputConnections.count > 0){
-				return inputConnections.get(0).item
-			}
-		}
-		
-		return null
-	}
+
 	
 	Component {
 		id: mainEditorComp;
@@ -131,38 +122,17 @@ ViewBase {
 					stopScriptChecked.checked = false
 				}
 				
-				let inputConnectionEditorVisible = false
-				
-				let inputConnection = serviceEditorContainer.getInputConnection()
-				if (inputConnection){
-					if (inputConnection.m_connectionParam){
-						inputConnectionEditor.host = inputConnection.m_connectionParam.m_host
-						inputConnectionEditor.httpPort = inputConnection.m_connectionParam.m_httpPort
-						inputConnectionEditor.wsPort = inputConnection.m_connectionParam.m_wsPort
-						inputConnectionEditor.isSecure = inputConnection.m_connectionParam.m_isSecure
-						
-						inputConnectionEditorVisible = true
-					}
+				if (serviceEditorContainer.serviceData.m_inputConnections){
+					inputConnectionListView.model = 0
+					inputConnectionListView.model = serviceEditorContainer.serviceData.m_inputConnections
 					
-					if (inputConnection.m_externConnectionList){
-						let values = []
-						for (let i = 0; i < inputConnection.m_externConnectionList.count; i++){
-							let externConnection = inputConnection.m_externConnectionList.get(i).item
-							if (externConnection){
-								values.push(externConnection.m_connectionParam.m_host + ":" + externConnection.m_connectionParam.m_httpPort)
-							}
-						}
-						
-						if (values.length > 0){
-							externConnectionsView.description = values.join('\n')
-						}
-						else{
-							externConnectionsView.description = ""
+					for (let i = 0; i < inputConnectionListView.count; i++){
+						let item = inputConnectionListView.itemAtIndex(i)
+						if (item){
+							item.updateGui()
 						}
 					}
 				}
-				
-				inputConnectionEditor.visible = inputConnectionEditorVisible
 
 				if (serviceEditorContainer.serviceData.m_outputConnections){
 					outputConnectionListView.model = 0
@@ -210,13 +180,12 @@ ViewBase {
 					serviceEditorContainer.serviceData.m_stopScript = "";
 				}
 				
-				let inputConnection = serviceEditorContainer.getInputConnection()
-				if (inputConnection){
-					if (inputConnection.m_connectionParam){
-						inputConnection.m_connectionParam.m_host = inputConnectionEditor.host
-						inputConnection.m_connectionParam.m_httpPort = inputConnectionEditor.httpPort
-						inputConnection.m_connectionParam.m_wsPort = inputConnectionEditor.wsPort
-						inputConnection.m_connectionParam.m_isSecure = inputConnectionEditor.isSecure
+				if (serviceEditorContainer.serviceData.m_inputConnections){
+					for (let i = 0; i < inputConnectionListView.count; i++){
+						let item = inputConnectionListView.itemAtIndex(i)
+						if (item){
+							item.updateModel()
+						}
 					}
 				}
 				
@@ -439,27 +408,77 @@ ViewBase {
 				}
 
 				GroupHeaderView {
-					title: qsTr("Input Connection")
+					title: qsTr("Input Connections")
 					width: parent.width
-					groupView: inputConnectionEditor
-					visible: inputConnectionEditor.visible
+					visible: inputConnectionListView.count > 0
 				}
 				
-				ServerConnectionParamElementView {
-					id: inputConnectionEditor
+				ListView  {
+					id: inputConnectionListView
 					width: parent.width
-					readOnly: serviceEditorContainer.readOnly
-					visible: false
-					onParamsChanged: {
-						serviceEditorContainer.doUpdateModel()
-					}
-					
-					ButtonElementView {
-						id: externConnectionsView
-						name: qsTr("Extern Connections")
-						text: qsTr("Edit")
-						onClicked: {
-							ModalDialogManager.openDialog(externPortsDialogComp, {});
+					height: contentHeight
+					cacheBuffer: 1000
+					boundsBehavior: Flickable.StopAtBounds
+					spacing: Style.marginXL
+					delegate: ServerConnectionParamElementView {
+						id: inputConnectionEditor
+						width: inputConnectionListView.width
+						readOnly: serviceEditorContainer.readOnly
+						
+						onParamsChanged: {
+							serviceEditorContainer.doUpdateModel()
+						}
+						
+						ButtonElementView {
+							id: externConnectionsView
+							name: qsTr("Extern Connections")
+							text: qsTr("Edit")
+							onClicked: {
+								ModalDialogManager.openDialog(externPortsDialogComp, {inputConnection: model.item});
+							}
+						}
+						
+						function updateGui(){
+							if (!model.item){
+								return
+							}
+							
+							if (model.item.m_connectionParam){
+								inputConnectionEditor.host = model.item.m_connectionParam.m_host
+								inputConnectionEditor.httpPort = model.item.m_connectionParam.m_httpPort
+								inputConnectionEditor.wsPort = model.item.m_connectionParam.m_wsPort
+								inputConnectionEditor.isSecure = model.item.m_connectionParam.m_isSecure
+							}
+							
+							if (model.item.m_externConnectionList){
+								let values = []
+								for (let i = 0; i < model.item.m_externConnectionList.count; i++){
+									let externConnection = model.item.m_externConnectionList.get(i).item
+									if (externConnection){
+										values.push(externConnection.m_connectionParam.m_host + ":" + externConnection.m_connectionParam.m_httpPort)
+									}
+								}
+								
+								if (values.length > 0){
+									externConnectionsView.description = values.join('\n')
+								}
+								else{
+									externConnectionsView.description = ""
+								}
+							}
+						}
+						
+						function updateModel(){
+							if (!model.item){
+								return
+							}
+							
+							if (model.item.m_connectionParam){
+								model.item.m_connectionParam.m_host = inputConnectionEditor.host
+								model.item.m_connectionParam.m_httpPort = inputConnectionEditor.httpPort
+								model.item.m_connectionParam.m_wsPort = inputConnectionEditor.wsPort
+								model.item.m_connectionParam.m_isSecure = inputConnectionEditor.isSecure
+							}
 						}
 					}
 				}
@@ -468,8 +487,9 @@ ViewBase {
 					id: externPortsDialogComp;
 					
 					ExternPortsDialog {
+						property var inputConnection: null
+						
 						onStarted: {
-							let inputConnection = serviceEditorContainer.getInputConnection()
 							if (inputConnection){
 								if (inputConnection.m_externConnectionList){
 									connectionListModel = inputConnection.m_externConnectionList.copyMe()
@@ -479,7 +499,6 @@ ViewBase {
 						
 						onFinished: {
 							if (buttonId == Enums.save){
-								let inputConnection = serviceEditorContainer.getInputConnection()
 								if (inputConnection){
 									inputConnection.m_externConnectionList = connectionListModel.copyMe()
 									serviceEditorContainer.doUpdateModel()
