@@ -6,6 +6,7 @@
 
 // Generated includes
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/ServiceLog.h>
+#include <imtbasesdl/SDL/1.0/CPP/ImtCollection.h>
 
 
 namespace agentgql
