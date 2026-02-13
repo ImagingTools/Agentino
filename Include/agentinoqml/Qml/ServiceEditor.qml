@@ -125,7 +125,6 @@ ViewBase {
 				if (serviceEditorContainer.serviceData.m_inputConnections){
 					inputConnectionListView.model = 0
 					inputConnectionListView.model = serviceEditorContainer.serviceData.m_inputConnections
-					let count = serviceEditorContainer.serviceData.m_inputConnections.count
 					
 					for (let i = 0; i < inputConnectionListView.count; i++){
 						let item = inputConnectionListView.itemAtIndex(i)
@@ -426,7 +425,6 @@ ViewBase {
 						width: inputConnectionListView.width
 						readOnly: serviceEditorContainer.readOnly
 						
-						property var connectionParam: model && model.item ? model.item.m_connectionParam : null
 						property var modelData: model ? model.item : null
 						
 						Component.onCompleted: {
