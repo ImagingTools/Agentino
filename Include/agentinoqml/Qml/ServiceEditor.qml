@@ -425,8 +425,6 @@ ViewBase {
 						width: inputConnectionListView.width
 						readOnly: serviceEditorContainer.readOnly
 						
-						property var modelData: model ? model.item : null
-						
 						Component.onCompleted: {
 							updateGui()
 						}
