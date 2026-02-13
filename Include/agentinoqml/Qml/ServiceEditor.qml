@@ -425,10 +425,6 @@ ViewBase {
 						width: inputConnectionListView.width
 						readOnly: serviceEditorContainer.readOnly
 						
-						Component.onCompleted: {
-							updateGui()
-						}
-						
 						onParamsChanged: {
 							serviceEditorContainer.doUpdateModel()
 						}
