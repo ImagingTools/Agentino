@@ -6,6 +6,7 @@
 
 // Generated includes
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/ServiceLog.h>
+#include <imtbasesdl/SDL/1.0/CPP/ImtCollection.h>
 
 
 namespace agentgql
@@ -27,7 +28,7 @@ protected:
 	virtual bool CreateRepresentationFromObject(
 				const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
 				const sdl::agentino::ServiceLog::CGetServiceLogGqlRequest& getServiceLogRequest,
-				sdl::agentino::ServiceLog::CMessageItem::V1_0& representationObject,
+				sdl::imtbase::ImtCollection::CMessageItem::V1_0& representationObject,
 				QString& errorMessage) const override;
 	virtual imtbase::CTreeItemModel* ListObjects(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 	// reimplemented (icomp::CComponentBase)
