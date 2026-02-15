@@ -47,7 +47,7 @@ protected Q_SLOTS:
 
 private:
 	struct MessageStatusInfo{
-		istd::TDelPtr<imtbase::IObjectCollection> messageCollectionPtr;
+		istd::TSharedInterfacePtr<imtbase::IObjectCollection> messageCollectionPtr;
 		int messageCount;
 	};
 

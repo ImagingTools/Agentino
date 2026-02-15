@@ -2,6 +2,7 @@
 
 
 // ImtCore includes
+#include "istd/TInterfacePtr.h"
 #include <imtservergql/CObjectCollectionControllerCompBase.h>
 #include <imtbase/PluginInterface.h>
 #include <imtservice/IConnectionCollectionPlugin.h>
@@ -66,8 +67,8 @@ protected:
 				QString& errorMessage) const override;
 
 	// reimplemented (imtservice::IConnectionCollectionProvider)
-	virtual imtservice::IConnectionCollection* GetConnectionCollectionByServicePath(const QString& servicePath) const override;
-	virtual imtservice::IConnectionCollection* GetConnectionCollectionByServiceId(const QByteArray& serviceId) const override;
+	virtual istd::TSharedInterfacePtr<imtservice::IConnectionCollection> GetConnectionCollectionByServicePath(const QString& servicePath) const override;
+	virtual istd::TSharedInterfacePtr<imtservice::IConnectionCollection> GetConnectionCollectionByServiceId(const QByteArray& serviceId) const override;
 
 	// reimplemented (icomp::CComponentBase)
 	virtual void OnComponentDestroyed() override;
@@ -100,7 +101,7 @@ protected:
 	struct PluginInfo
 	{
 		istd::TDelPtr<PluginManager> pluginManagerPtr;
-		imtservice::IConnectionCollection* connectionCollectionPtr = nullptr;
+		istd::TSharedInterfacePtr<imtservice::IConnectionCollection> connectionCollectionPtr = nullptr;
 	};
 
 	typedef QMap<QByteArray, PluginInfo> PluginMap;
