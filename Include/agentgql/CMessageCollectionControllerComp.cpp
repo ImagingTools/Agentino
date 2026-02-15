@@ -42,8 +42,8 @@ bool CMessageCollectionControllerComp::CreateRepresentationFromObject(
 		serviceId = headers["serviceid"];
 	}
 
-	imtbase::IObjectCollection* messageCollectionPtr = GetMessageCollection(serviceId, errorMessage);
-	if (messageCollectionPtr == nullptr){
+	istd::TUniqueInterfacePtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(serviceId, errorMessage);
+	if (!messageCollectionPtr.IsValid()){
 		SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
 
 		return false;
@@ -103,8 +103,8 @@ imtbase::CTreeItemModel* CMessageCollectionControllerComp::ListObjects(
 		viewParamsGql = inputObject->GetParamArgumentObjectPtr("viewParams");
 	}
 
-	imtbase::IObjectCollection* messageCollectionPtr = GetMessageCollection(serviceid, errorMessage);
-	if (messageCollectionPtr == nullptr){
+	istd::TUniqueInterfacePtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(serviceid, errorMessage);
+	if (!messageCollectionPtr.IsValid()){
 		SendErrorMessage(0, errorMessage, "CMessageCollectionControllerComp");
 
 		return rootModelPtr.PopPtr();
@@ -156,7 +156,7 @@ void CMessageCollectionControllerComp::OnComponentDestroyed()
 }
 
 
-imtbase::IObjectCollection* CMessageCollectionControllerComp::GetMessageCollection(const QByteArray& serviceId, QString& errorMessage) const
+istd::TUniqueInterfacePtr<imtbase::IObjectCollection> CMessageCollectionControllerComp::GetMessageCollection(const QByteArray& serviceId, QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		errorMessage = QString("Internal error").toUtf8();

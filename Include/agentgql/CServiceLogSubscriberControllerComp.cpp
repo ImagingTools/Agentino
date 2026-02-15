@@ -96,11 +96,12 @@ void CServiceLogSubscriberControllerComp::OnUpdate(const istd::IChangeable::Chan
 					}
 				}
 				if (messageCollectionFactoryPtr != nullptr){
-					imtbase::IObjectCollection* messageCollection = messageCollectionFactoryPtr->CreateInstance();
-
-					MessageStatusInfo& messageStatusInfo = m_servicesMessageInfo[serviceId];
-					messageStatusInfo.messageCollectionPtr = messageCollection;
-					messageStatusInfo.messageCount = 0;
+					istd::TUniqueInterfacePtr<imtbase::IObjectCollection> messageCollection = messageCollectionFactoryPtr->CreateInstance();
+					if (messageCollection.IsValid()){
+						MessageStatusInfo& messageStatusInfo = m_servicesMessageInfo[serviceId];
+						messageStatusInfo.messageCollectionPtr.FromUnique(messageCollection);
+						messageStatusInfo.messageCount = 0;
+					}
 				}
 			}
 		}
