@@ -53,8 +53,8 @@ imtbase::CTreeItemModel* CAgentGqlRemoteRepresentationControllerComp::CreateInte
 
 	QUrl url;
 	QByteArray serviceTypeName;
-	imtservice::IConnectionCollection* connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
-	if (connectionCollectionPtr != nullptr){
+	istd::TSharedInterfacePtr<imtservice::IConnectionCollection> connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
+	if (connectionCollectionPtr.IsValid()){
 		const imtbase::ICollectionInfo* collectionInfo = static_cast<const imtbase::ICollectionInfo*>(connectionCollectionPtr->GetServerConnectionList());
 		const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
 		if (objectCollection != nullptr) {

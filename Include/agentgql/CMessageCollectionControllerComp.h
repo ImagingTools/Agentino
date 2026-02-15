@@ -34,7 +34,7 @@ protected:
 	// reimplemented (icomp::CComponentBase)
 	virtual void OnComponentDestroyed() override;
 
-	virtual imtbase::IObjectCollection* GetMessageCollection(const QByteArray& serviceId, QString& errorMessage) const;
+	virtual istd::TUniqueInterfacePtr<imtbase::IObjectCollection> GetMessageCollection(const QByteArray& serviceId, QString& errorMessage) const;
 };
 
 

@@ -66,16 +66,19 @@ imtbase::CTreeItemModel* CServiceLogControllerComp::CreateInternalResponse(
 		}
 	}
 
+/// Something unfinished??? It seems, this code doing nothing \todo INSPECT IT AND FIX OR REMOVE!!!!!!!!!!
+#if 0
 	istd::TDelPtr<imtbase::IObjectCollection> logCollectionPtr;
 	if (m_pluginMap.contains(serviceName)){
 		for (int index = 0; index < m_pluginMap[serviceName]->m_plugins.count(); index++){
 			imtservice::IObjectCollectionPlugin* pluginPtr = m_pluginMap[serviceName]->m_plugins[index].pluginPtr;
 			if (pluginPtr != nullptr){
-				logCollectionPtr.SetPtr( pluginPtr->GetObjectCollectionFactory()->CreateInstance());
+				logCollectionPtr.SetPtr(pluginPtr->GetObjectCollectionFactory()->CreateInstance());
 				break;
 			}
 		}
 	}
+#endif
 
 	return rootModelPtr.PopPtr();
 }

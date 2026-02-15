@@ -457,8 +457,8 @@ void CServiceControllerComp::UpdateServiceVersion(const QByteArray& serviceId)
 				}
 
 				if (connectionCollectionFactoryPtr != nullptr){
-					imtservice::IConnectionCollection* connectionCollectionPtr = connectionCollectionFactoryPtr->CreateInstance();
-					if (connectionCollectionPtr != nullptr){
+					istd::TUniqueInterfacePtr<imtservice::IConnectionCollection> connectionCollectionPtr = connectionCollectionFactoryPtr->CreateInstance();
+					if (connectionCollectionPtr.IsValid()){
 						QString serviceVersion = connectionCollectionPtr->GetServiceVersion();
 						if (serviceInfoPtr->GetServiceVersion() != serviceVersion){
 							serviceInfoPtr->SetServiceVersion(serviceVersion);

@@ -52,8 +52,8 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 	QUrl url;
 	QByteArray serviceTypeName;
 
-	imtservice::IConnectionCollection* connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
-	if (connectionCollectionPtr == nullptr){
+	istd::TSharedInterfacePtr<imtservice::IConnectionCollection> connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
+	if (!connectionCollectionPtr.IsValid()){
 		return false;
 	}
 
