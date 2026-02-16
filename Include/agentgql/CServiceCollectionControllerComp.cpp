@@ -452,7 +452,7 @@ istd::TSharedInterfacePtr<imtservice::IConnectionCollection> CServiceCollectionC
 
 	pluginInfo.connectionCollectionPtr.FromUnique(connectionCollectionPtr);
 
-	return connectionCollectionPtr;
+	return pluginInfo.connectionCollectionPtr;
 }
 
 
