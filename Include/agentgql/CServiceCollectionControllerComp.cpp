@@ -231,7 +231,7 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 		return nullptr;
 	}
 
-	istd::TSharedInterfacePtr<imtservice::IConnectionCollection> connectionCollectionPtr = GetConnectionCollectionByServicePath(servicePath);
+	imtservice::IConnectionCollectionSharedPtr connectionCollectionPtr = GetConnectionCollectionByServicePath(servicePath);
 	if (connectionCollectionPtr.IsValid()){
 		serviceInfoImplPtr->SetTracingLevel(connectionCollectionPtr->GetTracingLevel());
 		serviceInfoImplPtr->SetServiceVersion(connectionCollectionPtr->GetServiceVersion());
@@ -352,7 +352,7 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 	
 	QByteArray serviceTypeName = serviceInfoPtr->GetServiceTypeId().toUtf8();
 	
-	istd::TSharedInterfacePtr<imtservice::IConnectionCollection> connectionCollectionPtr = GetConnectionCollectionByServiceId(objectId);
+	imtservice::IConnectionCollectionSharedPtr connectionCollectionPtr = GetConnectionCollectionByServiceId(objectId);
 	if (connectionCollectionPtr.IsValid()){
 		QString serviceVersion = connectionCollectionPtr->GetServiceVersion();
 		serviceInfoPtr->SetServiceVersion(serviceVersion);
@@ -394,7 +394,7 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 
 // reimplemented (imtservice::IConnectionCollectionProvider)
 
-istd::TSharedInterfacePtr<imtservice::IConnectionCollection> CServiceCollectionControllerComp::GetConnectionCollectionByServicePath(const QString& servicePath) const
+imtservice::IConnectionCollectionSharedPtr CServiceCollectionControllerComp::GetConnectionCollectionByServicePath(const QString& servicePath) const
 {
 	const QFileInfo fi(servicePath);
 	if (!fi.exists()){
@@ -456,7 +456,7 @@ istd::TSharedInterfacePtr<imtservice::IConnectionCollection> CServiceCollectionC
 }
 
 
-istd::TSharedInterfacePtr<imtservice::IConnectionCollection> CServiceCollectionControllerComp::GetConnectionCollectionByServiceId(const QByteArray& serviceId) const
+imtservice::IConnectionCollectionSharedPtr CServiceCollectionControllerComp::GetConnectionCollectionByServiceId(const QByteArray& serviceId) const
 {
 	std::shared_ptr<imtservice::IConnectionCollection> connectionCollection;
 	const agentinodata::IServiceInfo* serviceInfoPtr = nullptr;

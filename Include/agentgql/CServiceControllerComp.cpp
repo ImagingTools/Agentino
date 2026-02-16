@@ -175,7 +175,7 @@ sdl::agentino::Services::CUpdateConnectionUrlResponse CServiceControllerComp::On
 		return response;
 	}
 
-	istd::TSharedInterfacePtr<imtservice::IConnectionCollection> connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
+	imtservice::IConnectionCollectionSharedPtr connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
 	if (connectionCollectionPtr.IsValid()){
 		bool ok = connectionCollectionPtr->SetServerConnectionInterface(connectionId, serverConnectionParam);
 
@@ -219,7 +219,7 @@ sdl::agentino::Services::CPluginInfo CServiceControllerComp::OnLoadPlugin(
 	response.Version_1_0.emplace();
 
 	QString servicePath = *arguments.input.Version_1_0->servicePath;
-	imtservice::IConnectionCollectionPlugin::IConnectionCollectionSharedPtr connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServicePath(servicePath);
+	imtservice::IConnectionCollectionSharedPtr connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServicePath(servicePath);
 	if (connectionCollectionPtr.IsValid()){
 		sdl::agentino::Services::CPluginInfo::V1_0 pluginRepresentation;
 		if (!agentinodata::GetRepresentationFromConnectionCollection(*connectionCollectionPtr, pluginRepresentation)){
