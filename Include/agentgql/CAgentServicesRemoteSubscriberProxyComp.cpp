@@ -52,7 +52,7 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 	QUrl url;
 	QByteArray serviceTypeName;
 
-	istd::TSharedInterfacePtr<imtservice::IConnectionCollection> connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
+	imtservice::IConnectionCollectionSharedPtr connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
 	if (!connectionCollectionPtr.IsValid()){
 		return false;
 	}

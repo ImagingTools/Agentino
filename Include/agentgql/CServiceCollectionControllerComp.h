@@ -67,8 +67,8 @@ protected:
 				QString& errorMessage) const override;
 
 	// reimplemented (imtservice::IConnectionCollectionProvider)
-	virtual istd::TSharedInterfacePtr<imtservice::IConnectionCollection> GetConnectionCollectionByServicePath(const QString& servicePath) const override;
-	virtual istd::TSharedInterfacePtr<imtservice::IConnectionCollection> GetConnectionCollectionByServiceId(const QByteArray& serviceId) const override;
+	virtual imtservice::IConnectionCollectionSharedPtr GetConnectionCollectionByServicePath(const QString& servicePath) const override;
+	virtual imtservice::IConnectionCollectionSharedPtr GetConnectionCollectionByServiceId(const QByteArray& serviceId) const override;
 
 	// reimplemented (icomp::CComponentBase)
 	virtual void OnComponentDestroyed() override;
@@ -101,7 +101,7 @@ protected:
 	struct PluginInfo
 	{
 		istd::TDelPtr<PluginManager> pluginManagerPtr;
-		istd::TSharedInterfacePtr<imtservice::IConnectionCollection> connectionCollectionPtr = nullptr;
+		imtservice::IConnectionCollectionSharedPtr connectionCollectionPtr = nullptr;
 	};
 
 	typedef QMap<QByteArray, PluginInfo> PluginMap;
