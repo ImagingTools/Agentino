@@ -359,6 +359,30 @@ Agentino uses a component-based architecture with:
 - **Controllers** (Controller suffix) - Business logic and coordination
 - **Wrappers** (Wrap suffix) - Adapters for external systems
 
+## Security and Compliance
+
+### Security
+
+Agentino takes security seriously. For information about:
+
+- **Reporting Security Vulnerabilities**: See [SECURITY.md](SECURITY.md)
+- **Security Updates**: Review our [security policy](SECURITY.md)
+- **Security Best Practices**: Consult the security guidelines in [SECURITY.md](SECURITY.md)
+
+If you discover a security vulnerability, please report it responsibly through GitHub's private vulnerability reporting feature or by contacting the project maintainers.
+
+### EU Cyber Resilience Act (CRA) Compliance
+
+Agentino is designed to support EU Cyber Resilience Act compliance:
+
+- **CRA Compliance Documentation**: [CRA_COMPLIANCE.md](CRA_COMPLIANCE.md)
+- **Software Bill of Materials (SBOM)**: [SBOM.md](SBOM.md), [sbom.json](sbom.json), and [sbom.spdx.json](sbom.spdx.json)
+- **Security Updates**: Regular security patches for supported versions
+- **Vulnerability Management**: Documented process for handling security issues
+- **SPDX License Identifiers**: All source files include SPDX license identifiers
+
+For complete information about CRA compliance, see [CRA_COMPLIANCE.md](CRA_COMPLIANCE.md).
+
 ## License
 
 Agentino is available under dual licensing:
