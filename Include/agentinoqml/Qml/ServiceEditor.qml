@@ -217,200 +217,211 @@ ViewBase {
 				id: bodyColumn;
 				width: 700
 				spacing: Style.marginXL;
-				GroupHeaderView {
-					title: qsTr("General Information")
-					width: parent.width
-					groupView: generalGroup
-				}
-				
-				GroupElementView {
-					id: generalGroup
-					width: parent.width
-					
-					TextInputElementView {
-						id: nameInput
-						name: qsTr("Name")
-						placeHolderText: qsTr("Enter the name");
-						
-						onEditingFinished: {
-							serviceEditorContainer.doUpdateModel();
-						}
-						
-						KeyNavigation.tab: descriptionInput;
-					}
-					
-					TextInputElementView {
-						id: descriptionInput
-						name: qsTr("Description")
-						placeHolderText: qsTr("Enter the description");
-						
-						onEditingFinished: {
-							serviceEditorContainer.doUpdateModel();
-						}
-						
-						KeyNavigation.tab: pathInput;
-					}
-					
-					TextInputElementView {
-						id: pathInput
-						name: qsTr("Path")
-						placeHolderText: qsTr("Enter the path");
-						
-						onEditingFinished: {
-							serviceEditorContainer.doUpdateModel();
 
-							let path = serviceEditorContainer.serviceData.m_path
-							if (path === serviceEditorContainer.pluginServicePath){
-								serviceEditorContainer.pluginLoaded = true
+				Column {
+					width: parent.width
+					spacing: Style.marginL
+
+					GroupHeaderView {
+						title: qsTr("General Information")
+						width: parent.width
+						groupView: generalGroup
+					}
+
+					GroupElementView {
+						id: generalGroup
+						width: parent.width
+
+						TextInputElementView {
+							id: nameInput
+							name: qsTr("Name")
+							placeHolderText: qsTr("Enter the name");
+
+							onEditingFinished: {
+								serviceEditorContainer.doUpdateModel();
 							}
-							else{
-								if (serviceEditorContainer.pluginLoaded){
-									serviceEditorContainer.pluginLoaded = false
-									ModalDialogManager.showWarningDialog(qsTr("You have changed the Path for which the plugin was loaded, reload the plugin"))
+
+							KeyNavigation.tab: descriptionInput;
+						}
+
+						TextInputElementView {
+							id: descriptionInput
+							name: qsTr("Description")
+							placeHolderText: qsTr("Enter the description");
+
+							onEditingFinished: {
+								serviceEditorContainer.doUpdateModel();
+							}
+
+							KeyNavigation.tab: pathInput;
+						}
+
+						TextInputElementView {
+							id: pathInput
+							name: qsTr("Path")
+							placeHolderText: qsTr("Enter the path");
+
+							onEditingFinished: {
+								serviceEditorContainer.doUpdateModel();
+
+								let path = serviceEditorContainer.serviceData.m_path
+								if (path === serviceEditorContainer.pluginServicePath){
+									serviceEditorContainer.pluginLoaded = true
+								}
+								else{
+									if (serviceEditorContainer.pluginLoaded){
+										serviceEditorContainer.pluginLoaded = false
+										ModalDialogManager.showWarningDialog(qsTr("You have changed the Path for which the plugin was loaded, reload the plugin"))
+									}
 								}
 							}
+
+							KeyNavigation.tab: argumentsInput;
 						}
-						
-						KeyNavigation.tab: argumentsInput;
-					}
-					
-					TextInputElementView {
-						id: argumentsInput
-						name: qsTr("Arguments")
-						placeHolderText: qsTr("Enter the arguments");
-						
-						onEditingFinished: {
-							serviceEditorContainer.doUpdateModel();
-						}
-						
-						KeyNavigation.tab: nameInput;
-					}
-				}
-				
-				GroupHeaderView {
-					title: qsTr("Additional Information")
-					width: parent.width
-					groupView: additionalGroup
-				}
-				
-				GroupElementView {
-					id: additionalGroup
-					width: parent.width
-					
-					SwitchElementView {
-						id: switchAutoStart
-						name: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("on") : qsTr("off")) + ")";
-						onCheckedChanged: {
-							serviceEditorContainer.doUpdateModel();
-						}
-					}
-					
-					SwitchElementView {
-						id: switchVerboseMessage
-						name: qsTr("Verbose Message")
-						onCheckedChanged: {
-							serviceEditorContainer.doUpdateModel();
-						}
-					}
-					
-					ComboBoxElementView {
-						id: tracingLevelInput
-						name: qsTr("Tracing level");
-						visible: switchVerboseMessage.checked
-						model: TreeItemModel {
-						}
-						Component.onCompleted: {
-							let index = model.insertNewItem()
-							model.setData("id", "0", index)
-							model.setData("name", "0", index)
-							
-							index = model.insertNewItem()
-							model.setData("id", "1", index)
-							model.setData("name", "1", index)
-							
-							index = model.insertNewItem()
-							model.setData("id", "2", index)
-							model.setData("name", "2", index)
-							
-							index = model.insertNewItem()
-							model.setData("id", "3", index)
-							model.setData("name", "3", index)
-							
-							index = model.insertNewItem()
-							model.setData("id", "4", index)
-							model.setData("name", "4", index)
-							
-							index = model.insertNewItem()
-							model.setData("id", "5", index)
-							model.setData("name", "5", index)
-						}
-						onCurrentIndexChanged: {
-							serviceEditorContainer.doUpdateModel();
-						}
-					}
-					
-					SwitchElementView {
-						id: startScriptChecked
-						name: qsTr("Start script")
-						onCheckedChanged: {
-							serviceEditorContainer.doUpdateModel();
-						}
-					}
-					
-					TextInputElementView {
-						id: startScriptInput
-						visible: startScriptChecked.checked
-						placeHolderText: qsTr("Enter the start script path");
-						name: qsTr("Start Script Path")
-						onEditingFinished: {
-							serviceEditorContainer.doUpdateModel();
-						}
-					}
-					
-					SwitchElementView {
-						id: stopScriptChecked
-						name: qsTr("Stop script")
-						onCheckedChanged: {
-							serviceEditorContainer.doUpdateModel();
-						}
-					}
-					
-					TextInputElementView {
-						id: stopScriptInput
-						visible: stopScriptChecked.checked
-						placeHolderText: qsTr("Enter the stop script path");
-						name: qsTr("Stop Script Path")
-						onEditingFinished: {
-							serviceEditorContainer.doUpdateModel();
-						}
-					}
-				}
-				
-				GroupHeaderView {
-					title: qsTr("Plugin information")
-					width: parent.width
-					groupView: pluginGroup
-				}
-				
-				GroupElementView {
-					id: pluginGroup
-					width: parent.width
-					ButtonElementView {
-						id: loadPluginButton
-						name: qsTr("Load Plugin")
-						text: qsTr("Load")
-						description: buttonEnabled ? qsTr("Click if you want to load the plugin data") : qsTr("Plugin succesfully loaded")
-						buttonEnabled: !serviceEditorContainer.pluginLoaded
-						onClicked: {
-							serviceEditorContainer.loadPlugin()
+
+						TextInputElementView {
+							id: argumentsInput
+							name: qsTr("Arguments")
+							placeHolderText: qsTr("Enter the arguments");
+
+							onEditingFinished: {
+								serviceEditorContainer.doUpdateModel();
+							}
+
+							KeyNavigation.tab: nameInput;
 						}
 					}
 				}
 
-				GroupHeaderView {
-					title: qsTr("Input Connections")
+				Column {
 					width: parent.width
-					visible: inputConnectionListView.count > 0
+					spacing: Style.marginL
+
+					GroupHeaderView {
+						title: qsTr("Additional Information")
+						width: parent.width
+						groupView: additionalGroup
+					}
+
+					GroupElementView {
+						id: additionalGroup
+						width: parent.width
+
+						SwitchElementView {
+							id: switchAutoStart
+							name: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("on") : qsTr("off")) + ")";
+							onCheckedChanged: {
+								serviceEditorContainer.doUpdateModel();
+							}
+						}
+
+						SwitchElementView {
+							id: switchVerboseMessage
+							name: qsTr("Verbose Message")
+							onCheckedChanged: {
+								serviceEditorContainer.doUpdateModel();
+							}
+						}
+
+						ComboBoxElementView {
+							id: tracingLevelInput
+							name: qsTr("Tracing level");
+							visible: switchVerboseMessage.checked
+							model: TreeItemModel {
+							}
+							Component.onCompleted: {
+								let index = model.insertNewItem()
+								model.setData("id", "0", index)
+								model.setData("name", "0", index)
+
+								index = model.insertNewItem()
+								model.setData("id", "1", index)
+								model.setData("name", "1", index)
+
+								index = model.insertNewItem()
+								model.setData("id", "2", index)
+								model.setData("name", "2", index)
+
+								index = model.insertNewItem()
+								model.setData("id", "3", index)
+								model.setData("name", "3", index)
+
+								index = model.insertNewItem()
+								model.setData("id", "4", index)
+								model.setData("name", "4", index)
+
+								index = model.insertNewItem()
+								model.setData("id", "5", index)
+								model.setData("name", "5", index)
+							}
+							onCurrentIndexChanged: {
+								serviceEditorContainer.doUpdateModel();
+							}
+						}
+
+						SwitchElementView {
+							id: startScriptChecked
+							name: qsTr("Start script")
+							onCheckedChanged: {
+								serviceEditorContainer.doUpdateModel();
+							}
+						}
+
+						TextInputElementView {
+							id: startScriptInput
+							visible: startScriptChecked.checked
+							placeHolderText: qsTr("Enter the start script path");
+							name: qsTr("Start Script Path")
+							onEditingFinished: {
+								serviceEditorContainer.doUpdateModel();
+							}
+						}
+
+						SwitchElementView {
+							id: stopScriptChecked
+							name: qsTr("Stop script")
+							onCheckedChanged: {
+								serviceEditorContainer.doUpdateModel();
+							}
+						}
+
+						TextInputElementView {
+							id: stopScriptInput
+							visible: stopScriptChecked.checked
+							placeHolderText: qsTr("Enter the stop script path");
+							name: qsTr("Stop Script Path")
+							onEditingFinished: {
+								serviceEditorContainer.doUpdateModel();
+							}
+						}
+					}
+
+				}
+				
+				Column {
+					width: parent.width
+					spacing: Style.marginL
+
+					GroupHeaderView {
+						title: qsTr("Plugin information")
+						width: parent.width
+						groupView: pluginGroup
+					}
+
+					GroupElementView {
+						id: pluginGroup
+						width: parent.width
+						ButtonElementView {
+							id: loadPluginButton
+							name: qsTr("Load Plugin")
+							text: qsTr("Load")
+							description: buttonEnabled ? qsTr("Click if you want to load the plugin data") : qsTr("Plugin succesfully loaded")
+							buttonEnabled: !serviceEditorContainer.pluginLoaded
+							onClicked: {
+								serviceEditorContainer.loadPlugin()
+							}
+						}
+					}
 				}
 				
 				ListView  {
@@ -420,36 +431,45 @@ ViewBase {
 					cacheBuffer: 1000
 					boundsBehavior: Flickable.StopAtBounds
 					spacing: Style.marginXL
-					delegate: ServerConnectionParamElementView {
-						id: inputConnectionEditor
-						width: inputConnectionListView.width
-						readOnly: serviceEditorContainer.readOnly
-						
-						onParamsChanged: {
-							serviceEditorContainer.doUpdateModel()
+					delegate: Column {
+						width: parent.width
+						spacing: Style.marginL
+						GroupHeaderView {
+							title:  model.item.m_connectionName + qsTr(" (input)")
+							width: parent.width
+							visible: inputConnectionListView.count > 0
 						}
-						
-						ButtonElementView {
-							id: externConnectionsView
-							name: qsTr("Extern Connections")
-							text: qsTr("Edit")
-							onClicked: {
-								ModalDialogManager.openDialog(externPortsDialogComp, {inputConnection: model.item});
+						ServerConnectionParamElementView {
+							id: inputConnectionEditor
+							width: inputConnectionListView.width
+							readOnly: serviceEditorContainer.readOnly
+
+							onParamsChanged: {
+								serviceEditorContainer.doUpdateModel()
+							}
+
+							ButtonElementView {
+								id: externConnectionsView
+								name: qsTr("Extern Connections")
+								text: qsTr("Edit")
+								onClicked: {
+									ModalDialogManager.openDialog(externPortsDialogComp, {inputConnection: model.item});
+								}
 							}
 						}
-						
+
 						function updateGui(){
 							if (!model.item){
 								return
 							}
-							
+
 							if (model.item.m_connectionParam){
 								inputConnectionEditor.host = model.item.m_connectionParam.m_host
 								inputConnectionEditor.httpPort = model.item.m_connectionParam.m_httpPort
 								inputConnectionEditor.wsPort = model.item.m_connectionParam.m_wsPort
 								inputConnectionEditor.isSecure = model.item.m_connectionParam.m_isSecure
 							}
-							
+
 							if (model.item.m_externConnectionList){
 								let values = []
 								for (let i = 0; i < model.item.m_externConnectionList.count; i++){
@@ -458,7 +478,7 @@ ViewBase {
 										values.push(externConnection.m_connectionParam.m_host + ":" + externConnection.m_connectionParam.m_httpPort)
 									}
 								}
-								
+
 								if (values.length > 0){
 									externConnectionsView.description = values.join('\n')
 								}
@@ -467,12 +487,12 @@ ViewBase {
 								}
 							}
 						}
-						
+
 						function updateModel(){
 							if (!model.item){
 								return
 							}
-							
+
 							if (model.item.m_connectionParam){
 								model.item.m_connectionParam.m_host = inputConnectionEditor.host
 								model.item.m_connectionParam.m_httpPort = inputConnectionEditor.httpPort
@@ -480,6 +500,7 @@ ViewBase {
 								model.item.m_connectionParam.m_isSecure = inputConnectionEditor.isSecure
 							}
 						}
+
 					}
 				}
 
