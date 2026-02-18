@@ -8,7 +8,6 @@ import {
 	"../../../../ImtCore/Sdl/imtbase/1.0/ImtCollection.sdl"
 }
 
-
 type Query {
 	GetServiceLog(input: CollectionViewParams): MessageListPayload!
 }
