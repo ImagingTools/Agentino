@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later OR GPL-2.0-or-later OR GPL-3.0-or-later OR LicenseRef-Agentino-Commercial
 #include <agentgql/CServiceCollectionControllerComp.h>
 
 
@@ -231,8 +232,8 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 		return nullptr;
 	}
 
-	imtservice::IConnectionCollection* connectionCollectionPtr = GetConnectionCollectionByServicePath(servicePath);
-	if (connectionCollectionPtr != nullptr){
+	imtservice::IConnectionCollectionSharedPtr connectionCollectionPtr = GetConnectionCollectionByServicePath(servicePath);
+	if (connectionCollectionPtr.IsValid()){
 		serviceInfoImplPtr->SetTracingLevel(connectionCollectionPtr->GetTracingLevel());
 		serviceInfoImplPtr->SetServiceVersion(connectionCollectionPtr->GetServiceVersion());
 		serviceInfoImplPtr->SetServiceTypeId(connectionCollectionPtr->GetServiceTypeId().toUtf8());
@@ -352,8 +353,8 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 	
 	QByteArray serviceTypeName = serviceInfoPtr->GetServiceTypeId().toUtf8();
 	
-	imtservice::IConnectionCollection* connectionCollectionPtr = GetConnectionCollectionByServiceId(objectId);
-	if (connectionCollectionPtr != nullptr){
+	imtservice::IConnectionCollectionSharedPtr connectionCollectionPtr = GetConnectionCollectionByServiceId(objectId);
+	if (connectionCollectionPtr.IsValid()){
 		QString serviceVersion = connectionCollectionPtr->GetServiceVersion();
 		serviceInfoPtr->SetServiceVersion(serviceVersion);
 		
@@ -394,7 +395,7 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 
 // reimplemented (imtservice::IConnectionCollectionProvider)
 
-imtservice::IConnectionCollection* CServiceCollectionControllerComp::GetConnectionCollectionByServicePath(const QString& servicePath) const
+imtservice::IConnectionCollectionSharedPtr CServiceCollectionControllerComp::GetConnectionCollectionByServicePath(const QString& servicePath) const
 {
 	const QFileInfo fi(servicePath);
 	if (!fi.exists()){
@@ -441,8 +442,8 @@ imtservice::IConnectionCollection* CServiceCollectionControllerComp::GetConnecti
 		return nullptr;
 	}
 
-	imtservice::IConnectionCollection* connectionCollectionPtr = connectionCollectionFactoryPtr->CreateInstance();
-	if (connectionCollectionPtr == nullptr){
+	istd::TUniqueInterfacePtr<imtservice::IConnectionCollection> connectionCollectionPtr = connectionCollectionFactoryPtr->CreateInstance();
+	if (!connectionCollectionPtr.IsValid()){
 		SendErrorMessage(0,
 						 QStringLiteral("Failed to create connection collection instance for '%1'")
 						 .arg(servicePath),
@@ -450,13 +451,13 @@ imtservice::IConnectionCollection* CServiceCollectionControllerComp::GetConnecti
 		return nullptr;
 	}
 
-	pluginInfo.connectionCollectionPtr = connectionCollectionPtr;
+	pluginInfo.connectionCollectionPtr.FromUnique(connectionCollectionPtr);
 
-	return connectionCollectionPtr;
+	return pluginInfo.connectionCollectionPtr;
 }
 
 
-imtservice::IConnectionCollection* CServiceCollectionControllerComp::GetConnectionCollectionByServiceId(const QByteArray& serviceId) const
+imtservice::IConnectionCollectionSharedPtr CServiceCollectionControllerComp::GetConnectionCollectionByServiceId(const QByteArray& serviceId) const
 {
 	std::shared_ptr<imtservice::IConnectionCollection> connectionCollection;
 	const agentinodata::IServiceInfo* serviceInfoPtr = nullptr;

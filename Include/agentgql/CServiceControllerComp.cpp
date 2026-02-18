@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later OR GPL-2.0-or-later OR GPL-3.0-or-later OR LicenseRef-Agentino-Commercial
 #include <agentgql/CServiceControllerComp.h>
 
 
@@ -175,8 +176,8 @@ sdl::agentino::Services::CUpdateConnectionUrlResponse CServiceControllerComp::On
 		return response;
 	}
 
-	imtservice::IConnectionCollection* connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
-	if (connectionCollectionPtr != nullptr){
+	imtservice::IConnectionCollectionSharedPtr connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
+	if (connectionCollectionPtr.IsValid()){
 		bool ok = connectionCollectionPtr->SetServerConnectionInterface(connectionId, serverConnectionParam);
 
 		response.Version_1_0->succesful = ok;
@@ -219,7 +220,7 @@ sdl::agentino::Services::CPluginInfo CServiceControllerComp::OnLoadPlugin(
 	response.Version_1_0.emplace();
 
 	QString servicePath = *arguments.input.Version_1_0->servicePath;
-	imtservice::IConnectionCollectionPlugin::IConnectionCollectionSharedPtr connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServicePath(servicePath);
+	imtservice::IConnectionCollectionSharedPtr connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServicePath(servicePath);
 	if (connectionCollectionPtr.IsValid()){
 		sdl::agentino::Services::CPluginInfo::V1_0 pluginRepresentation;
 		if (!agentinodata::GetRepresentationFromConnectionCollection(*connectionCollectionPtr, pluginRepresentation)){

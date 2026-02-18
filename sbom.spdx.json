@@ -1,0 +1,169 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "Agentino-1.0.0-dev",
+  "documentNamespace": "https://github.com/ImagingTools/Agentino/spdxdocs/sbom-1.0.0-dev-550e8400-e29b-41d4-a716-446655440000",
+  "creationInfo": {
+    "created": "2026-02-17T13:00:00Z",
+    "creators": [
+      "Tool: Agentino SBOM Generator-1.0.0",
+      "Organization: ImagingTools GmbH"
+    ],
+    "licenseListVersion": "3.24"
+  },
+  "hasExtractedLicensingInfos": [
+    {
+      "licenseId": "LicenseRef-Qt-Commercial",
+      "extractedText": "Qt is available under commercial license agreements",
+      "name": "Qt Commercial License",
+      "seeAlsos": [
+        "https://www.qt.io/licensing/"
+      ]
+    },
+    {
+      "licenseId": "LicenseRef-ACF-Commercial",
+      "extractedText": "ACF is available under commercial license agreements",
+      "name": "ACF Commercial License",
+      "seeAlsos": [
+        "https://github.com/ImagingTools/Acf"
+      ]
+    },
+    {
+      "licenseId": "LicenseRef-Agentino-Commercial",
+      "extractedText": "Agentino is available under commercial license agreements",
+      "name": "Agentino Commercial License",
+      "seeAlsos": [
+        "https://github.com/ImagingTools/Agentino"
+      ]
+    },
+    {
+      "licenseId": "LicenseRef-ImtCore-Proprietary",
+      "extractedText": "ImtCore is a proprietary framework from ImagingTools GmbH",
+      "name": "ImtCore Proprietary License",
+      "seeAlsos": []
+    }
+  ],
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-Agentino",
+      "name": "Agentino",
+      "versionInfo": "1.0.0-dev",
+      "downloadLocation": "https://github.com/ImagingTools/Agentino",
+      "filesAnalyzed": false,
+      "licenseConcluded": "(LGPL-2.1-or-later OR GPL-2.0-or-later OR GPL-3.0-or-later OR LicenseRef-Agentino-Commercial)",
+      "licenseDeclared": "(LGPL-2.1-or-later OR GPL-2.0-or-later OR GPL-3.0-or-later OR LicenseRef-Agentino-Commercial)",
+      "copyrightText": "Copyright (C) 2017-2026 ImagingTools GmbH",
+      "description": "Distributed service management system that enables centralized monitoring, control, and administration of services across multiple agents in a network",
+      "homepage": "https://github.com/ImagingTools/Agentino"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Qt",
+      "name": "Qt",
+      "versionInfo": "6.8",
+      "downloadLocation": "https://www.qt.io/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "(LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only OR LicenseRef-Qt-Commercial)",
+      "licenseDeclared": "(LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only OR LicenseRef-Qt-Commercial)",
+      "copyrightText": "Copyright (C) The Qt Company Ltd.",
+      "description": "Cross-platform application framework",
+      "homepage": "https://www.qt.io/",
+      "comment": "Qt is available under multiple licenses including open source (LGPL/GPL) and commercial options"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-ImtCore",
+      "name": "ImtCore",
+      "versionInfo": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "LicenseRef-ImtCore-Proprietary",
+      "licenseDeclared": "LicenseRef-ImtCore-Proprietary",
+      "copyrightText": "Copyright (C) ImagingTools GmbH",
+      "description": "Enterprise application framework providing service management, GraphQL, authentication, database abstraction, and UI components",
+      "comment": "ImtCore is a proprietary framework that must be obtained separately"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-ACF",
+      "name": "ACF",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://github.com/ImagingTools/Acf",
+      "filesAnalyzed": false,
+      "licenseConcluded": "(LGPL-2.1-or-later OR GPL-2.0-or-later OR GPL-3.0-or-later OR LicenseRef-ACF-Commercial)",
+      "licenseDeclared": "(LGPL-2.1-or-later OR GPL-2.0-or-later OR GPL-3.0-or-later OR LicenseRef-ACF-Commercial)",
+      "copyrightText": "Copyright (C) ImagingTools GmbH",
+      "description": "Application Component Framework",
+      "homepage": "https://github.com/ImagingTools/Acf"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-OpenSSL",
+      "name": "OpenSSL",
+      "versionInfo": "3.0",
+      "downloadLocation": "https://www.openssl.org/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "Copyright (C) The OpenSSL Project",
+      "description": "Security and encryption library",
+      "homepage": "https://www.openssl.org/"
+    },
+    {
+      "SPDXID": "SPDXRef-Package-Quazip",
+      "name": "Quazip",
+      "versionInfo": "NOASSERTION",
+      "downloadLocation": "https://github.com/stachenov/quazip",
+      "filesAnalyzed": false,
+      "licenseConcluded": "LGPL-2.1-only",
+      "licenseDeclared": "LGPL-2.1-only",
+      "copyrightText": "NOASSERTION",
+      "description": "ZIP compression/decompression library",
+      "homepage": "https://github.com/stachenov/quazip"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-Agentino"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Agentino",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-Qt"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Agentino",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-ImtCore"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Agentino",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-ACF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Agentino",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-OpenSSL"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-Agentino",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-Quazip"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-ImtCore",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-Qt"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-ImtCore",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-ACF"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-ACF",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-Qt"
+    }
+  ]
+}

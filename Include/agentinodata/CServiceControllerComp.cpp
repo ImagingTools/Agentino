@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later OR GPL-2.0-or-later OR GPL-3.0-or-later OR LicenseRef-Agentino-Commercial
 #include <agentinodata/CServiceControllerComp.h>
 
 
@@ -457,8 +458,8 @@ void CServiceControllerComp::UpdateServiceVersion(const QByteArray& serviceId)
 				}
 
 				if (connectionCollectionFactoryPtr != nullptr){
-					imtservice::IConnectionCollection* connectionCollectionPtr = connectionCollectionFactoryPtr->CreateInstance();
-					if (connectionCollectionPtr != nullptr){
+					istd::TUniqueInterfacePtr<imtservice::IConnectionCollection> connectionCollectionPtr = connectionCollectionFactoryPtr->CreateInstance();
+					if (connectionCollectionPtr.IsValid()){
 						QString serviceVersion = connectionCollectionPtr->GetServiceVersion();
 						if (serviceInfoPtr->GetServiceVersion() != serviceVersion){
 							serviceInfoPtr->SetServiceVersion(serviceVersion);

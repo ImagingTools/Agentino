@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later OR GPL-2.0-or-later OR GPL-3.0-or-later OR LicenseRef-Agentino-Commercial
 #include <agentgql/CMessageCollectionControllerComp.h>
 
 
@@ -18,7 +19,7 @@ namespace agentgql
 bool CMessageCollectionControllerComp::CreateRepresentationFromObject(
 			const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
 			const sdl::agentino::ServiceLog::CGetServiceLogGqlRequest& getServiceLogRequest,
-			sdl::agentino::ServiceLog::CMessageItem::V1_0& representationObject,
+			sdl::imtbase::ImtCollection::CMessageItem::V1_0& representationObject,
 			QString& errorMessage) const
 {
 	QByteArray objectId = objectCollectionIterator.GetObjectId();
@@ -42,8 +43,8 @@ bool CMessageCollectionControllerComp::CreateRepresentationFromObject(
 		serviceId = headers["serviceid"];
 	}
 
-	imtbase::IObjectCollection* messageCollectionPtr = GetMessageCollection(serviceId, errorMessage);
-	if (messageCollectionPtr == nullptr){
+	istd::TUniqueInterfacePtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(serviceId, errorMessage);
+	if (!messageCollectionPtr.IsValid()){
 		SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
 
 		return false;
@@ -103,8 +104,8 @@ imtbase::CTreeItemModel* CMessageCollectionControllerComp::ListObjects(
 		viewParamsGql = inputObject->GetParamArgumentObjectPtr("viewParams");
 	}
 
-	imtbase::IObjectCollection* messageCollectionPtr = GetMessageCollection(serviceid, errorMessage);
-	if (messageCollectionPtr == nullptr){
+	istd::TUniqueInterfacePtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(serviceid, errorMessage);
+	if (!messageCollectionPtr.IsValid()){
 		SendErrorMessage(0, errorMessage, "CMessageCollectionControllerComp");
 
 		return rootModelPtr.PopPtr();
@@ -156,7 +157,7 @@ void CMessageCollectionControllerComp::OnComponentDestroyed()
 }
 
 
-imtbase::IObjectCollection* CMessageCollectionControllerComp::GetMessageCollection(const QByteArray& serviceId, QString& errorMessage) const
+istd::TUniqueInterfacePtr<imtbase::IObjectCollection> CMessageCollectionControllerComp::GetMessageCollection(const QByteArray& serviceId, QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		errorMessage = QString("Internal error").toUtf8();

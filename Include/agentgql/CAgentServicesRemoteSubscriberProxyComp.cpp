@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later OR GPL-2.0-or-later OR GPL-3.0-or-later OR LicenseRef-Agentino-Commercial
 #include <agentgql/CAgentServicesRemoteSubscriberProxyComp.h>
 
 
@@ -52,8 +53,8 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 	QUrl url;
 	QByteArray serviceTypeName;
 
-	imtservice::IConnectionCollection* connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
-	if (connectionCollectionPtr == nullptr){
+	imtservice::IConnectionCollectionSharedPtr connectionCollectionPtr = m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
+	if (!connectionCollectionPtr.IsValid()){
 		return false;
 	}
 

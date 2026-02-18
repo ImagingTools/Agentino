@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later OR GPL-2.0-or-later OR GPL-3.0-or-later OR LicenseRef-Agentino-Commercial
 #include <agentgql/CServiceLogSubscriberControllerComp.h>
 
 
@@ -96,11 +97,12 @@ void CServiceLogSubscriberControllerComp::OnUpdate(const istd::IChangeable::Chan
 					}
 				}
 				if (messageCollectionFactoryPtr != nullptr){
-					imtbase::IObjectCollection* messageCollection = messageCollectionFactoryPtr->CreateInstance();
-
-					MessageStatusInfo& messageStatusInfo = m_servicesMessageInfo[serviceId];
-					messageStatusInfo.messageCollectionPtr = messageCollection;
-					messageStatusInfo.messageCount = 0;
+					istd::TUniqueInterfacePtr<imtbase::IObjectCollection> messageCollection = messageCollectionFactoryPtr->CreateInstance();
+					if (messageCollection.IsValid()){
+						MessageStatusInfo& messageStatusInfo = m_servicesMessageInfo[serviceId];
+						messageStatusInfo.messageCollectionPtr.FromUnique(messageCollection);
+						messageStatusInfo.messageCount = 0;
+					}
 				}
 			}
 		}

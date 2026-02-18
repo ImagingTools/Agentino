@@ -1,7 +1,9 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later OR GPL-2.0-or-later OR GPL-3.0-or-later OR LicenseRef-Agentino-Commercial
 #pragma once
 
 
 // ImtCore includes
+#include "istd/TInterfacePtr.h"
 #include <imtservergql/CObjectCollectionControllerCompBase.h>
 #include <imtbase/PluginInterface.h>
 #include <imtservice/IConnectionCollectionPlugin.h>
@@ -66,8 +68,8 @@ protected:
 				QString& errorMessage) const override;
 
 	// reimplemented (imtservice::IConnectionCollectionProvider)
-	virtual imtservice::IConnectionCollection* GetConnectionCollectionByServicePath(const QString& servicePath) const override;
-	virtual imtservice::IConnectionCollection* GetConnectionCollectionByServiceId(const QByteArray& serviceId) const override;
+	virtual imtservice::IConnectionCollectionSharedPtr GetConnectionCollectionByServicePath(const QString& servicePath) const override;
+	virtual imtservice::IConnectionCollectionSharedPtr GetConnectionCollectionByServiceId(const QByteArray& serviceId) const override;
 
 	// reimplemented (icomp::CComponentBase)
 	virtual void OnComponentDestroyed() override;
@@ -100,7 +102,7 @@ protected:
 	struct PluginInfo
 	{
 		istd::TDelPtr<PluginManager> pluginManagerPtr;
-		imtservice::IConnectionCollection* connectionCollectionPtr = nullptr;
+		imtservice::IConnectionCollectionSharedPtr connectionCollectionPtr = nullptr;
 	};
 
 	typedef QMap<QByteArray, PluginInfo> PluginMap;
