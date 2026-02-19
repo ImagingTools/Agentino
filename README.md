@@ -385,12 +385,11 @@ For complete information about CRA compliance, see [CRA_COMPLIANCE.md](CRA_COMPL
 
 ## License
 
-Agentino is available under dual licensing:
+Agentino is available under a commercial license only:
 
-- **Commercial License** - For proprietary/commercial use
-- **LGPL (Lesser General Public License)** - For open source projects
+- **Commercial License** - For proprietary and commercial use
 
-See the `Install/Commercial/` and `Install/LGPL/` directories for license texts.
+See the `Install/Commercial/` directory for license text.
 
 ## Version
 
