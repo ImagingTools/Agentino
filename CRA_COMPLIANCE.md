@@ -7,8 +7,8 @@ This document describes how the Agentino project complies with the EU Cyber Resi
 ## Product Information
 
 **Product Name**: Agentino - Distributed Service Management System  
-**Product Type**: Software application/framework (open-source)  
-**License**: GNU Lesser General Public License v2.1 (LGPL-2.1)  
+**Product Type**: Commercial software application/framework  
+**License**: Commercial (LicenseRef-Agentino-Commercial)  
 **Manufacturer**: ImagingTools GmbH  
 **Product Category**: Distributed system management software
 
@@ -85,11 +85,11 @@ Agentino follows secure development practices:
 Agentino's main dependencies:
 
 **Runtime Dependencies:**
-- Qt Framework (version 6.x) - Qt Project (LGPL/GPL/Commercial)
+- Qt Framework (version 6.x) - Qt Project (Commercial license required)
 - ImtCore Framework - Enterprise application framework (proprietary)
-- ACF (Application Component Framework) - ImagingTools GmbH (LGPL-2.1)
+- ACF (Application Component Framework) - ImagingTools GmbH (Commercial)
 - OpenSSL - Security and encryption
-- Quazip - ZIP compression/decompression
+- Quazip - ZIP compression/decompression (LGPL-2.1)
 - Standard C++ library (implementation-dependent)
 
 **Build Dependencies:**
@@ -103,12 +103,12 @@ SBOM can be generated using standard tools:
 
 See [SBOM.md](SBOM.md) for detailed SBOM information.
 
-#### 3.4 Open Source Compliance
+#### 3.4 Commercial Licensing Compliance
 
-- Full source code available: https://github.com/ImagingTools/Agentino
-- License: LGPL-2.1 (see Install/LGPL/)
+- Source code available under commercial license
+- License: Commercial (see Install/Commercial/)
 - Dependencies are documented in README.md
-- Build from source instructions provided
+- Build from source available to licensed customers
 
 ### 4. Support and Maintenance (Article 14)
 
@@ -137,7 +137,7 @@ See [SBOM.md](SBOM.md) for detailed SBOM information.
 
 #### 5.1 Self-Assessment
 
-As an open-source distributed service management system under LGPL-2.1:
+As a commercial distributed service management system:
 
 - Agentino provides infrastructure for managing distributed services
 - Deployment operators are responsible for their own CRA compliance
@@ -189,7 +189,7 @@ In case of a security incident:
 
 - Project documentation: [README.md](README.md)
 - Security policy: [SECURITY.md](SECURITY.md)
-- License information: [Install/LGPL/](Install/LGPL/)
+- License information: [Install/Commercial/](Install/Commercial/)
 - Build instructions in README.md
 - Architecture documentation in README.md
 

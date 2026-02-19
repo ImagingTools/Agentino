@@ -86,7 +86,6 @@ Agentino/
 │
 ├── Install/             # Installation resources
 │   ├── Commercial/     # Commercial license files
-│   ├── LGPL/          # LGPL license files
 │   └── Script.iss     # Inno Setup installer script
 │
 ├── Sdl/                 # Service Definition Language files
@@ -224,9 +223,6 @@ cd Install
 
 # Commercial version
 _Create_VC17_Commercial.bat
-
-# Open source version
-_Create_VC17_OpenSource.bat
 ```
 
 ### Linux/macOS
@@ -408,4 +404,4 @@ For support, issues, or contributions, please refer to the project's issue track
 
 ---
 
-**Note**: This project requires the proprietary ImtCore framework which must be obtained and installed separately. Some features may be limited in the open source version.
+**Note**: This project requires the proprietary ImtCore framework which must be obtained and installed separately.
