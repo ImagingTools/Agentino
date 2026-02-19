@@ -241,7 +241,7 @@ As stated in the LGPL-2.1 license, Agentino is provided "AS IS" without warranty
 
 #### 9.3 Liability
 
-Liability limitations are defined in the LGPL-2.1 license.
+Liability limitations are defined in the Commercial License Agreement.
 
 ### 10. Contact Information
 
@@ -268,9 +268,9 @@ This CRA compliance document is reviewed and updated regularly to reflect:
 - [EU Cyber Resilience Act - Regulation (EU) 2024/2847](https://eur-lex.europa.eu/)
 - [Agentino Security Policy](SECURITY.md)
 - [Agentino Documentation](README.md)
-- [GNU LGPL v2.1 License](Install/LGPL/)
+- [Commercial License](Install/Commercial/)
 - [NIST Secure Software Development Framework (SSDF)](https://csrc.nist.gov/Projects/ssdf)
 
 ## Certification Status
 
-**Note**: As an open-source distributed management system, Agentino is designed to support CRA compliance but does not itself undergo certification. Deployments incorporating Agentino must undergo their own conformity assessment as required by the CRA.
+**Note**: As a commercial distributed management system, Agentino is designed to support CRA compliance but does not itself undergo certification. Deployments incorporating Agentino must undergo their own conformity assessment as required by the CRA.
