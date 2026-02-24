@@ -451,6 +451,10 @@ void CServiceControllerComp::UpdateServiceVersion(const QByteArray& serviceId)
 				for (int index = 0; index < m_pluginMap[serviceId]->m_plugins.count(); index++){
 					imtservice::IConnectionCollectionPlugin* pluginPtr = m_pluginMap[serviceId]->m_plugins[index].pluginPtr;
 					if (pluginPtr != nullptr){
+						if (pluginPtr->GetPluginName() != fileInfo.baseName() + "Settings"){
+							continue;
+						}
+
 						connectionCollectionFactoryPtr = pluginPtr->GetConnectionCollectionFactory();
 
 						break;

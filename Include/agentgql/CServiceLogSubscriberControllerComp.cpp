@@ -91,6 +91,10 @@ void CServiceLogSubscriberControllerComp::OnUpdate(const istd::IChangeable::Chan
 				for (int index = 0; index < m_pluginMap[serviceId]->m_plugins.count(); index++){
 					imtservice::IObjectCollectionPlugin* pluginPtr = m_pluginMap[serviceId]->m_plugins[index].pluginPtr;
 					if (pluginPtr != nullptr){
+						if (pluginPtr->GetPluginName() != fileInfo.baseName() + "Log"){
+							continue;
+						}
+
 						messageCollectionFactoryPtr = pluginPtr->GetObjectCollectionFactory();
 
 						break;

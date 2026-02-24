@@ -427,6 +427,10 @@ imtservice::IConnectionCollectionSharedPtr CServiceCollectionControllerComp::Get
 		auto* plugin = pluginInfo.pluginManagerPtr->m_plugins[i].pluginPtr;
 		if (!plugin)
 			continue;
+
+		if (plugin->GetPluginName() != fi.baseName() + "Settings"){
+			continue;
+		}
 		
 		connectionCollectionFactoryPtr = plugin->GetConnectionCollectionFactory();
 		if (connectionCollectionFactoryPtr != nullptr){

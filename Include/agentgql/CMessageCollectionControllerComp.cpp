@@ -190,8 +190,13 @@ istd::TUniqueInterfacePtr<imtbase::IObjectCollection> CMessageCollectionControll
 			if (m_pluginMap.contains(serviceName)){
 				const imtservice::IObjectCollectionPlugin::IObjectCollectionFactory* messageCollectionFactoryPtr = nullptr;
 				for (int index = 0; index < m_pluginMap[serviceName]->m_plugins.count(); index++){
+
 					imtservice::IObjectCollectionPlugin* pluginPtr = m_pluginMap[serviceName]->m_plugins[index].pluginPtr;
 					if (pluginPtr != nullptr){
+						if (pluginPtr->GetPluginName() != fileInfo.baseName() + "Log"){
+							continue;
+						}
+
 						messageCollectionFactoryPtr = pluginPtr->GetObjectCollectionFactory();
 
 						break;
