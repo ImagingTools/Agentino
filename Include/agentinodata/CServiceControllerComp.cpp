@@ -376,25 +376,20 @@ QByteArray CServiceControllerComp::GetModuleName(QByteArray servicePath) const
 			continue;
 		}
 
-		/* try to open the cmdline file */
-		snprintf(buf, sizeof(buf), "/proc/%ld/cmdline", lpid);
-		FILE* fp = fopen(buf, "r");
+		/* try to read the exe symlink which always points to the actual executable */
+		snprintf(buf, sizeof(buf), "/proc/%ld/exe", lpid);
+		ssize_t len = readlink(buf, buf, sizeof(buf) - 1);
 
-		if (fp){
-			if (fgets(buf, sizeof(buf), fp) != NULL){
-				/* check the first token in the file, the program name */
-				QByteArray modulePath = QString::fromStdString(buf).toUtf8();
-				if (servicePath.toLower() == modulePath.toLower()){
-					closedir(dir);
-					char* first = strtok(buf, " ");
-					retVal = QString::fromStdString(first).toUtf8();
-					QFileInfo fileInfo(retVal);
-					retVal = fileInfo.fileName().toUtf8();
+		if (len != -1){
+			buf[len] = '\0';
+			QByteArray modulePath = QString::fromStdString(buf).toUtf8();
+			if (servicePath.toLower() == modulePath.toLower()){
+				closedir(dir);
+				QFileInfo fileInfo(modulePath);
+				retVal = fileInfo.fileName().toUtf8();
 
-					return retVal;
-				}
+				return retVal;
 			}
-			fclose(fp);
 		}
 
 	}
