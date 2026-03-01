@@ -32,6 +32,7 @@
                                 <Value>Server</Value>
                                 <Value>Server/AgentCollection</Value>
                                 <Value>Server/DatabaseEngine</Value>
+                                <Value>Server/DatabaseEngine/MigrationController</Value>
                                 <Value>Server/AgentinoLocalization</Value>
                                 <Value>Server/HttpServerFramework</Value>
                                 <Value>Server/WebSocketServerFramework</Value>
