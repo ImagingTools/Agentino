@@ -22,6 +22,15 @@
         <Element ComponentName="WebSocketServerFramework" X="725" Y="475" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
+        <EmbededRegistry Id="DatabaseEngine">
+            <PositionMap>
+                <Element ComponentName="DatabaseEngine" X="300" Y="150" Note=""/>
+                <Element ComponentName="MigrationController" X="750" Y="300" Note=""/>
+                <Element ComponentName="MigrationFilePath" X="750" Y="425" Note=""/>
+                <Element ComponentName="SystemLocation" X="750" Y="550" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
         <EmbededRegistry Id="ServiceCollectionController">
             <PositionMap>
                 <Element ComponentName="CheckPermissionOr" X="650" Y="450" Note=""/>
