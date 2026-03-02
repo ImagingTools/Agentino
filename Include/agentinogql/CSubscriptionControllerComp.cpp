@@ -34,7 +34,7 @@ void CSubscriptionControllerComp::OnResponseReceived(const QByteArray & subscrip
 	if (subscriptionIds.contains(subscriptionId)){
 		notifierInfo.serviceId = subscriptionObject.value("serviceid").toString().toUtf8();
 
-		QString status = subscriptionObject.value(agentino::ServiceStatus::s_Key).toString();
+		QString status = subscriptionObject.value("status").toString();
 		
 		agentinodata::IServiceStatusInfo::FromString(status.toUtf8(), notifierInfo.serviceStatus);
 		changeSet.SetChangeInfo(agentinodata::IServiceController::CN_STATUS_CHANGED, QVariant::fromValue(notifierInfo));
