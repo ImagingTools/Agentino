@@ -5,7 +5,7 @@ include($(AGENTINODIR)/Config/QMake/Agentino.pri)
 
 QT += network
 
-LIBS += -L$(IMTCOREDIR)/Lib/$$COMPILER_DIR -limtbase -limtserverapp
+LIBS += -L$(IMTCOREDIR)/Lib/$$COMPILER_DIR -limtbase -limtrest -limtserverapp
 
 include($(ACFDIR)/Config/QMake/AcfQt.pri)
 include($(ACFDIR)/Config/QMake/AcfStd.pri)
