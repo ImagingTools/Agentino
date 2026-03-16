@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: LGPL-2.1-or-later OR GPL-2.0-or-later OR GPL-3.0-or-later OR LicenseRef-Agentino-Commercial
+// SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentgql/CServiceCollectionControllerComp.h>
 
 
@@ -427,6 +427,10 @@ imtservice::IConnectionCollectionSharedPtr CServiceCollectionControllerComp::Get
 		auto* plugin = pluginInfo.pluginManagerPtr->m_plugins[i].pluginPtr;
 		if (!plugin)
 			continue;
+
+		if (plugin->GetPluginName() != fi.baseName() + "Settings"){
+			continue;
+		}
 		
 		connectionCollectionFactoryPtr = plugin->GetConnectionCollectionFactory();
 		if (connectionCollectionFactoryPtr != nullptr){

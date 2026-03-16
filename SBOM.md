@@ -127,7 +127,7 @@ For custom setups, you can manually create an SBOM:
 **Qt Framework (Required)**
 - Component: Qt
 - Version: 6.x (typically 6.8 or later)
-- License: LGPL-3.0 / GPL-2.0 / GPL-3.0 / Commercial
+- License: Commercial (required for commercial use of Agentino)
 - PURL: pkg:generic/qt@6.8 (example)
 - Website: https://www.qt.io/
 - Purpose: Cross-platform application framework
@@ -142,7 +142,7 @@ For custom setups, you can manually create an SBOM:
 **ACF - Application Component Framework (Required)**
 - Component: ACF
 - Version: Compatible version
-- License: LGPL-2.1-or-later OR GPL-2.0-or-later OR GPL-3.0-or-later OR Commercial
+- License: Commercial
 - PURL: pkg:github/ImagingTools/Acf
 - Website: https://github.com/ImagingTools/Acf
 - Purpose: Component-based architecture and licensing
@@ -156,7 +156,7 @@ For custom setups, you can manually create an SBOM:
 **Quazip (Required)**
 - Component: Quazip
 - Version: As linked
-- License: LGPL-2.1
+- License: LGPL-2.1 (permissible for use in commercial applications)
 - Purpose: ZIP compression/decompression
 
 **Standard C++ Library (Required)**

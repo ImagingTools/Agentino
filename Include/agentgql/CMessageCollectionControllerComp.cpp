@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: LGPL-2.1-or-later OR GPL-2.0-or-later OR GPL-3.0-or-later OR LicenseRef-Agentino-Commercial
+// SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentgql/CMessageCollectionControllerComp.h>
 
 
@@ -190,8 +190,13 @@ istd::TUniqueInterfacePtr<imtbase::IObjectCollection> CMessageCollectionControll
 			if (m_pluginMap.contains(serviceName)){
 				const imtservice::IObjectCollectionPlugin::IObjectCollectionFactory* messageCollectionFactoryPtr = nullptr;
 				for (int index = 0; index < m_pluginMap[serviceName]->m_plugins.count(); index++){
+
 					imtservice::IObjectCollectionPlugin* pluginPtr = m_pluginMap[serviceName]->m_plugins[index].pluginPtr;
 					if (pluginPtr != nullptr){
+						if (pluginPtr->GetPluginName() != fileInfo.baseName() + "Log"){
+							continue;
+						}
+
 						messageCollectionFactoryPtr = pluginPtr->GetObjectCollectionFactory();
 
 						break;

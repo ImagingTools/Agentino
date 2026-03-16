@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: LGPL-2.1-or-later OR GPL-2.0-or-later OR GPL-3.0-or-later OR LicenseRef-Agentino-Commercial
+// SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentinodata/CServiceControllerComp.h>
 
 
@@ -451,6 +451,10 @@ void CServiceControllerComp::UpdateServiceVersion(const QByteArray& serviceId)
 				for (int index = 0; index < m_pluginMap[serviceId]->m_plugins.count(); index++){
 					imtservice::IConnectionCollectionPlugin* pluginPtr = m_pluginMap[serviceId]->m_plugins[index].pluginPtr;
 					if (pluginPtr != nullptr){
+						if (pluginPtr->GetPluginName() != fileInfo.baseName() + "Settings"){
+							continue;
+						}
+
 						connectionCollectionFactoryPtr = pluginPtr->GetConnectionCollectionFactory();
 
 						break;

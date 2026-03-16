@@ -21,11 +21,8 @@
       "licenses": [
         {
           "license": {
-            "id": "LGPL-2.1-or-later"
+            "id": "LicenseRef-Agentino-Commercial"
           }
-        },
-        {
-          "expression": "LGPL-2.1-or-later OR GPL-2.0-or-later OR GPL-3.0-or-later OR LicenseRef-Agentino-Commercial"
         }
       ],
       "purl": "pkg:github/ImagingTools/Agentino@1.0.0-dev",
@@ -50,7 +47,9 @@
       "description": "Cross-platform application framework",
       "licenses": [
         {
-          "expression": "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only OR LicenseRef-Qt-Commercial"
+          "license": {
+            "id": "LicenseRef-Qt-Commercial"
+          }
         }
       ],
       "purl": "pkg:generic/qt@6.8",
@@ -82,7 +81,9 @@
       "description": "Application Component Framework",
       "licenses": [
         {
-          "expression": "LGPL-2.1-or-later OR GPL-2.0-or-later OR GPL-3.0-or-later OR LicenseRef-ACF-Commercial"
+          "license": {
+            "id": "LicenseRef-ACF-Commercial"
+          }
         }
       ],
       "purl": "pkg:github/ImagingTools/Acf@1.0.0",
