@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5332" Description="ACF"/>
-            <Version Id="1" Number="2230" Description="ACF-Solutions"/>
+            <Version Id="0" Number="6318" Description="ACF"/>
+            <Version Id="1" Number="2296" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -192,6 +192,9 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
@@ -630,7 +633,9 @@
         <Component ExportedId="RoleRepository" ComponentId="UserLocalRepositories/RoleRepository"/>
         <Component ExportedId="ServiceCompositeInfo" ComponentId="ServiceCompositeInfo"/>
         <Component ExportedId="ServiceStatusCollection" ComponentId="ServiceStatusCollection"/>
+        <Component ExportedId="SessionSqlRepository" ComponentId="UserLocalRepositories/SessionSqlRepository"/>
         <Component ExportedId="TopologyCollection" ComponentId="TopologyCollection"/>
+        <Component ExportedId="UserConnectionRepository" ComponentId="UserLocalRepositories/UserConnectionRepository"/>
         <Component ExportedId="UserGroupRepository" ComponentId="UserLocalRepositories/UserGroupRepository"/>
         <Component ExportedId="UserRepository" ComponentId="UserLocalRepositories/UserRepository"/>
     </ExportedComponents>

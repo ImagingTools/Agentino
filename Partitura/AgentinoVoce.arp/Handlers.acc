@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5715" Description="ACF"/>
-            <Version Id="1" Number="2274" Description="ACF-Solutions"/>
+            <Version Id="0" Number="6318" Description="ACF"/>
+            <Version Id="1" Number="2296" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -208,7 +208,13 @@
                     <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="RoleRepository">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="RuntimeStatus" Type="Reference" ExportId="RuntimeStatus">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="ServerConnectionInterface">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="SessionCollection" Type="Reference" ExportId="SessionCollection">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
@@ -218,6 +224,9 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="UserCollection" Type="Reference" ExportId="UserCollection">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserConnectionCollection" Type="Reference" ExportId="UserConnectionCollection">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="UserGroupInfoProvider" Type="Reference" ExportId="UserGroupInfoProvider">

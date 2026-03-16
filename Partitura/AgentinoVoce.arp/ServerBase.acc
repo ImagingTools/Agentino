@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5715" Description="ACF"/>
-            <Version Id="1" Number="2274" Description="ACF-Solutions"/>
+            <Version Id="0" Number="6318" Description="ACF"/>
+            <Version Id="1" Number="2296" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -85,6 +85,9 @@
                     <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/RoleRepository"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="RuntimeStatus" Type="Reference" ExportId="RuntimeStatus">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/ServerConnectionInterface"/>
                     </AttributeInfo>
@@ -94,6 +97,9 @@
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="SessionCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/SessionSqlRepository"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
                     </AttributeInfo>
@@ -102,6 +108,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="UserCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/UserRepository"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserConnectionCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/UserConnectionRepository"/>
                     </AttributeInfo>
                     <AttributeInfo Id="UserGroupInfoProvider" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/UserGroupRepository"/>
