@@ -58,7 +58,7 @@ void CSubscriptionControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& /
 	if (m_subscriptionManagerCompPtr.IsValid() && m_agentCollectionCompPtr.IsValid()){
 		imtbase::ICollectionInfo::Ids agentCollectionIds = m_agentCollectionCompPtr->GetElementIds();
 
-		for (const QByteArray& registeredAgentId: m_registeredAgents){
+		for (const QByteArray& registeredAgentId: m_registeredAgents.keys()){
 			if (!agentCollectionIds.contains(registeredAgentId)){
 				m_subscriptionManagerCompPtr->UnregisterSubscription(m_registeredAgents[registeredAgentId]);
 				m_registeredAgents.remove(registeredAgentId);
@@ -66,7 +66,7 @@ void CSubscriptionControllerComp::OnUpdate(const istd::IChangeable::ChangeSet& /
 		}
 
 		for (const QByteArray& agentId: agentCollectionIds){
-			if(!m_registeredAgents.contains(agentId)){
+			if(!m_registeredAgents.keys().contains(agentId)){
 				imtgql::CGqlRequest gqlAddRequest(imtgql::IGqlRequest::RT_SUBSCRIPTION, "OnAgentServiceStatusChanged");
 				imtgql::CGqlParamObject subscriptionInput;
 				gqlAddRequest.AddParam("input", subscriptionInput);
