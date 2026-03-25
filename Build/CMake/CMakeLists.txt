@@ -22,15 +22,16 @@ if(NOT DEFINED IMTCOREDIR)
 	set(IMTCOREDIR "$ENV{IMTCOREDIR}")
 endif()
 
-if(NOT DEFINED IMTCOREDIR_BUILD)
-	set(IMTCOREDIR_BUILD "$ENV{IMTCOREDIR}")
-endif()
-
 if(NOT DEFINED SMDIR)
 	set(PUMADIR "$ENV{SMDIR}")
 endif()
 
 include(${IMTCOREDIR}/Config/CMake/ImtCoreEnv.cmake)
+
+if(USE_FIND_PACKAGE)
+	find_program(NODE_EXE NAMES node)
+	message("NODE_EXE found: ${NODE_EXE}")
+endif()
 
 set(INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/../../Include")
 set(IMPL_DIR "${CMAKE_CURRENT_LIST_DIR}/../../Impl")
