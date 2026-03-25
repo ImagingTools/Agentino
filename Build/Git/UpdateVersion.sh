@@ -4,11 +4,9 @@
 # - $WCREV$ is replaced with the git revision count
 # - $WCMODS?1:0$ is replaced with 1 if there are uncommitted changes, 0 otherwise
 
-# Get the directory where this script is located
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
-
-FILE="../../Partitura/AgentinoVoce.arp/VersionInfo.acc.xtrsvn"
+cd "$(dirname "$0")/../.."
+FILE="Partitura/AgentinoVoce.arp/VersionInfo.acc.xtrsvn"
+BACKUPDIR="$1"
 
 # Attempt to fetch and unshallow if needed (suppress errors)
 git fetch --prune --unshallow 2>/dev/null
@@ -36,10 +34,36 @@ echo "Processing file: $FILE"
 
 # Generate output filename by removing .xtrsvn extension
 OUT="${FILE%.xtrsvn}"
+TMP="$OUT.tmp"
+
+if [ -n "$BACKUPDIR" ]; then
+    BACKUPFILE="$BACKUPDIR/$OUT"
+    if [ ! -f "$OUT" ] && [ -f "$BACKUPFILE" ]; then
+        cp -af "$BACKUPFILE" "$OUT"
+        echo "Restored $OUT from backup $BACKUPFILE"
+    fi
+fi
 
 # Process the file and replace placeholders
 # Note: We need to escape $ as \$ for sed, and then escape \ as \\ for the shell (double quotes)
 # This gives us \\$ which the shell passes to sed as \$
-sed -e "s/\\\$WCREV\\\$/$REV/g" -e "s/\\\$WCMODS?1:0\\\$/$DIRTY/g" "$FILE" > "$OUT"
+sed -e "s/\\\$WCREV\\\$/$REV/g" -e "s/\\\$WCMODS?1:0\\\$/$DIRTY/g" "$FILE" > "$TMP"
 
-echo "Wrote $OUT with WCREV=$REV and WCMODS=$DIRTY"
+if [ -f "$OUT" ]; then
+    if cmp -s "$TMP" "$OUT"; then
+        rm -f "$TMP"
+        echo "No changes in $OUT, file not rewritten."
+    else
+        mv -f "$TMP" "$OUT"
+        echo "Wrote $OUT with WCREV=$REV and WCMODS=$DIRTY"
+    fi
+else
+    mv -f "$TMP" "$OUT"
+    echo "Wrote $OUT with WCREV=$REV and WCMODS=$DIRTY"
+fi
+
+if [ -n "$BACKUPDIR" ]; then
+    mkdir -p "$(dirname "$BACKUPFILE")"
+    cp -af "$OUT" "$BACKUPFILE"
+    echo "Backed up $OUT to $BACKUPFILE"
+fi
