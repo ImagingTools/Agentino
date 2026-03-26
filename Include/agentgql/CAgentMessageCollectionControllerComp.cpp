@@ -20,8 +20,6 @@ bool CAgentMessageCollectionControllerComp::SetupGqlItem(
 			const imtbase::IObjectCollectionIterator* objectCollectionIterator,
 			QString& errorMessage) const
 {
-	bool retVal = true;
-
 	QByteArrayList informationIds = GetInformationIds(gqlRequest, "items");
 
 	if (!informationIds.isEmpty() && objectCollectionIterator != nullptr){
@@ -64,7 +62,7 @@ bool CAgentMessageCollectionControllerComp::SetupGqlItem(
 				itemObj.insert(QString::fromUtf8(informationId), QJsonValue::fromVariant(elementInformation));
 			}
 
-			return retVal;
+			return true;
 		}
 	}
 	errorMessage = "Unable to get object data from object collection";

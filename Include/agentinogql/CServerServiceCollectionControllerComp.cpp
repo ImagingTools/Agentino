@@ -504,9 +504,6 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 	return false;
 }
 
-	return false;
-}
-
 
 QJsonObject CServerServiceCollectionControllerComp::ListObjects(
 			const imtgql::CGqlRequest& gqlRequest,
