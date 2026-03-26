@@ -4,6 +4,7 @@
 
 // Qt includes
 #include <QtCore/QTimer>
+#include <QtCore/QJsonObject>
 
 // ImtCore includes
 #include <imtbase/IObjectCollection.h>

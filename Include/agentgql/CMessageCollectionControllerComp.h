@@ -2,6 +2,9 @@
 #pragma once
 
 
+// Qt includes
+#include <QtCore/QJsonObject>
+
 // Agentino includes
 #include <agentgql/CServiceLog.h>
 

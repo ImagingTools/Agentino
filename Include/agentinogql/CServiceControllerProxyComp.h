@@ -2,6 +2,9 @@
 #pragma once
 
 
+// Qt includes
+#include <QtCore/QJsonObject>
+
 // ImtCore includes
 #include <imtclientgql/TClientRequestManagerCompWrap.h>
 
