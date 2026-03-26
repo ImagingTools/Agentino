@@ -2,6 +2,10 @@
 #include <agentgql/CAgentGqlRemoteRepresentationControllerComp.h>
 
 
+// Qt includes
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonDocument>
+
 // ImtCore includes
 #include <imtgql/CGqlResponse.h>
 #include <imtgql/CGqlContext.h>
@@ -33,16 +37,16 @@ bool CAgentGqlRemoteRepresentationControllerComp::IsRequestSupported(const imtgq
 
 // reimplemented (imtgql::CGqlRepresentationDataControllerComp)
 
-imtbase::CTreeItemModel* CAgentGqlRemoteRepresentationControllerComp::CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& /*errorMessage*/) const
+QJsonObject CAgentGqlRemoteRepresentationControllerComp::CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& /*errorMessage*/) const
 {
 	if (!IsRequestSupported(gqlRequest) || !m_connectionCollectionProviderCompPtr.IsValid()){
-		return nullptr;
+		return QJsonObject();
 	}
 
 	istd::TUniqueInterfacePtr<imtgql::CGqlRequest> gqlRequestPtr;
 	gqlRequestPtr.MoveCastedPtr(gqlRequest.CloneMe());
 	if (!gqlRequestPtr.IsValid()){
-		return nullptr;
+		return QJsonObject();
 	}
 
 	QByteArray serviceId = gqlRequestPtr->GetHeader("serviceid");
@@ -86,11 +90,11 @@ imtbase::CTreeItemModel* CAgentGqlRemoteRepresentationControllerComp::CreateInte
 	if (clientRequestPtr.IsValid()) {
 		imtclientgql::IGqlClient::GqlResponsePtr responsePtr = m_apiClientCompPtr->SendRequest(clientRequestPtr, &urlParam);
 		if (responsePtr.IsValid()) {
-			return CreateTreeItemModelFromResponse(gqlRequest.GetCommandId(), *responsePtr);
+			return CreateJsonObjectFromResponse(gqlRequest.GetCommandId(), *responsePtr);
 		}
 	}
 
-	return nullptr;
+	return QJsonObject();
 }
 
 

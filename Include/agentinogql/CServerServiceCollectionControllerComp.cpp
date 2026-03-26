@@ -2,6 +2,11 @@
 #include <agentinogql/CServerServiceCollectionControllerComp.h>
 
 
+// Qt includes
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonArray>
+#include <QtCore/QJsonValue>
+
 // ImtCore includes
 #include <iqt/iqt.h>
 #include <imtservice/CUrlConnectionParam.h>
@@ -366,8 +371,7 @@ sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollection
 
 bool CServerServiceCollectionControllerComp::SetupGqlItem(
 		const imtgql::CGqlRequest& gqlRequest,
-		imtbase::CTreeItemModel& model,
-		int itemIndex,
+		QJsonObject& itemObj,
 		const QByteArray& collectionId,
 		QString& errorMessage) const
 {
@@ -394,8 +398,6 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 
 		return false;
 	}
-
-	bool retVal = true;
 
 	QByteArrayList informationIds = GetInformationIds(gqlRequest, "items");
 
@@ -490,10 +492,10 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 					elementInformation = "";
 				}
 
-				retVal = retVal && model.SetData(informationId, elementInformation, itemIndex);
+				itemObj.insert(QString::fromUtf8(informationId), QJsonValue::fromVariant(elementInformation));
 			}
 
-			return retVal;
+			return true;
 		}
 
 	}
@@ -502,18 +504,15 @@ bool CServerServiceCollectionControllerComp::SetupGqlItem(
 	return false;
 }
 
+	return false;
+}
 
-imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::ListObjects(
+
+QJsonObject CServerServiceCollectionControllerComp::ListObjects(
 			const imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
 	const imtgql::CGqlParamObject& inputParams = gqlRequest.GetParams();
-
-	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
-
-	imtbase::CTreeItemModel* dataModel = rootModelPtr->AddTreeModel("data");
-	imtbase::CTreeItemModel* itemsModel = dataModel->AddTreeModel("items");
-	imtbase::CTreeItemModel* notificationModel = dataModel->AddTreeModel("notification");
 
 	const imtgql::CGqlParamObject* viewParamsGql = nullptr;
 	const imtgql::CGqlParamObject* inputObject = inputParams.GetParamArgumentObjectPtr("input");
@@ -536,7 +535,7 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::ListObjects(
 		errorMessage = QString("Unable to get list objects. Internal error.");
 		SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
 
-		return nullptr;
+		return QJsonObject();
 	}
 
 	iprm::CParamsSet filterParams;
@@ -557,23 +556,30 @@ imtbase::CTreeItemModel* CServerServiceCollectionControllerComp::ListObjects(
 		pagesCount = 1;
 	}
 
-	notificationModel->SetData("pagesCount", pagesCount);
-	notificationModel->SetData("totalCount", elementsCount);
+	QJsonObject notificationObj;
+	notificationObj.insert(QStringLiteral("pagesCount"), pagesCount);
+	notificationObj.insert(QStringLiteral("totalCount"), elementsCount);
+
+	QJsonArray itemsArray;
 
 	imtbase::ICollectionInfo::Ids ids = serviceCollectionPtr->GetElementIds(offset, count, &filterParams);
 
 	for (imtbase::ICollectionInfo::Id& id: ids){
-		int itemIndex = itemsModel->InsertNewItem();
-		if (itemIndex >= 0){
-			if (!SetupGqlItem(gqlRequest, *itemsModel, itemIndex, id, errorMessage)){
-				SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
+		QJsonObject itemObj;
+		if (!SetupGqlItem(gqlRequest, itemObj, id, errorMessage)){
+			SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
 
-				return nullptr;
-			}
+			return QJsonObject();
 		}
+		itemsArray.append(itemObj);
 	}
 
-	return rootModelPtr.PopPtr();
+	QJsonObject rootObj;
+	QJsonObject dataObj;
+	dataObj.insert(QStringLiteral("items"), itemsArray);
+	dataObj.insert(QStringLiteral("notification"), notificationObj);
+	rootObj.insert(QStringLiteral("data"), dataObj);
+	return rootObj;
 }
 
 

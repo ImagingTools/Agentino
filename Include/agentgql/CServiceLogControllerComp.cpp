@@ -20,14 +20,14 @@ namespace agentgql
 {
 
 
-imtbase::CTreeItemModel* CServiceLogControllerComp::CreateInternalResponse(
+QJsonObject CServiceLogControllerComp::CreateInternalResponse(
 			const imtgql::CGqlRequest& gqlRequest,
 			QString& /*errorMessage*/) const
 {
 	if (!m_serviceCollectionCompPtr.IsValid()){
 		SendErrorMessage(0, QString("'m_serviceCollectionCompPtr' attribute is invalid"));
 
-		return nullptr;
+		return QJsonObject();
 	}
 
 	QByteArray serviceId;
@@ -44,13 +44,11 @@ imtbase::CTreeItemModel* CServiceLogControllerComp::CreateInternalResponse(
 	}
 
 	if (serviceInfoPtr == nullptr){
-		return nullptr;
+		return QJsonObject();
 	}
 
 	QByteArray servicePath = serviceInfoPtr->GetServicePath();
 	QByteArray serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_NAME).toByteArray();
-
-	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
 
 	QFileInfo fileInfo(servicePath);
 	QString pluginPath = fileInfo.path() + "/Plugins";
@@ -63,7 +61,7 @@ imtbase::CTreeItemModel* CServiceLogControllerComp::CreateInternalResponse(
 			SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(qPrintable(serviceName)), "CServiceLogControllerComp");
 			m_pluginMap.remove(serviceName);
 
-			return nullptr;
+			return QJsonObject();
 		}
 	}
 
@@ -81,7 +79,7 @@ imtbase::CTreeItemModel* CServiceLogControllerComp::CreateInternalResponse(
 	}
 #endif
 
-	return rootModelPtr.PopPtr();
+	return QJsonObject();
 }
 
 

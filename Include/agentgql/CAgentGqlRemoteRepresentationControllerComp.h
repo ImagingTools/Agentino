@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #pragma once
 
+// Qt includes
+#include <QtCore/QJsonObject>
+
 // ImtCore includes
 #include <imtclientgql/CGqlRemoteRepresentationControllerCompBase.h>
 #include <imtservice/IConnectionCollectionProvider.h>
@@ -24,7 +27,7 @@ protected:
 	virtual bool IsRequestSupported(const imtgql::CGqlRequest& gqlRequest) const override;
 
 	// reimplemented (imtgql::CGqlRepresentationDataControllerComp)
-	virtual imtbase::CTreeItemModel* CreateInternalResponse(
+	virtual QJsonObject CreateInternalResponse(
 		const imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage) const override;
 

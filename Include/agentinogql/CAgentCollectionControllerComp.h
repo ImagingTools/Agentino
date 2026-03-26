@@ -59,7 +59,7 @@ protected:
 				const imtgql::CGqlRequest& gqlRequest,
 				QByteArray &objectId,
 				QString& errorMessage) const override;
-	virtual imtbase::CTreeItemModel* InsertObject(
+	virtual QJsonObject InsertObject(
 				const imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
 private:

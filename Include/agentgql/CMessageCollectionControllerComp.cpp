@@ -2,6 +2,11 @@
 #include <agentgql/CMessageCollectionControllerComp.h>
 
 
+// Qt includes
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonArray>
+#include <QtCore/QJsonDocument>
+
 // ACF includes
 #include <ilog/CMessage.h>
 
@@ -82,20 +87,11 @@ bool CMessageCollectionControllerComp::CreateRepresentationFromObject(
 }
 
 
-imtbase::CTreeItemModel* CMessageCollectionControllerComp::ListObjects(
+QJsonObject CMessageCollectionControllerComp::ListObjects(
 	const imtgql::CGqlRequest& gqlRequest,
 	QString &errorMessage) const
 {
 	const imtgql::CGqlParamObject& inputParams = gqlRequest.GetParams();
-
-	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
-
-	imtbase::CTreeItemModel* dataModel = new imtbase::CTreeItemModel();
-	imtbase::CTreeItemModel* itemsModel = new imtbase::CTreeItemModel();
-	imtbase::CTreeItemModel* notificationModel = new imtbase::CTreeItemModel();
-	dataModel->SetExternTreeModel("items", itemsModel);
-	dataModel->SetExternTreeModel("notification", notificationModel);
-	rootModelPtr->SetExternTreeModel("data", dataModel);
 
 	QByteArray serviceid = gqlRequest.GetHeader("serviceid");
 	const imtgql::CGqlParamObject* viewParamsGql = nullptr;
@@ -108,7 +104,12 @@ imtbase::CTreeItemModel* CMessageCollectionControllerComp::ListObjects(
 	if (!messageCollectionPtr.IsValid()){
 		SendErrorMessage(0, errorMessage, "CMessageCollectionControllerComp");
 
-		return rootModelPtr.PopPtr();
+		QJsonObject rootObj;
+		QJsonObject dataObj;
+		dataObj.insert(QStringLiteral("items"), QJsonArray());
+		dataObj.insert(QStringLiteral("notification"), QJsonObject());
+		rootObj.insert(QStringLiteral("data"), dataObj);
+		return rootObj;
 	}
 
 	iprm::CParamsSet filterParams;
@@ -128,22 +129,29 @@ imtbase::CTreeItemModel* CMessageCollectionControllerComp::ListObjects(
 		pagesCount = 1;
 	}
 
-	notificationModel->SetData("pagesCount", pagesCount);
-	notificationModel->SetData("totalCount", elementsCount);
+	QJsonObject notificationObj;
+	notificationObj.insert(QStringLiteral("pagesCount"), pagesCount);
+	notificationObj.insert(QStringLiteral("totalCount"), elementsCount);
+
+	QJsonArray itemsArray;
 
 	istd::TDelPtr<imtbase::IObjectCollectionIterator> iterator =
 		messageCollectionPtr->CreateObjectCollectionIterator(QByteArray(), offset, count, &filterParams);
 
 	while (iterator.IsValid() && iterator->Next()){
-		int itemIndex = itemsModel->InsertNewItem();
-		if (itemIndex >= 0){
-			if (!SetupGqlItem(gqlRequest, *itemsModel, itemIndex, iterator.GetPtr(), errorMessage)){
-				SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
-			}
+		QJsonObject itemObj;
+		if (!SetupGqlItem(gqlRequest, itemObj, iterator.GetPtr(), errorMessage)){
+			SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
 		}
+		itemsArray.append(itemObj);
 	}
 
-	return rootModelPtr.PopPtr();
+	QJsonObject rootObj;
+	QJsonObject dataObj;
+	dataObj.insert(QStringLiteral("items"), itemsArray);
+	dataObj.insert(QStringLiteral("notification"), notificationObj);
+	rootObj.insert(QStringLiteral("data"), dataObj);
+	return rootObj;
 }
 
 

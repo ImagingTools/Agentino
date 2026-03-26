@@ -2,6 +2,10 @@
 #include <agentgql/CAgentMessageCollectionControllerComp.h>
 
 
+// Qt includes
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonValue>
+
 // ACF includes
 #include <ilog/CMessage.h>
 
@@ -12,8 +16,7 @@ namespace agentgql
 
 bool CAgentMessageCollectionControllerComp::SetupGqlItem(
 			const imtgql::CGqlRequest& gqlRequest,
-			imtbase::CTreeItemModel& model,
-			int itemIndex,
+			QJsonObject& itemObj,
 			const imtbase::IObjectCollectionIterator* objectCollectionIterator,
 			QString& errorMessage) const
 {
@@ -58,7 +61,7 @@ bool CAgentMessageCollectionControllerComp::SetupGqlItem(
 					elementInformation = "";
 				}
 
-				retVal = retVal && model.SetData(informationId, elementInformation, itemIndex);
+				itemObj.insert(QString::fromUtf8(informationId), QJsonValue::fromVariant(elementInformation));
 			}
 
 			return retVal;

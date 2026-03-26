@@ -101,7 +101,7 @@ bool CUrlConnectionLinkParamRepresentationController::IsModelSupported(const ist
 
 bool CUrlConnectionLinkParamRepresentationController::GetRepresentationFromDataModel(
 			const istd::IChangeable& dataModel,
-			imtbase::CTreeItemModel& representation,
+			QJsonObject& representation,
 			const iprm::IParamsSet* paramsPtr) const
 {
 	if (!IsModelSupported(dataModel)){
@@ -116,15 +116,15 @@ bool CUrlConnectionLinkParamRepresentationController::GetRepresentationFromDataM
 	QByteArray dependantServiceConnectionId = urlConnectionParamPtr->GetDependantServiceConnectionId();
 	QString serviceTypeId = urlConnectionParamPtr->GetServiceTypeId();
 
-	representation.SetData("DependantConnectionId", dependantServiceConnectionId);
-	representation.SetData("ServiceTypeName", serviceTypeId);
+	representation.insert(QStringLiteral("DependantConnectionId"), QString::fromUtf8(dependantServiceConnectionId));
+	representation.insert(QStringLiteral("ServiceTypeName"), serviceTypeId);
 
 	if (paramsPtr != nullptr){
 		iprm::TParamsPtr<imtbase::IObjectCollection> agentCollectionPtr(paramsPtr, "AgentCollection");
 		if (agentCollectionPtr.IsValid()){
 			// QUrl url = GetDependantConnectionUrl(*const_cast<imtbase::IObjectCollection*>(agentCollectionPtr.GetPtr()), dependantServiceConnectionId);
 
-			// representation.SetData("Url", url.toString());
+			// representation.insert(QStringLiteral("Url"), url.toString());
 		}
 	}
 
@@ -133,7 +133,7 @@ bool CUrlConnectionLinkParamRepresentationController::GetRepresentationFromDataM
 
 
 bool CUrlConnectionLinkParamRepresentationController::GetDataModelFromRepresentation(
-			const imtbase::CTreeItemModel& representation,
+			const QJsonObject& representation,
 			istd::IChangeable& dataModel) const
 {
 	if (!IsModelSupported(dataModel)){
@@ -145,8 +145,8 @@ bool CUrlConnectionLinkParamRepresentationController::GetDataModelFromRepresenta
 		return false;
 	}
 
-	if (representation.ContainsKey("DependantConnectionId")){
-		QByteArray dependantConnectionId = representation.GetData("DependantConnectionId").toByteArray();
+	if (representation.contains(QStringLiteral("DependantConnectionId"))){
+		QByteArray dependantConnectionId = representation.value(QStringLiteral("DependantConnectionId")).toString().toUtf8();
 
 		urlConnectionParamPtr->SetDependantServiceConnectionId(dependantConnectionId);
 	}

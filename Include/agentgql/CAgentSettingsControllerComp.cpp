@@ -2,66 +2,75 @@
 #include <agentgql/CAgentSettingsControllerComp.h>
 
 
+// Qt includes
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonDocument>
+
+
 namespace agentgql
 {
 
 
-imtbase::CTreeItemModel* CAgentSettingsControllerComp::CreateInternalResponse(
+QJsonObject CAgentSettingsControllerComp::CreateInternalResponse(
 			const imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
 	if (!m_agentinoConnectionInterfaceCompPtr.IsValid()){
 		Q_ASSERT(0);
 
-		return nullptr;
+		return QJsonObject();
 	}
 
 	if (!m_loginCompPtr.IsValid()){
 		Q_ASSERT(0);
 
-		return nullptr;
+		return QJsonObject();
 	}
 
 	const imtgql::CGqlParamObject* gqlInputParamPtr = gqlRequest.GetParamObject("input");
 	if (gqlInputParamPtr == nullptr){
 		SendErrorMessage(0, QString("GraphQL input parameters is invalid"));
 
-		return nullptr;
+		return QJsonObject();
 	}
 
-	istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
-
 	if (gqlRequest.GetRequestType() == imtgql::IGqlRequest::RT_QUERY){
-		imtbase::CTreeItemModel* dataModelPtr = rootModelPtr->AddTreeModel("data");
+		QJsonObject rootObj;
+		QJsonObject dataObj;
 		QUrl url;
 		if (!m_agentinoConnectionInterfaceCompPtr->GetUrl(imtcom::IServerConnectionInterface::PT_WEBSOCKET, url)){
 			SendErrorMessage(0, QString("ServerConnectionInterface is invalid"));
 
-			return nullptr;
+			return QJsonObject();
 		}
 		QString agentinoUrl = url.toString();
-		dataModelPtr->SetData("Url", agentinoUrl);
+		dataObj.insert(QStringLiteral("Url"), agentinoUrl);
+		rootObj.insert(QStringLiteral("data"), dataObj);
+
+		return rootObj;
 	}
 	else if (gqlRequest.GetRequestType() == imtgql::IGqlRequest::RT_MUTATION){
 		QByteArray agentinoUrl;
 
 		QByteArray itemData = gqlInputParamPtr->GetParamArgumentValue("Item").toByteArray();
 
-		imtbase::CTreeItemModel itemModel;
-		if (!itemModel.CreateFromJson(itemData)){
+		QJsonDocument itemDoc = QJsonDocument::fromJson(itemData);
+		if (!itemDoc.isObject()){
 			SendErrorMessage(0, QString("Unable to create model from json: '%1'").arg(qPrintable(itemData)));
 
-			return nullptr;
+			return QJsonObject();
 		}
 
-		if (itemModel.ContainsKey("Url")){
-			agentinoUrl = itemModel.GetData("Url").toByteArray();
+		QJsonObject itemObj = itemDoc.object();
+
+		if (itemObj.contains(QStringLiteral("Url"))){
+			agentinoUrl = itemObj.value(QStringLiteral("Url")).toString().toUtf8();
 		}
 
 		if (agentinoUrl.isEmpty()){
 			errorMessage = QString("URL cannot be empty");
 
-			return nullptr;
+			return QJsonObject();
 		}
 
 		QUrl url(agentinoUrl);
@@ -69,22 +78,28 @@ imtbase::CTreeItemModel* CAgentSettingsControllerComp::CreateInternalResponse(
 		if (!url.isValid()){
 			errorMessage = QString("URL is invalid");
 
-			return nullptr;
+			return QJsonObject();
 		}
 
 		m_loginCompPtr->Disconnect();
 
 		m_agentinoConnectionInterfaceCompPtr->SetHost(url.host());
 		m_agentinoConnectionInterfaceCompPtr->SetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET,url.port());
-		imtbase::CTreeItemModel* dataModelPtr = rootModelPtr->AddTreeModel("data");
-		imtbase::CTreeItemModel* notificationModelPtr = dataModelPtr->AddTreeModel("updatedNotification");
-		notificationModelPtr->SetData("Id", "");
-		notificationModelPtr->SetData("Name", "Agent Settings");
+
+		QJsonObject rootObj;
+		QJsonObject dataObj;
+		QJsonObject notificationObj;
+		notificationObj.insert(QStringLiteral("Id"), QStringLiteral(""));
+		notificationObj.insert(QStringLiteral("Name"), QStringLiteral("Agent Settings"));
+		dataObj.insert(QStringLiteral("updatedNotification"), notificationObj);
+		rootObj.insert(QStringLiteral("data"), dataObj);
 
 		m_loginCompPtr->Connect();
+
+		return rootObj;
 	}
 
-	return rootModelPtr.PopPtr();
+	return QJsonObject();
 }
 
 
