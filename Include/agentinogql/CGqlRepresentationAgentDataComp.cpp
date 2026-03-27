@@ -2,11 +2,8 @@
 #include <agentinogql/CGqlRepresentationAgentDataComp.h>
 
 
-// ACF includer
-#include <istd/TDelPtr.h>
-#include <iprm/CParamsSet.h>
-#include <iprm/CIdParam.h>
-#include <imod/TModelWrap.h>
+// Qt includes
+#include <QtCore/QJsonObject>
 
 
 namespace agentinogql
@@ -17,7 +14,7 @@ namespace agentinogql
 
 // reimplemented (imtgql::CGqlRequestHandlerCompBase)
 
-imtbase::CTreeItemModel* CGqlRepresentationAgentDataComp::CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+QJsonObject CGqlRepresentationAgentDataComp::CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
 {
 	QByteArray commandId = gqlRequest.GetCommandId();
 
@@ -25,19 +22,18 @@ imtbase::CTreeItemModel* CGqlRepresentationAgentDataComp::CreateInternalResponse
 
 	if (requestType == imtgql::IGqlRequest::RT_QUERY){
 
-		istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
-
-		imtbase::CTreeItemModel* representationPtr = rootModelPtr->AddTreeModel("data");
-		Q_ASSERT(representationPtr != nullptr);
+		QJsonObject rootObj;
+		QJsonObject dataObj;
 
 		QString clientId;
 		if (m_clientIdCompPtr.IsValid()){
 			clientId = m_clientIdCompPtr->GetText();
 		}
-		representationPtr->SetData("clientid", clientId);
-		representationPtr->SetData("computername", "COMPUTER-NAME");
+		dataObj.insert(QStringLiteral("clientid"), clientId);
+		dataObj.insert(QStringLiteral("computername"), QStringLiteral("COMPUTER-NAME"));
+		rootObj.insert(QStringLiteral("data"), dataObj);
 
-		return rootModelPtr.PopPtr();
+		return rootObj;
 	}
 
 	errorMessage = QString("Unable to create internal response with command %1").arg(qPrintable(commandId));
@@ -46,7 +42,7 @@ imtbase::CTreeItemModel* CGqlRepresentationAgentDataComp::CreateInternalResponse
 
 	Q_ASSERT(false);
 
-	return nullptr;
+	return QJsonObject();
 }
 
 

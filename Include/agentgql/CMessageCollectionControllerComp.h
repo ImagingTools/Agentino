@@ -2,6 +2,9 @@
 #pragma once
 
 
+// Qt includes
+#include <QtCore/QJsonObject>
+
 // Agentino includes
 #include <agentgql/CServiceLog.h>
 
@@ -31,7 +34,7 @@ protected:
 				const sdl::agentino::ServiceLog::CGetServiceLogGqlRequest& getServiceLogRequest,
 				sdl::imtbase::ImtCollection::CMessageItem::V1_0& representationObject,
 				QString& errorMessage) const override;
-	virtual imtbase::CTreeItemModel* ListObjects(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
+	virtual QJsonObject ListObjects(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 	// reimplemented (icomp::CComponentBase)
 	virtual void OnComponentDestroyed() override;
 

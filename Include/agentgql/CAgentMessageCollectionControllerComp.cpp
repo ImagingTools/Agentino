@@ -2,6 +2,10 @@
 #include <agentgql/CAgentMessageCollectionControllerComp.h>
 
 
+// Qt includes
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonValue>
+
 // ACF includes
 #include <ilog/CMessage.h>
 
@@ -12,13 +16,10 @@ namespace agentgql
 
 bool CAgentMessageCollectionControllerComp::SetupGqlItem(
 			const imtgql::CGqlRequest& gqlRequest,
-			imtbase::CTreeItemModel& model,
-			int itemIndex,
+			QJsonObject& itemObj,
 			const imtbase::IObjectCollectionIterator* objectCollectionIterator,
 			QString& errorMessage) const
 {
-	bool retVal = true;
-
 	QByteArrayList informationIds = GetInformationIds(gqlRequest, "items");
 
 	if (!informationIds.isEmpty() && objectCollectionIterator != nullptr){
@@ -58,10 +59,10 @@ bool CAgentMessageCollectionControllerComp::SetupGqlItem(
 					elementInformation = "";
 				}
 
-				retVal = retVal && model.SetData(informationId, elementInformation, itemIndex);
+				itemObj.insert(QString::fromUtf8(informationId), QJsonValue::fromVariant(elementInformation));
 			}
 
-			return retVal;
+			return true;
 		}
 	}
 	errorMessage = "Unable to get object data from object collection";

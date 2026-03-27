@@ -429,7 +429,7 @@ sdl::agentino::Services::CPluginInfo CServiceControllerProxyComp::OnLoadPlugin(
 
 // reimplemented (sdl::agentino::Services::CGraphQlHandlerCompBase)
 
-imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
+QJsonObject CServiceControllerProxyComp::CreateInternalResponse(
 			const imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
@@ -506,14 +506,14 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateInternalResponse(
 			});
 	}
 
-	return nullptr;
+	return QJsonObject();
 }
 
 
 // private methods
 
 template<class SdlGqlRequest, class SdlResponse>
-imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateResponse(
+QJsonObject CServiceControllerProxyComp::CreateResponse(
 			const imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage,
 			std::function<SdlResponse(const SdlGqlRequest&, const imtgql::CGqlRequest&, QString&)> func) const
@@ -524,25 +524,25 @@ imtbase::CTreeItemModel* CServiceControllerProxyComp::CreateResponse(
 
 	Q_ASSERT(serviceGqlRequest.IsValid());
 	if (!serviceGqlRequest.IsValid()){
-		return nullptr;
+		return QJsonObject();
 	}
 
 	SdlResponse retVal = func(serviceGqlRequest, gqlRequest, errorMessage);
 	if (!errorMessage.isEmpty()){
 		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 
-		return nullptr;
+		return QJsonObject();
 	}
 
-	istd::TDelPtr<imtbase::CTreeItemModel> resultModelPtr(new imtbase::CTreeItemModel);
-	if (!retVal.WriteToModel(*resultModelPtr.GetPtr())){
-		errorMessage = QString("Unable to create response for command '%1'. Error: Writing to tree model failed").arg(qPrintable(commandId));
+	QJsonObject resultObj;
+	if (!retVal.WriteToJsonObject(resultObj)){
+		errorMessage = QString("Unable to create response for command '%1'. Error: Writing to JSON object failed").arg(qPrintable(commandId));
 		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 
-		return nullptr;
+		return QJsonObject();
 	}
 
-	return resultModelPtr.PopPtr();
+	return resultObj;
 }
 
 

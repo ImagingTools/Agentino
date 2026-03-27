@@ -2,6 +2,9 @@
 #pragma once
 
 
+// Qt includes
+#include <QtCore/QJsonObject>
+
 // ImtCore includes
 #include <imtcom/IConnectionController.h>
 #include <imtservergql/CGqlRequestHandlerCompBase.h>
@@ -24,7 +27,7 @@ public:
 
 protected:
 	// reimplemented (imtgql::CGqlRequestHandlerCompBase)
-	virtual imtbase::CTreeItemModel* CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
+	virtual QJsonObject CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 
 protected:
 	I_REF(imtcom::IServerConnectionInterface, m_agentinoConnectionInterfaceCompPtr);

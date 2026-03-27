@@ -2,6 +2,9 @@
 #pragma once
 
 
+// Qt includes
+#include <QtCore/QJsonObject>
+
 // ImtCore includes
 #include <imtclientgql/TClientRequestManagerCompWrap.h>
 
@@ -73,11 +76,11 @@ protected:
 		QString& errorMessage) const override;
 
 	// reimplemented (imtgql::CGqlRequestHandlerCompBase)
-	virtual imtbase::CTreeItemModel* CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
+	virtual QJsonObject CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 	
 private:
 	template<class SdlGqlRequest, class SdlResponse>
-	imtbase::CTreeItemModel* CreateResponse(
+	QJsonObject CreateResponse(
 		const imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage,
 		std::function<SdlResponse(const SdlGqlRequest&, const imtgql::CGqlRequest&, QString&)> func) const;

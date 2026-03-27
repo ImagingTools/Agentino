@@ -70,8 +70,6 @@ void CServiceLogSubscriberControllerComp::OnUpdate(const istd::IChangeable::Chan
 			QByteArray servicePath = serviceInfoPtr->GetServicePath();
 			QByteArray serviceName = m_serviceCollectionCompPtr->GetElementInfo(serviceId, imtbase::IObjectCollection::EIT_NAME).toByteArray();
 
-			istd::TDelPtr<imtbase::CTreeItemModel> rootModelPtr(new imtbase::CTreeItemModel());
-
 			QFileInfo fileInfo(servicePath);
 			QString pluginPath = fileInfo.path() + "/Plugins";
 

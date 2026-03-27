@@ -2,6 +2,10 @@
 #include <agentinogql/CAgentCollectionControllerComp.h>
 
 
+// Qt includes
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonDocument>
+
 // ACF includes
 #include <istd/TDelPtr.h>
 #include <iprm/CTextParam.h>
@@ -275,25 +279,27 @@ istd::IChangeableUniquePtr CAgentCollectionControllerComp::CreateObjectFromReque
 		return nullptr;
 	}
 
-	imtbase::CTreeItemModel itemModel;
-	if (!itemModel.CreateFromJson(itemData)){
+	QJsonDocument itemDoc = QJsonDocument::fromJson(itemData);
+	if (!itemDoc.isObject()){
 		return nullptr;
 	}
 
+	QJsonObject itemObj = itemDoc.object();
+
 	agentImplPtr->SetObjectUuid(objectId);
 
-	if (itemModel.ContainsKey("computerName")){
-		QString computerName = itemModel.GetData("computerName").toString();
+	if (itemObj.contains(QStringLiteral("computerName"))){
+		QString computerName = itemObj.value(QStringLiteral("computerName")).toString();
 		agentImplPtr->SetComputerName(computerName);
 	}
 
-	if (itemModel.ContainsKey("version")){
-		QString version = itemModel.GetData("version").toString();
+	if (itemObj.contains(QStringLiteral("version"))){
+		QString version = itemObj.value(QStringLiteral("version")).toString();
 		agentImplPtr->SetVersion(version);
 	}
 
-	if (itemModel.ContainsKey("tracingLevel")){
-		int tracingLevel = itemModel.GetData("tracingLevel").toInt();
+	if (itemObj.contains(QStringLiteral("tracingLevel"))){
+		int tracingLevel = itemObj.value(QStringLiteral("tracingLevel")).toInt();
 		agentImplPtr->SetTracingLevel(tracingLevel);
 	}
 
@@ -304,13 +310,13 @@ istd::IChangeableUniquePtr CAgentCollectionControllerComp::CreateObjectFromReque
 }
 
 
-imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(
+QJsonObject CAgentCollectionControllerComp::InsertObject(
 			const imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		Q_ASSERT(false);
-		return nullptr;
+		return QJsonObject();
 	}
 
 	const imtgql::CGqlParamObject& inputParams = gqlRequest.GetParams();
@@ -318,7 +324,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(
 	QByteArray agentId = GetObjectIdFromInputParams(inputParams);
 
 	if (agentId.isEmpty()){
-		return nullptr;
+		return QJsonObject();
 	}
 
 	imtbase::IObjectCollection::DataPtr dataPtr;
@@ -342,13 +348,13 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(
 	else{
 		istd::IChangeableUniquePtr agentInstancePtr = CreateObjectFromRequest(gqlRequest, agentId, errorMessage);
 		if (!agentInstancePtr.IsValid()){
-			return nullptr;
+			return QJsonObject();
 		}
 
 		istd::TUniqueInterfacePtr<agentinodata::CIdentifiableAgentInfo> agentImplPtr;
 		agentImplPtr.MoveCastedPtr<istd::IChangeable>(agentInstancePtr);
 		if (!agentImplPtr.IsValid()){
-			return nullptr;
+			return QJsonObject();
 		}
 
 		QString name = agentImplPtr->GetComputerName();
@@ -359,7 +365,7 @@ imtbase::CTreeItemModel* CAgentCollectionControllerComp::InsertObject(
 	m_connectedAgents.append(agentId);
 	m_timer.start();
 
-	return nullptr;
+	return QJsonObject();
 }
 
 

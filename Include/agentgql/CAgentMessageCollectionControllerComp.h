@@ -2,6 +2,9 @@
 #pragma once
 
 
+// Qt includes
+#include <QtCore/QJsonObject>
+
 // ImtCore includes
 #include <imtservergql/CObjectCollectionControllerCompBase.h>
 
@@ -22,8 +25,7 @@ protected:
 	// reimplemented (imtgql::CObjectCollectionControllerCompBase)
 	virtual bool SetupGqlItem(
 				const imtgql::CGqlRequest& gqlRequest,
-				imtbase::CTreeItemModel& model,
-				int itemIndex,
+				QJsonObject& itemObj,
 				const imtbase::IObjectCollectionIterator* objectCollectionIterator,
 				QString& errorMessage) const override;
 };

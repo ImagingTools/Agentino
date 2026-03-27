@@ -3,7 +3,6 @@
 
 
 // ImtCore includes
-#include <imtbase/CTreeItemModel.h>
 #include <imtbase/ICollectionInfo.h>
 #include <imtgql/CGqlRequest.h>
 #include <imtgql/CGqlContext.h>
