@@ -6,11 +6,11 @@ cd /d "%~dp0\..\.."
 set "FILE=Partitura\AgentinoVoce.arp\VersionInfo.acc.xtrsvn"
 set "BACKUPDIR=%~1"
 
-git fetch --prune --unshallow 2>nul
+git fetch --prune --unshallow
 
-for /f "usebackq delims=" %%i in (`git rev-list --count origin/master 2^>nul`) do set REV=%%i
+for /f "usebackq delims=" %%i in (`git rev-list --count origin/master`) do set REV=%%i
 if not defined REV (
-    for /f "usebackq delims=" %%i in (`git rev-list --count HEAD 2^>nul`) do set REV=%%i
+    for /f "usebackq delims=" %%i in (`git rev-list --count HEAD`) do set REV=%%i
 )
 if not defined REV (
     echo Failed to compute revision count.
