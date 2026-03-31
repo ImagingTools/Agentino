@@ -603,8 +603,8 @@
                     <Interface InterfaceId="imtclientgql::IGqlClient" ComponentId="WebSocketClient"/>
                     <Interface InterfaceId="imtcom::IConnectionController" ComponentId="WebSocketClient"/>
                     <Interface InterfaceId="imtcom::IConnectionStatusProvider" ComponentId="WebSocketClient/ConnectionStatusProvider"/>
-                    <Interface InterfaceId="imtrest::IRequestManager" ComponentId="WebSocketClient"/>
-                    <Interface InterfaceId="imtrest::ISender" ComponentId="WebSocketClient"/>
+                    <Interface InterfaceId="imtrest::IResponseDispatcher" ComponentId="WebSocketClient"/>
+                    <Interface InterfaceId="imtrest::ITransport" ComponentId="WebSocketClient"/>
                     <Interface InterfaceId="istd::IChangeable" ComponentId="WebSocketClient/ConnectionStatusProvider"/>
                     <Interface InterfaceId="istd::IPolymorphic" ComponentId="WebSocketClient"/>
                 </ExportedInterfaces>
@@ -613,7 +613,7 @@
         </EmbeddedRegistry>
     </EmbeddedRegistriesList>
     <ExportedInterfaces>
-        <Interface InterfaceId="imtrest::IRequestManager" ComponentId="HttpServerFramework"/>
+        <Interface InterfaceId="imtrest::IResponseDispatcher" ComponentId="HttpServerFramework"/>
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="HttpServerFramework"/>
     </ExportedInterfaces>
     <ExportedComponents>

@@ -695,7 +695,7 @@
     </EmbeddedRegistriesList>
     <ExportedInterfaces>
         <Interface InterfaceId="imtlic::IProductInfo" ComponentId="FeatureContainer"/>
-        <Interface InterfaceId="imtrest::IRequestManager" ComponentId="HttpServerFramework"/>
+        <Interface InterfaceId="imtrest::IResponseDispatcher" ComponentId="HttpServerFramework"/>
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="HttpServerFramework"/>
     </ExportedInterfaces>
     <ExportedComponents>
