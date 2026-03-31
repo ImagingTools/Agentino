@@ -8,7 +8,7 @@ set "BACKUPDIR=%~1"
 
 git fetch --prune --unshallow 2>nul
 
-for /f "usebackq delims=" %%i in (`git rev-list --count origin/master 2^>nul`) do set REV=%%i
+for /f "usebackq delims=" %%i in (`git rev-list --count origin/main 2^>nul`) do set REV=%%i
 if not defined REV (
     for /f "usebackq delims=" %%i in (`git rev-list --count HEAD 2^>nul`) do set REV=%%i
 )

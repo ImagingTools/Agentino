@@ -11,8 +11,8 @@ BACKUPDIR="$1"
 # Attempt to fetch and unshallow if needed (suppress errors)
 git fetch --prune --unshallow 2>/dev/null
 
-# Get revision count from origin/master or HEAD
-REV=$(git rev-list --count origin/master 2>/dev/null)
+# Get revision count from origin/main or HEAD
+REV=$(git rev-list --count origin/main 2>/dev/null)
 if [ -z "$REV" ]; then
     REV=$(git rev-list --count HEAD 2>/dev/null)
 fi

@@ -38,7 +38,7 @@ class AgentinoConan(ConanFile):
     author = "ImagingTools"
     topics = ("qt", "component-framework")
     generators = "CMakeDeps"
-    python_requires = "conantools/0.2.0@gmg/stable"
+    python_requires = "conantools/0.2.4.rev.0@gmg/stable"
 
     @property
     def _gmgtools(self):
@@ -71,7 +71,7 @@ class AgentinoConan(ConanFile):
 
     def requirements(self):
         if self.options.qt_package == "conan":
-            self.requires("qt/6.8.3-r0@gmg/system")
+            self.requires("qt/[>=6.8]@gmg/system")
 
         self.requires("imtcore/[~1]@gmg/stable")
         self.requires("acf/[~1]@gmg/stable")
