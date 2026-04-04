@@ -62,6 +62,7 @@ public	Q_SLOTS:
 
 private:
 	QByteArray GetModuleName(QByteArray servicePath) const;
+	bool SetupService(const QByteArray& serviceId, bool startRequired);
 	void SetupProcess(QProcess& process, const QByteArray& programPath, const QStringList& arguments) const;
 	void UpdateServiceVersion(const QByteArray& serviceId);
 	void OnTimeout();
