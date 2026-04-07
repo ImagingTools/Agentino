@@ -64,9 +64,9 @@ QUrl CUrlConnectionLinkParamRepresentationController::GetDependantConnectionUrl(
 							// 	return connectionParamPtr->GetUrl();
 							// }
 
-							QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
-							for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-								if (incomingConnection.id == dependantId){
+							QList<imtservice::IServiceConnectionParam::IncomingConnectionParam*> incomingConnections = connectionParamPtr->GetIncomingConnections();
+							for (imtservice::IServiceConnectionParam::IncomingConnectionParam* incomingConnection : incomingConnections){
+								if (incomingConnection->id == dependantId){
 									// return incomingConnection.url;
 								}
 							}

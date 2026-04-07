@@ -678,20 +678,20 @@ istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::CDependantCo
 
 						*retVal << dependantConnectionInfo;
 
-						QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
+						QList<imtservice::IServiceConnectionParam::IncomingConnectionParam*> incomingConnections = connectionParamPtr->GetIncomingConnections();
 
-						for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
+						for (imtservice::IServiceConnectionParam::IncomingConnectionParam* incomingConnection : incomingConnections){
 							sdl::agentino::Services::CDependantConnectionInfo::V1_0 incomingConnectionInfo;
-							incomingConnectionInfo.id = incomingConnection.id;
+							incomingConnectionInfo.id = incomingConnection->id;
 
-							QString incomingHost = incomingConnection.host;
-							int incommingHttpPort = incomingConnection.httpPort;
+							QString incomingHost = incomingConnection->host;
+							int incommingHttpPort = incomingConnection->httpPort;
 							incomingConnectionInfo.name = incomingHost + "/" + QString::number(incommingHttpPort);
 
 							sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam;
 							connectionParam.host = incomingHost;
-							connectionParam.wsPort = incomingConnection.wsPort;
-							connectionParam.httpPort = incomingConnection.httpPort;
+							connectionParam.wsPort = incomingConnection->wsPort;
+							connectionParam.httpPort = incomingConnection->httpPort;
 
 							incomingConnectionInfo.connectionParam = connectionParam;
 
