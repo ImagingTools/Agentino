@@ -366,16 +366,16 @@ bool GetRepresentationFromUrlConnection(
 
 	QList<sdl::agentino::Services::CExternConnectionInfo::V1_0> externConnectionList;
 
-	QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionInfo.GetIncomingConnections();
-	for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
+	QList<imtservice::IServiceConnectionParam::IncomingConnectionParam*> incomingConnections = connectionInfo.GetIncomingConnections();
+	for (imtservice::IServiceConnectionParam::IncomingConnectionParam* incomingConnection : incomingConnections){
 		sdl::agentino::Services::CExternConnectionInfo::V1_0 externConnectionInfo;
-		externConnectionInfo.description = incomingConnection.description;
-		externConnectionInfo.id = incomingConnection.id;
+		externConnectionInfo.description = incomingConnection->description;
+		externConnectionInfo.id = incomingConnection->id;
 
 		sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam;
-		connectionParam.host = incomingConnection.host;
-		connectionParam.wsPort = incomingConnection.wsPort;
-		connectionParam.httpPort = incomingConnection.httpPort;
+		connectionParam.host = incomingConnection->host;
+		connectionParam.wsPort = incomingConnection->wsPort;
+		connectionParam.httpPort = incomingConnection->httpPort;
 
 		externConnectionInfo.connectionParam = connectionParam;
 

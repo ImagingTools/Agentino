@@ -74,11 +74,11 @@ QByteArray CServiceCompositeInfoComp::GetServiceId(const QUrl& url) const
 										}
 									}
 
-									QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
-									for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
+									QList<imtservice::IServiceConnectionParam::IncomingConnectionParam*> incomingConnections = connectionParamPtr->GetIncomingConnections();
+									for (imtservice::IServiceConnectionParam::IncomingConnectionParam* incomingConnection : incomingConnections){
 										QUrl incomingConnectionUrl;
-										incomingConnectionUrl.setHost(incomingConnection.host);
-										incomingConnectionUrl.setPort(incomingConnection.httpPort);
+										incomingConnectionUrl.setHost(incomingConnection->host);
+										incomingConnectionUrl.setPort(incomingConnection->httpPort);
 
 										if (incomingConnectionUrl.host() == url.host() && incomingConnectionUrl.port() == url.port()){
 											return serviceElementId;
@@ -139,9 +139,9 @@ QByteArray CServiceCompositeInfoComp::GetServiceId(const QByteArray& dependantSe
 						if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
 							imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
 							if (connectionParamPtr != nullptr){
-								QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
-								for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-									if (incomingConnection.id == dependantServiceConnectionId){
+								QList<imtservice::IServiceConnectionParam::IncomingConnectionParam*> incomingConnections = connectionParamPtr->GetIncomingConnections();
+								for (imtservice::IServiceConnectionParam::IncomingConnectionParam* incomingConnection : incomingConnections){
+									if (incomingConnection->id == dependantServiceConnectionId){
 										return serviceElementId;
 									}
 								}
