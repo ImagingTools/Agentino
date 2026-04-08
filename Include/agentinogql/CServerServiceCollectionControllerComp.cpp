@@ -262,8 +262,8 @@ sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollection
 						connectionInfos << GetConnectionInfoAboutDependOnService(connectionId);
 
 						imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections = urlConnectionParamPtr->GetIncomingConnections();
-						for (imtservice::IServiceConnectionParam::IncomingConnectionParam* incomingConnection : incomingConnections){
-							connectionInfos << GetConnectionInfoAboutDependOnService(incomingConnection->id);
+						for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
+							connectionInfos << GetConnectionInfoAboutDependOnService(incomingConnection.GetObjectUuid());
 						}
 					}
 				}
