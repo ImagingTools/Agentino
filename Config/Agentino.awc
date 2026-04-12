@@ -14,5 +14,10 @@
     </PackageDirs>
     <PackageFiles/>
     <RegistryFiles>
+        <FilePath>../Impl/AgentinoAgent/AgentinoAgent.acc</FilePath>
+        <FilePath>../Impl/AgentinoClient/AgentinoClient.acc</FilePath>
+        <FilePath>../Impl/AgentinoClientServer/AgentinoClientServer.acc</FilePath>
+        <FilePath>../Impl/AgentinoLoc/AgentinoLoc.acc</FilePath>
+        <FilePath>../Impl/AgentinoServer/AgentinoServer.acc</FilePath>
     </RegistryFiles>
 </Acf>
