@@ -330,10 +330,13 @@ bool GetUrlConnectionFromRepresentation(
 				}
 
 				if (externPort->connectionParam->httpPort){
+					incomingConnection.RegisterProtocol(imtcom::IServerConnectionInterface::PT_HTTP);
 					incomingConnection.SetPort(imtcom::IServerConnectionInterface::PT_HTTP, *externPort->connectionParam->httpPort);
+					incomingConnection.SetPath(imtcom::IServerConnectionInterface::PT_HTTP, *externPort->connectionParam->httpPath);
 				}
 
 				if (externPort->connectionParam->wsPort){
+					incomingConnection.RegisterProtocol(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
 					incomingConnection.SetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET, *externPort->connectionParam->wsPort);
 				}
 			}
@@ -372,6 +375,7 @@ bool GetRepresentationFromUrlConnection(
 		connectionParam.host = incomingConnection.GetHost();
 		connectionParam.wsPort = incomingConnection.GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
 		connectionParam.httpPort = incomingConnection.GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
+		connectionParam.httpPath = incomingConnection.GetPath(imtcom::IServerConnectionInterface::PT_HTTP);
 
 		externConnectionInfo.connectionParam = connectionParam;
 
@@ -482,6 +486,9 @@ bool GetRepresentationFromServerConnectionParam(
 
 	int httpPort = serverConnectionParam.GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
 	sdlRepresentation.httpPort = httpPort;
+
+	QString httpPath = serverConnectionParam.GetPath(imtcom::IServerConnectionInterface::PT_HTTP);
+	sdlRepresentation.httpPath = httpPath;
 
 	int wsPort = serverConnectionParam.GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
 	sdlRepresentation.wsPort = wsPort;

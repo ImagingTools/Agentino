@@ -178,6 +178,10 @@ ViewBase {
 		anchors.bottom: parent.bottom;
 		
 		width: 250;
+
+		Component.onCompleted: {
+			registerViewDelegate("ExternPaths", metaInfoViewExternPathsDelegateComp)
+		}
 	}
 	
 	CollectionRepresentation {
@@ -203,6 +207,36 @@ ViewBase {
 		}
 		
 		return headers
+	}
+
+	Component {
+		id: metaInfoViewExternPathsDelegateComp
+		MetaInfoTextDelegate {
+			id: metaInfoDelegate
+
+			height: linkText.height
+
+			Text {
+				id: linkText
+				width: parent.width
+				font.family: Style.fontFamily
+				font.pixelSize: Style.fontSizeS
+				font.underline: true
+				wrapMode: Text.WordWrap
+				color: Style.lightBlueColor
+				elide: Text.ElideRight
+				text: metaInfoDelegate.viewData
+			}
+
+			MouseArea {
+				anchors.fill: linkText
+				hoverEnabled: true
+				cursorShape: Qt.PointingHandCursor
+				onClicked: {
+					Qt.openUrlExternally(metaInfoDelegate.viewData)
+				}
+			}
+		}
 	}
 	
 	Component {

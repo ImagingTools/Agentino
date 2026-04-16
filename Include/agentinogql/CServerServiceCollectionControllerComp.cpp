@@ -233,6 +233,7 @@ sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollection
 		imtbase::ICollectionInfo::Ids connectionIds = inputCollectionPtr->GetElementIds();
 		if (!connectionIds.isEmpty()){
 			QString incomingConnectionStr = QT_TR_NOOP("Incoming Connections");
+			QString externPathsStr = QT_TR_NOOP("Extern Paths");
 
 			if (m_translationManagerCompPtr.IsValid()){
 				incomingConnectionStr = iqt::GetTranslation(
@@ -240,15 +241,22 @@ sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollection
 							incomingConnectionStr.toUtf8(),
 							languageId,
 							"agentinogql::CServerServiceCollectionControllerComp");
+				externPathsStr = iqt::GetTranslation(
+					m_translationManagerCompPtr.GetPtr(),
+					externPathsStr.toUtf8(),
+					languageId,
+					"agentinogql::CServerServiceCollectionControllerComp");
 			}
 
 			sdl::imtbase::ImtBaseTypes::CParameter::V1_0 parameter;
+			sdl::imtbase::ImtBaseTypes::CParameter::V1_0 extPathsParameter;
 			parameter.id = QByteArrayLiteral("IncomingConnections");
 			parameter.typeId = parameter.id;
 			parameter.name = incomingConnectionStr;
 
 			QString incomingConnectionsData;
 			QStringList connectionInfos;
+			QStringList externPaths;
 			for (const imtbase::ICollectionInfo::Id& connectionId : connectionIds){
 				imtbase::IObjectCollection::DataPtr connectionDataPtr;
 				if (inputCollectionPtr->GetObjectData(connectionId, connectionDataPtr)){
@@ -264,6 +272,12 @@ sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollection
 						imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections = urlConnectionParamPtr->GetIncomingConnections();
 						for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
 							connectionInfos << GetConnectionInfoAboutDependOnService(incomingConnection.GetObjectUuid());
+							QUrl url;
+							if (incomingConnection.GetUrl(imtcom::IServerConnectionInterface::PT_HTTP, url)){
+								if (url.isValid()){
+									externPaths << url.toDisplayString();
+								}
+							}
 						}
 					}
 				}
@@ -271,6 +285,12 @@ sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollection
 
 			parameter.data = incomingConnectionsData;
 			infoParams << parameter;
+
+			extPathsParameter.id = QByteArrayLiteral("ExternPaths");
+			extPathsParameter.typeId = extPathsParameter.id;
+			extPathsParameter.name = externPathsStr;
+			extPathsParameter.data = externPaths.join('\n');
+			infoParams << extPathsParameter;
 
 			if (!connectionInfos.isEmpty()){
 				sdl::imtbase::ImtBaseTypes::CParameter::V1_0 dependantParameter;
