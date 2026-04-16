@@ -475,7 +475,7 @@ ViewBase {
 								for (let i = 0; i < model.item.m_externConnectionList.count; i++){
 									let externConnection = model.item.m_externConnectionList.get(i).item
 									if (externConnection){
-										values.push(externConnection.m_connectionParam.m_host + ":" + externConnection.m_connectionParam.m_httpPort)
+										values.push((externConnection.m_connectionParam.m_isSecure == true ? "https://" : "http://") + externConnection.m_connectionParam.m_host + ":" + externConnection.m_connectionParam.m_httpPort + externConnection.m_connectionParam.m_httpPath)
 									}
 								}
 
@@ -509,6 +509,8 @@ ViewBase {
 					
 					ExternPortsDialog {
 						property var inputConnection: null
+
+						width: serviceEditorContainer.width - Style.marginS < 1200 ? serviceEditorContainer.width - Style.marginS : 1200
 						
 						onStarted: {
 							if (inputConnection){

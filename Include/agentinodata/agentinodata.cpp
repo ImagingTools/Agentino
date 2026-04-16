@@ -9,6 +9,7 @@
 #include <iprm/TParamsPtr.h>
 
 // ImtCore includes
+#include <imtcom/IServerConnectionInterface.h>
 #include <imtservice/IConnectionCollection.h>
 
 // Agentino includes
@@ -320,24 +321,23 @@ bool GetUrlConnectionFromRepresentation(
 			imtservice::IServiceConnectionParam::IncomingConnectionParam incomingConnection;
 
 			if (externPort->id){
-				incomingConnection.id = *externPort->id;
-			}
-
-			if (externPort->description){
-				incomingConnection.description = *externPort->description;
+				incomingConnection.SetObjectUuid(*externPort->id);
 			}
 
 			if (externPort->connectionParam){
 				if (externPort->connectionParam->host){
-					incomingConnection.host = *externPort->connectionParam->host;
+					incomingConnection.SetHost(*externPort->connectionParam->host);
 				}
 
 				if (externPort->connectionParam->httpPort){
-					incomingConnection.httpPort = *externPort->connectionParam->httpPort;
+					incomingConnection.RegisterProtocol(imtcom::IServerConnectionInterface::PT_HTTP);
+					incomingConnection.SetPort(imtcom::IServerConnectionInterface::PT_HTTP, *externPort->connectionParam->httpPort);
+					incomingConnection.SetPath(imtcom::IServerConnectionInterface::PT_HTTP, *externPort->connectionParam->httpPath);
 				}
 
 				if (externPort->connectionParam->wsPort){
-					incomingConnection.wsPort = *externPort->connectionParam->wsPort;
+					incomingConnection.RegisterProtocol(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
+					incomingConnection.SetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET, *externPort->connectionParam->wsPort);
 				}
 			}
 
@@ -366,16 +366,16 @@ bool GetRepresentationFromUrlConnection(
 
 	QList<sdl::agentino::Services::CExternConnectionInfo::V1_0> externConnectionList;
 
-	QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionInfo.GetIncomingConnections();
+	imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections = connectionInfo.GetIncomingConnections();
 	for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
 		sdl::agentino::Services::CExternConnectionInfo::V1_0 externConnectionInfo;
-		externConnectionInfo.description = incomingConnection.description;
-		externConnectionInfo.id = incomingConnection.id;
+		externConnectionInfo.id = incomingConnection.GetObjectUuid();
 
 		sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam;
-		connectionParam.host = incomingConnection.host;
-		connectionParam.wsPort = incomingConnection.wsPort;
-		connectionParam.httpPort = incomingConnection.httpPort;
+		connectionParam.host = incomingConnection.GetHost();
+		connectionParam.wsPort = incomingConnection.GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
+		connectionParam.httpPort = incomingConnection.GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
+		connectionParam.httpPath = incomingConnection.GetPath(imtcom::IServerConnectionInterface::PT_HTTP);
 
 		externConnectionInfo.connectionParam = connectionParam;
 
@@ -486,6 +486,9 @@ bool GetRepresentationFromServerConnectionParam(
 
 	int httpPort = serverConnectionParam.GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
 	sdlRepresentation.httpPort = httpPort;
+
+	QString httpPath = serverConnectionParam.GetPath(imtcom::IServerConnectionInterface::PT_HTTP);
+	sdlRepresentation.httpPath = httpPath;
 
 	int wsPort = serverConnectionParam.GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
 	sdlRepresentation.wsPort = wsPort;
