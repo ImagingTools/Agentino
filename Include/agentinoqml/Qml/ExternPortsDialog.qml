@@ -230,7 +230,7 @@ Dialog {
 				Component {
 					id: securityInputComp;
 					
-					Item {
+					TableCellDelegateBase {
 						function getValue(){
 							return rowDelegate.dataModel.item.m_connectionParam.m_isSecure === true;
 						}
