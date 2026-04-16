@@ -227,6 +227,32 @@ Dialog {
 					}
 				}
 				
+				Component {
+					id: securityInputComp;
+					
+					Item {
+						function getValue(){
+							return rowDelegate.dataModel.item.m_connectionParam.m_isSecure === true;
+						}
+					
+						function setValue(value){
+							let urlParam = rowDelegate.dataModel.item.m_connectionParam;
+							urlParam.m_isSecure = value;
+							rowDelegate.dataModel.item.m_connectionParam = urlParam;
+						}
+					
+						SwitchCustom {
+							anchors.centerIn: parent;
+							checked: rowDelegate.dataModel.item.m_connectionParam.m_isSecure === true;
+							onCheckedChanged: {
+								let urlParam = rowDelegate.dataModel.item.m_connectionParam;
+								urlParam.m_isSecure = checked;
+								rowDelegate.dataModel.item.m_connectionParam = urlParam;
+							}
+						}
+					}
+				}
+				
 				Table {
 					id: tableTreeView;
 					
@@ -240,6 +266,7 @@ Dialog {
 						tableTreeView.setColumnContentById("wsPort", wsPortInputComp)
 						tableTreeView.setColumnContentById("httpPort", httpPortInputComp)
 						tableTreeView.setColumnContentById("httpPath", httpPathInputComp)
+						tableTreeView.setColumnContentById("security", securityInputComp)
 					}
 					
 					onSelectionChanged: {
