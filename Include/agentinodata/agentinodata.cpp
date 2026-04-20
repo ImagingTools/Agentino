@@ -339,6 +339,10 @@ bool GetUrlConnectionFromRepresentation(
 					incomingConnection.RegisterProtocol(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
 					incomingConnection.SetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET, *externPort->connectionParam->wsPort);
 				}
+
+				if (externPort->connectionParam->isSecure && *externPort->connectionParam->isSecure){
+					incomingConnection.SetConnectionFlags(imtcom::IServerConnectionInterface::CF_SECURE);
+				}
 			}
 
 			connectionInfo.AddExternConnection(incomingConnection);
@@ -376,6 +380,7 @@ bool GetRepresentationFromUrlConnection(
 		connectionParam.wsPort = incomingConnection.GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
 		connectionParam.httpPort = incomingConnection.GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
 		connectionParam.httpPath = incomingConnection.GetPath(imtcom::IServerConnectionInterface::PT_HTTP);
+		connectionParam.isSecure = incomingConnection.GetConnectionFlags() == imtcom::IServerConnectionInterface::CF_SECURE;
 
 		externConnectionInfo.connectionParam = connectionParam;
 

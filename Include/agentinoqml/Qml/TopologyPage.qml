@@ -211,29 +211,42 @@ ViewBase {
 
 	Component {
 		id: metaInfoViewExternPathsDelegateComp
-		MetaInfoTextDelegate {
+		MetaInfoViewDelegateBase {
 			id: metaInfoDelegate
 
-			height: linkText.height
+			height: pathColumn.height
 
-			Text {
-				id: linkText
-				width: parent.width
-				font.family: Style.fontFamily
-				font.pixelSize: Style.fontSizeS
-				font.underline: true
-				wrapMode: Text.WordWrap
-				color: Style.lightBlueColor
-				elide: Text.ElideRight
-				text: metaInfoDelegate.viewData
-			}
+			Column {
+				id: pathColumn
+				width: metaInfoDelegate.width
+				spacing: Style.spacingS
+				Repeater {
+					model: metaInfoDelegate.viewData.split('\n')
+					delegate: Item {
+						height: linkText.height
+						width: parent.width
+						Text {
+							id: linkText
+							width: parent.width
+							font.family: Style.fontFamily
+							font.pixelSize: Style.fontSizeS
+							font.underline: true
+							wrapMode: Text.WordWrap
+							color: Style.lightBlueColor
+							elide: Text.ElideRight
+							text: modelData
+						}
 
-			MouseArea {
-				anchors.fill: linkText
-				hoverEnabled: true
-				cursorShape: Qt.PointingHandCursor
-				onClicked: {
-					Qt.openUrlExternally(metaInfoDelegate.viewData)
+						MouseArea {
+							anchors.fill: linkText
+							hoverEnabled: true
+							cursorShape: Qt.PointingHandCursor
+							onClicked: {
+								console.log("onClicked", modelData)
+								Qt.openUrlExternally(modelData)
+							}
+						}
+					}
 				}
 			}
 		}

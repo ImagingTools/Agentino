@@ -231,6 +231,8 @@ Dialog {
 					id: securityInputComp;
 					
 					TableCellDelegateBase {
+						id: cellDelegate
+
 						function getValue(){
 							return rowDelegate.dataModel.item.m_connectionParam.m_isSecure === true;
 						}
@@ -243,11 +245,12 @@ Dialog {
 					
 						SwitchCustom {
 							anchors.centerIn: parent;
-							checked: rowDelegate.dataModel.item.m_connectionParam.m_isSecure === true;
+							checked: cellDelegate.rowDelegate.dataModel.item.m_connectionParam.m_isSecure === true;
 							onCheckedChanged: {
-								let urlParam = rowDelegate.dataModel.item.m_connectionParam;
+								console.log("onCheckedChanged");
+								let urlParam = cellDelegate.rowDelegate.dataModel.item.m_connectionParam;
 								urlParam.m_isSecure = checked;
-								rowDelegate.dataModel.item.m_connectionParam = urlParam;
+								cellDelegate.rowDelegate.dataModel.item.m_connectionParam = urlParam;
 							}
 						}
 					}
