@@ -110,7 +110,7 @@
                         <Data IsEnabled="true" Value="Repositories/UserRepository"/>
                     </AttributeInfo>
                     <AttributeInfo Id="UserConnectionCollection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/UserConnectionRepository"/>
+                        <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="UserGroupInfoProvider" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/UserGroupRepository"/>
