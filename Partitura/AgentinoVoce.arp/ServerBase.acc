@@ -109,8 +109,9 @@
                     <AttributeInfo Id="UserCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/UserRepository"/>
                     </AttributeInfo>
+                    <!-- Disabled: UserConnectionCollection triggers "Unable to insert last connection info" error on su login (ImtCore CAuthorizationControllerComp bug) -->
                     <AttributeInfo Id="UserConnectionCollection" Type="Reference" ExportId="">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="false" Value="Repositories/UserConnectionRepository"/>
                     </AttributeInfo>
                     <AttributeInfo Id="UserGroupInfoProvider" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/UserGroupRepository"/>
