@@ -194,10 +194,12 @@ void CServiceControllerComp::OnComponentDestroyed()
 	m_timer.stop();
 
 	QList<QByteArray> serviceIds = m_processMap.keys();
-	for (const QByteArray& serviceId: serviceIds){
+	for (const QByteArray& serviceId : serviceIds){
 		if (m_processMap[serviceId].lastStatus == IServiceStatusInfo::SS_RUNNING
 			|| m_processMap[serviceId].lastStatus == IServiceStatusInfo::SS_STARTING){
-			StopService(serviceId);
+			if (!StopService(serviceId)){
+				SendErrorMessage(0, QString("Failed to stop service '%1' during shutdown").arg(QString(serviceId)), "CServiceControllerComp");
+			}
 		}
 	}
 
