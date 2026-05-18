@@ -189,6 +189,27 @@ void CServiceControllerComp::OnComponentCreated()
 }
 
 
+void CServiceControllerComp::OnComponentDestroyed()
+{
+	m_timer.stop();
+
+	QList<QByteArray> serviceIds = m_processMap.keys();
+	for (const QByteArray& serviceId : serviceIds){
+		if (m_processMap[serviceId].lastStatus == IServiceStatusInfo::SS_RUNNING
+			|| m_processMap[serviceId].lastStatus == IServiceStatusInfo::SS_STARTING){
+			if (!StopService(serviceId)){
+				SendErrorMessage(0, QString("Failed to stop service '%1' during shutdown").arg(QString(serviceId)), "CServiceControllerComp");
+			}
+		}
+	}
+
+	m_processMap.clear();
+	m_pluginMap.clear();
+
+	BaseClass::OnComponentDestroyed();
+}
+
+
 void CServiceControllerComp::OnReadyReadStandardError()
 {
 	QProcess* processPtr = dynamic_cast<QProcess*>(sender());

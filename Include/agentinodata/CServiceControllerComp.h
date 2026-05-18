@@ -55,6 +55,7 @@ public:
 
 	// reimplemented (icomp::CComponentBase)
 	virtual void OnComponentCreated() override;
+	virtual void OnComponentDestroyed() override;
 
 public	Q_SLOTS:
 	void OnReadyReadStandardError();
