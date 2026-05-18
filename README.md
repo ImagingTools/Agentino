@@ -85,8 +85,11 @@ Agentino/
 │   └── GenerateDocs.bat # Documentation generation script
 │
 ├── Install/             # Installation resources
+│   ├── AgentinoAgent/  # Agent installer scripts
+│   ├── AgentinoClient/ # Client installer scripts
+│   ├── AgentinoServer/ # Server installer scripts
 │   ├── Commercial/     # Commercial license files
-│   └── Script.iss     # Inno Setup installer script
+│   └── Script.iss      # Legacy Inno Setup installer script
 │
 ├── Sdl/                 # Service Definition Language files
 └── Partitura/           # Additional resources
