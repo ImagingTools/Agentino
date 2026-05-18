@@ -85,8 +85,11 @@ Agentino/
 │   └── GenerateDocs.bat # Documentation generation script
 │
 ├── Install/             # Installation resources
+│   ├── AgentinoAgent/  # Agent installer scripts
+│   ├── AgentinoClient/ # Client installer scripts
+│   ├── AgentinoServer/ # Server installer scripts
 │   ├── Commercial/     # Commercial license files
-│   └── Script.iss     # Inno Setup installer script
+│   └── LGPL/           # Open-source license files
 │
 ├── Sdl/                 # Service Definition Language files
 └── Partitura/           # Additional resources
@@ -216,13 +219,19 @@ nmake
 
 ### Windows
 
-Use the Inno Setup installer script:
+Use one of the component installer scripts:
 
 ```bash
 cd Install
 
-# Commercial version
-_Create_VC17_Commercial.bat
+# Agent installer
+AgentinoAgent/install_ReleaseVC17_64.bat
+
+# Server installer
+AgentinoServer/install_ReleaseVC17_64.bat
+
+# Client installer
+AgentinoClient/install_ReleaseVC16_64.bat
 ```
 
 ### Linux/macOS
