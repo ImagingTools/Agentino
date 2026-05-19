@@ -678,20 +678,20 @@ istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::CDependantCo
 
 						*retVal << dependantConnectionInfo;
 
-						QList<imtservice::IServiceConnectionParam::IncomingConnectionParam> incomingConnections = connectionParamPtr->GetIncomingConnections();
+						imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections = connectionParamPtr->GetIncomingConnections();
 
 						for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
 							sdl::agentino::Services::CDependantConnectionInfo::V1_0 incomingConnectionInfo;
-							incomingConnectionInfo.id = incomingConnection.id;
+							incomingConnectionInfo.id = incomingConnection.GetObjectUuid();
 
-							QString incomingHost = incomingConnection.host;
-							int incommingHttpPort = incomingConnection.httpPort;
+							QString incomingHost = incomingConnection.GetHost();
+							int incommingHttpPort = incomingConnection.GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
 							incomingConnectionInfo.name = incomingHost + "/" + QString::number(incommingHttpPort);
 
 							sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam;
 							connectionParam.host = incomingHost;
-							connectionParam.wsPort = incomingConnection.wsPort;
-							connectionParam.httpPort = incomingConnection.httpPort;
+							connectionParam.wsPort = incomingConnection.GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
+							connectionParam.httpPort = incomingConnection.GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
 
 							incomingConnectionInfo.connectionParam = connectionParam;
 

@@ -55,6 +55,7 @@ public:
 
 	// reimplemented (icomp::CComponentBase)
 	virtual void OnComponentCreated() override;
+	virtual void OnComponentDestroyed() override;
 
 public	Q_SLOTS:
 	void OnReadyReadStandardError();
@@ -62,6 +63,7 @@ public	Q_SLOTS:
 
 private:
 	QByteArray GetModuleName(QByteArray servicePath) const;
+	bool SetupService(const QByteArray& serviceId, bool startRequired);
 	void SetupProcess(QProcess& process, const QByteArray& programPath, const QStringList& arguments) const;
 	void UpdateServiceVersion(const QByteArray& serviceId);
 	void OnTimeout();

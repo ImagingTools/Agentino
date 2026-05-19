@@ -125,7 +125,7 @@ SplitView {
 				
 				FieldFilter {
 					id: sourceFilter
-					m_fieldId: "Category"
+					m_fieldId: "Source"
 					m_filterValueType: "String"
 					m_filterOperations: ["Equal"]
 				}

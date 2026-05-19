@@ -24,7 +24,7 @@ target_link_libraries(${PROJECT_NAME} agentinosdl imtauthsdl imtappsdl imtbasesd
 target_link_libraries(${PROJECT_NAME} agentinoqml agentinogql agentgql agentinodata)
 target_link_libraries(${PROJECT_NAME} imtqml imtstyle imtauthgui imtauthgql imtstylecontrolsqml imtgui imtguigql imtlic imtauth imtcrypt)
 target_link_libraries(${PROJECT_NAME} imtcol imtstylecontrolsqml imtcontrolsqml imtdocguiqml imtcolguiqml imtguiqml imtguigqlqml imtauthguiqml imtlicguiqml imtservergql imtserverapp)
-target_link_libraries(${PROJECT_NAME} imtrest imtlicgui imtlicgql imtclientgql imtgql imtauthdb imtdb imtbase imtapp imtfile imtlog imtcom imtcol imtmail)
+target_link_libraries(${PROJECT_NAME} imtrest imtlicgui imtlicgql imtclientgql imtgql imtauthdb imtdb imtbase imtapp imtfile imtlog imtcom imtcol imtmail imtchat)
 target_link_libraries(${PROJECT_NAME} iauth iservice iprm idoc)
 target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::WebSockets)
 target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Sql)

@@ -91,14 +91,7 @@ QJsonObject CMessageCollectionControllerComp::ListObjects(
 	const imtgql::CGqlRequest& gqlRequest,
 	QString &errorMessage) const
 {
-	const imtgql::CGqlParamObject& inputParams = gqlRequest.GetParams();
-
 	QByteArray serviceid = gqlRequest.GetHeader("serviceid");
-	const imtgql::CGqlParamObject* viewParamsGql = nullptr;
-	const imtgql::CGqlParamObject* inputObject = inputParams.GetParamArgumentObjectPtr("input");
-	if (inputObject != nullptr){
-		viewParamsGql = inputObject->GetParamArgumentObjectPtr("viewParams");
-	}
 
 	istd::TUniqueInterfacePtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(serviceid, errorMessage);
 	if (!messageCollectionPtr.IsValid()){
@@ -114,40 +107,55 @@ QJsonObject CMessageCollectionControllerComp::ListObjects(
 
 	iprm::CParamsSet filterParams;
 
-	int offset = 0, count = -1;
+	int offset = 0;
+	int count = -1;
 
-	if (viewParamsGql != nullptr){
-		offset = viewParamsGql->GetParamArgumentValue("offset").toInt();
-		count = viewParamsGql->GetParamArgumentValue("count").toInt();
-		PrepareFilters(gqlRequest, *viewParamsGql, filterParams);
+	const imtgql::CGqlParamObject* inputParamsPtr = gqlRequest.GetParamObject("input");
+	const imtgql::CGqlParamObject* selectionParamsPtr = inputParamsPtr->GetParamArgumentObjectPtr("selectionParams");
+	if (selectionParamsPtr != nullptr){
+		offset = inputParamsPtr->GetParamArgumentValue("offset").toInt();
+		count = inputParamsPtr->GetParamArgumentValue("count").toInt();
+		PrepareFilters(gqlRequest, *selectionParamsPtr, filterParams);
 	}
 
-	int elementsCount = messageCollectionPtr->GetElementsCount(&filterParams);
-
-	int pagesCount = std::ceil(elementsCount / (double)count);
-	if (pagesCount <= 0){
-		pagesCount = 1;
+	if (count == 0){
+		count = -1;
 	}
-
-	QJsonObject notificationObj;
-	notificationObj.insert(QStringLiteral("pagesCount"), pagesCount);
-	notificationObj.insert(QStringLiteral("totalCount"), elementsCount);
 
 	QJsonArray itemsArray;
+	int elementsCount = 0;
+	int pagesCount = 0;
 
 	istd::TDelPtr<imtbase::IObjectCollectionIterator> iterator =
 		messageCollectionPtr->CreateObjectCollectionIterator(QByteArray(), offset, count, &filterParams);
+	if (iterator.IsValid()){
 
-	while (iterator.IsValid() && iterator->Next()){
-		QJsonObject itemObj;
-		if (!SetupGqlItem(gqlRequest, itemObj, iterator.GetPtr(), errorMessage)){
-			SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
+		int elementsCount = iterator->GetElementsCount();
+
+		int pagesCount = std::ceil(elementsCount / (double)count);
+		if (pagesCount <= 0){
+			pagesCount = 1;
 		}
-		itemsArray.append(itemObj);
+
+		const GqlItemSetupContext setupContext = CreateGqlItemSetupContext(gqlRequest, errorMessage);
+		if (!errorMessage.isEmpty()){
+			return QJsonObject();
+		}
+
+		while (iterator.IsValid() && iterator->Next()){
+			QJsonObject itemObj;
+			if (!SetupGqlItemWithContext(gqlRequest, setupContext, itemObj, iterator.GetPtr(), errorMessage)){
+				SendWarningMessage(0, errorMessage, "CMessageCollectionControllerComp");
+			}
+			itemsArray.append(itemObj);
+		}
 	}
 
 	QJsonObject rootObj;
 	QJsonObject dataObj;
+	QJsonObject notificationObj;
+	notificationObj.insert(QStringLiteral("pagesCount"), pagesCount);
+	notificationObj.insert(QStringLiteral("totalCount"), elementsCount);
 	dataObj.insert(QStringLiteral("items"), itemsArray);
 	dataObj.insert(QStringLiteral("notification"), notificationObj);
 	rootObj.insert(QStringLiteral("data"), dataObj);

@@ -54,6 +54,9 @@ bool CAgentMessageCollectionControllerComp::SetupGqlItem(
 				else if(informationId == "timestamp"){
 					elementInformation = messagePtr->GetInformationTimeStamp().toString("dd.MM.yyyy hh:mm:ss.zzz");
 				}
+				else if (informationId == "typeId"){
+					elementInformation = objectCollectionIterator->GetObjectTypeId();
+				}
 
 				if (elementInformation.isNull()){
 					elementInformation = "";
