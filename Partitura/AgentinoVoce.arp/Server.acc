@@ -732,7 +732,7 @@
                     <Element Id="AccountViewDelegate" PackageId="ImtAuthGuiPck" ComponentId="AccountInfoViewDelegate">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
-                                <AttributeInfo Id="DocumentManager" Type="Reference" ExportId="DocumentManager">
+                                <AttributeInfo Id="DocumentService" Type="Reference" ExportId="DocumentService">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="FilePersistence" Type="Reference" ExportId="AccountInfoPersistence">
@@ -807,7 +807,7 @@
                     <Element Id="FeaturePackageViewDelegate" PackageId="ImtLicenseGuiPck" ComponentId="FeaturePackageViewDelegate">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
-                                <AttributeInfo Id="DocumentManager" Type="Reference" ExportId="DocumentManager">
+                                <AttributeInfo Id="DocumentService" Type="Reference" ExportId="DocumentService">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="FilePersistence" Type="Reference" ExportId="FeatureCollectionPersistence">
@@ -919,7 +919,7 @@
                     <Element Id="InstallationViewDelegate" PackageId="ImtLicenseGuiPck" ComponentId="ProductInstanceInfoViewDelegate">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
-                                <AttributeInfo Id="DocumentManager" Type="Reference" ExportId="DocumentManager">
+                                <AttributeInfo Id="DocumentService" Type="Reference" ExportId="DocumentService">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="FilePersistence" Type="Reference" ExportId="ProductInstanceInfoPersistence">
@@ -1085,7 +1085,7 @@
                     <Element Id="ProductViewDelegate" PackageId="ImtLicenseGuiPck" ComponentId="ProductLicensingInfoViewDelegate">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
-                                <AttributeInfo Id="DocumentManager" Type="Reference" ExportId="DocumentManager">
+                                <AttributeInfo Id="DocumentService" Type="Reference" ExportId="DocumentService">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="FilePersistence" Type="Reference" ExportId="ProductLicensingInfoPersistence">

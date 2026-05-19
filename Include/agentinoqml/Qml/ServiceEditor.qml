@@ -801,7 +801,7 @@ ViewBase {
 				SingleDocumentWorkspaceView {
 					id: singleDocumentWorkspaceView
 					anchors.fill: administrationViewItem
-					documentManager: DocumentManager {}
+					documentManager: DocumentService {}
 					
 					visualStatusProvider: GqlBasedObjectVisualStatusProvider {
 						function getHeaders(){
