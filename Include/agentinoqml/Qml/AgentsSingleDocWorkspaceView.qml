@@ -20,7 +20,7 @@ SingleDocumentWorkspaceView {
 		documentManager.registerDocumentView("Agent", agentEditorComp);
 		documentManager.registerDocumentDataController("Agent", agentDataControllerComp);
 		
-		MainDocumentManager.registerDocumentManager("AgentsSingleDocument", documentManager);
+		MainDocumentService.registerDocumentManager("AgentsSingleDocument", documentManager);
 		
 		addInitialItem(agentCollectionViewComp, "Agents");
 	}

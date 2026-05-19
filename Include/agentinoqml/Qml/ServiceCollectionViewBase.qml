@@ -25,10 +25,10 @@ RemoteCollectionView {
 	
 	hasPagination: false
 	
-	property var documentManager: MainDocumentManager.getDocumentManager(root.collectionId);
+	property var documentManager: MainDocumentService.getDocumentManager(root.collectionId);
 	
 	Component.onDestruction: {
-		let documentManagerPtr = MainDocumentManager.getDocumentManager("Agents")
+		let documentManagerPtr = MainDocumentService.getDocumentManager("Agents")
 		if (documentManagerPtr){
 			documentManagerPtr.unRegisterDocumentView("Service" + root.clientId, "ServiceEditor");
 			documentManagerPtr.unRegisterDocumentDataController("Service" + root.clientId);

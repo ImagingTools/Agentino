@@ -39,7 +39,7 @@ DocumentCollectionViewDelegate {
             if (elementsModel.containsKey("id", index)){
                 let itemId = elementsModel.getData("id", index);
 
-                let documentManager = MainDocumentManager.getDocumentManager("AgentsSingleDocument");
+                let documentManager = MainDocumentService.getDocumentManager("AgentsSingleDocument");
                 if (documentManager){
                     documentManager.openDocument(itemId, "Agent", "");
                 }
@@ -48,7 +48,7 @@ DocumentCollectionViewDelegate {
     }
 
     function onNew(){
-        let documentManager = MainDocumentManager.getDocumentManager("AgentsSingleDocument");
+        let documentManager = MainDocumentService.getDocumentManager("AgentsSingleDocument");
         if (documentManager){
             documentManager.insertNewDocument("Agent");
         }
