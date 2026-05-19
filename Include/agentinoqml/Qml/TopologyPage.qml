@@ -16,7 +16,7 @@ ViewBase {
 	anchors.fill: parent;
 	clip: true;
 	
-	property var documentManager: MainDocumentService.getDocumentManager("Topology");
+	property var documentManager: MainDocumentService.getDocumentService("Topology");
 	
 	//for scrollBars
 	property real originX: 0;
@@ -157,7 +157,7 @@ ViewBase {
 		}
 		
 		function goInside(){
-			let documentManager = MainDocumentService.getDocumentManager("Topology");
+			let documentManager = MainDocumentService.getDocumentService("Topology");
 			if (documentManager){
 				if(objectsModel.count > selectedIndex && selectedIndex >= 0){
 					let item = scheme.objectsModel.get(scheme.selectedIndex).item

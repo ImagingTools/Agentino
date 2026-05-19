@@ -1932,9 +1932,9 @@
     </message>
 </context>
 <context>
-    <name>DocumentManager</name>
+    <name>DocumentService</name>
     <message>
-        <location filename="../../../Bin/web/src/imtdocgui/DocumentManager.qml" line="+9"/>
+        <location filename="../../../Bin/web/src/imtdocgui/DocumentService.qml" line="+9"/>
         <source>&lt;no name&gt;</source>
         <translation type="unfinished"></translation>
     </message>

@@ -29,7 +29,7 @@ RemoteCollectionView {
 						let index = indexes[0];
 						let id = root.table.elements.getData("id", index);
 						let name = root.table.elements.getData("computerName", index);
-						let documentManagerPtr = MainDocumentService.getDocumentManager("Agents")
+						let documentManagerPtr = MainDocumentService.getDocumentService("Agents")
 						if (documentManagerPtr){
 							let view = documentManagerPtr.getActiveView();
 							view.addFixedView(singleDocumentWorkspaceView, name, id, true);
@@ -41,7 +41,7 @@ RemoteCollectionView {
 	}
 	
 	Component.onCompleted: {
-		let documentManagerPtr = MainDocumentService.getDocumentManager(root.collectionId)
+		let documentManagerPtr = MainDocumentService.getDocumentService(root.collectionId)
 		if (documentManagerPtr && root.commandsDelegate){
 			root.commandsDelegate.documentManager = documentManagerPtr
 		}
@@ -66,12 +66,12 @@ RemoteCollectionView {
 		SingleDocumentWorkspaceView {
 			id: singleDocumentManager
 			anchors.fill: parent;
-			documentManager: DocumentManager {}
+			documentManager: DocumentService {}
 			visualStatusProvider: GqlBasedObjectVisualStatusProvider {
 				collectionId: "Services"
 			}
 			Component.onCompleted: {
-				MainDocumentService.registerDocumentManager("Services", documentManager);
+				MainDocumentService.registerDocumentService("Services", documentManager);
 				
 				var clientId = root.getSelectedIds()[0];
 				addInitialItem(serviceCollectionViewComp, "");

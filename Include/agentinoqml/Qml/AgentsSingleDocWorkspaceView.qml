@@ -11,7 +11,7 @@ SingleDocumentWorkspaceView {
 	id: root;
 	
 	anchors.fill: parent;
-	documentManager: DocumentManager {}
+	documentManager: DocumentService {}
 	visualStatusProvider: GqlBasedObjectVisualStatusProvider {
 		collectionId: "Agents"
 	}
@@ -20,7 +20,7 @@ SingleDocumentWorkspaceView {
 		documentManager.registerDocumentView("Agent", agentEditorComp);
 		documentManager.registerDocumentDataController("Agent", agentDataControllerComp);
 		
-		MainDocumentService.registerDocumentManager("AgentsSingleDocument", documentManager);
+		MainDocumentService.registerDocumentService("AgentsSingleDocument", documentManager);
 		
 		addInitialItem(agentCollectionViewComp, "Agents");
 	}
