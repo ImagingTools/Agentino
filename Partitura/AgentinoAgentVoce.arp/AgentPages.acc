@@ -148,7 +148,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="SettingsPage" PackageId="ImtQmlPck" ComponentId="PageGuiElementModel">
+        <Element Id="SettingsPage" PackageId="ImtServerAppPck" ComponentId="PageGuiElementModel">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="IconPath" Type="Text" ExportId="">
