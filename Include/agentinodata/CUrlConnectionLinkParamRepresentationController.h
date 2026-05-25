@@ -20,7 +20,7 @@ class CUrlConnectionLinkParamRepresentationController: public imtserverapp::IRep
 protected:
 	virtual QUrl GetDependantConnectionUrl(imtbase::IObjectCollection& objectCollection, const QByteArray& dependantId) const;
 public:
-	// reimplemented (imtrest::IRepresentationController)
+	// reimplemented (imtserverapp::IRepresentationController)
 	virtual QByteArray GetModelId() const override;
 	virtual bool IsModelSupported(const istd::IChangeable& dataModel) const override;
 	virtual bool GetRepresentationFromDataModel(
