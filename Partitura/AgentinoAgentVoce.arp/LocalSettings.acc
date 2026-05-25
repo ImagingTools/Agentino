@@ -124,7 +124,7 @@
     </ElementsList>
     <EmbeddedRegistriesList/>
     <ExportedInterfaces>
-        <Interface InterfaceId="imtrest::IRepresentationController" ComponentId="SettingsRepresentation"/>
+        <Interface InterfaceId="imtserverapp::IRepresentationController" ComponentId="SettingsRepresentation"/>
         <Interface InterfaceId="iprm::IParamsSet" ComponentId="Settings"/>
         <Interface InterfaceId="iser::ISerializable" ComponentId="Settings"/>
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="Settings"/>

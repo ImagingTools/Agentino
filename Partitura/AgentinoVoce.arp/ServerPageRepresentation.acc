@@ -270,7 +270,7 @@
     </ElementsList>
     <EmbeddedRegistriesList/>
     <ExportedInterfaces>
-        <Interface InterfaceId="imtrest::IRepresentationController" ComponentId="SettingsRepresentation"/>
+        <Interface InterfaceId="imtserverapp::IRepresentationController" ComponentId="SettingsRepresentation"/>
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="SettingsRepresentation"/>
     </ExportedInterfaces>
     <ExportedComponents/>
