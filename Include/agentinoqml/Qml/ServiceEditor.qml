@@ -17,13 +17,32 @@ ViewBase {
 		let ok = PermissionsController.checkPermission("ChangeService");
 		serviceEditorContainer.readOnly = !ok;
 		tabPanel.addTab("General", qsTr("General"), mainEditorComp);
+		tabPanel.addTab("Settings", qsTr("Settings"), settingsEditorComp);
 	}
 	
 	signal loadPlugin()
+	signal loadSettings()
+	signal saveSettings(string content)
 	
 	property bool serviceRunning: false
 	property bool pluginLoaded: false
 	property string pluginServicePath: ""
+	
+	property bool settingsFileExists: false
+	property string settingsPath: ""
+	
+	function setSettings(content, exists, path){
+		settingsFileExists = exists;
+		settingsPath = path;
+		let index = tabPanel.getIndexById("Settings");
+		if (index < 0){
+			return;
+		}
+		let item = tabPanel.getTabByIndex(index);
+		if (item){
+			item.setContent(content);
+		}
+	}
 	
 	property string serviceTypeId: serviceData ? serviceData.m_serviceTypeId : ""
 	onServiceTypeIdChanged: {
@@ -829,6 +848,119 @@ ViewBase {
 			}
 			
 			
+		}
+	}
+	Component {
+		id: settingsEditorComp;
+		
+		Item {
+			id: settingsViewItem
+			anchors.fill: parent;
+			
+			function setContent(content){
+				settingsTextEdit.text = content;
+			}
+			
+			function getContent(){
+				return settingsTextEdit.text;
+			}
+			
+			Column {
+				id: settingsHeaderColumn
+				anchors.left: parent.left
+				anchors.leftMargin: Style.marginXL
+				anchors.right: parent.right
+				anchors.rightMargin: Style.marginXL
+				anchors.top: parent.top
+				anchors.topMargin: Style.marginXL
+				spacing: Style.marginM
+				
+				GroupHeaderView {
+					title: qsTr("Settings")
+					width: parent.width
+				}
+				
+				BaseText {
+					width: parent.width
+					wrapMode: Text.WordWrap
+					text: serviceEditorContainer.settingsPath !== ""
+						? (serviceEditorContainer.settingsFileExists
+							? qsTr("Settings file: ") + serviceEditorContainer.settingsPath
+							: qsTr("Settings file does not exist yet: ") + serviceEditorContainer.settingsPath)
+						: qsTr("No settings file is configured for this service")
+				}
+				
+				Row {
+					spacing: Style.marginM
+					
+					Button {
+						id: loadSettingsButton
+						width: 100
+						height: 32
+						text: qsTr("Load")
+						onClicked: {
+							serviceEditorContainer.loadSettings()
+						}
+					}
+					
+					Button {
+						id: saveSettingsButton
+						width: 100
+						height: 32
+						text: qsTr("Save")
+						enabled: !serviceEditorContainer.readOnly
+						onClicked: {
+							serviceEditorContainer.saveSettings(settingsViewItem.getContent())
+						}
+					}
+				}
+			}
+			
+			Rectangle {
+				anchors.left: parent.left
+				anchors.leftMargin: Style.marginXL
+				anchors.right: parent.right
+				anchors.rightMargin: Style.marginXL
+				anchors.top: settingsHeaderColumn.bottom
+				anchors.topMargin: Style.marginM
+				anchors.bottom: parent.bottom
+				anchors.bottomMargin: Style.marginXL
+				
+				color: Style.backgroundColor2
+				border.color: Style.borderColor
+				border.width: 1
+				clip: true
+				
+				Flickable {
+					id: settingsFlickable
+					anchors.fill: parent
+					anchors.margins: Style.marginS
+					contentWidth: width
+					contentHeight: settingsTextEdit.contentHeight
+					boundsBehavior: Flickable.StopAtBounds
+					clip: true
+					
+					TextEdit {
+						id: settingsTextEdit
+						width: settingsFlickable.width
+						readOnly: serviceEditorContainer.readOnly
+						selectByMouse: true
+						wrapMode: TextEdit.NoWrap
+						font.family: "Courier New"
+						font.pixelSize: Style.fontSizeM
+						color: Style.textColor
+						
+						onCursorRectangleChanged: {
+							if (cursorRectangle.y + cursorRectangle.height > settingsFlickable.contentY + settingsFlickable.height){
+								settingsFlickable.contentY = cursorRectangle.y + cursorRectangle.height - settingsFlickable.height
+							}
+							else if (cursorRectangle.y < settingsFlickable.contentY){
+								settingsFlickable.contentY = cursorRectangle.y
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 }//serviceEditorContainer

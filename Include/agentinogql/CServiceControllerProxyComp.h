@@ -74,6 +74,14 @@ protected:
 		const sdl::agentino::Services::CLoadPluginGqlRequest& loadPluginRequest,
 		const ::imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage) const override;
+	virtual sdl::agentino::Services::CServiceSettingsPayload OnGetServiceSettings(
+		const sdl::agentino::Services::CGetServiceSettingsGqlRequest& getServiceSettingsRequest,
+		const ::imtgql::CGqlRequest& gqlRequest,
+		QString& errorMessage) const override;
+	virtual sdl::agentino::Services::CServiceSettingsPayload OnUpdateServiceSettings(
+		const sdl::agentino::Services::CUpdateServiceSettingsGqlRequest& updateServiceSettingsRequest,
+		const ::imtgql::CGqlRequest& gqlRequest,
+		QString& errorMessage) const override;
 
 	// reimplemented (imtgql::CGqlRequestHandlerCompBase)
 	virtual QJsonObject CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;

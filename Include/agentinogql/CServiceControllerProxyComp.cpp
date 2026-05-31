@@ -427,6 +427,46 @@ sdl::agentino::Services::CPluginInfo CServiceControllerProxyComp::OnLoadPlugin(
 }
 
 
+sdl::agentino::Services::CServiceSettingsPayload CServiceControllerProxyComp::OnGetServiceSettings(
+			const sdl::agentino::Services::CGetServiceSettingsGqlRequest& getServiceSettingsRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
+{
+	sdl::agentino::Services::GetServiceSettingsRequestArguments arguments = getServiceSettingsRequest.GetRequestedArguments();
+	if (!arguments.input.Version_1_0.has_value()){
+		return sdl::agentino::Services::CServiceSettingsPayload();
+	}
+
+	sdl::agentino::Services::CServiceSettingsPayload retVal = SendModelRequest<sdl::agentino::Services::CServiceSettingsPayload>(gqlRequest, errorMessage);
+	if (!errorMessage.isEmpty()){
+		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
+		return sdl::agentino::Services::CServiceSettingsPayload();
+	}
+
+	return retVal;
+}
+
+
+sdl::agentino::Services::CServiceSettingsPayload CServiceControllerProxyComp::OnUpdateServiceSettings(
+			const sdl::agentino::Services::CUpdateServiceSettingsGqlRequest& updateServiceSettingsRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
+{
+	sdl::agentino::Services::UpdateServiceSettingsRequestArguments arguments = updateServiceSettingsRequest.GetRequestedArguments();
+	if (!arguments.input.Version_1_0.has_value()){
+		return sdl::agentino::Services::CServiceSettingsPayload();
+	}
+
+	sdl::agentino::Services::CServiceSettingsPayload retVal = SendModelRequest<sdl::agentino::Services::CServiceSettingsPayload>(gqlRequest, errorMessage);
+	if (!errorMessage.isEmpty()){
+		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
+		return sdl::agentino::Services::CServiceSettingsPayload();
+	}
+
+	return retVal;
+}
+
+
 // reimplemented (sdl::agentino::Services::CGraphQlHandlerCompBase)
 
 QJsonObject CServiceControllerProxyComp::CreateInternalResponse(
@@ -503,6 +543,26 @@ QJsonObject CServiceControllerProxyComp::CreateInternalResponse(
 			errorMessage,
 			[&](const auto& req, const auto& gqlReq, QString& err){
 				return OnLoadPlugin(req, gqlReq, err);
+			});
+	}
+	if (sdl::agentino::Services::CGetServiceSettingsGqlRequest::GetCommandId() == commandId){
+		return CreateResponse<
+			sdl::agentino::Services::CGetServiceSettingsGqlRequest,
+			sdl::agentino::Services::CServiceSettingsPayload>(
+			gqlRequest,
+			errorMessage,
+			[&](const auto& req, const auto& gqlReq, QString& err){
+				return OnGetServiceSettings(req, gqlReq, err);
+			});
+	}
+	if (sdl::agentino::Services::CUpdateServiceSettingsGqlRequest::GetCommandId() == commandId){
+		return CreateResponse<
+			sdl::agentino::Services::CUpdateServiceSettingsGqlRequest,
+			sdl::agentino::Services::CServiceSettingsPayload>(
+			gqlRequest,
+			errorMessage,
+			[&](const auto& req, const auto& gqlReq, QString& err){
+				return OnUpdateServiceSettings(req, gqlReq, err);
 			});
 	}
 
