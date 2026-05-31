@@ -2956,6 +2956,42 @@
     </message>
 </context>
 <context>
+    <name>AgentCollectionViewBase</name>
+    <message>
+        <location filename="../../../Include/agentinoqml/Qml/AgentCollectionViewBase.qml" line="+34"/>
+        <source>Terminal</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TerminalView</name>
+    <message>
+        <location filename="../../../Include/agentinoqml/Qml/TerminalView.qml" line="+74"/>
+        <source>Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Clear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Type a command and press Enter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Send</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>UserCollectionView</name>
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/UserCollectionView.qml" line="+88"/>

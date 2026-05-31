@@ -36,6 +36,19 @@ RemoteCollectionView {
 						}
 					}
 				}
+				else if (commandId === "Terminal"){
+					let indexes = root.table.getSelectedIndexes();
+					if (indexes.length > 0){
+						let index = indexes[0];
+						let id = root.table.elements.getData("id", index);
+						let name = root.table.elements.getData("computerName", index);
+						let documentManagerPtr = MainDocumentService.getDocumentService("Agents")
+						if (documentManagerPtr){
+							let view = documentManagerPtr.getActiveView();
+							view.addFixedView(terminalWorkspaceView, qsTr("Terminal") + " - " + name, "terminal_" + id, true);
+						}
+					}
+				}
 			}
 		}
 	}
@@ -86,6 +99,15 @@ RemoteCollectionView {
 			Component.onCompleted: {
 				clientId = root.getSelectedIds()[0];
 			}
+		}
+	}
+	
+	Component {
+		id: terminalWorkspaceView
+		
+		TerminalView {
+			anchors.fill: parent;
+			agentId: root.getSelectedIds()[0];
 		}
 	}
 	
