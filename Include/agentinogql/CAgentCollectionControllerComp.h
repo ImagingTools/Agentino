@@ -12,7 +12,7 @@
 
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
-#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Agents.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Agents_fwd.h>
 
 
 #undef GetObject
@@ -22,11 +22,11 @@ namespace agentinogql
 {
 
 
-class CAgentCollectionControllerComp: public QObject, public imtclientgql::TClientRequestManagerCompWrap<sdl::agentino::Agents::CAgentCollectionControllerCompBase>
+class CAgentCollectionControllerComp: public QObject, public imtclientgql::TClientRequestManagerCompWrap<sdl::V1_0::agentino::CAgentCollectionControllerCompBase>
 {
 	Q_OBJECT
 public:
-	typedef imtclientgql::TClientRequestManagerCompWrap<sdl::agentino::Agents::CAgentCollectionControllerCompBase> BaseClass;
+	typedef imtclientgql::TClientRequestManagerCompWrap<sdl::V1_0::agentino::CAgentCollectionControllerCompBase> BaseClass;
 
 	I_BEGIN_COMPONENT(CAgentCollectionControllerComp);
 		I_ASSIGN(m_agentFactCompPtr, "AgentFactory", "Factory used for creation of the new agent instance", true, "AgentFactory");
@@ -38,20 +38,20 @@ protected:
 	// reimplemented (icomp::CComponentBase)
 	virtual void OnComponentCreated() override;
 	
-	// reimplemented (sdl::agentino::Agents::CAgentCollectionControllerCompBase)
+	// reimplemented (sdl::V1_0::agentino::CAgentCollectionControllerCompBase)
 	virtual bool CreateRepresentationFromObject(
 				const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
-				const sdl::agentino::Agents::CAgentsListGqlRequest& agentsListRequest,
-				sdl::agentino::Agents::CAgentItem::V1_0& representationObject,
+				const sdl::V1_0::agentino::CAgentsListGqlRequest& agentsListRequest,
+				sdl::V1_0::agentino::CAgentItem& representationObject,
 				QString& errorMessage) const override;
 	virtual bool CreateRepresentationFromObject(
 				const istd::IChangeable& data,
-				const sdl::agentino::Agents::CGetAgentGqlRequest& agentItemRequest,
-				sdl::agentino::Agents::CAgentData::V1_0& representationPayload,
+				const sdl::V1_0::agentino::CGetAgentGqlRequest& agentItemRequest,
+				sdl::V1_0::agentino::CAgentData& representationPayload,
 				QString& errorMessage) const override;
 	virtual bool UpdateObjectFromRepresentationRequest(
 				const ::imtgql::CGqlRequest& rawGqlRequest,
-				const sdl::agentino::Agents::CUpdateAgentGqlRequest& updateAgentRequest,
+				const sdl::V1_0::agentino::CUpdateAgentGqlRequest& updateAgentRequest,
 				istd::IChangeable& object,
 				QString& errorMessage) const override;
 

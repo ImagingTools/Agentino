@@ -7,14 +7,14 @@
 
 // Agentino includes
 #include <agentinodata/CServiceCompositeInfoComp.h>
-#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Topology.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Topology_fwd.h>
 
 
 namespace agentinogql
 {
 
 
-class CTopologyControllerComp: public sdl::agentino::Topology::CGraphQlHandlerCompBase
+class CTopologyControllerComp: public sdl::V1_0::agentino::CTopologyGqlHandlerCompBase
 {
 public:
 	typedef imtservergql::CGqlRequestHandlerCompBase BaseClass;
@@ -25,13 +25,13 @@ public:
 		I_ASSIGN(m_serviceCompositeInfoCompPtr, "ServiceCompositeInfo", "Service composite info", true, "ServiceCompositeInfo");
 	I_END_COMPONENT;
 	
-	// reimplemented (sdl::agentino::Topology::CGraphQlHandlerCompBase)
-	virtual sdl::agentino::Topology::CTopology OnGetTopology(
-				const sdl::agentino::Topology::CGetTopologyGqlRequest& getTopologyRequest,
+	// reimplemented (sdl::V1_0::agentino::CTopologyGqlHandlerCompBase)
+	virtual sdl::V1_0::agentino::CTopology OnGetTopology(
+				const sdl::V1_0::agentino::CGetTopologyGqlRequest& getTopologyRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-	virtual sdl::agentino::Topology::CSaveTopologyResponse OnSaveTopology(
-				const sdl::agentino::Topology::CSaveTopologyGqlRequest& saveTopologyRequest,
+	virtual sdl::V1_0::agentino::CSaveTopologyResponse OnSaveTopology(
+				const sdl::V1_0::agentino::CSaveTopologyGqlRequest& saveTopologyRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
 

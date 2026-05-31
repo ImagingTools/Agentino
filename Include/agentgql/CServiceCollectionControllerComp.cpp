@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentgql/CServiceCollectionControllerComp.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtCollection.h>
 
 
 // Windows includes
@@ -30,21 +32,19 @@ namespace agentgql
 {
 
 
-// reimplemented (sdl::imtbase::ImtCollection::CGraphQlHandlerCompBase)
+// reimplemented (sdl::V1_0::imtbase::CImtCollectionGqlHandlerCompBase)
 
-sdl::imtbase::ImtCollection::CVisualStatus CServiceCollectionControllerComp::OnGetObjectVisualStatus(
-	const sdl::imtbase::ImtCollection::CGetObjectVisualStatusGqlRequest& getObjectVisualStatusRequest,
+sdl::V1_0::imtbase::CVisualStatus CServiceCollectionControllerComp::OnGetObjectVisualStatus(
+	const sdl::V1_0::imtbase::CGetObjectVisualStatusGqlRequest& getObjectVisualStatusRequest,
 	const ::imtgql::CGqlRequest& gqlRequest,
 	QString& errorMessage) const
 {
-	sdl::imtbase::ImtCollection::CVisualStatus retVal = BaseClass::OnGetObjectVisualStatus(getObjectVisualStatusRequest, gqlRequest, errorMessage);
-	if (!retVal.Version_1_0){
-		I_CRITICAL();
-		
+	sdl::V1_0::imtbase::CVisualStatus retVal = BaseClass::OnGetObjectVisualStatus(getObjectVisualStatusRequest, gqlRequest, errorMessage);
+	if (!errorMessage.isEmpty()){
 		return retVal;
 	}
 	
-	sdl::imtbase::ImtCollection::CVisualStatus::V1_0& response = *retVal.Version_1_0;
+	sdl::V1_0::imtbase::CVisualStatus& response = retVal;
 	
 	if (response.objectId){
 		imtbase::IObjectCollection::Ids elementIds = m_objectCollectionCompPtr->GetElementIds();
@@ -80,12 +80,12 @@ sdl::imtbase::ImtCollection::CVisualStatus CServiceCollectionControllerComp::OnG
 }
 
 
-// reimplemented (sdl::agentino::Services::CServiceCollectionControllerCompBase)
+// reimplemented (sdl::V1_0::agentino::CServiceCollectionControllerCompBase)
 
 bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 	const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
-	const sdl::agentino::Services::CServicesListGqlRequest& servicesListRequest,
-	sdl::agentino::Services::CServiceItem::V1_0& representationObject,
+	const sdl::V1_0::agentino::CServicesListGqlRequest& servicesListRequest,
+	sdl::V1_0::agentino::CServiceItem& representationObject,
 	QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
@@ -107,7 +107,7 @@ bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 		return false;
 	}
 	
-	sdl::agentino::Services::ServicesListRequestInfo requestInfo = servicesListRequest.GetRequestInfo();
+	sdl::V1_0::agentino::ServicesListRequestInfo requestInfo = servicesListRequest.GetRequestInfo();
 	if (requestInfo.items.isIdRequested){
 		representationObject.id = objectId;
 	}
@@ -146,17 +146,17 @@ bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 
 bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 	const istd::IChangeable& data,
-	const sdl::agentino::Services::CGetServiceGqlRequest& getServiceRequest,
-	sdl::agentino::Services::CServiceData::V1_0& serviceData,
+	const sdl::V1_0::agentino::CGetServiceGqlRequest& getServiceRequest,
+	sdl::V1_0::agentino::CServiceData& serviceData,
 	QString& errorMessage) const
 {
-	sdl::agentino::Services::GetServiceRequestArguments arguments = getServiceRequest.GetRequestedArguments();
-	if (!arguments.input.Version_1_0.has_value()){
+	sdl::V1_0::agentino::GetServiceRequestArguments arguments = getServiceRequest.GetRequestedArguments();
+	if (!arguments.input.has_value()){
 		Q_ASSERT(false);
 		return false;
 	}
 	
-	if (!arguments.input.Version_1_0->id.has_value()){
+	if (!arguments.input->id.has_value()){
 		Q_ASSERT(false);
 		return false;
 	}
@@ -174,7 +174,7 @@ bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 		return false; 
 	}
 	
-	QByteArray objectId = *arguments.input.Version_1_0->id;
+	QByteArray objectId = *arguments.input->id;
 	
 	if (m_serviceControllerCompPtr.IsValid()){
 		agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(objectId);
@@ -189,7 +189,7 @@ bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 
 
 istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRepresentation(
-	const sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation,
+	const sdl::V1_0::agentino::CServiceData& serviceDataRepresentation,
 	QByteArray& newObjectId,
 	QString& errorMessage) const
 {
@@ -305,7 +305,7 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 
 bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 			const ::imtgql::CGqlRequest& /*rawGqlRequest*/,
-			const sdl::agentino::Services::CUpdateServiceGqlRequest& updateServiceRequest,
+			const sdl::V1_0::agentino::CUpdateServiceGqlRequest& updateServiceRequest,
 			istd::IChangeable& object,
 			QString& errorMessage) const
 {
@@ -315,20 +315,20 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 		return false;
 	}
 	
-	sdl::agentino::Services::UpdateServiceRequestArguments arguments = updateServiceRequest.GetRequestedArguments();
-	if (!arguments.input.Version_1_0){
+	sdl::V1_0::agentino::UpdateServiceRequestArguments arguments = updateServiceRequest.GetRequestedArguments();
+	if (!arguments.input){
 		I_CRITICAL();
 
 		return false;
 	}
 	
-	if (!arguments.input.Version_1_0->id.has_value()){
+	if (!arguments.input->id.has_value()){
 		I_CRITICAL();
 
 		return false;
 	}
 	
-	if (!arguments.input.Version_1_0->item.has_value()){
+	if (!arguments.input->item.has_value()){
 		I_CRITICAL();
 
 		return false;
@@ -341,8 +341,8 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 		return false;
 	}
 	
-	QByteArray objectId = *arguments.input.Version_1_0->id;
-	sdl::agentino::Services::CServiceData::V1_0 serviceData = *arguments.input.Version_1_0->item;
+	QByteArray objectId = *arguments.input->id;
+	sdl::V1_0::agentino::CServiceData serviceData = *arguments.input->item;
 	
 	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, serviceData, errorMessage)){
 		errorMessage = QString("Unable to update service from representation. Error: %1").arg(errorMessage);

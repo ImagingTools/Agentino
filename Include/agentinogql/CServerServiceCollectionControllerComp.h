@@ -27,8 +27,8 @@ protected:
 	QStringList GetConnectionInfoAboutServiceDepends(const QByteArray& connectionId) const;
 	istd::TSharedInterfacePtr<imtcom::IServerConnectionInterface> GetConnectionInfo(const QByteArray& connectionId) const;
 
-	virtual sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload OnGetElementMetaInfo(
-				const sdl::imtbase::ImtCollection::CGetElementMetaInfoGqlRequest& getElementMetaInfoRequest,
+	virtual sdl::V1_0::imtbase::CGetElementMetaInfoPayload OnGetElementMetaInfo(
+				const sdl::V1_0::imtbase::CGetElementMetaInfoGqlRequest& getElementMetaInfoRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
 

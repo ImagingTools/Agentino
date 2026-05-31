@@ -13,8 +13,8 @@
 #include <agentinodata/CServiceStatusInfo.h>
 #include <imtclientgql/CGqlRemoteRepresentationControllerCompBase.h>
 
-#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtBaseTypes.h>
-#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtBaseTypes_fwd.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services_fwd.h>
 
 
 namespace agentinogql
@@ -23,11 +23,11 @@ namespace agentinogql
 
 class CServiceControllerProxyComp:
 			public imtclientgql::TClientRequestManagerCompWrap<
-										sdl::agentino::Services::CGraphQlHandlerCompBase>
+										sdl::V1_0::agentino::CServicesGqlHandlerCompBase>
 {
 public:
 	typedef imtclientgql::TClientRequestManagerCompWrap<
-		sdl::agentino::Services::CGraphQlHandlerCompBase> BaseClass;
+		sdl::V1_0::agentino::CServicesGqlHandlerCompBase> BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceControllerProxyComp);
 		I_ASSIGN(m_serviceManagerCompPtr, "ServiceManager", "ServceManager", true, "ServiceManager");
@@ -36,42 +36,42 @@ public:
 	I_END_COMPONENT;
 
 protected:
-	virtual sdl::agentino::Services::CServiceData OnGetService(
-		const sdl::agentino::Services::CGetServiceGqlRequest& getServiceRequest,
+	virtual sdl::V1_0::agentino::CServiceData OnGetService(
+		const sdl::V1_0::agentino::CGetServiceGqlRequest& getServiceRequest,
 		const ::imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage) const;
-	virtual sdl::imtbase::ImtCollection::CUpdatedNotificationPayload OnUpdateService(
-		const sdl::agentino::Services::CUpdateServiceGqlRequest& updateServiceRequest,
+	virtual sdl::V1_0::imtbase::CUpdatedNotificationPayload OnUpdateService(
+		const sdl::V1_0::agentino::CUpdateServiceGqlRequest& updateServiceRequest,
 		const ::imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage) const;
-	virtual sdl::imtbase::ImtCollection::CAddedNotificationPayload OnAddService(
-		const sdl::agentino::Services::CAddServiceGqlRequest& addServiceRequest,
+	virtual sdl::V1_0::imtbase::CAddedNotificationPayload OnAddService(
+		const sdl::V1_0::agentino::CAddServiceGqlRequest& addServiceRequest,
 		const ::imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage) const;
 	
-	// reimplemented (sdl::agentino::Services::CGraphQlHandlerCompBase)
-	virtual sdl::agentino::Services::CServiceStatusResponse OnStartService(
-		const sdl::agentino::Services::CStartServiceGqlRequest& startServiceRequest,
+	// reimplemented (sdl::V1_0::agentino::CServicesGqlHandlerCompBase)
+	virtual sdl::V1_0::agentino::CServiceStatusResponse OnStartService(
+		const sdl::V1_0::agentino::CStartServiceGqlRequest& startServiceRequest,
 		const ::imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage) const override;
-	virtual sdl::agentino::Services::CServiceStatusResponse OnStopService(
-		const sdl::agentino::Services::CStopServiceGqlRequest& stopServiceRequest,
+	virtual sdl::V1_0::agentino::CServiceStatusResponse OnStopService(
+		const sdl::V1_0::agentino::CStopServiceGqlRequest& stopServiceRequest,
 		const ::imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage) const override;
-	virtual sdl::imtbase::ImtCollection::CRemovedNotificationPayload OnServicesRemove(
-		const sdl::agentino::Services::CServicesRemoveGqlRequest& removeServiceRequest,
+	virtual sdl::V1_0::imtbase::CRemovedNotificationPayload OnServicesRemove(
+		const sdl::V1_0::agentino::CServicesRemoveGqlRequest& removeServiceRequest,
 		const ::imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage) const override;
-	virtual sdl::agentino::Services::CServiceStatusResponse OnGetServiceStatus(
-		const sdl::agentino::Services::CGetServiceStatusGqlRequest& getServiceStatusRequest,
+	virtual sdl::V1_0::agentino::CServiceStatusResponse OnGetServiceStatus(
+		const sdl::V1_0::agentino::CGetServiceStatusGqlRequest& getServiceStatusRequest,
 		const ::imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage) const override;
-	virtual sdl::agentino::Services::CUpdateConnectionUrlResponse OnUpdateConnectionUrl(
-		const sdl::agentino::Services::CUpdateConnectionUrlGqlRequest& updateConnectionUrlRequest,
+	virtual sdl::V1_0::agentino::CUpdateConnectionUrlResponse OnUpdateConnectionUrl(
+		const sdl::V1_0::agentino::CUpdateConnectionUrlGqlRequest& updateConnectionUrlRequest,
 		const ::imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage) const override;
-	virtual sdl::agentino::Services::CPluginInfo OnLoadPlugin(
-		const sdl::agentino::Services::CLoadPluginGqlRequest& loadPluginRequest,
+	virtual sdl::V1_0::agentino::CPluginInfo OnLoadPlugin(
+		const sdl::V1_0::agentino::CLoadPluginGqlRequest& loadPluginRequest,
 		const ::imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage) const override;
 
@@ -85,27 +85,27 @@ private:
 		QString& errorMessage,
 		std::function<SdlResponse(const SdlGqlRequest&, const imtgql::CGqlRequest&, QString&)> func) const;
 	bool SetServiceStatus(const QByteArray& serviceId, agentinodata::IServiceStatusInfo::ServiceStatus status) const;
-	bool SetServiceStatus(const QByteArray& serviceId, sdl::agentino::Services::ServiceStatus status) const;
-	istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::CDependantConnectionInfo::V1_0>> GetConnectionsModel(const QByteArray& connectionUsageId) const;
+	bool SetServiceStatus(const QByteArray& serviceId, sdl::V1_0::agentino::ServiceStatus status) const;
+	istd::TSharedNullable<imtsdl::TElementList<sdl::V1_0::agentino::CDependantConnectionInfo>> GetConnectionsModel(const QByteArray& connectionUsageId) const;
 	bool GetConnectionObjectData(
 		const imtbase::IObjectCollection::Id& connectionId,
 		imtbase::IObjectCollection::DataPtr& connectionDataPtr) const;
-	void UpdateUrlFromDependantConnection(sdl::agentino::Services::CServiceData::V1_0& serviceData) const;
+	void UpdateUrlFromDependantConnection(sdl::V1_0::agentino::CServiceData& serviceData) const;
 	istd::TSharedInterfacePtr<imtcom::CServerConnectionInterfaceParam> GetDependantServerConnectionParam(const QByteArray& dependantId) const;
 
-	sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 GetServerConnectionParam(
-		const sdl::agentino::Services::CServiceData::V1_0& serviceData,
+	sdl::V1_0::imtbase::CServerConnectionParam GetServerConnectionParam(
+		const sdl::V1_0::agentino::CServiceData& serviceData,
 		const QByteArray& connectionId) const;
 	
 	QByteArrayList GetChangedConnectionUrl(
-		const sdl::agentino::Services::CServiceData::V1_0& serviceData1,
-		const sdl::agentino::Services::CServiceData::V1_0& serviceData2) const;
+		const sdl::V1_0::agentino::CServiceData& serviceData1,
+		const sdl::V1_0::agentino::CServiceData& serviceData2) const;
 	QByteArrayList GetServiceIdsByDependantId(const QByteArray& dependantId) const;
 	bool UpdateConnectionForService(
 		const QByteArray& serviceId,
 		const QByteArray& agentId,
 		const QByteArray& connectionId,
-		const sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0& connectionParam) const;
+		const sdl::V1_0::imtbase::CServerConnectionParam& connectionParam) const;
 	
 protected:
 	I_REF(agentinodata::IServiceManager, m_serviceManagerCompPtr);
