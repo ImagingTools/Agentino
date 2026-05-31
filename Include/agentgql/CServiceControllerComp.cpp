@@ -403,21 +403,21 @@ QString CServiceControllerComp::GetServiceSettingsFilePath(const QByteArray& ser
 	}
 
 	if (serviceInfoPtr == nullptr){
-		errorMessage = QString("Service '%1' was not found").arg(qPrintable(QString::fromUtf8(serviceId)));
+		errorMessage = QString("Service '%1' was not found").arg(QString::fromUtf8(serviceId));
 
 		return QString();
 	}
 
 	QByteArray settingsPath = serviceInfoPtr->GetServiceSettingsPath();
 	if (settingsPath.isEmpty()){
-		errorMessage = QString("Service '%1' has no settings path configured").arg(qPrintable(QString::fromUtf8(serviceId)));
+		errorMessage = QString("Service '%1' has no settings path configured").arg(QString::fromUtf8(serviceId));
 
 		return QString();
 	}
 
 	QByteArray servicePath = serviceInfoPtr->GetServicePath();
 	if (servicePath.isEmpty()){
-		errorMessage = QString("Service '%1' has no path configured").arg(qPrintable(QString::fromUtf8(serviceId)));
+		errorMessage = QString("Service '%1' has no path configured").arg(QString::fromUtf8(serviceId));
 
 		return QString();
 	}
