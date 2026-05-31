@@ -8,7 +8,6 @@
 
 // ImtCore includes
 #include <imtgql/CGqlResponse.h>
-#include <imtgql/CGqlContext.h>
 #include <imtbase/IObjectCollection.h>
 #include <imtservice/CUrlConnectionParam.h>
 #include <imtbase/CUrlParam.h>
@@ -50,11 +49,6 @@ QJsonObject CAgentGqlRemoteRepresentationControllerComp::CreateInternalResponse(
 	}
 
 	QByteArray serviceId = gqlRequestPtr->GetHeader("serviceid");
-	QByteArray token = gqlRequestPtr->GetHeader("token");
-	imtgql::IGqlContext* gqlContext = const_cast<imtgql::IGqlContext*>(gqlRequestPtr->GetRequestContext());
-	if (gqlContext != nullptr){
-		gqlContext->SetToken(token);
-	}
 
 	QUrl url;
 	QByteArray serviceTypeName;

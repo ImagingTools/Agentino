@@ -14,7 +14,6 @@
 
 // ImtCore includes
 #include <imtbase/CCollectionFilter.h>
-#include <imtauth/ICompanyBaseInfo.h>
 #include <imtbase/IObjectCollectionIterator.h>
 #include <imtdb/CSqlDatabaseObjectCollectionComp.h>
 #include <imtservice/CUrlConnectionParam.h>
