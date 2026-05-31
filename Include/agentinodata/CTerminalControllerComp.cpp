@@ -222,7 +222,7 @@ void CTerminalControllerComp::OnComponentCreated()
 {
 	BaseClass::OnComponentCreated();
 
-	m_idleTimer.setInterval(30000);
+	m_idleTimer.setInterval(IdleCheckIntervalMs);
 	connect(&m_idleTimer, &QTimer::timeout, this, &CTerminalControllerComp::OnIdleTimeout);
 	m_idleTimer.start();
 }
@@ -396,6 +396,7 @@ bool CTerminalControllerComp::ResolveShellProgram(ShellType shellType, QString& 
 		if (program.isEmpty() && QFileInfo::exists(QStringLiteral("/bin/sh"))){
 			program = QStringLiteral("/bin/sh");
 		}
+		// Interactive mode keeps the prompt and reads commands from standard input.
 		if (!program.isEmpty()){
 			arguments << QStringLiteral("-i");
 		}

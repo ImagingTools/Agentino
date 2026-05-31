@@ -81,6 +81,10 @@
                                 <Dependencies/>
                                 <SubFeatures/>
                             </Object>
+                            <Object FeatureId="RemoteTerminal" FeatureName="Remote Terminal" FeatureDescription="Open an interactive remote shell (cmd/PowerShell/bash) on a managed agent" Optional="false">
+                                <Dependencies/>
+                                <SubFeatures/>
+                            </Object>
                         </SubFeatures>
                     </Object>
                     <Object FeatureId="TopologyManagement" FeatureName="Topology Management" FeatureDescription="" Optional="false">

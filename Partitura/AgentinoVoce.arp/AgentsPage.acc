@@ -378,7 +378,7 @@
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>ViewServices</Value>
+                                            <Value>RemoteTerminal</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>

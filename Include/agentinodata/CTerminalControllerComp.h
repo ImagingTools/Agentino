@@ -100,6 +100,8 @@ private:
 	static const int MaxInputLength = 16 * 1024;
 	/** Session is auto-closed after this period of inactivity, in seconds. */
 	static const int IdleTimeoutSeconds = 15 * 60;
+	/** Interval at which idle sessions are checked, in milliseconds. */
+	static const int IdleCheckIntervalMs = 30000;
 
 	QMap<QByteArray, Session*> m_sessionMap;
 	QTimer m_idleTimer;

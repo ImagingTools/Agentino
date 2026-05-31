@@ -159,8 +159,9 @@ Rectangle {
 
 				function submit(){
 					if (text.length > 0){
+						// Interactive shells echo their own input, so do not echo
+						// locally to avoid duplicated command lines in the output.
 						controller.sendInput(text + "\n");
-						root.appendOutput(text + "\n");
 						text = "";
 					}
 				}

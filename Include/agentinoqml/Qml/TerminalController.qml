@@ -75,8 +75,15 @@ QtObject {
 		outputModel.poll(root.sessionId, root.nextSequence);
 	}
 
+	// Interval (ms) at which the UI polls the agent for new terminal output.
+	property int pollIntervalMs: 400;
+
+	// Exit code reported when a session is closed manually by the operator
+	// (as opposed to the shell process finishing on its own).
+	readonly property int manualCloseExitCode: -1;
+
 	property Timer pollTimer: Timer {
-		interval: 400;
+		interval: root.pollIntervalMs;
 		repeat: true;
 		running: root.sessionId.length > 0;
 		onTriggered: root.pollOutput();
@@ -155,9 +162,8 @@ QtObject {
 		onStateChanged: {
 			if (this.state === "Ready"){
 				root.running = false;
-				let closedSession = root.sessionId;
 				root.sessionId = "";
-				root.sessionClosed(0);
+				root.sessionClosed(root.manualCloseExitCode);
 			}
 		}
 	}
@@ -201,7 +207,6 @@ QtObject {
 			if (payload.containsKey("finished") && payload.getData("finished") === true){
 				let exitCode = payload.containsKey("exitCode") ? parseInt(payload.getData("exitCode")) : 0;
 				root.running = false;
-				let closedSession = root.sessionId;
 				root.sessionId = "";
 				root.sessionClosed(exitCode);
 			}
