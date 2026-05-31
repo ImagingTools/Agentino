@@ -41,7 +41,7 @@ sdl::V1_0::imtbase::CVisualStatus CServiceCollectionControllerComp::OnGetObjectV
 {
 	sdl::V1_0::imtbase::CVisualStatus retVal = BaseClass::OnGetObjectVisualStatus(getObjectVisualStatusRequest, gqlRequest, errorMessage);
 	if (!errorMessage.isEmpty()){
-		return retVal;
+		return sdl::V1_0::imtbase::CVisualStatus();
 	}
 	
 	sdl::V1_0::imtbase::CVisualStatus& response = retVal;
