@@ -35,6 +35,77 @@ ServiceEditor {
 			pluginLoaded = false
 		}
 	}
+	
+	property string loadedSettingsServiceId: ""
+	onServiceIdChanged: {
+		if (serviceId !== "" && serviceId !== loadedSettingsServiceId){
+			loadedSettingsServiceId = serviceId
+			serviceEditor.loadSettings()
+		}
+	}
+	
+	onLoadSettings: {
+		if (serviceEditor.serviceId === ""){
+			return
+		}
+		
+		getServiceSettingsInput.m_serviceId = serviceEditor.serviceId
+		getServiceSettingsRequestSender.send(getServiceSettingsInput)
+	}
+	
+	onSaveSettings: {
+		if (serviceEditor.serviceId === ""){
+			return
+		}
+		
+		updateServiceSettingsInput.m_serviceId = serviceEditor.serviceId
+		updateServiceSettingsInput.m_content = content
+		updateServiceSettingsRequestSender.send(updateServiceSettingsInput)
+	}
+	
+	ServiceInput {
+		id: getServiceSettingsInput
+	}
+	
+	ServiceSettingsInput {
+		id: updateServiceSettingsInput
+	}
+	
+	GqlSdlRequestSender {
+		id: getServiceSettingsRequestSender
+		gqlCommandId: AgentinoServicesSdlCommandIds.s_getServiceSettings
+		
+		sdlObjectComp: Component {
+			ServiceSettingsPayload {
+				onFinished: {
+					serviceEditor.setSettings(m_content, m_exists, m_path)
+				}
+			}
+		}
+		
+		function getHeaders(){
+			return serviceEditor.getHeaders()
+		}
+	}
+	
+	GqlSdlRequestSender {
+		id: updateServiceSettingsRequestSender
+		requestType: 1
+		gqlCommandId: AgentinoServicesSdlCommandIds.s_updateServiceSettings
+		
+		sdlObjectComp: Component {
+			ServiceSettingsPayload {
+				onFinished: {
+					serviceEditor.setSettings(m_content, m_exists, m_path)
+					ModalDialogManager.showWarningDialog(qsTr("Service settings saved"))
+				}
+			}
+		}
+		
+		function getHeaders(){
+			return serviceEditor.getHeaders()
+		}
+	}
 
 	commandsDelegateComp: Component {ViewCommandsDelegateBase {
 			view: serviceEditor;

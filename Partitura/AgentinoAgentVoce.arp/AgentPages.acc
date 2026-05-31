@@ -363,5 +363,6 @@
     </ExportedInterfaces>
     <ExportedComponents>
         <Component ExportedId="ServiceCollectionController" ComponentId="PageData/ServiceCollectionController"/>
+        <Component ExportedId="ServiceCollection" ComponentId="Repositories/ServiceCollection"/>
     </ExportedComponents>
 </Acf>

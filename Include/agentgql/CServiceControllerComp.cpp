@@ -2,11 +2,18 @@
 #include <agentgql/CServiceControllerComp.h>
 
 
+// Qt includes
+#include <QtCore/QDir>
+#include <QtCore/QFile>
+#include <QtCore/QFileInfo>
+#include <QtCore/QSaveFile>
+
 // ImtCore includes
 #include <imtcom/CServerConnectionInterfaceParam.h>
 
 // Agentino includes
 #include <agentinodata/agentinodata.h>
+#include <agentinodata/CServiceInfo.h>
 
 
 namespace agentgql
@@ -234,6 +241,209 @@ sdl::agentino::Services::CPluginInfo CServiceControllerComp::OnLoadPlugin(
 	}
 
 	return response;
+}
+
+
+sdl::agentino::Services::CServiceSettingsPayload CServiceControllerComp::OnGetServiceSettings(
+			const sdl::agentino::Services::CGetServiceSettingsGqlRequest& getServiceSettingsRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	sdl::agentino::Services::CServiceSettingsPayload response;
+	response.Version_1_0.emplace();
+	response.Version_1_0->exists = false;
+
+	sdl::agentino::Services::GetServiceSettingsRequestArguments arguments = getServiceSettingsRequest.GetRequestedArguments();
+	if (!arguments.input.Version_1_0.has_value()){
+		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
+
+		return response;
+	}
+
+	if (!arguments.input.Version_1_0->serviceId.has_value()){
+		errorMessage = QString("Unable to get service settings with empty ID");
+		SendErrorMessage(0, errorMessage, "CServiceControllerComp");
+
+		return response;
+	}
+
+	QByteArray serviceId = *arguments.input.Version_1_0->serviceId;
+	response.Version_1_0->serviceId = serviceId;
+
+	QString settingsPath = GetServiceSettingsFilePath(serviceId, errorMessage);
+	if (settingsPath.isEmpty()){
+		if (!errorMessage.isEmpty()){
+			SendErrorMessage(0, errorMessage, "CServiceControllerComp");
+		}
+
+		return response;
+	}
+
+	response.Version_1_0->path = settingsPath;
+
+	QFileInfo fileInfo(settingsPath);
+	if (!fileInfo.exists()){
+		// No settings file yet: this is not an error, the editor can create one.
+		response.Version_1_0->exists = false;
+		response.Version_1_0->content = QString();
+
+		return response;
+	}
+
+	QFile file(settingsPath);
+	if (!file.open(QIODevice::ReadOnly)){
+		errorMessage = QString("Unable to read service settings file '%1'").arg(settingsPath);
+		SendErrorMessage(0, errorMessage, "CServiceControllerComp");
+
+		return response;
+	}
+
+	QByteArray rawContent = file.readAll();
+	file.close();
+
+	response.Version_1_0->exists = true;
+	response.Version_1_0->content = QString::fromUtf8(rawContent);
+
+	return response;
+}
+
+
+sdl::agentino::Services::CServiceSettingsPayload CServiceControllerComp::OnUpdateServiceSettings(
+			const sdl::agentino::Services::CUpdateServiceSettingsGqlRequest& updateServiceSettingsRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	sdl::agentino::Services::CServiceSettingsPayload response;
+	response.Version_1_0.emplace();
+	response.Version_1_0->exists = false;
+
+	sdl::agentino::Services::UpdateServiceSettingsRequestArguments arguments = updateServiceSettingsRequest.GetRequestedArguments();
+	if (!arguments.input.Version_1_0.has_value()){
+		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
+
+		return response;
+	}
+
+	if (!arguments.input.Version_1_0->serviceId.has_value()){
+		errorMessage = QString("Unable to update service settings with empty ID");
+		SendErrorMessage(0, errorMessage, "CServiceControllerComp");
+
+		return response;
+	}
+
+	QByteArray serviceId = *arguments.input.Version_1_0->serviceId;
+	response.Version_1_0->serviceId = serviceId;
+
+	QString content;
+	if (arguments.input.Version_1_0->content.has_value()){
+		content = *arguments.input.Version_1_0->content;
+	}
+
+	QString settingsPath = GetServiceSettingsFilePath(serviceId, errorMessage);
+	if (settingsPath.isEmpty()){
+		if (!errorMessage.isEmpty()){
+			SendErrorMessage(0, errorMessage, "CServiceControllerComp");
+		}
+
+		return response;
+	}
+
+	response.Version_1_0->path = settingsPath;
+
+	QFileInfo fileInfo(settingsPath);
+	QDir settingsDir = fileInfo.absoluteDir();
+	if (!settingsDir.exists()){
+		if (!settingsDir.mkpath(QStringLiteral("."))){
+			errorMessage = QString("Unable to create directory for service settings file '%1'").arg(settingsPath);
+			SendErrorMessage(0, errorMessage, "CServiceControllerComp");
+
+			return response;
+		}
+	}
+
+	// Write atomically through a temporary file, so a failed write never
+	// corrupts the existing settings file.
+	QSaveFile saveFile(settingsPath);
+	if (!saveFile.open(QIODevice::WriteOnly)){
+		errorMessage = QString("Unable to open service settings file '%1' for writing").arg(settingsPath);
+		SendErrorMessage(0, errorMessage, "CServiceControllerComp");
+
+		return response;
+	}
+
+	QByteArray rawContent = content.toUtf8();
+	if (saveFile.write(rawContent) != rawContent.size() || !saveFile.commit()){
+		errorMessage = QString("Unable to write service settings file '%1'").arg(settingsPath);
+		SendErrorMessage(0, errorMessage, "CServiceControllerComp");
+
+		return response;
+	}
+
+	response.Version_1_0->exists = true;
+	response.Version_1_0->content = content;
+
+	return response;
+}
+
+
+// private methods
+
+QString CServiceControllerComp::GetServiceSettingsFilePath(const QByteArray& serviceId, QString& errorMessage) const
+{
+	if (!m_serviceCollectionCompPtr.IsValid()){
+		errorMessage = QString("Attribute 'ServiceCollection' was not set");
+
+		return QString();
+	}
+
+	agentinodata::IServiceInfo* serviceInfoPtr = nullptr;
+	imtbase::IObjectCollection::DataPtr serviceDataPtr;
+	if (m_serviceCollectionCompPtr->GetObjectData(serviceId, serviceDataPtr)){
+		serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+	}
+
+	if (serviceInfoPtr == nullptr){
+		errorMessage = QString("Service '%1' was not found").arg(QString::fromUtf8(serviceId));
+
+		return QString();
+	}
+
+	QByteArray settingsPath = serviceInfoPtr->GetServiceSettingsPath();
+	if (settingsPath.isEmpty()){
+		errorMessage = QString("Service '%1' has no settings path configured").arg(QString::fromUtf8(serviceId));
+
+		return QString();
+	}
+
+	QByteArray servicePath = serviceInfoPtr->GetServicePath();
+	if (servicePath.isEmpty()){
+		errorMessage = QString("Service '%1' has no path configured").arg(QString::fromUtf8(serviceId));
+
+		return QString();
+	}
+
+	// The settings file must be located inside the service directory to avoid
+	// writing outside of the service folder (e.g. through '..' segments).
+	QDir serviceDir(QFileInfo(QString::fromUtf8(servicePath)).absolutePath());
+	QString canonicalServiceDir = serviceDir.absolutePath();
+
+	QFileInfo settingsFileInfo(QString::fromUtf8(settingsPath));
+	if (!settingsFileInfo.isAbsolute()){
+		settingsFileInfo.setFile(serviceDir, QString::fromUtf8(settingsPath));
+	}
+
+	QString resolvedSettingsPath = QDir::cleanPath(settingsFileInfo.absoluteFilePath());
+
+	QString containmentPrefix = canonicalServiceDir.endsWith(QLatin1Char('/'))
+		? canonicalServiceDir
+		: canonicalServiceDir + QLatin1Char('/');
+	if (resolvedSettingsPath != canonicalServiceDir && !resolvedSettingsPath.startsWith(containmentPrefix)){
+		errorMessage = QString("Service settings path '%1' is outside of the service directory").arg(resolvedSettingsPath);
+
+		return QString();
+	}
+
+	return resolvedSettingsPath;
 }
 
 
