@@ -2,9 +2,6 @@
 #pragma once
 
 
-// Qt includes
-#include <QtCore/QMutex>
-#include <QtCore/QDateTime>
 
 // ImtCore includes
 #include <imtservergql/CGqlRequestHandlerCompBase.h>
@@ -21,15 +18,10 @@ namespace agentinogql
 
 
 /**
-	Server-side topology controller with pull-based agent aggregation.
+	Server-side topology controller.
 
-	Supports two modes controlled by the AGENTINO_TOPOLOGY_SNAPSHOT_AGGREGATOR
-	environment variable:
-	- Legacy mode (default): builds topology from in-process agent/service collections
-	- Aggregation mode: pulls topology snapshots from each agent via GQL,
-	  caches them, and applies centrally-stored layout coordinates
-
-	SaveTopology always persists layout coordinates centrally (both modes).
+	Builds topology from in-process agent/service collections.
+	SaveTopology persists layout coordinates centrally.
 */
 class CTopologyControllerComp:
 			public imtclientgql::TClientRequestManagerCompWrap<
@@ -60,36 +52,11 @@ protected:
 	virtual void OnComponentCreated() override;
 
 private:
-	// Legacy topology (direct in-process collection query)
+	// Build topology from in-process collections
 	sdl::V1_0::agentino::CTopology GetLegacyTopology() const;
-
-	// Pull-based aggregated topology from agents
-	sdl::V1_0::agentino::CTopology GetAggregatedTopology(const ::imtgql::CGqlRequest& gqlRequest) const;
-
-	// Pull a single agent's topology snapshot
-	bool GetAgentSnapshot(
-				const QByteArray& agentId,
-				const ::imtgql::CGqlRequest& gqlRequest,
-				sdl::V1_0::agentino::CTopology& snapshot) const;
-
-	// Apply stored layout coordinates to all services
-	void ApplyLayoutCoordinates(sdl::V1_0::agentino::CTopology& topology) const;
-
-	// Mark all services in a topology as stale (agent unreachable)
-	void MarkServicesAsStale(sdl::V1_0::agentino::CTopology& topology) const;
 
 	QPoint GetServiceCoordinate(const QByteArray& serviceId) const;
 	bool SetServiceCoordinate(const QByteArray& serviceId, const QPoint& point) const;
-
-	struct SnapshotInfo
-	{
-		sdl::V1_0::agentino::CTopology snapshot;
-		QDateTime lastSnapshotAt;
-	};
-
-	bool m_useAggregation = false;
-	mutable QMutex m_snapshotMutex;
-	mutable QMap<QByteArray, SnapshotInfo> m_snapshotCache;
 
 protected:
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);

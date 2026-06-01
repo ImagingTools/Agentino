@@ -13,7 +13,6 @@
 #include <imtservice/CUrlConnectionParam.h>
 #include <imtservice/CUrlConnectionLinkParam.h>
 #include <imtgql/CGqlRequest.h>
-#include <imtgql/CGqlContext.h>
 
 // Agentino includes
 #include <agentinodata/IAgentInfo.h>
@@ -29,9 +28,6 @@ namespace agentinogql
 void CTopologyControllerComp::OnComponentCreated()
 {
 	BaseClass::OnComponentCreated();
-
-	QByteArray featureFlag = qgetenv("AGENTINO_TOPOLOGY_SNAPSHOT_AGGREGATOR");
-	m_useAggregation = (featureFlag == "1" || featureFlag == "true" || featureFlag == "on");
 }
 
 
@@ -39,12 +35,9 @@ void CTopologyControllerComp::OnComponentCreated()
 
 sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 			const sdl::V1_0::agentino::CGetTopologyGqlRequest& /*getTopologyRequest*/,
-			const ::imtgql::CGqlRequest& gqlRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
 			QString& /*errorMessage*/) const
 {
-	if (m_useAggregation){
-		return GetAggregatedTopology(gqlRequest);
-	}
 	return GetLegacyTopology();
 }
 
@@ -209,138 +202,6 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::GetLegacyTopology() cons
 	response.services->FromList(services);
 
 	return response;
-}
-
-
-sdl::V1_0::agentino::CTopology CTopologyControllerComp::GetAggregatedTopology(
-			const ::imtgql::CGqlRequest& gqlRequest) const
-{
-	sdl::V1_0::agentino::CTopology response;
-	QList<sdl::V1_0::agentino::CService> allServices;
-
-	// Collect the current set of agent IDs
-	imtbase::ICollectionInfo::Ids agentIds = m_agentCollectionCompPtr->GetElementIds();
-
-	// Clean up cache entries for agents no longer in the collection
-	{
-		QMutexLocker locker(&m_snapshotMutex);
-		QList<QByteArray> cachedAgentIds = m_snapshotCache.keys();
-		for (const QByteArray& cachedId: cachedAgentIds){
-			if (!agentIds.contains(cachedId)){
-				m_snapshotCache.remove(cachedId);
-			}
-		}
-	}
-
-	for (const imtbase::ICollectionInfo::Id& agentId: agentIds){
-		sdl::V1_0::agentino::CTopology agentSnapshot;
-		bool isFresh = GetAgentSnapshot(agentId, gqlRequest, agentSnapshot);
-
-		if (!isFresh){
-			// Use cached snapshot if available, marking services as stale
-			QMutexLocker locker(&m_snapshotMutex);
-			if (m_snapshotCache.contains(agentId)){
-				agentSnapshot = m_snapshotCache[agentId].snapshot;
-				MarkServicesAsStale(agentSnapshot);
-			}
-			else{
-				continue;
-			}
-		}
-		else{
-			// Update cache with fresh snapshot
-			QMutexLocker locker(&m_snapshotMutex);
-			SnapshotInfo info;
-			info.snapshot = agentSnapshot;
-			info.lastSnapshotAt = QDateTime::currentDateTime();
-			m_snapshotCache[agentId] = info;
-		}
-
-		// Set agentId on all services and collect them
-		if (agentSnapshot.services.has_value()){
-			QString agentName = m_agentCollectionCompPtr->GetElementInfo(agentId, imtbase::ICollectionInfo::EIT_NAME).toString();
-			for (const istd::TNullableValue<sdl::V1_0::agentino::CService>& serviceNullable: *agentSnapshot.services.GetPtr()){
-				if (serviceNullable.has_value()){
-					sdl::V1_0::agentino::CService service = *serviceNullable;
-					service.agentId = agentId;
-
-					// Prepend agent name to mainText for display (e.g. "ServiceName@AgentName")
-					if (service.mainText.has_value()){
-						service.mainText = *service.mainText + "@" + agentName;
-					}
-
-					allServices << service;
-				}
-			}
-		}
-	}
-
-	response.services.Emplace();
-	response.services->FromList(allServices);
-
-	// Apply centrally-stored layout coordinates
-	ApplyLayoutCoordinates(response);
-
-	return response;
-}
-
-
-bool CTopologyControllerComp::GetAgentSnapshot(
-			const QByteArray& agentId,
-			const ::imtgql::CGqlRequest& gqlRequest,
-			sdl::V1_0::agentino::CTopology& snapshot) const
-{
-	// Clone the incoming request and inject the agent's clientid header
-	imtgql::CGqlRequest* gqlRequestPtr = new imtgql::CGqlRequest(imtgql::IGqlRequest::RT_QUERY, "GetTopology");
-
-	imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
-	gqlContextPtr->SetContextParam("clientid", agentId);
-	gqlRequestPtr->SetGqlContext(gqlContextPtr);
-
-	imtclientgql::IGqlClient::GqlRequestPtr requestPtr(gqlRequestPtr);
-
-	sdl::V1_0::agentino::CTopology result;
-	bool success = SendModelRequest<sdl::V1_0::agentino::CTopology>(requestPtr, result);
-
-	if (success){
-		snapshot = result;
-		return true;
-	}
-
-	return false;
-}
-
-
-void CTopologyControllerComp::ApplyLayoutCoordinates(sdl::V1_0::agentino::CTopology& topology) const
-{
-	if (!topology.services.has_value() || !m_topologyCollectionCompPtr.IsValid()){
-		return;
-	}
-
-	for (istd::TNullableValue<sdl::V1_0::agentino::CService>& serviceNullable: *topology.services.GetPtr()){
-		if (serviceNullable.has_value() && serviceNullable->id.has_value()){
-			QPoint point = GetServiceCoordinate(*serviceNullable->id);
-			serviceNullable->x = point.x();
-			serviceNullable->y = point.y();
-		}
-	}
-}
-
-
-void CTopologyControllerComp::MarkServicesAsStale(sdl::V1_0::agentino::CTopology& topology) const
-{
-	if (!topology.services.has_value()){
-		return;
-	}
-
-	for (istd::TNullableValue<sdl::V1_0::agentino::CService>& serviceNullable: *topology.services.GetPtr()){
-		if (serviceNullable.has_value()){
-			serviceNullable->status = sdl::V1_0::agentino::ServiceStatus::UNDEFINED;
-			serviceNullable->icon1 = "Icons/Alert";
-			serviceNullable->icon2 = "Icons/Warning";
-			serviceNullable->hasError = true;
-		}
-	}
 }
 
 
