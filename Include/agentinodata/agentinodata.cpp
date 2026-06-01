@@ -114,13 +114,13 @@ bool GetServiceFromRepresentation(
 	}
 
 	if (serviceDataRepresentation.inputConnections){
-		istd::TSharedNullable<imtsdl::TElementList<sdl::V1_0::agentino::CInputConnection>> connections = *serviceDataRepresentation.inputConnections;
+		istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CInputConnection>> connections = *serviceDataRepresentation.inputConnections;
 
 		imtbase::IObjectCollection* incomingConnectionCollectionPtr = serviceInfo.GetInputConnections();
 		if (incomingConnectionCollectionPtr != nullptr){
 			incomingConnectionCollectionPtr->ResetData();
 
-			for (const istd::TSharedNullable<sdl::V1_0::agentino::CInputConnection>& connection : *connections){
+			for (const istd::TNullableValue<sdl::V1_0::agentino::CInputConnection>& connection : *connections){
 				QByteArray id;
 				if (connection->id){
 					id = *connection->id;
@@ -152,13 +152,13 @@ bool GetServiceFromRepresentation(
 	}
 
 	if (serviceDataRepresentation.outputConnections){
-		istd::TSharedNullable<imtsdl::TElementList<sdl::V1_0::agentino::COutputConnection>> connections = *serviceDataRepresentation.outputConnections;
+		istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::COutputConnection>> connections = *serviceDataRepresentation.outputConnections;
 
 		imtbase::IObjectCollection* dependantConnectionCollectionPtr = serviceInfo.GetDependantServiceConnections();
 		if (dependantConnectionCollectionPtr != nullptr){
 			dependantConnectionCollectionPtr->ResetData();
 
-			for (const istd::TSharedNullable<sdl::V1_0::agentino::COutputConnection>& connection : *connections){
+			for (const istd::TNullableValue<sdl::V1_0::agentino::COutputConnection>& connection : *connections){
 				QByteArray id;
 				if (connection->id){
 					id = *connection->id;
@@ -317,9 +317,9 @@ bool GetUrlConnectionFromRepresentation(
 	}
 
 	if (connectionRepresentation.externConnectionList){
-		istd::TSharedNullable<imtsdl::TElementList<sdl::V1_0::agentino::CExternConnectionInfo>> externConnectionList = *connectionRepresentation.externConnectionList;
+		istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CExternConnectionInfo>> externConnectionList = *connectionRepresentation.externConnectionList;
 
-		for (const istd::TSharedNullable<sdl::V1_0::agentino::CExternConnectionInfo>& externPort : *externConnectionList){
+		for (const istd::TNullableValue<sdl::V1_0::agentino::CExternConnectionInfo>& externPort : *externConnectionList){
 			imtservice::IServiceConnectionParam::IncomingConnectionParam incomingConnection;
 
 			if (externPort->id){

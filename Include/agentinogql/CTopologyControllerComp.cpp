@@ -169,8 +169,8 @@ sdl::V1_0::agentino::CSaveTopologyResponse CTopologyControllerComp::OnSaveTopolo
 		return response;
 	}
 
-	istd::TSharedNullable<imtsdl::TElementList<sdl::V1_0::agentino::CService>> serviceList = *arguments.input->services;
-	for (const istd::TSharedNullable<sdl::V1_0::agentino::CService>& service : *serviceList.GetPtr()){
+	istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CService>> serviceList = *arguments.input->services;
+	for (const istd::TNullableValue<sdl::V1_0::agentino::CService>& service : *serviceList.GetPtr()){
 		int x = *service->x;
 		int y = *service->y;
 		QByteArray id = *service->id;

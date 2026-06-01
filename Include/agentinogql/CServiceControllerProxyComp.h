@@ -86,7 +86,7 @@ private:
 		std::function<SdlResponse(const SdlGqlRequest&, const imtgql::CGqlRequest&, QString&)> func) const;
 	bool SetServiceStatus(const QByteArray& serviceId, agentinodata::IServiceStatusInfo::ServiceStatus status) const;
 	bool SetServiceStatus(const QByteArray& serviceId, sdl::V1_0::agentino::ServiceStatus status) const;
-	istd::TSharedNullable<imtsdl::TElementList<sdl::V1_0::agentino::CDependantConnectionInfo>> GetConnectionsModel(const QByteArray& connectionUsageId) const;
+	istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CDependantConnectionInfo>> GetConnectionsModel(const QByteArray& connectionUsageId) const;
 	bool GetConnectionObjectData(
 		const imtbase::IObjectCollection::Id& connectionId,
 		imtbase::IObjectCollection::DataPtr& connectionDataPtr) const;
