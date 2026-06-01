@@ -34,7 +34,38 @@ public:
 		/**
 			Service was removed.
 		*/
-		CF_SERVICE_REMOVED
+		CF_SERVICE_REMOVED,
+
+		/**
+			Service topology was synchronized from agent.
+		*/
+		CF_TOPOLOGY_SYNCED
+	};
+
+	/**
+		Synchronization status for agent topology.
+	*/
+	enum SyncStatus
+	{
+		/**
+			Synchronization status is unknown.
+		*/
+		SS_UNKNOWN,
+
+		/**
+			Agent topology is synchronized with the server.
+		*/
+		SS_SYNCED,
+
+		/**
+			Agent topology is pending synchronization.
+		*/
+		SS_PENDING,
+
+		/**
+			Agent is offline, using cached data.
+		*/
+		SS_OFFLINE
 	};
 
 	virtual bool AddService(

@@ -7,6 +7,7 @@
 
 // Agentino includes
 #include <agentinodata/CServiceCompositeInfoComp.h>
+#include <agentinogql/CAgentTopologyAggregatorComp.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Topology_fwd.h>
 
 
@@ -23,6 +24,7 @@ public:
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", true, "AgentCollection");
 		I_ASSIGN(m_topologyCollectionCompPtr, "TopologyCollection", "Topology collection", true, "TopologyCollection");
 		I_ASSIGN(m_serviceCompositeInfoCompPtr, "ServiceCompositeInfo", "Service composite info", true, "ServiceCompositeInfo");
+		I_ASSIGN(m_topologyAggregatorCompPtr, "TopologyAggregator", "Agent topology aggregator for pull-based topology", false, "TopologyAggregator");
 	I_END_COMPONENT;
 	
 	// reimplemented (sdl::V1_0::agentino::CTopologyGqlHandlerCompBase)
@@ -43,6 +45,7 @@ protected:
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
 	I_REF(imtbase::IObjectCollection, m_topologyCollectionCompPtr);
 	I_REF(agentinodata::IServiceCompositeInfo, m_serviceCompositeInfoCompPtr);
+	I_REF(agentinogql::CAgentTopologyAggregatorComp, m_topologyAggregatorCompPtr);
 };
 
 

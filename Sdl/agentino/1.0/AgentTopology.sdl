@@ -1,0 +1,81 @@
+schema {
+	query: Query
+	mutation: Mutation
+	subscription: Subscription
+	namespace: agentino
+	version: 1.0
+}
+
+import {
+	"../../../../ImtCore/Sdl/imtbase/1.0/ImtBaseTypes.sdl"
+}
+
+enum LocalServiceStatus {
+	UNDEFINED
+	STARTING
+	STOPPING
+	RUNNING
+	NOT_RUNNING
+	RUNNING_IMPOSSIBLE
+}
+
+enum AgentConnectionStatus {
+	ONLINE
+	OFFLINE
+}
+
+type LocalServiceLink {
+	id: ID!
+}
+
+type LocalServiceInfo {
+	id: ID!
+	name: String
+	description: String
+	typeId: String
+	version: String
+	status: LocalServiceStatus
+	x: Double
+	y: Double
+	links: [LocalServiceLink]
+	isAutoStart: Boolean
+}
+
+type LocalTopology {
+	agentId: ID!
+	agentName: String
+	connectionStatus: AgentConnectionStatus
+	lastSeen: String
+	services: [LocalServiceInfo]
+}
+
+type LocalServiceStatusResponse {
+	id: ID!
+	status: LocalServiceStatus
+}
+
+type SaveLocalTopologyResponse {
+	successful: Boolean!
+}
+
+type LocalServiceChangedPayload {
+	serviceId: ID!
+	status: LocalServiceStatus
+}
+
+input GetLocalServiceStatusInput {
+	serviceId: ID!
+}
+
+type Query {
+	GetLocalTopology: LocalTopology!
+	GetLocalServiceStatus (input: GetLocalServiceStatusInput): LocalServiceStatusResponse!
+}
+
+type Mutation {
+	SaveLocalTopology (input: LocalTopology): SaveLocalTopologyResponse!
+}
+
+type Subscription {
+	LocalServiceChanged: LocalServiceChangedPayload!
+}

@@ -8,6 +8,7 @@
 // ImtCore includes
 #include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtCollection.h>
 #include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/DocumentRevision.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/AgentTopology.h>
 
 
 namespace AgentGqlPck
@@ -83,6 +84,11 @@ I_EXPORT_COMPONENT(
 			AgentRemoteDocumentRevisionController,
 			"Agent remote document revision controller",
 			"Agent Remote Document Revision Controller");
+
+I_EXPORT_COMPONENT(
+			AgentTopologyController,
+			"Agent topology controller",
+			"Agent Topology Controller");
 
 
 } // namespace AgentGqlPck

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentinogql/CTopologyControllerComp.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Topology.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/AgentTopology.h>
 
 
 //Qt includes
@@ -137,6 +138,60 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 
 	response.services.Emplace();
 	response.services->FromList(services);
+
+	// Merge in cached topology data from the aggregator for agents
+	// whose services might not yet be in the local collection
+	if (m_topologyAggregatorCompPtr.IsValid()){
+		QList<CAgentTopologyAggregatorComp::AgentTopologyCache> aggregatedTopology = m_topologyAggregatorCompPtr->GetAggregatedTopology();
+		for (const CAgentTopologyAggregatorComp::AgentTopologyCache& agentCache : aggregatedTopology){
+			// Update service status from aggregator for offline agents
+			if (agentCache.connectionStatus == sdl::V1_0::agentino::AgentConnectionStatus::OFFLINE){
+				for (const sdl::V1_0::agentino::CLocalServiceInfo& cachedService : agentCache.services){
+					if (!cachedService.id.has_value()){
+						continue;
+					}
+					// Check if this service is already in the response
+					bool found = false;
+					for (const istd::TNullableValue<sdl::V1_0::agentino::CService>& existingService : **response.services){
+						if (existingService->id.has_value() && *existingService->id == *cachedService.id){
+							found = true;
+							break;
+						}
+					}
+					if (!found){
+						// Add cached service with UNDEFINED status (offline)
+						sdl::V1_0::agentino::CService offlineService;
+						offlineService.id = *cachedService.id;
+						offlineService.agentId = agentCache.agentId;
+
+						QPoint point = GetServiceCoordinate(*cachedService.id);
+						offlineService.x = point.x();
+						offlineService.y = point.y();
+
+						QString serviceName;
+						if (cachedService.name.has_value()){
+							serviceName = *cachedService.name;
+						}
+						offlineService.mainText = serviceName + "@" + agentCache.agentName;
+
+						if (cachedService.description.has_value()){
+							offlineService.secondText = *cachedService.description;
+						}
+						if (cachedService.typeId.has_value()){
+							offlineService.thirdText = *cachedService.typeId;
+						}
+
+						offlineService.status = sdl::V1_0::agentino::ServiceStatus::UNDEFINED;
+						offlineService.icon1 = "Icons/Alert";
+
+						offlineService.links.Emplace();
+
+						*response.services << offlineService;
+					}
+				}
+			}
+		}
+	}
 
 	return response;
 }

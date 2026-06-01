@@ -68,6 +68,9 @@ void CAgentConnectionObserverComp::OnUpdate(const istd::IChangeable::ChangeSet& 
 
 	if (changeSet.Contains(imtcom::IConnectionStatusProvider::CS_CONNECTED)){
 		SetAgentStatus(clientId, agentinodata::IAgentStatusInfo::AS_CONNECTED);
+		if (m_topologyAggregatorCompPtr.IsValid()){
+			m_topologyAggregatorCompPtr->SetAgentOnline(clientId);
+		}
 	}
 	else{
 		imtbase::IObjectCollection::DataPtr agentDataPtr;
@@ -85,6 +88,9 @@ void CAgentConnectionObserverComp::OnUpdate(const istd::IChangeable::ChangeSet& 
 		}
 
 		SetAgentStatus(clientId, agentinodata::IAgentStatusInfo::AS_DISCONNECTED);
+		if (m_topologyAggregatorCompPtr.IsValid()){
+			m_topologyAggregatorCompPtr->SetAgentOffline(clientId);
+		}
 	}
 }
 

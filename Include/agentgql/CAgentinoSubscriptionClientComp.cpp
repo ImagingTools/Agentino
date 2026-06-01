@@ -9,6 +9,10 @@
 #include <imtgql/CGqlRequest.h>
 #include <imtgql/CGqlResponse.h>
 
+// Agentino includes
+#include <agentinodata/IServiceInfo.h>
+#include <agentinodata/IServiceStatusInfo.h>
+
 
 namespace agentgql
 {
@@ -85,7 +89,96 @@ void CAgentinoSubscriptionClientComp::OnUpdate(const istd::IChangeable::ChangeSe
 
 		imtclientgql::IGqlClient::GqlRequestPtr requestPtr(gqlInitRequest);
 		imtclientgql::IGqlClient::GqlResponsePtr responsePtr = m_gqlClientCompPtr->SendRequest(requestPtr);
+
+		// Send local topology to the server on (re)connect
+		SendTopologySync();
 	}
+}
+
+
+// private methods
+
+void CAgentinoSubscriptionClientComp::SendTopologySync() const
+{
+	if (!m_serviceCollectionCompPtr.IsValid() || !m_gqlClientCompPtr.IsValid()){
+		return;
+	}
+
+	QString clientId;
+	if (m_clientIdCompPtr.IsValid()){
+		clientId = m_clientIdCompPtr->GetText();
+	}
+
+	// Build topology sync data as a JSON array of service information
+	QJsonArray servicesArray;
+
+	imtbase::ICollectionInfo::Ids serviceIds = m_serviceCollectionCompPtr->GetElementIds();
+	for (const imtbase::ICollectionInfo::Id& serviceId : serviceIds){
+		imtbase::IObjectCollection::DataPtr serviceDataPtr;
+		if (!m_serviceCollectionCompPtr->GetObjectData(serviceId, serviceDataPtr)){
+			continue;
+		}
+
+		agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+		if (serviceInfoPtr == nullptr){
+			continue;
+		}
+
+		QJsonObject serviceObj;
+		serviceObj.insert("id", QString::fromUtf8(serviceId));
+		serviceObj.insert("name", serviceInfoPtr->GetServiceName());
+		serviceObj.insert("description", serviceInfoPtr->GetServiceDescription());
+		serviceObj.insert("typeId", serviceInfoPtr->GetServiceTypeId());
+		serviceObj.insert("version", serviceInfoPtr->GetServiceVersion());
+		serviceObj.insert("isAutoStart", serviceInfoPtr->IsAutoStart());
+
+		// Add service status if controller is available
+		if (m_serviceControllerCompPtr.IsValid()){
+			agentinodata::IServiceStatusInfo::ServiceStatus status = m_serviceControllerCompPtr->GetServiceStatus(serviceId);
+			QString statusStr;
+			switch (status){
+				case agentinodata::IServiceStatusInfo::SS_RUNNING:
+					statusStr = "RUNNING";
+					break;
+				case agentinodata::IServiceStatusInfo::SS_NOT_RUNNING:
+					statusStr = "NOT_RUNNING";
+					break;
+				case agentinodata::IServiceStatusInfo::SS_STARTING:
+					statusStr = "STARTING";
+					break;
+				case agentinodata::IServiceStatusInfo::SS_STOPPING:
+					statusStr = "STOPPING";
+					break;
+				case agentinodata::IServiceStatusInfo::SS_RUNNING_IMPOSSIBLE:
+					statusStr = "RUNNING_IMPOSSIBLE";
+					break;
+				default:
+					statusStr = "UNDEFINED";
+					break;
+			}
+			serviceObj.insert("status", statusStr);
+		}
+
+		servicesArray.append(serviceObj);
+	}
+
+	// Send topology sync mutation
+	imtgql::CGqlRequest* gqlSyncRequest = new imtgql::CGqlRequest(imtgql::IGqlRequest::RT_MUTATION, "SyncAgentTopology");
+	imtgql::CGqlParamObject syncInputParams;
+	syncInputParams.InsertParam("agentId", QVariant(clientId));
+
+	QJsonDocument servicesDocument;
+	servicesDocument.setArray(servicesArray);
+	syncInputParams.InsertParam("services", QVariant(servicesDocument.toJson(QJsonDocument::Compact)));
+
+	gqlSyncRequest->AddParam("input", syncInputParams);
+
+	imtgql::CGqlFieldObject returnField;
+	returnField.InsertField("successful");
+	gqlSyncRequest->AddField("syncResult", returnField);
+
+	imtclientgql::IGqlClient::GqlRequestPtr syncRequestPtr(gqlSyncRequest);
+	imtclientgql::IGqlClient::GqlResponsePtr syncResponsePtr = m_gqlClientCompPtr->SendRequest(syncRequestPtr);
 }
 
 

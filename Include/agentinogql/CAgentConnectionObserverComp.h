@@ -13,6 +13,7 @@
 // Agentino includes
 #include <agentinodata/CAgentStatusInfo.h>
 #include <agentinodata/CServiceStatusInfo.h>
+#include <agentinogql/CAgentTopologyAggregatorComp.h>
 
 
 namespace agentinogql
@@ -33,6 +34,7 @@ public:
 		I_ASSIGN(m_serviceStatusCollectionCompPtr, "ServiceStatusCollection", "Service status collection", false, "ServiceStatusCollection");
 		I_ASSIGN(m_agentStatusCollectionCompPtr, "AgentStatusCollection", "Agent status collection", false, "AgentStatusCollection");
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", false, "AgentCollection");
+		I_ASSIGN(m_topologyAggregatorCompPtr, "TopologyAggregator", "Agent topology aggregator", false, "TopologyAggregator");
 	I_END_COMPONENT;
 
 protected:
@@ -52,6 +54,7 @@ protected:
 	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);
 	I_REF(imtbase::IObjectCollection, m_agentStatusCollectionCompPtr);
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
+	I_REF(agentinogql::CAgentTopologyAggregatorComp, m_topologyAggregatorCompPtr);
 };
 
 

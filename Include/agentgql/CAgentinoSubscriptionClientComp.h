@@ -12,6 +12,10 @@
 #include <imtclientgql/IGqlSubscriptionManager.h>
 #include <imtclientgql/IGqlClient.h>
 #include <imtcom/IConnectionStatusProvider.h>
+#include <imtbase/IObjectCollection.h>
+
+// Agentino includes
+#include <agentinodata/IServiceController.h>
 
 
 namespace agentgql
@@ -34,6 +38,8 @@ public:
 		I_ASSIGN_TO(m_webLoginStatusModelCompPtr, m_loginStatusCompPtr, true);
 		I_ASSIGN(m_clientIdCompPtr, "ClientIdParam", "Parameter providing the client-ID that needs to be identified on the server", false, "ClientIdParam");
 		I_ASSIGN(m_applicationInfoCompPtr, "ApplicationInfo", "Application info", true, "ApplicationInfo");
+		I_ASSIGN(m_serviceCollectionCompPtr, "ServiceCollection", "Local service collection for topology sync", false, "ServiceCollection");
+		I_ASSIGN(m_serviceControllerCompPtr, "ServiceController", "Service controller for status queries", false, "ServiceController");
 	I_END_COMPONENT;
 
 protected:
@@ -48,12 +54,16 @@ protected:
 	virtual void OnUpdate(const istd::IChangeable::ChangeSet& changeSet) override;
 
 private:
+	void SendTopologySync() const;
+
 	I_REF(imtclientgql::IGqlSubscriptionManager, m_subscriptionManagerCompPtr);
 	I_REF(imtclientgql::IGqlClient, m_gqlClientCompPtr);
 	I_REF(imtcom::IConnectionStatusProvider, m_loginStatusCompPtr);
 	I_REF(imod::IModel, m_webLoginStatusModelCompPtr);
 	I_REF(iprm::ITextParam, m_clientIdCompPtr);
 	I_REF(ibase::IApplicationInfo, m_applicationInfoCompPtr);
+	I_REF(imtbase::IObjectCollection, m_serviceCollectionCompPtr);
+	I_REF(agentinodata::IServiceController, m_serviceControllerCompPtr);
 
 	QByteArray m_serviceStatusSubsriptionId;
 };
