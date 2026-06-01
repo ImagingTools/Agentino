@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6397" Description="ACF"/>
-            <Version Id="1" Number="2394" Description="ACF-Solutions"/>
+            <Version Id="0" Number="6418" Description="ACF"/>
+            <Version Id="1" Number="2408" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -79,6 +79,9 @@
                     <AttributeInfo Id="FeatureContainer" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="FeatureContainer"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="JwtSessionController" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="JwtSessionController"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -88,9 +91,6 @@
                     <AttributeInfo Id="RoleRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/RoleRepository"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="RuntimeStatus" Type="Reference" ExportId="RuntimeStatus">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/ServerConnectionInterface"/>
                     </AttributeInfo>
@@ -99,9 +99,6 @@
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="SessionCollection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/SessionSqlRepository"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
@@ -160,8 +157,14 @@
         <Element Id="AuthenticationManager" PackageId="ImtAuthVoce" ComponentId="AuthenticationManager">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="SlaveJwtSessionController" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="JwtSessionController"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="UserCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/UserRepository"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserSettingsCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/UserSettingsRepository"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -200,6 +203,27 @@
                     </AttributeInfo>
                     <AttributeInfo Id="ServerInterface" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/ServerConnectionInterface"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="JwtSessionController" PackageId="ImtAuthVoce" ComponentId="JwtSessionController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RuntimeStatus" Type="Reference" ExportId="RuntimeStatus">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="SessionCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/SessionSqlRepository"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
+                        <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>

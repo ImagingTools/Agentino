@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6318" Description="ACF"/>
-            <Version Id="1" Number="2296" Description="ACF-Solutions"/>
+            <Version Id="0" Number="6418" Description="ACF"/>
+            <Version Id="1" Number="2408" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -638,5 +638,6 @@
         <Component ExportedId="UserConnectionRepository" ComponentId="UserLocalRepositories/UserConnectionRepository"/>
         <Component ExportedId="UserGroupRepository" ComponentId="UserLocalRepositories/UserGroupRepository"/>
         <Component ExportedId="UserRepository" ComponentId="UserLocalRepositories/UserRepository"/>
+        <Component ExportedId="UserSettingsRepository" ComponentId="UserLocalRepositories/UserSettingsRepository"/>
     </ExportedComponents>
 </Acf>
