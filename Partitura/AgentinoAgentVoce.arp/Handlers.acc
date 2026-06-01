@@ -245,6 +245,7 @@
                                 <Value>AgentGqlRemoteRepresentationController</Value>
                                 <Value>AgentPages</Value>
                                 <Value>ServiceController</Value>
+                                <Value>AgentTopologyController</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -342,6 +343,39 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceController" Type="Reference" ExportId="ServiceController">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="AgentTopologyController" PackageId="AgentGqlPck" ComponentId="AgentTopologyController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="ClientIdParam">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>GetLocalTopology</Value>
+                                <Value>GetLocalServiceStatus</Value>
+                                <Value>SaveLocalTopology</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceCollection" Type="Reference" ExportId="ServiceCollection">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceController" Type="Reference" ExportId="ServiceController">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="TopologyCollection">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">

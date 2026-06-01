@@ -25,6 +25,9 @@
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TopologyAggregator" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoHandlers/Pages/TopologyPage/AgentTopologyAggregator"/>
+                    </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
         </Element>
