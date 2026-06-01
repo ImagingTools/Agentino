@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #pragma once
 
+// Qt includes
+#include <QtCore/QDateTime>
+#include <QtCore/QMap>
+
 // ImtCore includes
-#include <imtservergql/CGqlRequestHandlerCompBase.h>
+#include <imtclientgql/TClientRequestManagerCompWrap.h>
 #include <imtbase/IObjectCollection.h>
 
 // Agentino includes
@@ -14,10 +18,13 @@ namespace agentinogql
 {
 
 
-class CTopologyControllerComp: public sdl::V1_0::agentino::CTopologyGqlHandlerCompBase
+class CTopologyControllerComp:
+			public imtclientgql::TClientRequestManagerCompWrap<
+								sdl::V1_0::agentino::CTopologyGqlHandlerCompBase>
 {
 public:
-	typedef imtservergql::CGqlRequestHandlerCompBase BaseClass;
+	typedef imtclientgql::TClientRequestManagerCompWrap<
+		sdl::V1_0::agentino::CTopologyGqlHandlerCompBase> BaseClass;
 
 	I_BEGIN_COMPONENT(CTopologyControllerComp);
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", true, "AgentCollection");
@@ -36,6 +43,22 @@ public:
 				QString& errorMessage) const override;
 
 private:
+	struct SnapshotInfo
+	{
+		sdl::V1_0::agentino::CTopology snapshot;
+		QDateTime lastSnapshotAt;
+		bool isStale = true;
+	};
+
+	sdl::V1_0::agentino::CTopology GetLegacyTopology() const;
+	sdl::V1_0::agentino::CTopology GetAggregatedTopology(const ::imtgql::CGqlRequest& gqlRequest) const;
+	sdl::V1_0::agentino::CTopology GetAgentSnapshot(
+				const ::imtgql::CGqlRequest& gqlRequest,
+				const QByteArray& agentId,
+				bool& isFresh,
+				QString& errorMessage) const;
+	void ApplyLayoutCoordinates(sdl::V1_0::agentino::CTopology& topology) const;
+	void MarkServicesAsStale(sdl::V1_0::agentino::CTopology& topology) const;
 	QPoint GetServiceCoordinate(const QByteArray& serviceId) const;
 	bool SetServiceCoordinate(const QByteArray& serviceId, const QPoint& point) const;
 
@@ -43,6 +66,7 @@ protected:
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
 	I_REF(imtbase::IObjectCollection, m_topologyCollectionCompPtr);
 	I_REF(agentinodata::IServiceCompositeInfo, m_serviceCompositeInfoCompPtr);
+	mutable QMap<QByteArray, SnapshotInfo> m_snapshotInfoMap;
 };
 
 

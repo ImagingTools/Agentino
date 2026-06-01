@@ -412,6 +412,9 @@
                     <Element Id="TopologyPage" PackageId="AgentinoVoce" ComponentId="TopologyPage">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
+                                <AttributeInfo Id="ApiClient" Type="Reference" ExportId="ApiClient">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="AgentRepository" Type="Reference" ExportId="AgentRepository">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>

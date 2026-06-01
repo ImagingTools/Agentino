@@ -75,6 +75,11 @@ I_EXPORT_COMPONENT(
 			"Agent Services Remote Subscriber Controller");
 
 I_EXPORT_COMPONENT(
+			TopologySnapshotController,
+			"Agent topology snapshot controller",
+			"Agent Topology Snapshot Controller");
+
+I_EXPORT_COMPONENT(
 			AgentRemoteVisualStatusController,
 			"Agent remote visual status controller",
 			"Agent Remote Visual Status Controller");
@@ -86,5 +91,4 @@ I_EXPORT_COMPONENT(
 
 
 } // namespace AgentGqlPck
-
 
