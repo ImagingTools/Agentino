@@ -9,8 +9,8 @@
 #include <agentgql/CServiceLog.h>
 
 // Generated includes
-#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/ServiceLog.h>
-#include <imtbasesdl/SDL/1.0/CPP/ImtCollection.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/ServiceLog_fwd.h>
+#include <imtbasesdl/SDL/1.0/CPP/ImtCollection_fwd.h>
 
 
 namespace agentgql
@@ -18,7 +18,7 @@ namespace agentgql
 
 
 class CMessageCollectionControllerComp:
-									public sdl::agentino::ServiceLog::CServiceLogCollectionControllerCompBase,
+									public sdl::V1_0::agentino::CServiceLogCollectionControllerCompBase,
 									public CServiceLog
 {
 public:
@@ -28,11 +28,11 @@ public:
 	I_END_COMPONENT;
 
 protected:
-	// reimplemented (sdl::agentino::ServiceLog::CServiceLogCollectionControllerCompBase)
+	// reimplemented (sdl::V1_0::agentino::CServiceLogCollectionControllerCompBase)
 	virtual bool CreateRepresentationFromObject(
 				const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
-				const sdl::agentino::ServiceLog::CGetServiceLogGqlRequest& getServiceLogRequest,
-				sdl::imtbase::ImtCollection::CMessageItem::V1_0& representationObject,
+				const sdl::V1_0::agentino::CGetServiceLogGqlRequest& getServiceLogRequest,
+				sdl::V1_0::imtbase::CMessageItem& representationObject,
 				QString& errorMessage) const override;
 	virtual QJsonObject ListObjects(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 	// reimplemented (icomp::CComponentBase)

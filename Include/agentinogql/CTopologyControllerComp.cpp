@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentinogql/CTopologyControllerComp.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Topology.h>
 
 
 //Qt includes
@@ -21,18 +22,17 @@ namespace agentinogql
 {
 
 
-// reimplemented (sdl::agentino::Topology::CGraphQlHandlerCompBase)
+// reimplemented (sdl::V1_0::agentino::CTopologyGqlHandlerCompBase)
 
-sdl::agentino::Topology::CTopology CTopologyControllerComp::OnGetTopology(
-			const sdl::agentino::Topology::CGetTopologyGqlRequest& /*getTopologyRequest*/,
+sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
+			const sdl::V1_0::agentino::CGetTopologyGqlRequest& /*getTopologyRequest*/,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,
 			QString& /*errorMessage*/) const
 {
-	sdl::agentino::Topology::CTopology response;
+	sdl::V1_0::agentino::CTopology response;
 	
-	response.Version_1_0.emplace();
 	
-	QList<sdl::agentino::Topology::CService::V1_0> services;
+	QList<sdl::V1_0::agentino::CService> services;
 		
 	imtbase::ICollectionInfo::Ids elementIds = m_agentCollectionCompPtr->GetElementIds();
 	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
@@ -57,7 +57,7 @@ sdl::agentino::Topology::CTopology CTopologyControllerComp::OnGetTopology(
 						continue;
 					}
 					
-					sdl::agentino::Topology::CService::V1_0 service;
+					sdl::V1_0::agentino::CService service;
 					
 					service.id = serviceElementId;
 					service.agentId = elementId;
@@ -78,15 +78,15 @@ sdl::agentino::Topology::CTopology CTopologyControllerComp::OnGetTopology(
 					
 					agentinodata::IServiceStatusInfo::ServiceStatus serviceStatus = m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceElementId);
 					if (serviceStatus == agentinodata::IServiceStatusInfo::SS_RUNNING){
-						service.status = sdl::agentino::Topology::ServiceStatus::RUNNING;
+						service.status = sdl::V1_0::agentino::ServiceStatus::RUNNING;
 						service.icon1 = "Icons/Running";
 					}
 					else if (serviceStatus == agentinodata::IServiceStatusInfo::SS_NOT_RUNNING){
-						service.status = sdl::agentino::Topology::ServiceStatus::NOT_RUNNING;
+						service.status = sdl::V1_0::agentino::ServiceStatus::NOT_RUNNING;
 						service.icon1 = "Icons/Stopped";
 					}
 					else{
-						service.status = sdl::agentino::Topology::ServiceStatus::UNDEFINED;
+						service.status = sdl::V1_0::agentino::ServiceStatus::UNDEFINED;
 						service.icon1 = "Icons/Alert";
 					}
 					
@@ -103,7 +103,7 @@ sdl::agentino::Topology::CTopology CTopologyControllerComp::OnGetTopology(
 						service.icon2 = "Icons/Warning";
 					}
 
-					QList<sdl::agentino::Topology::CLink::V1_0> linkList;
+					QList<sdl::V1_0::agentino::CLink> linkList;
 					
 					// Get Connections
 					imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
@@ -114,7 +114,7 @@ sdl::agentino::Topology::CTopology CTopologyControllerComp::OnGetTopology(
 							if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
 								imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
 								if (connectionLinkParamPtr != nullptr){
-									sdl::agentino::Topology::CLink::V1_0 linkData;
+									sdl::V1_0::agentino::CLink linkData;
 									QByteArray dependantConnectionId = connectionLinkParamPtr->GetDependantServiceConnectionId();
 									QByteArray serviceId =  m_serviceCompositeInfoCompPtr->GetServiceId(dependantConnectionId);
 
@@ -135,29 +135,28 @@ sdl::agentino::Topology::CTopology CTopologyControllerComp::OnGetTopology(
 		}
 	}
 
-	response.Version_1_0->services.Emplace();
-	response.Version_1_0->services->FromList(services);
+	response.services.Emplace();
+	response.services->FromList(services);
 
 	return response;
 }
 
 
-sdl::agentino::Topology::CSaveTopologyResponse CTopologyControllerComp::OnSaveTopology(
-			const sdl::agentino::Topology::CSaveTopologyGqlRequest& saveTopologyRequest,
+sdl::V1_0::agentino::CSaveTopologyResponse CTopologyControllerComp::OnSaveTopology(
+			const sdl::V1_0::agentino::CSaveTopologyGqlRequest& saveTopologyRequest,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,
 			QString& errorMessage) const
 {
-	sdl::agentino::Topology::CSaveTopologyResponse response;
-	response.Version_1_0.emplace();
-	response.Version_1_0->successful = false;
+	sdl::V1_0::agentino::CSaveTopologyResponse response;
+	response.successful = false;
 
 	if (!m_topologyCollectionCompPtr.IsValid()){
 		Q_ASSERT_X(false, "Attribute 'TopologyCollection' was not set", "CTopologyControllerComp");
 		return response;
 	}
 
-	sdl::agentino::Topology::SaveTopologyRequestArguments arguments = saveTopologyRequest.GetRequestedArguments();
-	if (!arguments.input.Version_1_0.has_value()){
+	sdl::V1_0::agentino::SaveTopologyRequestArguments arguments = saveTopologyRequest.GetRequestedArguments();
+	if (!arguments.input.has_value()){
 		errorMessage = QString("Unable to save topology. Error: GraphQL version 1.0 is invalid");
 		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
 
@@ -165,25 +164,25 @@ sdl::agentino::Topology::CSaveTopologyResponse CTopologyControllerComp::OnSaveTo
 	}
 
 	m_topologyCollectionCompPtr->ResetData();
-	if (!arguments.input.Version_1_0->services.has_value()){
+	if (!arguments.input->services.has_value()){
 		errorMessage = QString("Unable to save topology. Error: Input params is invalid");
 		return response;
 	}
 
-	istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Topology::CService::V1_0>> serviceList = *arguments.input.Version_1_0->services;
-	for (const istd::TSharedNullable<sdl::agentino::Topology::CService::V1_0>& service : *serviceList.GetPtr()){
+	istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CService>> serviceList = *arguments.input->services;
+	for (const istd::TNullableValue<sdl::V1_0::agentino::CService>& service : *serviceList.GetPtr()){
 		int x = *service->x;
 		int y = *service->y;
 		QByteArray id = *service->id;
 		QPoint point(x,y);
 
 		if (!SetServiceCoordinate(id, point)){
-			response.Version_1_0->successful = false;
+			response.successful = false;
 			return response;
 		}
 	}
 	
-	response.Version_1_0->successful = true;
+	response.successful = true;
 	
 	return response;
 }

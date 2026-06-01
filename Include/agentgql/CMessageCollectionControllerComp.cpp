@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentgql/CMessageCollectionControllerComp.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/ServiceLog.h>
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtCollection.h>
 
 
 // Qt includes
@@ -19,16 +21,16 @@ namespace agentgql
 {
 
 
-// reimplemented (sdl::agentino::ServiceLog::CServiceLogCollectionControllerCompBase)
+// reimplemented (sdl::V1_0::agentino::CServiceLogCollectionControllerCompBase)
 
 bool CMessageCollectionControllerComp::CreateRepresentationFromObject(
 			const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
-			const sdl::agentino::ServiceLog::CGetServiceLogGqlRequest& getServiceLogRequest,
-			sdl::imtbase::ImtCollection::CMessageItem::V1_0& representationObject,
+			const sdl::V1_0::agentino::CGetServiceLogGqlRequest& getServiceLogRequest,
+			sdl::V1_0::imtbase::CMessageItem& representationObject,
 			QString& errorMessage) const
 {
 	QByteArray objectId = objectCollectionIterator.GetObjectId();
-	sdl::agentino::ServiceLog::GetServiceLogRequestInfo requestInfo = getServiceLogRequest.GetRequestInfo();
+	sdl::V1_0::agentino::GetServiceLogRequestInfo requestInfo = getServiceLogRequest.GetRequestInfo();
 
 	const ilog::CMessage* messagePtr = nullptr;
 	imtbase::IObjectCollection::DataPtr dataPtr;

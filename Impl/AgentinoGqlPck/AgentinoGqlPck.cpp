@@ -5,6 +5,10 @@
 // ACF includes
 #include <icomp/export.h>
 
+// ImtCore includes
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtCollection.h>
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/DocumentRevision.h>
+
 
 namespace AgentinoGqlPck
 {
