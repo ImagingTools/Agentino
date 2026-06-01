@@ -1,0 +1,28 @@
+schema {
+	query: Query
+	mutation: Mutation
+	namespace: agentino
+	version: 1.0
+}
+
+type LocalServicePosition {
+	id: ID!
+	x: Double
+	y: Double
+}
+
+type LocalTopology {
+	positions: [LocalServicePosition]
+}
+
+type SaveLocalTopologyResponse {
+	successful: Boolean!
+}
+
+type Query {
+	GetLocalTopology: LocalTopology!
+}
+
+type Mutation {
+	SaveLocalTopology (input: LocalTopology): SaveLocalTopologyResponse!
+}

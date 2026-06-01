@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentinogql/CTopologyControllerComp.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Topology.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/AgentLocalTopology.h>
 
 
 //Qt includes
@@ -41,6 +42,26 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 			agentinodata::IAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::IAgentInfo*>(agentDataPtr.GetPtr());
 			if (agentInfoPtr != nullptr){
 				QString agentName = m_agentCollectionCompPtr->GetElementInfo(elementId, imtbase::ICollectionInfo::EIT_NAME).toString();
+
+				// Prefer agent-local topology positions when the proxy is available.
+				// Fall back to the central topology collection if the agent is offline.
+				QMap<QByteArray, QPoint> agentPositions;
+				if (m_agentTopologyProxyCompPtr.IsValid()){
+					QString proxyError;
+					const sdl::V1_0::agentino::CLocalTopology agentTopology =
+							m_agentTopologyProxyCompPtr->QueryLocalTopology(elementId, proxyError);
+
+					if (proxyError.isEmpty() && agentTopology.positions.has_value()){
+						for (const istd::TNullableValue<sdl::V1_0::agentino::CLocalServicePosition>& pos :
+								*agentTopology.positions){
+							if (pos.has_value() && pos->id.has_value()){
+								const int x = pos->x.has_value() ? *pos->x : 0;
+								const int y = pos->y.has_value() ? *pos->y : 0;
+								agentPositions.insert(*pos->id, QPoint(x, y));
+							}
+						}
+					}
+				}
 				
 				imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 				Q_ASSERT (serviceCollectionPtr != nullptr);
@@ -61,8 +82,15 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 					
 					service.id = serviceElementId;
 					service.agentId = elementId;
-					
-					QPoint point = GetServiceCoordinate(serviceElementId);
+
+					// Resolve position: agent-local data takes precedence over central storage.
+					QPoint point;
+					if (agentPositions.contains(serviceElementId)){
+						point = agentPositions.value(serviceElementId);
+					}
+					else{
+						point = GetServiceCoordinate(serviceElementId);
+					}
 					
 					service.x = point.x();
 					service.y = point.y();
@@ -169,6 +197,9 @@ sdl::V1_0::agentino::CSaveTopologyResponse CTopologyControllerComp::OnSaveTopolo
 		return response;
 	}
 
+	// Group positions by agentId for agent-local push.
+	QMap<QByteArray, sdl::V1_0::agentino::CLocalTopology> agentTopologies;
+
 	istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CService>> serviceList = *arguments.input->services;
 	for (const istd::TNullableValue<sdl::V1_0::agentino::CService>& service : *serviceList.GetPtr()){
 		int x = *service->x;
@@ -176,9 +207,39 @@ sdl::V1_0::agentino::CSaveTopologyResponse CTopologyControllerComp::OnSaveTopolo
 		QByteArray id = *service->id;
 		QPoint point(x,y);
 
+		// Always update the central topology collection for backward compatibility.
 		if (!SetServiceCoordinate(id, point)){
 			response.successful = false;
 			return response;
+		}
+
+		// Accumulate agent-local topology updates when the proxy is configured.
+		if (m_agentTopologyProxyCompPtr.IsValid() && service->agentId.has_value()){
+			const QByteArray agentId = *service->agentId;
+
+			sdl::V1_0::agentino::CLocalServicePosition position;
+			position.id = id;
+			position.x = x;
+			position.y = y;
+
+			sdl::V1_0::agentino::CLocalTopology& agentTopology = agentTopologies[agentId];
+			if (!agentTopology.positions.has_value()){
+				agentTopology.positions.Emplace();
+			}
+			agentTopology.positions->Append(position);
+		}
+	}
+
+	// Push positions to each agent so the agent becomes the source of truth.
+	if (m_agentTopologyProxyCompPtr.IsValid()){
+		for (auto it = agentTopologies.constBegin(); it != agentTopologies.constEnd(); ++it){
+			QString pushError;
+			if (!m_agentTopologyProxyCompPtr->PushLocalTopology(it.key(), it.value(), pushError)){
+				// Non-fatal: agent may be temporarily offline; central storage is already updated.
+				SendErrorMessage(0,
+					QString("Unable to push topology to agent '%1'. Error: %2").arg(qPrintable(it.key()), pushError),
+					"CTopologyControllerComp");
+			}
 		}
 	}
 	
