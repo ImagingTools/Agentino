@@ -45,6 +45,9 @@
                     <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ApiClient" Type="Reference" ExportId="ApiClient">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>

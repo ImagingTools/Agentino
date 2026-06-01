@@ -24,6 +24,7 @@
                                 <Value>ServiceCollectionCommands</Value>
                                 <Value>ServiceCommands</Value>
                                 <Value>ServiceCollectionController</Value>
+                                <Value>TopologySnapshotController</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -36,6 +37,31 @@
         <Element Id="RepresentationService" PackageId="AgentinoDataPck" ComponentId="ServiceInfo">
             <Data IsEnabled="true" Flags="2">
                 <AttributeInfoMap/>
+            </Data>
+        </Element>
+        <Element Id="TopologySnapshotController" PackageId="AgentGqlPck" ComponentId="TopologySnapshotController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>GetTopology</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="ServiceRepository">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceController" Type="Reference" ExportId="ServiceController">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
             </Data>
         </Element>
         <Element Id="ServiceCollectionCommands" PackageId="AgentinoVoce" ComponentId="ServiceCollectionCommands">

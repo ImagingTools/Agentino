@@ -84,6 +84,11 @@ I_EXPORT_COMPONENT(
 			"Agent remote document revision controller",
 			"Agent Remote Document Revision Controller");
 
+I_EXPORT_COMPONENT(
+			TopologySnapshotController,
+			"Agent topology snapshot controller",
+			"Topology Snapshot Controller");
+
 
 } // namespace AgentGqlPck
 

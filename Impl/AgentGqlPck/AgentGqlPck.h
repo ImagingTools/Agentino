@@ -20,6 +20,7 @@
 #include <agentgql/CAgentGqlRemoteRepresentationControllerComp.h>
 #include <agentgql/CAgentConnectionSubscriberControllerComp.h>
 #include <agentgql/CAgentServicesRemoteSubscriberProxyComp.h>
+#include <agentgql/CTopologySnapshotControllerComp.h>
 
 
 /**
@@ -40,6 +41,7 @@ typedef agentgql::CServiceLogSubscriberControllerComp ServiceLogSubscriberContro
 typedef agentgql::CAgentGqlRemoteRepresentationControllerComp AgentGqlRemoteRepresentationController;
 typedef agentgql::CAgentConnectionSubscriberControllerComp AgentConnectionSubscriberController;
 typedef agentgql::CAgentServicesRemoteSubscriberProxyComp AgentServicesRemoteSubscriberProxy;
+typedef agentgql::CTopologySnapshotControllerComp TopologySnapshotController;
 typedef agentgql::TVisualStatusControllerCompWrap<AgentGqlRemoteRepresentationController> AgentRemoteVisualStatusController;
 typedef agentgql::TDocumentRevisionControllerCompWrap<AgentGqlRemoteRepresentationController> AgentRemoteDocumentRevisionController;
 
