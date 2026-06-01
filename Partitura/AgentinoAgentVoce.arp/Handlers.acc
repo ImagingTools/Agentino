@@ -245,6 +245,7 @@
                                 <Value>AgentGqlRemoteRepresentationController</Value>
                                 <Value>AgentPages</Value>
                                 <Value>ServiceController</Value>
+                                <Value>LocalTopologyController</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -342,6 +343,29 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceController" Type="Reference" ExportId="ServiceController">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="LocalTopologyController" PackageId="AgentGqlPck" ComponentId="LocalTopologyController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>GetLocalTopology</Value>
+                                <Value>SaveLocalTopology</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="LocalTopologyInfo" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="LocalTopologyInfo"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">

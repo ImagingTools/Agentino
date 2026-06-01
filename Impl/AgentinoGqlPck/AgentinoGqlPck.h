@@ -21,6 +21,7 @@
 #include <agentinogql/CAgentConnectionObserverComp.h>
 #include <agentinogql/CAgentsSubscriberProxyControllerComp.h>
 #include <agentinogql/CAgentinoGqlRemoteRepresentationControllerComp.h>
+#include <agentinogql/CAgentLocalTopologyProxyComp.h>
 
 
 /**
@@ -42,6 +43,7 @@ typedef agentinogql::CServiceStatusCollectionSubscriberControllerComp ServiceSta
 typedef agentinogql::CAgentConnectionObserverComp AgentConnectionObserver;
 typedef agentinogql::CAgentsSubscriberProxyControllerComp AgentsSubscriberProxyController;
 typedef agentinogql::CAgentinoGqlRemoteRepresentationControllerComp AgentinoGqlRemoteRepresentationController;
+typedef agentinogql::CAgentLocalTopologyProxyComp AgentLocalTopologyProxy;
 typedef agentgql::TVisualStatusControllerCompWrap<AgentinoGqlRemoteRepresentationController> AgentinoRemoteVisualStatusController;
 typedef agentgql::TDocumentRevisionControllerCompWrap<AgentinoGqlRemoteRepresentationController> AgentinoRemoteDocumentRevisionController;
 

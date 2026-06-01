@@ -14,6 +14,7 @@
 #include <agentinodata/CAgentCollectionComp.h>
 #include <agentinodata/CServiceStatusInfo.h>
 #include <agentinodata/CAgentStatusInfo.h>
+#include <agentinodata/CLocalTopologyInfoComp.h>
 
 
 /**
@@ -46,6 +47,7 @@ typedef icomp::TMakeComponentWrap<
 					agentinodata::IAgentStatusInfo,
 					iser::ISerializable,
 					istd::IChangeable> AgentStatusInfo;
+typedef icomp::TModelCompWrap<agentinodata::CLocalTopologyInfoComp> LocalTopologyInfo;
 
 
 } // namespace AgentinoDataPck

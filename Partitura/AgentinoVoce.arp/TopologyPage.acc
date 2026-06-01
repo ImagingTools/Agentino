@@ -18,6 +18,7 @@
                             <Values>
                                 <Value>TopologyController</Value>
                                 <Value>TopologyCommands</Value>
+                                <Value>AgentLocalTopologyProxy</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -45,6 +46,9 @@
                     <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="AgentTopologyProxy" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentLocalTopologyProxy"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
@@ -60,6 +64,29 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="TopologyCollection">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="AgentLocalTopologyProxy" PackageId="AgentinoGqlPck" ComponentId="AgentLocalTopologyProxy">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ApiClient" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ApiClient"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>GetLocalTopology</Value>
+                                <Value>SaveLocalTopology</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">

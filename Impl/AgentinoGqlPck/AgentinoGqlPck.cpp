@@ -89,6 +89,11 @@ I_EXPORT_COMPONENT(
 			"Agentino remote document revision controller",
 			"Agentino Remote Document Revision Controller");
 
+I_EXPORT_COMPONENT(
+			AgentLocalTopologyProxy,
+			"Agent local topology proxy",
+			"Agent Local Topology Proxy");
+
 
 } // namespace AgentinoGqlPck
 

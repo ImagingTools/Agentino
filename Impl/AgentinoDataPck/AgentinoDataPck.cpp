@@ -50,6 +50,11 @@ I_EXPORT_COMPONENT(
 			"Agent status info",
 			"Agent Status Info");
 
+I_EXPORT_COMPONENT(
+			LocalTopologyInfo,
+			"Local topology info",
+			"Local Topology Info");
+
 
 } // namespace AgentinoDataPck
 

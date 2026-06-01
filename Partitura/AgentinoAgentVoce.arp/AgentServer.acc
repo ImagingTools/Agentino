@@ -244,6 +244,15 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="LocalTopologyInfo" PackageId="AgentinoDataPck" ComponentId="LocalTopologyInfo">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="ServiceManagerSubscriptionClient" PackageId="AgentGqlPck" ComponentId="AgentinoSubscriptionClient">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
