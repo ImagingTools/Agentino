@@ -259,7 +259,8 @@ bool CTopologyControllerComp::IsAgentOnline(const QByteArray& agentId) const
 		}
 	}
 	
-	return false;
+	// No explicit status found - assume the agent is online
+	return true;
 }
 
 

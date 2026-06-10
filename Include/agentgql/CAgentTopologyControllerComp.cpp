@@ -166,6 +166,12 @@ sdl::V1_0::agentino::CSaveTopologyResponse CAgentTopologyControllerComp::OnSaveT
 
 	istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CService>> serviceList = *arguments.input->services;
 	for (const istd::TNullableValue<sdl::V1_0::agentino::CService>& service : *serviceList.GetPtr()){
+		if (!service->x.has_value() || !service->y.has_value() || !service->id.has_value()){
+			errorMessage = QString("Unable to save topology. Error: Service is missing required fields (id, x, y)");
+			SendErrorMessage(0, errorMessage, "CAgentTopologyControllerComp");
+			return response;
+		}
+
 		int x = *service->x;
 		int y = *service->y;
 		QByteArray id = *service->id;
