@@ -25,6 +25,9 @@
                     <AttributeInfo Id="AuthenticationManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="SimpleGqlContextCreator"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/ClientId2"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="DatabaseEngine"/>
                     </AttributeInfo>
@@ -48,6 +51,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="AgentinoLocalization"/>
@@ -401,6 +407,61 @@
                             <AttributeInfoMap/>
                         </Data>
                     </Element>
+                    <Element Id="TopologyCollection" PackageId="ImtCorePck" ComponentId="ObjectCollection">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ObjectFactories" Type="Factory[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>TopologyPosition2d</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TypeIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Topology</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="TopologyFileAutoPersistence" PackageId="ImtCoreVoce" ComponentId="FileAutoPersistence">
+                        <Data IsEnabled="true" Flags="1">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="DefaultPath" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="TopologyCollection.xml"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="LocationType" Type="Integer" ExportId="">
+                                    <Data IsEnabled="true" Value="105"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Object" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="TopologyCollection"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="RuntimeStatus" Type="Reference" ExportId="RuntimeStatus">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="StoreOnChange" Type="Boolean" ExportId="">
+                                    <Data IsEnabled="true" Value="true"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="TopologyPosition2d" PackageId="BasePck" ComponentId="Position2d">
+                        <Data IsEnabled="true" Flags="2">
+                            <AttributeInfoMap/>
+                        </Data>
+                    </Element>
                     <Element Id="UserLocalRepositories" PackageId="ImtAuthVoce" ComponentId="UserLocalRepositories">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
@@ -426,6 +487,7 @@
                     <Component ExportedId="RoleRepository" ComponentId="UserLocalRepositories/RoleRepository"/>
                     <Component ExportedId="ServiceCollection" ComponentId="ServiceCollection"/>
                     <Component ExportedId="ServiceCollectionAutoPersistence" ComponentId="FileAutoPersistence/AutoPersistence"/>
+                    <Component ExportedId="TopologyCollection" ComponentId="TopologyCollection"/>
                     <Component ExportedId="UserGroupRepository" ComponentId="UserLocalRepositories/UserGroupRepository"/>
                     <Component ExportedId="UserRepository" ComponentId="UserLocalRepositories/UserRepository"/>
                 </ExportedComponents>
