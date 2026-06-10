@@ -1,4 +1,4 @@
-rem echo off
+echo on
 
 
 set COMPILER_EXT=VC17_64
@@ -6,9 +6,10 @@ set QMAKESPEC=%QTDIR%\mkspecs\win32-msvc
 set path=%path%;%QTDIR%\bin
 
 echo Generating %COMPILER_EXT% projects...
+echo %QTDIR%
+cd %AGENTINODIR%\Build\QMake
 
-cd %~dp0\..\..\Build\QMake
-%QTDIR%\bin\qmake -recursive -tp vc
+%QTDIR%\bin\qmake AgentinoAll.pro -recursive -tp vc
 
 
 cd %~dp0\..\..
