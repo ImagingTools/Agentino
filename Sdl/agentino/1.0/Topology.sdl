@@ -29,6 +29,7 @@ type Service {
 	selected: Boolean
 	hasError: Boolean
 	isComposite: Boolean
+	agentOnline: Boolean
 }
 
 type Topology {
