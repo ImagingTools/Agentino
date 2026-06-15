@@ -167,14 +167,9 @@ void CServiceControllerComp::OnComponentCreated()
 		}
 
 		if (serviceInfoPtr != nullptr){
-			QByteArray servicePath = serviceInfoPtr->GetServicePath();
+			IServiceStatusInfo::ServiceStatus status = GetServiceStatus(serviceId);
 
-			istd::TDelPtr<QProcess> processPtr = new QProcess(this);
-			processPtr->setProgram(servicePath);
-
-			QProcess::ProcessState state = processPtr->state();
-
-			if (state == QProcess::Running || serviceInfoPtr->IsAutoStart()){
+			if (status == IServiceStatusInfo::SS_NOT_RUNNING && serviceInfoPtr->IsAutoStart()){
 				SetupService(serviceId, true);
 			}
 			else{
