@@ -14,6 +14,9 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/types.h>
+#elif defined(Q_OS_MACOS)
+#include <libproc.h>
+#include <unistd.h>
 #endif
 
 // Qt includes
@@ -343,8 +346,48 @@ QByteArray CServiceControllerComp::GetModuleName(QByteArray servicePath) const
 	}
 
 	closedir(dir);
+
+#elif defined(Q_OS_MACOS)
+	// Convert input to QString for robust Unicode/case handling
+	QString targetPath = QDir::cleanPath(QString::fromUtf8(servicePath)).toLower();
+
+	pid_t pids[1024];
+	// Get total number of processes
+	int numberOfProcesses = proc_listpids(PROC_ALL_PIDS, 0, nullptr, 0);
+	if (numberOfProcesses <= 0) {
+		return QByteArray();
+	}
+
+	std::vector<pid_t> processList(static_cast<size_t>(numberOfProcesses));
+	int bytesReturned = proc_listpids(PROC_ALL_PIDS, 0, processList.data(),
+									  static_cast<int>(sizeof(pid_t) * processList.size()));
+	int processCount = bytesReturned / sizeof(pid_t);
+
+	for (int i = 0; i < processCount; ++i) {
+		pid_t pid = processList[i];
+		if (pid == 0) {
+			continue;
+		}
+
+		char pathBuffer[PROC_PIDPATHINFO_MAXSIZE];
+		int pathLen = proc_pidpath(pid, pathBuffer, sizeof(pathBuffer));
+
+		if (pathLen > 0) {
+			QString currentPath = QString::fromUtf8(pathBuffer, pathLen);
+
+			// Case-insensitive comparison using QString (Unicode safe)
+			if (currentPath.toLower() == targetPath) {
+				QFileInfo fileInfo(currentPath);
+
+				return fileInfo.fileName().toUtf8();
+			}
+		}
+	}
+
 #else
+
 	Q_UNUSED(servicePath)
+
 #endif
 
 
