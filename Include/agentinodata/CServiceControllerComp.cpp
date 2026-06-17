@@ -17,9 +17,11 @@
 #elif defined(Q_OS_MACOS)
 #include <libproc.h>
 #include <unistd.h>
+#include <vector>
 #endif
 
 // Qt includes
+#include<QtCore/QDir>
 #include<QtCore/QFileInfo>
 
 // ACF includes
@@ -348,24 +350,38 @@ QByteArray CServiceControllerComp::GetModuleName(QByteArray servicePath) const
 	closedir(dir);
 
 #elif defined(Q_OS_MACOS)
-	// Convert input to QString for robust Unicode/case handling
-	QString targetPath = QDir::cleanPath(QString::fromUtf8(servicePath)).toLower();
+	QFileInfo serviceInfo(QString::fromUtf8(servicePath));
+	QString targetPath = serviceInfo.canonicalFilePath();
+	if (targetPath.isEmpty()) {
+		targetPath = QDir::cleanPath(serviceInfo.absoluteFilePath());
+	}
 
-	pid_t pids[1024];
-	// Get total number of processes
-	int numberOfProcesses = proc_listpids(PROC_ALL_PIDS, 0, nullptr, 0);
-	if (numberOfProcesses <= 0) {
+	// Query required buffer size
+	int bytesNeeded = proc_listpids(PROC_ALL_PIDS, 0, nullptr, 0);
+	if (bytesNeeded <= 0) {
 		return QByteArray();
 	}
 
-	std::vector<pid_t> processList(static_cast<size_t>(numberOfProcesses));
-	int bytesReturned = proc_listpids(PROC_ALL_PIDS, 0, processList.data(),
-									  static_cast<int>(sizeof(pid_t) * processList.size()));
-	int processCount = bytesReturned / sizeof(pid_t);
+	// Add a safety margin to prevent truncation
+	size_t pidCount = (static_cast<size_t>(bytesNeeded) / sizeof(pid_t)) + 64;
+	std::vector<pid_t> processList(pidCount);
 
-	for (int i = 0; i < processCount; ++i) {
+	// Retrieve the PID list
+	int bytesReturned = proc_listpids(PROC_ALL_PIDS, 0, processList.data(), static_cast<int>(processList.size() * sizeof(pid_t)));
+	if (bytesReturned <= 0) {
+		return QByteArray();
+	}
+
+	size_t actualCount = static_cast<size_t>(bytesReturned) / sizeof(pid_t);
+	// Ensure we do not read past what the kernel actually returned
+	if (actualCount > processList.size()) {
+		actualCount = processList.size();
+	}
+
+	// Iterate and compare paths
+	for (size_t i = 0; i < actualCount; ++i) {
 		pid_t pid = processList[i];
-		if (pid == 0) {
+		if (pid <= 0) {
 			continue;
 		}
 
@@ -375,10 +391,8 @@ QByteArray CServiceControllerComp::GetModuleName(QByteArray servicePath) const
 		if (pathLen > 0) {
 			QString currentPath = QString::fromUtf8(pathBuffer, pathLen);
 
-			// Case-insensitive comparison using QString (Unicode safe)
-			if (currentPath.toLower() == targetPath) {
+			if (currentPath.compare(targetPath, Qt::CaseInsensitive) == 0) {
 				QFileInfo fileInfo(currentPath);
-
 				return fileInfo.fileName().toUtf8();
 			}
 		}
