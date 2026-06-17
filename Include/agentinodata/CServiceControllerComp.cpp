@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #elif defined(Q_OS_MACOS)
 #include <libproc.h>
+#include <signal.h>
 #include <unistd.h>
 #include <vector>
 #endif
@@ -129,6 +130,50 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 		EmitChangeSignal(serviceId, IServiceStatusInfo::SS_NOT_RUNNING);
 
 		retVal = true;
+	}
+#elif defined(Q_OS_MACOS)
+	QFileInfo serviceInfo(QString::fromUtf8(servicePath));
+	QString targetPath = serviceInfo.canonicalFilePath();
+	if (targetPath.isEmpty()) {
+		targetPath = QDir::cleanPath(serviceInfo.absoluteFilePath());
+	}
+
+	int bytesNeeded = proc_listpids(PROC_ALL_PIDS, 0, nullptr, 0);
+	if (bytesNeeded > 0) {
+		size_t pidCount = (static_cast<size_t>(bytesNeeded) / sizeof(pid_t)) + 64;
+		std::vector<pid_t> processList(pidCount);
+		int bytesReturned = proc_listpids(PROC_ALL_PIDS, 0, processList.data(), static_cast<int>(processList.size() * sizeof(pid_t)));
+
+		if (bytesReturned > 0) {
+			size_t actualCount = static_cast<size_t>(bytesReturned) / sizeof(pid_t);
+			if (actualCount > processList.size()) {
+				actualCount = processList.size();
+			}
+
+			bool stopRequested = false;
+			for (size_t i = 0; i < actualCount; ++i) {
+				pid_t pid = processList[i];
+				if (pid <= 0) {
+					continue;
+				}
+
+				char pathBuffer[PROC_PIDPATHINFO_MAXSIZE];
+				int pathLen = proc_pidpath(pid, pathBuffer, sizeof(pathBuffer));
+				if (pathLen > 0) {
+					QString currentPath = QString::fromUtf8(pathBuffer);
+					if (currentPath.compare(targetPath, Qt::CaseInsensitive) == 0 && ::kill(pid, SIGKILL) == 0) {
+						stopRequested = true;
+					}
+				}
+			}
+
+			if (stopRequested) {
+				EmitChangeSignal(serviceId, IServiceStatusInfo::SS_STOPPING);
+				SendInfoMessage(0, QString("Service '%1' stopped").arg(serviceName), serviceName);
+				EmitChangeSignal(serviceId, IServiceStatusInfo::SS_NOT_RUNNING);
+				retVal = true;
+			}
+		}
 	}
 #endif
 
@@ -389,7 +434,7 @@ QByteArray CServiceControllerComp::GetModuleName(QByteArray servicePath) const
 		int pathLen = proc_pidpath(pid, pathBuffer, sizeof(pathBuffer));
 
 		if (pathLen > 0) {
-			QString currentPath = QString::fromUtf8(pathBuffer, pathLen);
+			QString currentPath = QString::fromUtf8(pathBuffer);
 
 			if (currentPath.compare(targetPath, Qt::CaseInsensitive) == 0) {
 				QFileInfo fileInfo(currentPath);
