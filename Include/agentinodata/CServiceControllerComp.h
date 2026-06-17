@@ -96,6 +96,11 @@ private:
 	mutable PluginMap m_pluginMap;
 
 private:
+#ifdef Q_OS_MACOS
+	static std::vector<pid_t> GetPidsForPath(const QString &targetPath);
+#endif
+
+private:
 	I_REF(imtbase::IObjectCollection, m_serviceCollectionCompPtr);
 
 	QMap<QByteArray, ServiceProcess> m_processMap;
