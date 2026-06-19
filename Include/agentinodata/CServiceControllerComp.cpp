@@ -104,9 +104,9 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 	}
 
 	QByteArray servicePath = serviceInfoPtr->GetServicePath();
-    QByteArray moduleName = GetModuleName(servicePath);
 
 #ifdef WIN32
+	QByteArray moduleName = GetModuleName(servicePath);
 	if (!moduleName.isEmpty()){
 		QByteArray data = "taskkill /f /im " + moduleName;
 
@@ -122,6 +122,7 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 	}
 
 #elif defined(Q_OS_LINUX)
+	QByteArray moduleName = GetModuleName(servicePath);
 	if (!moduleName.isEmpty()){
 		EmitChangeSignal(serviceId, IServiceStatusInfo::SS_STOPPING);
 		QByteArray data = "pkill -9 -f " + moduleName;
@@ -175,9 +176,15 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 			::kill(pid, SIGKILL);
 		}
 
-		SendInfoMessage(0, QString("Service '%1' stopped").arg(serviceName), serviceName);
-		EmitChangeSignal(serviceId, IServiceStatusInfo::SS_NOT_RUNNING);
-		retVal = true;
+		// Verify all processes are actually gone after SIGKILL
+		std::vector<pid_t> finalPids = GetPidsForPath(targetPath);
+		if (finalPids.empty()) {
+			SendInfoMessage(0, QString("Service '%1' stopped").arg(serviceName), serviceName);
+			EmitChangeSignal(serviceId, IServiceStatusInfo::SS_NOT_RUNNING);
+			retVal = true;
+		} else {
+			SendErrorMessage(0, QString("Failed to stop service '%1': some processes could not be terminated").arg(serviceName), serviceName);
+		}
 	}
 
 #endif

@@ -18,6 +18,11 @@
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/IServiceController.h>
 
+#ifdef Q_OS_MACOS
+#include <sys/types.h>
+#include <vector>
+#endif
+
 
 IMT_DECLARE_PLUGIN_INTERFACE(ServiceSettings, imtservice::IConnectionCollectionPlugin);
 
