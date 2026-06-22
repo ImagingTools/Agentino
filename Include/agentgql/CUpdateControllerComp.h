@@ -6,14 +6,12 @@
 #include <imtservergql/CGqlRequestHandlerCompBase.h>
 
 // Agentino includes
+#include <agentinodata/IUpdateManager.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Updates_fwd.h>
 
 
 namespace agentgql
 {
-
-
-class IUpdateManager;
 
 
 /**
@@ -40,7 +38,7 @@ protected:
 				QString& errorMessage) const override;
 
 protected:
-	I_REF(IUpdateManager, m_updateManagerCompPtr);
+	I_REF(agentinodata::IUpdateManager, m_updateManagerCompPtr);
 };
 
 
