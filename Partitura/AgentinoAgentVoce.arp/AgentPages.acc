@@ -24,6 +24,9 @@
                     <AttributeInfo Id="AgentinoConnectionInterface" Type="Reference" ExportId="AgentinoConnectionInterface">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="ClientIdParam">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="Login" Type="Reference" ExportId="Login">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -31,6 +34,9 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceRepository" Type="Reference" ExportId="ServiceRepository">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="TopologyCollection">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
@@ -213,6 +219,9 @@
                                 <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="ClientIdParam">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
@@ -220,6 +229,9 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServiceRepository" Type="Reference" ExportId="ServiceRepository">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="TopologyCollection">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
