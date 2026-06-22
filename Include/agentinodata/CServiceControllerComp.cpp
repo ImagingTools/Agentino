@@ -22,8 +22,9 @@
 #endif
 
 // Qt includes
-#include<QtCore/QDir>
-#include<QtCore/QFileInfo>
+#include <QtCore/QDir>
+#include <QtCore/QFileInfo>
+#include <QtCore/QThread>
 
 // ACF includes
 #include <istd/TDelPtr.h>
@@ -103,9 +104,9 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 	}
 
 	QByteArray servicePath = serviceInfoPtr->GetServicePath();
-    QByteArray moduleName = GetModuleName(servicePath);
 
 #ifdef WIN32
+	QByteArray moduleName = GetModuleName(servicePath);
 	if (!moduleName.isEmpty()){
 		QByteArray data = "taskkill /f /im " + moduleName;
 
@@ -121,6 +122,7 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 	}
 
 #elif defined(Q_OS_LINUX)
+	QByteArray moduleName = GetModuleName(servicePath);
 	if (!moduleName.isEmpty()){
 		EmitChangeSignal(serviceId, IServiceStatusInfo::SS_STOPPING);
 		QByteArray data = "pkill -9 -f " + moduleName;
@@ -138,43 +140,53 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 		targetPath = QDir::cleanPath(serviceInfo.absoluteFilePath());
 	}
 
-	int bytesNeeded = proc_listpids(PROC_ALL_PIDS, 0, nullptr, 0);
-	if (bytesNeeded > 0) {
-		size_t pidCount = (static_cast<size_t>(bytesNeeded) / sizeof(pid_t)) + 64;
-		std::vector<pid_t> processList(pidCount);
-		int bytesReturned = proc_listpids(PROC_ALL_PIDS, 0, processList.data(), static_cast<int>(processList.size() * sizeof(pid_t)));
+	std::vector<pid_t> pids = GetPidsForPath(targetPath);
+	if (pids.empty()) {
+		// Service is not running
+		return false;
+	}
 
-		if (bytesReturned > 0) {
-			size_t actualCount = static_cast<size_t>(bytesReturned) / sizeof(pid_t);
-			if (actualCount > processList.size()) {
-				actualCount = processList.size();
-			}
+	bool stopRequested = false;
 
-			bool stopRequested = false;
-			for (size_t i = 0; i < actualCount; ++i) {
-				pid_t pid = processList[i];
-				if (pid <= 0) {
-					continue;
-				}
-
-				char pathBuffer[PROC_PIDPATHINFO_MAXSIZE];
-				int pathLen = proc_pidpath(pid, pathBuffer, sizeof(pathBuffer));
-				if (pathLen > 0) {
-					QString currentPath = QString::fromUtf8(pathBuffer);
-					if (currentPath.compare(targetPath, Qt::CaseInsensitive) == 0 && ::kill(pid, SIGKILL) == 0) {
-						stopRequested = true;
-					}
-				}
-			}
-
-			if (stopRequested) {
-				EmitChangeSignal(serviceId, IServiceStatusInfo::SS_STOPPING);
-				SendInfoMessage(0, QString("Service '%1' stopped").arg(serviceName), serviceName);
-				EmitChangeSignal(serviceId, IServiceStatusInfo::SS_NOT_RUNNING);
-				retVal = true;
-			}
+	// Try stopping the processes gracefully first via SIGTERM
+	for (pid_t pid : pids) {
+		if (::kill(pid, SIGTERM) == 0) {
+			stopRequested = true;
 		}
 	}
+
+	if (stopRequested) {
+		EmitChangeSignal(serviceId, IServiceStatusInfo::SS_STOPPING);
+
+		// active-wait fallback: verification & SIGKILL override
+		// Wait up to 1.5 seconds (in 150ms increments) for the processes to exit
+		int retries = 10;
+		std::vector<pid_t> remainingPids;
+		while (retries > 0) {
+			QThread::msleep(150);
+			remainingPids = GetPidsForPath(targetPath);
+			if (remainingPids.empty()) {
+				break;
+			}
+			--retries;
+		}
+
+		// If some PIDs are still lingering, forcibly terminate them via SIGKILL
+		for (pid_t pid : remainingPids) {
+			::kill(pid, SIGKILL);
+		}
+
+		// Verify all processes are actually gone after SIGKILL
+		std::vector<pid_t> finalPids = GetPidsForPath(targetPath);
+		if (finalPids.empty()) {
+			SendInfoMessage(0, QString("Service '%1' stopped").arg(serviceName), serviceName);
+			EmitChangeSignal(serviceId, IServiceStatusInfo::SS_NOT_RUNNING);
+			retVal = true;
+		} else {
+			SendErrorMessage(0, QString("Failed to stop service '%1': some processes could not be terminated").arg(serviceName), serviceName);
+		}
+	}
+
 #endif
 
 
@@ -401,46 +413,10 @@ QByteArray CServiceControllerComp::GetModuleName(QByteArray servicePath) const
 		targetPath = QDir::cleanPath(serviceInfo.absoluteFilePath());
 	}
 
-	// Query required buffer size
-	int bytesNeeded = proc_listpids(PROC_ALL_PIDS, 0, nullptr, 0);
-	if (bytesNeeded <= 0) {
-		return QByteArray();
-	}
+	std::vector<pid_t> pids = GetPidsForPath(targetPath);
 
-	// Add a safety margin to prevent truncation
-	size_t pidCount = (static_cast<size_t>(bytesNeeded) / sizeof(pid_t)) + 64;
-	std::vector<pid_t> processList(pidCount);
-
-	// Retrieve the PID list
-	int bytesReturned = proc_listpids(PROC_ALL_PIDS, 0, processList.data(), static_cast<int>(processList.size() * sizeof(pid_t)));
-	if (bytesReturned <= 0) {
-		return QByteArray();
-	}
-
-	size_t actualCount = static_cast<size_t>(bytesReturned) / sizeof(pid_t);
-	// Ensure we do not read past what the kernel actually returned
-	if (actualCount > processList.size()) {
-		actualCount = processList.size();
-	}
-
-	// Iterate and compare paths
-	for (size_t i = 0; i < actualCount; ++i) {
-		pid_t pid = processList[i];
-		if (pid <= 0) {
-			continue;
-		}
-
-		char pathBuffer[PROC_PIDPATHINFO_MAXSIZE];
-		int pathLen = proc_pidpath(pid, pathBuffer, sizeof(pathBuffer));
-
-		if (pathLen > 0) {
-			QString currentPath = QString::fromUtf8(pathBuffer);
-
-			if (currentPath.compare(targetPath, Qt::CaseInsensitive) == 0) {
-				QFileInfo fileInfo(currentPath);
-				return fileInfo.fileName().toUtf8();
-			}
-		}
+	if (!pids.empty()) {
+		return QFileInfo(targetPath).fileName().toUtf8();
 	}
 
 #else
@@ -683,6 +659,56 @@ void CServiceControllerComp::EmitChangeSignal(const QByteArray& serviceId, IServ
 
 	istd::CChangeNotifier notifier(this, &changeSet);
 }
+
+#ifdef Q_OS_MACOS
+
+std::vector<pid_t> CServiceControllerComp::GetPidsForPath(const QString &targetPath)
+{
+	std::vector<pid_t> matchingPids;
+	if (targetPath.isEmpty()) {
+		return matchingPids;
+	}
+
+	int bytesNeeded = proc_listpids(PROC_ALL_PIDS, 0, nullptr, 0);
+	if (bytesNeeded <= 0) {
+		return matchingPids;
+	}
+
+	// Allocate with a safety buffer to absorb newly spawned processes
+	size_t pidCount = (static_cast<size_t>(bytesNeeded) / sizeof(pid_t)) + 64;
+	std::vector<pid_t> processList(pidCount);
+
+	int bytesReturned = proc_listpids(PROC_ALL_PIDS, 0, processList.data(), static_cast<int>(processList.size() * sizeof(pid_t)));
+	if (bytesReturned <= 0) {
+		return matchingPids;
+	}
+
+	size_t actualCount = static_cast<size_t>(bytesReturned) / sizeof(pid_t);
+	if (actualCount > processList.size()) {
+		actualCount = processList.size();
+	}
+
+	for (size_t i = 0; i < actualCount; ++i) {
+		pid_t pid = processList[i];
+		if (pid <= 0) {
+			continue;
+		}
+
+		char pathBuffer[PROC_PIDPATHINFO_MAXSIZE];
+		int pathLen = proc_pidpath(pid, pathBuffer, sizeof(pathBuffer));
+		if (pathLen > 0) {
+			// Using explicit pathLen to avoid redundant strlen parsing inside QString
+			QString currentPath = QString::fromUtf8(pathBuffer, pathLen);
+			if (currentPath.compare(targetPath, Qt::CaseInsensitive) == 0) {
+				matchingPids.push_back(pid);
+			}
+		}
+	}
+
+	return matchingPids;
+}
+
+#endif
 
 
 } // namespace agentinodata
