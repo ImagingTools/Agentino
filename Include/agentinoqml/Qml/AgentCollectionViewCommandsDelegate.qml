@@ -20,6 +20,7 @@ DocumentCollectionViewDelegate {
             let commandsController = container.collectionView.commandsController;
             if(commandsController){
                 commandsController.setCommandIsEnabled("Services", isEnabled);
+                commandsController.setCommandIsEnabled("Terminal", isEnabled);
                 commandsController.setCommandIsEnabled("Remove", isEnabled);
                 commandsController.setCommandIsEnabled("Edit", isEnabled);
             }

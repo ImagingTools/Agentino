@@ -36,6 +36,11 @@ I_EXPORT_COMPONENT(
 			"ServiceManager Agent Service Controller");
 
 I_EXPORT_COMPONENT(
+			TerminalController,
+			"Remote terminal controller",
+			"Remote Terminal Session Controller");
+
+I_EXPORT_COMPONENT(
 			AgentCollection,
 			"Agent collection",
 			"Agent Collection");

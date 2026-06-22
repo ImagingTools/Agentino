@@ -184,6 +184,7 @@
                                     <Data IsEnabled="true">
                                         <Values>
                                             <Value>ServiceControllerProxy</Value>
+                                            <Value>TerminalControllerProxy</Value>
                                             <Value>ServicesRemoteRepresentationController</Value>
                                             <Value>TopologyPage</Value>
                                             <Value>AgentsPage</Value>
@@ -326,6 +327,32 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="ServiceStatusCollection">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="TerminalControllerProxy" PackageId="AgentinoGqlPck" ComponentId="TerminalControllerProxy">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ApiClient" Type="Reference" ExportId="ApiClient">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>ListShellTypes</Value>
+                                            <Value>GetTerminalOutput</Value>
+                                            <Value>OpenTerminalSession</Value>
+                                            <Value>SendTerminalInput</Value>
+                                            <Value>CloseTerminalSession</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">

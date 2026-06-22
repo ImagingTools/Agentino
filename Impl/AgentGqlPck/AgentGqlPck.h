@@ -11,6 +11,7 @@
 #include <agentgql/TDocumentRevisionControllerCompWrap.h>
 #include <agentgql/CServiceCollectionControllerComp.h>
 #include <agentgql/CServiceControllerComp.h>
+#include <agentgql/CTerminalControllerComp.h>
 #include <agentgql/CAgentinoSubscriptionClientComp.h>
 #include <agentgql/CServiceLogControllerComp.h>
 #include <agentgql/CMessageCollectionControllerComp.h>
@@ -31,6 +32,7 @@ namespace AgentGqlPck
 
 typedef agentgql::CServiceCollectionControllerComp ServiceCollectionController;
 typedef agentgql::CServiceControllerComp ServiceController;
+typedef agentgql::CTerminalControllerComp TerminalController;
 typedef agentgql::CAgentinoSubscriptionClientComp AgentinoSubscriptionClient;
 typedef agentgql::CServiceLogControllerComp ServiceLogController;
 typedef agentgql::CMessageCollectionControllerComp MessageCollectionController;

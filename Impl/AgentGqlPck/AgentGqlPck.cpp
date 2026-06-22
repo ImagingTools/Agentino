@@ -30,6 +30,11 @@ I_EXPORT_COMPONENT(
 			"GraphQl Service Controller");
 
 I_EXPORT_COMPONENT(
+			TerminalController,
+			"Remote terminal controller",
+			"GraphQl Remote Terminal Controller");
+
+I_EXPORT_COMPONENT(
 			AgentinoSubscriptionClient,
 			"Service manager subscription client for agent",
 			"GraphQl Service  Subscription Client");

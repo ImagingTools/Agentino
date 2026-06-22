@@ -1,0 +1,87 @@
+schema {
+	query: Query
+	mutation: Mutation
+	namespace: agentino
+	version: 1.0
+}
+
+enum ShellType {
+	CMD
+	POWERSHELL
+	BASH
+	SH
+}
+
+enum TerminalStreamType {
+	STDOUT
+	STDERR
+	SYSTEM
+}
+
+type ShellTypeInfo {
+	type: ShellType!
+	name: String!
+	available: Boolean!
+}
+
+type ShellTypeListPayload {
+	items: [ShellTypeInfo]!
+}
+
+input OpenTerminalSessionInput {
+	shellType: ShellType!
+}
+
+type OpenTerminalSessionResponse {
+	sessionId: ID!
+	shellType: ShellType!
+	started: Boolean!
+}
+
+input SendTerminalInputInput {
+	sessionId: ID!
+	data: String!
+}
+
+type SendTerminalInputResponse {
+	accepted: Boolean!
+}
+
+input CloseTerminalSessionInput {
+	sessionId: ID!
+}
+
+type CloseTerminalSessionResponse {
+	closed: Boolean!
+}
+
+input TerminalOutputInput {
+	sessionId: ID!
+	fromSequence: Integer
+}
+
+type TerminalOutputChunk {
+	sequence: Integer!
+	stream: TerminalStreamType!
+	data: String!
+}
+
+type TerminalOutputResponse {
+	sessionId: ID!
+	chunks: [TerminalOutputChunk]!
+	nextSequence: Integer!
+	running: Boolean!
+	finished: Boolean!
+	exitCode: Integer
+}
+
+type Query {
+	ListShellTypes: ShellTypeListPayload!
+	GetTerminalOutput (input: TerminalOutputInput): TerminalOutputResponse!
+}
+
+type Mutation {
+	OpenTerminalSession (input: OpenTerminalSessionInput): OpenTerminalSessionResponse!
+	SendTerminalInput (input: SendTerminalInputInput): SendTerminalInputResponse!
+	CloseTerminalSession (input: CloseTerminalSessionInput): CloseTerminalSessionResponse!
+}

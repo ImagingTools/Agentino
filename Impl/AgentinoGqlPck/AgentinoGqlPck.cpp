@@ -45,6 +45,11 @@ I_EXPORT_COMPONENT(
 			"Service Controller Proxy");
 
 I_EXPORT_COMPONENT(
+			TerminalControllerProxy,
+			"Remote terminal controller proxy",
+			"Remote Terminal Controller Proxy");
+
+I_EXPORT_COMPONENT(
 			TopologyController,
 			"Topology controller",
 			"Topology controller");

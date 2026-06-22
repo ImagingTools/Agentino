@@ -11,6 +11,7 @@
 #include <agentgql/TDocumentRevisionControllerCompWrap.h>
 #include <agentinogql/CServiceSubscriberControllerComp.h>
 #include <agentinogql/CServiceControllerProxyComp.h>
+#include <agentinogql/CTerminalControllerProxyComp.h>
 #include <agentinogql/CAgentCollectionControllerComp.h>
 #include <agentinogql/CSubscriptionControllerComp.h>
 #include <agentinogql/CGqlRepresentationAgentDataComp.h>
@@ -32,6 +33,7 @@ namespace AgentinoGqlPck
 
 typedef agentinogql::CServiceSubscriberControllerComp ServiceSubscriberController;
 typedef agentinogql::CServiceControllerProxyComp ServiceControllerProxy;
+typedef agentinogql::CTerminalControllerProxyComp TerminalControllerProxy;
 typedef agentinogql::CAgentCollectionControllerComp AgentCollectionController;
 typedef icomp::TModelCompWrap<agentinogql::CSubscriptionControllerComp> SubscriptionController;
 typedef agentinogql::CGqlRepresentationAgentDataComp GqlRepresentationAgentData;

@@ -87,6 +87,37 @@ Users are responsible for:
 - Monitoring security advisories for dependencies
 - Applying security patches promptly
 
+### Remote Terminal
+
+The AgentinoServer UI includes a **remote terminal** feature that opens an
+interactive shell (`cmd.exe`/`powershell.exe` on Windows, `/bin/bash` or
+`/bin/sh` on Linux/macOS) on the machine running a selected agent. This is, by
+design, **remote command execution** and is the most security-sensitive
+capability in the system. The following controls apply:
+
+- **Authorization required**: Opening a session is gated behind the existing
+  `imtauth` authorization layer; it is not exposed to unauthenticated callers.
+  Restrict the relevant permission to trusted operators only.
+- **No privilege elevation**: The shell is spawned with the agent service's own
+  privileges. The feature never elevates. Run the agent under a least-privilege
+  service account to limit the blast radius.
+- **Input via stdin**: Operator input is written verbatim to the process
+  standard input rather than being assembled into a shell command string,
+  avoiding command-injection beyond the shell the operator explicitly opened.
+- **Resource bounds**: Concurrent sessions per agent, per-session output buffer
+  size, and per-command input length are capped, and idle sessions are
+  automatically closed after a timeout.
+- **Clean teardown**: All live sessions are terminated when the agent component
+  is destroyed (orderly service shutdown).
+
+Operational guidance:
+
+- Treat the permission that grants terminal access as equivalent to interactive
+  login on every managed host.
+- Prefer disabling the feature (by removing the authorizing permission) in
+  environments where remote shell access is not required.
+- Audit usage via system logs and the agent's command handlers.
+
 ### Safe Usage Guidelines
 
 When deploying Agentino:

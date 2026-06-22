@@ -11,6 +11,7 @@
 #include <agentinodata/CServiceCompositeInfoComp.h>
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/CServiceControllerComp.h>
+#include <agentinodata/CTerminalControllerComp.h>
 #include <agentinodata/CAgentCollectionComp.h>
 #include <agentinodata/CServiceStatusInfo.h>
 #include <agentinodata/CAgentStatusInfo.h>
@@ -35,6 +36,7 @@ typedef icomp::TMakeComponentWrap<
 					iser::ISerializable,
 					istd::IChangeable> AgentInfo;
 typedef icomp::TModelCompWrap<agentinodata::CServiceControllerComp> ServiceController;
+typedef icomp::TModelCompWrap<agentinodata::CTerminalControllerComp> TerminalController;
 typedef icomp::TModelCompWrap<agentinodata::CAgentCollectionComp> AgentCollection;
 typedef icomp::TMakeComponentWrap<
 					agentinodata::CServiceStatusInfo,
