@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentinogql/CTopologyControllerComp.h>
-#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Topology.h>
 
 
 //Qt includes
@@ -16,6 +15,8 @@
 // Agentino includes
 #include <agentinodata/IAgentInfo.h>
 #include <agentinodata/IServiceInfo.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Topology.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
 
 
 namespace agentinogql
