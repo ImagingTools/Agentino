@@ -6,7 +6,7 @@
 #include <imtservergql/CGqlRequestHandlerCompBase.h>
 
 // Agentino includes
-#include <agentinodata/IUpdateManager.h>
+#include <agentinodata/ISoftwareUpdateManager.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Updates_fwd.h>
 
 
@@ -17,12 +17,12 @@ namespace agentgql
 /**
 	Controller component handling update mutations (ApplyUpdate, RollbackUpdate).
 */
-class CUpdateControllerComp: public sdl::V1_0::agentino::CUpdatesGqlHandlerCompBase
+class CSoftwareUpdateControllerComp: public sdl::V1_0::agentino::CUpdatesGqlHandlerCompBase
 {
 public:
 	typedef sdl::V1_0::agentino::CUpdatesGqlHandlerCompBase BaseClass;
 
-	I_BEGIN_COMPONENT(CUpdateControllerComp);
+	I_BEGIN_COMPONENT(CSoftwareUpdateControllerComp);
 		I_ASSIGN(m_updateManagerCompPtr, "UpdateManager", "Update manager for applying and rolling back updates", true, "UpdateManager");
 	I_END_COMPONENT;
 
@@ -38,7 +38,7 @@ protected:
 				QString& errorMessage) const override;
 
 protected:
-	I_REF(agentinodata::IUpdateManager, m_updateManagerCompPtr);
+	I_REF(agentinodata::ISoftwareUpdateManager, m_updateManagerCompPtr);
 };
 
 

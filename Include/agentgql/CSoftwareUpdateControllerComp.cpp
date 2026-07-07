@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
-#include <agentgql/CUpdateControllerComp.h>
+#include <agentgql/CSoftwareUpdateControllerComp.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Updates.h>
 
 
 // Agentino includes
-#include <agentinodata/IUpdateManager.h>
+#include <agentinodata/ISoftwareUpdateManager.h>
 
 
 namespace agentgql
@@ -13,7 +13,7 @@ namespace agentgql
 
 // reimplemented (sdl::V1_0::agentino::CUpdatesGqlHandlerCompBase)
 
-sdl::V1_0::agentino::CApplyUpdateResponse CUpdateControllerComp::OnApplyUpdate(
+sdl::V1_0::agentino::CApplyUpdateResponse CSoftwareUpdateControllerComp::OnApplyUpdate(
 			const sdl::V1_0::agentino::CApplyUpdateGqlRequest& applyUpdateRequest,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,
 			QString& errorMessage) const
@@ -21,7 +21,7 @@ sdl::V1_0::agentino::CApplyUpdateResponse CUpdateControllerComp::OnApplyUpdate(
 	sdl::V1_0::agentino::CApplyUpdateResponse response;
 
 	if (!m_updateManagerCompPtr.IsValid()){
-		Q_ASSERT_X(false, "Attribute 'UpdateManager' was not set", "CUpdateControllerComp");
+		Q_ASSERT_X(false, "Attribute 'UpdateManager' was not set", "CSoftwareUpdateControllerComp");
 
 		response.successful = false;
 		response.errorMessage = QString("Update manager not available");
@@ -53,7 +53,7 @@ sdl::V1_0::agentino::CApplyUpdateResponse CUpdateControllerComp::OnApplyUpdate(
 	QByteArray updateId = *arguments.input->updateId;
 	QByteArray agentId = *arguments.input->agentId;
 
-	agentinodata::IUpdateManager::UpdateResult result = m_updateManagerCompPtr->ApplyUpdate(updateId, agentId);
+	agentinodata::ISoftwareUpdateManager::UpdateResult result = m_updateManagerCompPtr->ApplyUpdate(updateId, agentId);
 
 	response.successful = result.successful;
 	response.status = static_cast<sdl::V1_0::agentino::UpdateStatus>(result.status);
@@ -63,7 +63,7 @@ sdl::V1_0::agentino::CApplyUpdateResponse CUpdateControllerComp::OnApplyUpdate(
 }
 
 
-sdl::V1_0::agentino::CRollbackUpdateResponse CUpdateControllerComp::OnRollbackUpdate(
+sdl::V1_0::agentino::CRollbackUpdateResponse CSoftwareUpdateControllerComp::OnRollbackUpdate(
 			const sdl::V1_0::agentino::CRollbackUpdateGqlRequest& rollbackUpdateRequest,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,
 			QString& errorMessage) const
@@ -71,7 +71,7 @@ sdl::V1_0::agentino::CRollbackUpdateResponse CUpdateControllerComp::OnRollbackUp
 	sdl::V1_0::agentino::CRollbackUpdateResponse response;
 
 	if (!m_updateManagerCompPtr.IsValid()){
-		Q_ASSERT_X(false, "Attribute 'UpdateManager' was not set", "CUpdateControllerComp");
+		Q_ASSERT_X(false, "Attribute 'UpdateManager' was not set", "CSoftwareUpdateControllerComp");
 
 		response.successful = false;
 		response.errorMessage = QString("Update manager not available");
@@ -103,7 +103,7 @@ sdl::V1_0::agentino::CRollbackUpdateResponse CUpdateControllerComp::OnRollbackUp
 	QByteArray updateId = *arguments.input->updateId;
 	QByteArray agentId = *arguments.input->agentId;
 
-	agentinodata::IUpdateManager::UpdateResult result = m_updateManagerCompPtr->RollbackUpdate(updateId, agentId);
+	agentinodata::ISoftwareUpdateManager::UpdateResult result = m_updateManagerCompPtr->RollbackUpdate(updateId, agentId);
 
 	response.successful = result.successful;
 	response.status = static_cast<sdl::V1_0::agentino::UpdateStatus>(result.status);

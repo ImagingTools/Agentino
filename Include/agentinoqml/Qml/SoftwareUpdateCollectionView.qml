@@ -80,7 +80,7 @@ RemoteCollectionView {
 	Component {
 		id: updateEditorComp;
 
-		UpdateEditor {
+		SoftwareUpdateEditor {
 			clientId: root.clientId
 		}
 	}

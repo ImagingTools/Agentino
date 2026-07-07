@@ -6,7 +6,7 @@
 #include <imtservergql/CObjectCollectionControllerCompBase.h>
 
 // Agentino includes
-#include <agentinodata/CUpdateInfo.h>
+#include <agentinodata/CSoftwareUpdateInfo.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Updates_fwd.h>
 
 
@@ -14,18 +14,18 @@ namespace agentgql
 {
 
 
-class CUpdateCollectionControllerComp:
-			public sdl::V1_0::agentino::CUpdateCollectionControllerCompBase
+class CSoftwareUpdateCollectionControllerComp:
+			public sdl::V1_0::agentino::CSoftwareUpdateCollectionControllerCompBase
 {
 public:
-	typedef CUpdateCollectionControllerCompBase BaseClass;
+	typedef CSoftwareUpdateCollectionControllerCompBase BaseClass;
 
-	I_BEGIN_COMPONENT(CUpdateCollectionControllerComp);
+	I_BEGIN_COMPONENT(CSoftwareUpdateCollectionControllerComp);
 		I_ASSIGN(m_updateInfoFactCompPtr, "UpdateFactory", "Factory used for creation of the new update info instance", false, "UpdateFactory");
 	I_END_COMPONENT;
 
 protected:
-	// reimplemented (sdl::V1_0::agentino::CUpdateCollectionControllerCompBase)
+	// reimplemented (sdl::V1_0::agentino::CSoftwareUpdateCollectionControllerCompBase)
 	virtual bool CreateRepresentationFromObject(
 				const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
 				const sdl::V1_0::agentino::CAvailableUpdatesGqlRequest& availableUpdatesRequest,
@@ -38,7 +38,7 @@ protected:
 				QString& errorMessage) const override;
 
 protected:
-	I_FACT(agentinodata::IUpdateInfo, m_updateInfoFactCompPtr);
+	I_FACT(agentinodata::ISoftwareUpdateInfo, m_updateInfoFactCompPtr);
 };
 
 

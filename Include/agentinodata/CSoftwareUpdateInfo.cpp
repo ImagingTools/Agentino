@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
-#include "agentinodata/CUpdateInfo.h"
+#include "agentinodata/CSoftwareUpdateInfo.h"
 
 
 // ACF includes
@@ -14,7 +14,7 @@ namespace agentinodata
 
 // public methods
 
-CUpdateInfo::CUpdateInfo():
+CSoftwareUpdateInfo::CSoftwareUpdateInfo():
 	m_updateType(UT_SERVICE),
 	m_fileSize(0),
 	m_status(US_AVAILABLE)
@@ -22,7 +22,7 @@ CUpdateInfo::CUpdateInfo():
 }
 
 
-void CUpdateInfo::SetName(const QString& name)
+void CSoftwareUpdateInfo::SetName(const QString& name)
 {
 	if (m_name != name){
 		istd::CChangeNotifier changeNotifier(this);
@@ -32,7 +32,7 @@ void CUpdateInfo::SetName(const QString& name)
 }
 
 
-void CUpdateInfo::SetVersion(const QString& version)
+void CSoftwareUpdateInfo::SetVersion(const QString& version)
 {
 	if (m_version != version){
 		istd::CChangeNotifier changeNotifier(this);
@@ -42,7 +42,7 @@ void CUpdateInfo::SetVersion(const QString& version)
 }
 
 
-void CUpdateInfo::SetUpdateType(UpdateType updateType)
+void CSoftwareUpdateInfo::SetUpdateType(UpdateType updateType)
 {
 	if (m_updateType != updateType){
 		istd::CChangeNotifier changeNotifier(this);
@@ -52,7 +52,7 @@ void CUpdateInfo::SetUpdateType(UpdateType updateType)
 }
 
 
-void CUpdateInfo::SetDescription(const QString& description)
+void CSoftwareUpdateInfo::SetDescription(const QString& description)
 {
 	if (m_description != description){
 		istd::CChangeNotifier changeNotifier(this);
@@ -62,7 +62,7 @@ void CUpdateInfo::SetDescription(const QString& description)
 }
 
 
-void CUpdateInfo::SetFileSize(qint64 fileSize)
+void CSoftwareUpdateInfo::SetFileSize(qint64 fileSize)
 {
 	if (m_fileSize != fileSize){
 		istd::CChangeNotifier changeNotifier(this);
@@ -72,7 +72,7 @@ void CUpdateInfo::SetFileSize(qint64 fileSize)
 }
 
 
-void CUpdateInfo::SetChecksum(const QString& checksum)
+void CSoftwareUpdateInfo::SetChecksum(const QString& checksum)
 {
 	if (m_checksum != checksum){
 		istd::CChangeNotifier changeNotifier(this);
@@ -82,7 +82,7 @@ void CUpdateInfo::SetChecksum(const QString& checksum)
 }
 
 
-void CUpdateInfo::SetPublishedDate(const QString& publishedDate)
+void CSoftwareUpdateInfo::SetPublishedDate(const QString& publishedDate)
 {
 	if (m_publishedDate != publishedDate){
 		istd::CChangeNotifier changeNotifier(this);
@@ -92,7 +92,7 @@ void CUpdateInfo::SetPublishedDate(const QString& publishedDate)
 }
 
 
-void CUpdateInfo::SetStatus(UpdateStatus status)
+void CSoftwareUpdateInfo::SetStatus(UpdateStatus status)
 {
 	if (m_status != status){
 		istd::CChangeNotifier changeNotifier(this);
@@ -102,7 +102,7 @@ void CUpdateInfo::SetStatus(UpdateStatus status)
 }
 
 
-void CUpdateInfo::SetChangelog(const QString& changelog)
+void CSoftwareUpdateInfo::SetChangelog(const QString& changelog)
 {
 	if (m_changelog != changelog){
 		istd::CChangeNotifier changeNotifier(this);
@@ -112,7 +112,7 @@ void CUpdateInfo::SetChangelog(const QString& changelog)
 }
 
 
-void CUpdateInfo::SetTargetVersion(const QString& targetVersion)
+void CSoftwareUpdateInfo::SetTargetVersion(const QString& targetVersion)
 {
 	if (m_targetVersion != targetVersion){
 		istd::CChangeNotifier changeNotifier(this);
@@ -122,7 +122,7 @@ void CUpdateInfo::SetTargetVersion(const QString& targetVersion)
 }
 
 
-void CUpdateInfo::SetSourceUrl(const QString& sourceUrl)
+void CSoftwareUpdateInfo::SetSourceUrl(const QString& sourceUrl)
 {
 	if (m_sourceUrl != sourceUrl){
 		istd::CChangeNotifier changeNotifier(this);
@@ -132,69 +132,69 @@ void CUpdateInfo::SetSourceUrl(const QString& sourceUrl)
 }
 
 
-// reimplemented (agentinodata::IUpdateInfo)
+// reimplemented (agentinodata::ISoftwareUpdateInfo)
 
-QString CUpdateInfo::GetName() const
+QString CSoftwareUpdateInfo::GetName() const
 {
 	return m_name;
 }
 
 
-QString CUpdateInfo::GetVersion() const
+QString CSoftwareUpdateInfo::GetVersion() const
 {
 	return m_version;
 }
 
 
-CUpdateInfo::UpdateType CUpdateInfo::GetUpdateType() const
+CSoftwareUpdateInfo::UpdateType CSoftwareUpdateInfo::GetUpdateType() const
 {
 	return m_updateType;
 }
 
 
-QString CUpdateInfo::GetDescription() const
+QString CSoftwareUpdateInfo::GetDescription() const
 {
 	return m_description;
 }
 
 
-qint64 CUpdateInfo::GetFileSize() const
+qint64 CSoftwareUpdateInfo::GetFileSize() const
 {
 	return m_fileSize;
 }
 
 
-QString CUpdateInfo::GetChecksum() const
+QString CSoftwareUpdateInfo::GetChecksum() const
 {
 	return m_checksum;
 }
 
 
-QString CUpdateInfo::GetPublishedDate() const
+QString CSoftwareUpdateInfo::GetPublishedDate() const
 {
 	return m_publishedDate;
 }
 
 
-CUpdateInfo::UpdateStatus CUpdateInfo::GetStatus() const
+CSoftwareUpdateInfo::UpdateStatus CSoftwareUpdateInfo::GetStatus() const
 {
 	return m_status;
 }
 
 
-QString CUpdateInfo::GetChangelog() const
+QString CSoftwareUpdateInfo::GetChangelog() const
 {
 	return m_changelog;
 }
 
 
-QString CUpdateInfo::GetTargetVersion() const
+QString CSoftwareUpdateInfo::GetTargetVersion() const
 {
 	return m_targetVersion;
 }
 
 
-QString CUpdateInfo::GetSourceUrl() const
+QString CSoftwareUpdateInfo::GetSourceUrl() const
 {
 	return m_sourceUrl;
 }
@@ -202,7 +202,7 @@ QString CUpdateInfo::GetSourceUrl() const
 
 // reimplemented (iser::ISerializable)
 
-bool CUpdateInfo::Serialize(iser::IArchive& archive)
+bool CSoftwareUpdateInfo::Serialize(iser::IArchive& archive)
 {
 	bool retVal = true;
 
@@ -275,15 +275,15 @@ bool CUpdateInfo::Serialize(iser::IArchive& archive)
 
 // reimplemented (iser::IChangeable)
 
-int CUpdateInfo::GetSupportedOperations() const
+int CSoftwareUpdateInfo::GetSupportedOperations() const
 {
 	return SO_COPY | SO_COMPARE | SO_RESET;
 }
 
 
-bool CUpdateInfo::CopyFrom(const IChangeable& object, CompatibilityMode /*mode*/)
+bool CSoftwareUpdateInfo::CopyFrom(const IChangeable& object, CompatibilityMode /*mode*/)
 {
-	const CUpdateInfo* sourcePtr = dynamic_cast<const CUpdateInfo*>(&object);
+	const CSoftwareUpdateInfo* sourcePtr = dynamic_cast<const CSoftwareUpdateInfo*>(&object);
 	if (sourcePtr != nullptr){
 		istd::CChangeNotifier changeNotifier(this);
 
@@ -306,9 +306,9 @@ bool CUpdateInfo::CopyFrom(const IChangeable& object, CompatibilityMode /*mode*/
 }
 
 
-istd::IChangeableUniquePtr CUpdateInfo::CloneMe(CompatibilityMode mode) const
+istd::IChangeableUniquePtr CSoftwareUpdateInfo::CloneMe(CompatibilityMode mode) const
 {
-	istd::IChangeableUniquePtr clonePtr(new CUpdateInfo);
+	istd::IChangeableUniquePtr clonePtr(new CSoftwareUpdateInfo);
 	if (clonePtr->CopyFrom(*this, mode)){
 		return clonePtr;
 	}
@@ -317,7 +317,7 @@ istd::IChangeableUniquePtr CUpdateInfo::CloneMe(CompatibilityMode mode) const
 }
 
 
-bool CUpdateInfo::ResetData(CompatibilityMode /*mode*/)
+bool CSoftwareUpdateInfo::ResetData(CompatibilityMode /*mode*/)
 {
 	istd::CChangeNotifier changeNotifier(this);
 

@@ -3,7 +3,7 @@
 
 
 // Agentino includes
-#include <agentinodata/IUpdateManager.h>
+#include <agentinodata/ISoftwareUpdateManager.h>
 
 // Qt includes
 #include <QMap>
@@ -21,10 +21,10 @@ namespace agentinodata
 	and install updates for agents and services.
 	\ingroup Updates
 */
-class CUpdateManager: virtual public IUpdateManager
+class CSoftwareUpdateManager: virtual public ISoftwareUpdateManager
 {
 public:
-	CUpdateManager();
+	CSoftwareUpdateManager();
 
 	/**
 		Set the base URL of the file-repository server.
@@ -36,7 +36,7 @@ public:
 	*/
 	QString GetRepositoryUrl() const;
 
-	// reimplemented (agentinodata::IUpdateManager)
+	// reimplemented (agentinodata::ISoftwareUpdateManager)
 	virtual UpdateResult ApplyUpdate(const QByteArray& updateId, const QByteArray& agentId) override;
 	virtual UpdateResult RollbackUpdate(const QByteArray& updateId, const QByteArray& agentId) override;
 

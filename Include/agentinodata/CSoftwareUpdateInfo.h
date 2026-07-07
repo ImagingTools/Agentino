@@ -6,17 +6,17 @@
 #include <imtbase/TIdentifiableWrap.h>
 
 // Agentino includes
-#include <agentinodata/IUpdateInfo.h>
+#include <agentinodata/ISoftwareUpdateInfo.h>
 
 
 namespace agentinodata
 {
 
 
-class CUpdateInfo: virtual public IUpdateInfo
+class CSoftwareUpdateInfo: virtual public ISoftwareUpdateInfo
 {
 public:
-	CUpdateInfo();
+	CSoftwareUpdateInfo();
 
 	void SetName(const QString& name);
 	void SetVersion(const QString& version);
@@ -30,7 +30,7 @@ public:
 	void SetTargetVersion(const QString& targetVersion);
 	void SetSourceUrl(const QString& sourceUrl);
 
-	// reimplemented (agentinodata::IUpdateInfo)
+	// reimplemented (agentinodata::ISoftwareUpdateInfo)
 	virtual QString GetName() const override;
 	virtual QString GetVersion() const override;
 	virtual UpdateType GetUpdateType() const override;
@@ -67,7 +67,7 @@ protected:
 };
 
 
-typedef imtbase::TIdentifiableWrap<CUpdateInfo> CIdentifiableUpdateInfo;
+typedef imtbase::TIdentifiableWrap<CSoftwareUpdateInfo> CIdentifiableSoftwareUpdateInfo;
 
 
 } // namespace agentinodata

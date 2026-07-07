@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
-#include "agentinodata/CUpdateManager.h"
+#include "agentinodata/CSoftwareUpdateManager.h"
 
 
 // Qt includes
@@ -16,26 +16,26 @@ namespace agentinodata
 
 // public methods
 
-CUpdateManager::CUpdateManager()
+CSoftwareUpdateManager::CSoftwareUpdateManager()
 {
 }
 
 
-void CUpdateManager::SetRepositoryUrl(const QString& repositoryUrl)
+void CSoftwareUpdateManager::SetRepositoryUrl(const QString& repositoryUrl)
 {
 	m_repositoryUrl = repositoryUrl;
 }
 
 
-QString CUpdateManager::GetRepositoryUrl() const
+QString CSoftwareUpdateManager::GetRepositoryUrl() const
 {
 	return m_repositoryUrl;
 }
 
 
-// reimplemented (agentinodata::IUpdateManager)
+// reimplemented (agentinodata::ISoftwareUpdateManager)
 
-IUpdateManager::UpdateResult CUpdateManager::ApplyUpdate(const QByteArray& updateId, const QByteArray& agentId)
+ISoftwareUpdateManager::UpdateResult CSoftwareUpdateManager::ApplyUpdate(const QByteArray& updateId, const QByteArray& agentId)
 {
 	UpdateResult result;
 
@@ -55,7 +55,7 @@ IUpdateManager::UpdateResult CUpdateManager::ApplyUpdate(const QByteArray& updat
 	QString errorMessage;
 	if (!BackupCurrentVersion(updateId, agentId, errorMessage)){
 		result.successful = false;
-		result.status = static_cast<int>(IUpdateInfo::US_FAILED);
+		result.status = static_cast<int>(ISoftwareUpdateInfo::US_FAILED);
 		result.errorMessage = QString("Failed to create backup: %1").arg(errorMessage);
 		return result;
 	}
@@ -66,7 +66,7 @@ IUpdateManager::UpdateResult CUpdateManager::ApplyUpdate(const QByteArray& updat
 
 	if (!DownloadArtifact(sourceUrl, targetPath, errorMessage)){
 		result.successful = false;
-		result.status = static_cast<int>(IUpdateInfo::US_FAILED);
+		result.status = static_cast<int>(ISoftwareUpdateInfo::US_FAILED);
 		result.errorMessage = QString("Download failed: %1").arg(errorMessage);
 		return result;
 	}
@@ -74,7 +74,7 @@ IUpdateManager::UpdateResult CUpdateManager::ApplyUpdate(const QByteArray& updat
 	// Install the artifact
 	if (!InstallArtifact(targetPath, agentId, errorMessage)){
 		result.successful = false;
-		result.status = static_cast<int>(IUpdateInfo::US_FAILED);
+		result.status = static_cast<int>(ISoftwareUpdateInfo::US_FAILED);
 		result.errorMessage = QString("Installation failed: %1").arg(errorMessage);
 
 		// Attempt to restore backup on failure
@@ -89,7 +89,7 @@ IUpdateManager::UpdateResult CUpdateManager::ApplyUpdate(const QByteArray& updat
 	m_installedUpdates[updateId] = info;
 
 	result.successful = true;
-	result.status = static_cast<int>(IUpdateInfo::US_INSTALLED);
+	result.status = static_cast<int>(ISoftwareUpdateInfo::US_INSTALLED);
 
 	// Clean up downloaded artifact
 	QFile::remove(targetPath);
@@ -98,7 +98,7 @@ IUpdateManager::UpdateResult CUpdateManager::ApplyUpdate(const QByteArray& updat
 }
 
 
-IUpdateManager::UpdateResult CUpdateManager::RollbackUpdate(const QByteArray& updateId, const QByteArray& agentId)
+ISoftwareUpdateManager::UpdateResult CSoftwareUpdateManager::RollbackUpdate(const QByteArray& updateId, const QByteArray& agentId)
 {
 	UpdateResult result;
 
@@ -117,7 +117,7 @@ IUpdateManager::UpdateResult CUpdateManager::RollbackUpdate(const QByteArray& up
 	QString errorMessage;
 	if (!RestoreBackup(updateId, agentId, errorMessage)){
 		result.successful = false;
-		result.status = static_cast<int>(IUpdateInfo::US_FAILED);
+		result.status = static_cast<int>(ISoftwareUpdateInfo::US_FAILED);
 		result.errorMessage = QString("Rollback failed: %1").arg(errorMessage);
 		return result;
 	}
@@ -125,14 +125,14 @@ IUpdateManager::UpdateResult CUpdateManager::RollbackUpdate(const QByteArray& up
 	m_installedUpdates.remove(updateId);
 
 	result.successful = true;
-	result.status = static_cast<int>(IUpdateInfo::US_ROLLED_BACK);
+	result.status = static_cast<int>(ISoftwareUpdateInfo::US_ROLLED_BACK);
 	return result;
 }
 
 
 // private methods
 
-bool CUpdateManager::DownloadArtifact(const QString& sourceUrl, const QString& targetPath, QString& errorMessage)
+bool CSoftwareUpdateManager::DownloadArtifact(const QString& sourceUrl, const QString& targetPath, QString& errorMessage)
 {
 	Q_UNUSED(sourceUrl);
 	Q_UNUSED(targetPath);
@@ -141,13 +141,13 @@ bool CUpdateManager::DownloadArtifact(const QString& sourceUrl, const QString& t
 	// This will use the GraphQL API of the file-repository server
 	// to fetch the artifact binary data
 	errorMessage = "Download not yet implemented - requires file-repository server connection";
-	qDebug() << "CUpdateManager::DownloadArtifact - Source:" << sourceUrl << "Target:" << targetPath;
+	qDebug() << "CSoftwareUpdateManager::DownloadArtifact - Source:" << sourceUrl << "Target:" << targetPath;
 
 	return false;
 }
 
 
-bool CUpdateManager::InstallArtifact(const QString& artifactPath, const QByteArray& agentId, QString& errorMessage)
+bool CSoftwareUpdateManager::InstallArtifact(const QString& artifactPath, const QByteArray& agentId, QString& errorMessage)
 {
 	Q_UNUSED(artifactPath);
 	Q_UNUSED(agentId);
@@ -156,13 +156,13 @@ bool CUpdateManager::InstallArtifact(const QString& artifactPath, const QByteArr
 	// For service updates: stop service -> replace binaries -> restart service
 	// For agent updates: staged update with process restart
 	errorMessage = "Installation not yet implemented";
-	qDebug() << "CUpdateManager::InstallArtifact - Artifact:" << artifactPath << "Agent:" << agentId;
+	qDebug() << "CSoftwareUpdateManager::InstallArtifact - Artifact:" << artifactPath << "Agent:" << agentId;
 
 	return false;
 }
 
 
-bool CUpdateManager::VerifyChecksum(const QString& filePath, const QString& expectedChecksum) const
+bool CSoftwareUpdateManager::VerifyChecksum(const QString& filePath, const QString& expectedChecksum) const
 {
 	QFile file(filePath);
 	if (!file.open(QIODevice::ReadOnly)){
@@ -179,7 +179,7 @@ bool CUpdateManager::VerifyChecksum(const QString& filePath, const QString& expe
 }
 
 
-bool CUpdateManager::BackupCurrentVersion(const QByteArray& updateId, const QByteArray& agentId, QString& errorMessage)
+bool CSoftwareUpdateManager::BackupCurrentVersion(const QByteArray& updateId, const QByteArray& agentId, QString& errorMessage)
 {
 	Q_UNUSED(updateId);
 	Q_UNUSED(agentId);
@@ -187,13 +187,13 @@ bool CUpdateManager::BackupCurrentVersion(const QByteArray& updateId, const QByt
 	// TODO: Implement backup of current installation before applying update
 	// Should copy current binaries/configs to a backup directory
 	errorMessage = "";
-	qDebug() << "CUpdateManager::BackupCurrentVersion - Update:" << updateId << "Agent:" << agentId;
+	qDebug() << "CSoftwareUpdateManager::BackupCurrentVersion - Update:" << updateId << "Agent:" << agentId;
 
 	return true;
 }
 
 
-bool CUpdateManager::RestoreBackup(const QByteArray& updateId, const QByteArray& agentId, QString& errorMessage)
+bool CSoftwareUpdateManager::RestoreBackup(const QByteArray& updateId, const QByteArray& agentId, QString& errorMessage)
 {
 	Q_UNUSED(agentId);
 
@@ -204,7 +204,7 @@ bool CUpdateManager::RestoreBackup(const QByteArray& updateId, const QByteArray&
 
 	// TODO: Implement restore from backup
 	// Should copy backed-up binaries/configs back to the installation directory
-	qDebug() << "CUpdateManager::RestoreBackup - Update:" << updateId << "Agent:" << agentId;
+	qDebug() << "CSoftwareUpdateManager::RestoreBackup - Update:" << updateId << "Agent:" << agentId;
 
 	return true;
 }

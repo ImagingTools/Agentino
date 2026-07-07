@@ -18,7 +18,7 @@ namespace agentinodata
 	Interface for describing an update info.
 	\ingroup Updates
 */
-class IUpdateInfo: virtual public iser::IObject
+class ISoftwareUpdateInfo: virtual public iser::IObject
 {
 public:
 	/**

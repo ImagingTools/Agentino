@@ -19,7 +19,7 @@ namespace agentinodata
 	Handles downloading, installing, and rolling back updates.
 	\ingroup Updates
 */
-class IUpdateManager: virtual public istd::IPolymorphic
+class ISoftwareUpdateManager: virtual public istd::IPolymorphic
 {
 public:
 	/**
