@@ -42,7 +42,6 @@ RemoteCollectionView {
 	}
 
 	onClientIdChanged: {
-		console.log("onClientIdChanged", clientId)
 		if (clientId == ""){
 			return
 		}

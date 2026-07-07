@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6418" Description="ACF"/>
-            <Version Id="1" Number="2408" Description="ACF-Solutions"/>
+            <Version Id="0" Number="6435" Description="ACF"/>
+            <Version Id="1" Number="2410" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -129,9 +129,6 @@
         <Element Id="ProfileController" PackageId="ImtGraphQlVoce" ComponentId="ProfileController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
-                    <AttributeInfo Id="FeatureContainer" Type="Reference" ExportId="FeatureContainer">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="GroupCollection" Type="Reference" ExportId="UserGroupRepository">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>

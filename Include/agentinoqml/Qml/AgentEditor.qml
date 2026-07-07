@@ -14,6 +14,10 @@ ViewBase {
 	property AgentData agentData: model ? model : null;
 	
 	function updateGui(){
+		if (!agentData){
+			return
+		}
+
 		nameInput.text = agentData.m_name
 		descriptionInput.text = agentData.m_description
 		
@@ -28,6 +32,10 @@ ViewBase {
 	}
 	
 	function updateModel(){
+		if (!agentData){
+			return
+		}
+
 		agentData.m_name = nameInput.text;
 		agentData.m_description = descriptionInput.text;
 		
@@ -42,7 +50,8 @@ ViewBase {
 		else{
 			agentData.m_tracingLevel = -1;
 		}
-	}	
+	}
+
 	Rectangle {
 		id: background;
 		
