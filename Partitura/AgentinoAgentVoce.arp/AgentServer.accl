@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6418" Description="ACF"/>
-            <Version Id="1" Number="2408" Description="ACF-Solutions"/>
+            <Version Id="0" Number="6435" Description="ACF"/>
+            <Version Id="1" Number="2410" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -11,24 +11,26 @@
         <Element ComponentName="AgentHandlers" X="500" Y="325" Note=""/>
         <Element ComponentName="AgentSubscribers" X="975" Y="600" Note=""/>
         <Element ComponentName="AgentinoLocalization" X="200" Y="75" Note=""/>
+        <Element ComponentName="AuthenticationManager" X="450" Y="750" Note=""/>
         <Element ComponentName="DatabaseEngine" X="475" Y="175" Note=""/>
-        <Element ComponentName="GqlContext" X="200" Y="175" Note=""/>
+        <Element ComponentName="FeatureContainer" X="1050" Y="300" Note=""/>
         <Element ComponentName="HttpServerFramework" X="350" Y="450" Note=""/>
+        <Element ComponentName="JwtSessionController" X="1050" Y="775" Note=""/>
         <Element ComponentName="Repositories" X="750" Y="225" Note=""/>
         <Element ComponentName="ServerSettings" X="125" Y="350" Note=""/>
         <Element ComponentName="ServiceCollectionPropvider" X="1025" Y="126" Note=""/>
         <Element ComponentName="ServiceController" X="825" Y="375" Note=""/>
         <Element ComponentName="ServiceManagerSubscriptionClient" X="175" Y="650" Note=""/>
-        <Element ComponentName="SimpleGqlContextCreator" X="200" Y="250" Note=""/>
         <Element ComponentName="WebSocketClient" X="600" Y="625" Note=""/>
         <Element ComponentName="WebSocketServerFramework" X="725" Y="475" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="WebSocketClient">
+        <EmbededRegistry Id="ServiceCollectionController">
             <PositionMap>
-                <Element ComponentName="WebSocketClient" X="325" Y="200" Note=""/>
-                <Element ComponentName="WebSocketServlet" X="325" Y="500" Note=""/>
-                <Element ComponentName="WorkerManager" X="725" Y="200" Note=""/>
+                <Element ComponentName="CheckPermissionOr" X="650" Y="450" Note=""/>
+                <Element ComponentName="RepresentationService" X="625" Y="125" Note=""/>
+                <Element ComponentName="ServiceCollectionController" X="650" Y="275" Note=""/>
+                <Element ComponentName="ServiceHeadersDataProvider" X="225" Y="275" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
@@ -37,16 +39,18 @@
                 <Element ComponentName="FileAutoPersistence" X="250" Y="275" Note=""/>
                 <Element ComponentName="ServiceCollection" X="500" Y="425" Note=""/>
                 <Element ComponentName="ServiceInfo" X="500" Y="525" Note=""/>
+                <Element ComponentName="TopologyCollection" X="275" Y="175" Note=""/>
+                <Element ComponentName="TopologyFileAutoPersistence" X="675" Y="175" Note=""/>
+                <Element ComponentName="TopologyPosition2d" X="275" Y="75" Note=""/>
                 <Element ComponentName="UserLocalRepositories" X="900" Y="275" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
-        <EmbededRegistry Id="ServiceCollectionController">
+        <EmbededRegistry Id="WebSocketClient">
             <PositionMap>
-                <Element ComponentName="CheckPermissionOr" X="650" Y="450" Note=""/>
-                <Element ComponentName="RepresentationService" X="625" Y="125" Note=""/>
-                <Element ComponentName="ServiceCollectionController" X="650" Y="275" Note=""/>
-                <Element ComponentName="ServiceHeadersDataProvider" X="225" Y="275" Note=""/>
+                <Element ComponentName="WebSocketClient" X="325" Y="200" Note=""/>
+                <Element ComponentName="WebSocketServlet" X="325" Y="500" Note=""/>
+                <Element ComponentName="WorkerManager" X="725" Y="200" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
