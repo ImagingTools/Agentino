@@ -26,6 +26,11 @@ I_EXPORT_COMPONENT(
 			"Service Composed Information");
 
 I_EXPORT_COMPONENT(
+			AgentServiceCompositeInfo,
+			"Agent local service composed information",
+			"Agent Local Service Composed Information");
+
+I_EXPORT_COMPONENT(
 			AgentInfo,
 			"Agent information",
 			"Agent Information");

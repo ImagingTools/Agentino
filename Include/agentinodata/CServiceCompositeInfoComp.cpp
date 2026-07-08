@@ -41,54 +41,9 @@ QByteArray CServiceCompositeInfoComp::GetServiceId(const QUrl& url) const
 			if (serviceCollectionPtr == nullptr){
 				continue;
 			}
-			imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
-			for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
-				imtbase::IObjectCollection::DataPtr serviceDataPtr;
-				if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
-					IServiceInfo* serviceInfoPtr = dynamic_cast<IServiceInfo*>(serviceDataPtr.GetPtr());
-					if (serviceInfoPtr == nullptr){
-						continue;
-					}
-					// Get Connections
-					imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
-					if (connectionCollectionPtr == nullptr){
-						continue;
-					}
-					imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
-					for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-						imtbase::IObjectCollection::DataPtr connectionDataPtr;
-						if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
-							imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
-							if (connectionParamPtr != nullptr){
-								if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT){
-									QUrl connectionUrl;
-									if (connectionParamPtr->GetUrl(imtcom::IServerConnectionInterface::PT_HTTP, connectionUrl)){
-										if (connectionUrl == url){
-											return serviceElementId;
-										}
-									}
-
-									if (connectionParamPtr->GetUrl(imtcom::IServerConnectionInterface::PT_WEBSOCKET, connectionUrl)){
-										if (connectionUrl == url){
-											return serviceElementId;
-										}
-									}
-
-									imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections = connectionParamPtr->GetIncomingConnections();
-									for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-										QUrl incomingConnectionUrl;
-										incomingConnectionUrl.setHost(incomingConnection.GetHost());
-										incomingConnectionUrl.setPort(incomingConnection.GetPort(imtcom::IServerConnectionInterface::PT_HTTP));
-
-										if (incomingConnectionUrl.host() == url.host() && incomingConnectionUrl.port() == url.port()){
-											return serviceElementId;
-										}
-									}
-								}
-							}
-						}
-					}
-				}
+			QByteArray serviceId = FindServiceIdByUrl(*serviceCollectionPtr, url);
+			if (!serviceId.isEmpty()){
+				return serviceId;
 			}
 		}
 	}
@@ -116,39 +71,9 @@ QByteArray CServiceCompositeInfoComp::GetServiceId(const QByteArray& dependantSe
 			if (serviceCollectionPtr == nullptr){
 				continue;
 			}
-			imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
-			for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
-				imtbase::IObjectCollection::DataPtr serviceDataPtr;
-				if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
-					IServiceInfo* serviceInfoPtr = dynamic_cast<IServiceInfo*>(serviceDataPtr.GetPtr());
-					if (serviceInfoPtr == nullptr){
-						continue;
-					}
-					// Get Connections
-					imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
-					if (connectionCollectionPtr == nullptr){
-						continue;
-					}
-					imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
-					for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-						if (connectionElementId == dependantServiceConnectionId){
-							return serviceElementId;
-						}
-
-						imtbase::IObjectCollection::DataPtr connectionDataPtr;
-						if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
-							imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
-							if (connectionParamPtr != nullptr){
-								imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections = connectionParamPtr->GetIncomingConnections();
-								for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-									if (incomingConnection.GetObjectUuid() == dependantServiceConnectionId){
-										return serviceElementId;
-									}
-								}
-							}
-						}
-					}
-				}
+			QByteArray serviceId = FindServiceIdByDependantConnectionId(*serviceCollectionPtr, dependantServiceConnectionId);
+			if (!serviceId.isEmpty()){
+				return serviceId;
 			}
 		}
 	}
@@ -200,31 +125,7 @@ IServiceCompositeInfo::StateOfRequiredServices CServiceCompositeInfoComp::GetSta
 							if (serviceInfoPtr == nullptr){
 								continue;
 							}
-							// Get Connections
-							imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
-							if (connectionCollectionPtr != nullptr){
-								imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
-								for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-									imtbase::IObjectCollection::DataPtr connectionDataPtr;
-									if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
-										imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
-										if (connectionLinkParamPtr != nullptr){
-											QByteArray dependantServiceId =  GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
-											IServiceStatusInfo::ServiceStatus dependantServiceStatus = GetServiceStatus(dependantServiceId);
-											if (dependantServiceStatus == IServiceStatusInfo::SS_UNDEFINED){
-												return SORS_UNDEFINED;
-											}
-
-											if (dependantServiceStatus == IServiceStatusInfo::SS_NOT_RUNNING){
-												retVal = SORS_NOT_RUNNING;
-											}
-											else if (dependantServiceStatus == IServiceStatusInfo::SS_RUNNING && retVal != SORS_NOT_RUNNING){
-												retVal = SORS_RUNNING;
-											}
-										}
-									}
-								}
-							}
+							retVal = CalculateStateOfRequiredServices(*serviceInfoPtr);
 						}
 
 						break;
@@ -251,38 +152,11 @@ QByteArrayList CServiceCompositeInfoComp::GetDependencyServices(const QByteArray
 		imtbase::IObjectCollection::DataPtr agentDataPtr;
 		if (m_agentCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
 			IAgentInfo* agentInfoPtr = dynamic_cast<IAgentInfo*>(agentDataPtr.GetPtr());
-			QString agentName = m_agentCollectionCompPtr->GetElementInfo(elementId, imtbase::ICollectionInfo::EIT_NAME).toString();
 			if (agentInfoPtr != nullptr){
 				// Get Services
 				imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 				if (serviceCollectionPtr != nullptr){
-					imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
-					for (const QByteArray& serviceElementId: serviceElementIds){
-						imtbase::IObjectCollection::DataPtr serviceDataPtr;
-						if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
-							IServiceInfo* serviceInfoPtr = dynamic_cast<IServiceInfo*>(serviceDataPtr.GetPtr());
-							if (serviceInfoPtr == nullptr){
-								continue;
-							}
-							// Get Connections
-							imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
-							if (connectionCollectionPtr != nullptr){
-								imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
-								for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-									imtbase::IObjectCollection::DataPtr connectionDataPtr;
-									if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
-										imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
-										if (connectionLinkParamPtr != nullptr){
-											QByteArray dependantServiceId =  GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
-											if (dependantServiceId == serviceId){
-												retVal << serviceElementId;
-											}
-										}
-									}
-								}
-							}
-						}
-					}
+					CollectDependencyServices(*serviceCollectionPtr, serviceId, retVal);
 				}
 			}
 		}

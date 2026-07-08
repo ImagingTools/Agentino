@@ -14,6 +14,7 @@
 
 // Agentino includes
 #include <agentinodata/IAgentInfo.h>
+#include <agentinodata/IAgentStatusInfo.h>
 #include <agentinodata/IServiceInfo.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Topology.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
@@ -42,6 +43,8 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 			agentinodata::IAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::IAgentInfo*>(agentDataPtr.GetPtr());
 			if (agentInfoPtr != nullptr){
 				QString agentName = m_agentCollectionCompPtr->GetElementInfo(elementId, imtbase::ICollectionInfo::EIT_NAME).toString();
+				
+				bool agentOnline = IsAgentOnline(elementId);
 				
 				imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
 				Q_ASSERT (serviceCollectionPtr != nullptr);
@@ -77,8 +80,16 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 					
 					service.thirdText = serviceTypeName;
 					
+					service.agentOnline = agentOnline;
+					
 					agentinodata::IServiceStatusInfo::ServiceStatus serviceStatus = m_serviceCompositeInfoCompPtr->GetServiceStatus(serviceElementId);
-					if (serviceStatus == agentinodata::IServiceStatusInfo::SS_RUNNING){
+					if (!agentOnline){
+						// The agent is offline - the cached service data may be outdated,
+						// the actual service status is unknown
+						service.status = sdl::V1_0::agentino::ServiceStatus::UNDEFINED;
+						service.icon1 = "Icons/Alert";
+					}
+					else if (serviceStatus == agentinodata::IServiceStatusInfo::SS_RUNNING){
 						service.status = sdl::V1_0::agentino::ServiceStatus::RUNNING;
 						service.icon1 = "Icons/Running";
 					}
@@ -92,7 +103,10 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 					}
 					
 					agentinodata::IServiceCompositeInfo::StateOfRequiredServices stateOfRequiredServices = m_serviceCompositeInfoCompPtr->GetStateOfRequiredServices(serviceElementId);
-					if (serviceStatus == agentinodata::IServiceStatusInfo::SS_NOT_RUNNING
+					if (!agentOnline){
+						service.icon2 = "Icons/Warning";
+					}
+					else if (serviceStatus == agentinodata::IServiceStatusInfo::SS_NOT_RUNNING
 						|| serviceStatus == agentinodata::IServiceStatusInfo::SS_UNDEFINED
 						|| stateOfRequiredServices == agentinodata::IServiceCompositeInfo::SORS_RUNNING){
 						service.icon2 = "";
@@ -228,6 +242,26 @@ bool CTopologyControllerComp::SetServiceCoordinate(const QByteArray& serviceId, 
 	
 	QByteArray retVal = m_topologyCollectionCompPtr->InsertNewObject("Topology", "", "", &position2d, serviceId);
 	return !retVal.isEmpty();
+}
+
+
+bool CTopologyControllerComp::IsAgentOnline(const QByteArray& agentId) const
+{
+	if (!m_agentStatusCollectionCompPtr.IsValid()){
+		// No agent status information available - assume the agent is online
+		return true;
+	}
+	
+	imtbase::IObjectCollection::DataPtr dataPtr;
+	if (m_agentStatusCollectionCompPtr->GetObjectData(agentId, dataPtr)){
+		agentinodata::IAgentStatusInfo* agentStatusInfoPtr = dynamic_cast<agentinodata::IAgentStatusInfo*>(dataPtr.GetPtr());
+		if (agentStatusInfoPtr != nullptr){
+			return agentStatusInfoPtr->GetAgentStatus() == agentinodata::IAgentStatusInfo::AS_CONNECTED;
+		}
+	}
+	
+	// No explicit status found - assume the agent is online
+	return true;
 }
 
 
