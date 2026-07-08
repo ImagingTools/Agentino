@@ -199,20 +199,8 @@ sdl::V1_0::agentino::CPluginInfo CServiceControllerComp::OnLoadPlugin(
 	}
 
 	sdl::V1_0::agentino::LoadPluginRequestArguments arguments = loadPluginRequest.GetRequestedArguments();
-	if (!arguments.input.has_value()){
-		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
-
-		return response;
-	}
-
-	if (!arguments.input.has_value()){
-		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
-		return response;
-	}
-
-	if (!arguments.input->servicePath.has_value()){
+	if (!arguments.input.has_value() || !arguments.input->servicePath.has_value()){
 		errorMessage = QString("Unable to load plugin. Error: Service path is invalid");
-
 		return response;
 	}
 

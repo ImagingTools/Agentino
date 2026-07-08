@@ -25,7 +25,7 @@ include(${IMTCOREDIR}/Config/CMake/WebCompiler.cmake)
 include(${ACFDIR}/Config/CMake/CustomBuild.cmake)
 include(${ACFDIR}/Config/CMake/ApplicationConfig.cmake)
 
-target_link_libraries(${PROJECT_NAME} imtrest imtlicgui imtlicgql imtclientgql imtgql imtauthdb imtchatdb imtdeskdb imtdb imtbase imtapp imtfile imtcom iser imtchat)
+target_link_libraries(${PROJECT_NAME} imtrest imtlicgui imtlicgql imtclientgql imtgql imtauthdb imtdb imtbase imtapp imtfile imtcom iser imtchat imtchatdb imtdeskdb)
 target_link_libraries(${PROJECT_NAME} i2d idoc imtqml imtstyle imtauthgui imtauthgql imtstylecontrolsqml imtgui imtguigql imtlic imtauth imtauthsdl imtappsdl imtbasesdl imtcolorsdl imtserverapp imt2dsdl)
 target_link_libraries(${PROJECT_NAME} ImtCoreLoc AgentinoLoc AcfLoc AcfSlnLoc)
 target_link_libraries(${PROJECT_NAME} agentinodata agentinogql agentgql agentinoqml agentinosdl)
@@ -49,6 +49,3 @@ if(WIN32)
 	windeploy(${PROJECT_NAME} "${listOptions}" "${files}")
 	unset(listOptions)
 endif()
-
-
-

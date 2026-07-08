@@ -14,10 +14,17 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/types.h>
+#elif defined(Q_OS_MACOS)
+#include <libproc.h>
+#include <signal.h>
+#include <unistd.h>
+#include <vector>
 #endif
 
 // Qt includes
-#include<QtCore/QFileInfo>
+#include <QtCore/QDir>
+#include <QtCore/QFileInfo>
+#include <QtCore/QThread>
 
 // ACF includes
 #include <istd/TDelPtr.h>
@@ -97,9 +104,9 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 	}
 
 	QByteArray servicePath = serviceInfoPtr->GetServicePath();
-    QByteArray moduleName = GetModuleName(servicePath);
 
 #ifdef WIN32
+	QByteArray moduleName = GetModuleName(servicePath);
 	if (!moduleName.isEmpty()){
 		QByteArray data = "taskkill /f /im " + moduleName;
 
@@ -115,6 +122,7 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 	}
 
 #elif defined(Q_OS_LINUX)
+	QByteArray moduleName = GetModuleName(servicePath);
 	if (!moduleName.isEmpty()){
 		EmitChangeSignal(serviceId, IServiceStatusInfo::SS_STOPPING);
 		QByteArray data = "pkill -9 -f " + moduleName;
@@ -125,6 +133,60 @@ bool CServiceControllerComp::StopService(const QByteArray& serviceId)
 
 		retVal = true;
 	}
+#elif defined(Q_OS_MACOS)
+	QFileInfo serviceInfo(QString::fromUtf8(servicePath));
+	QString targetPath = serviceInfo.canonicalFilePath();
+	if (targetPath.isEmpty()) {
+		targetPath = QDir::cleanPath(serviceInfo.absoluteFilePath());
+	}
+
+	std::vector<pid_t> pids = GetPidsForPath(targetPath);
+	if (pids.empty()) {
+		// Service is not running
+		return false;
+	}
+
+	bool stopRequested = false;
+
+	// Try stopping the processes gracefully first via SIGTERM
+	for (pid_t pid : pids) {
+		if (::kill(pid, SIGTERM) == 0) {
+			stopRequested = true;
+		}
+	}
+
+	if (stopRequested) {
+		EmitChangeSignal(serviceId, IServiceStatusInfo::SS_STOPPING);
+
+		// active-wait fallback: verification & SIGKILL override
+		// Wait up to 1.5 seconds (in 150ms increments) for the processes to exit
+		int retries = 10;
+		std::vector<pid_t> remainingPids;
+		while (retries > 0) {
+			QThread::msleep(150);
+			remainingPids = GetPidsForPath(targetPath);
+			if (remainingPids.empty()) {
+				break;
+			}
+			--retries;
+		}
+
+		// If some PIDs are still lingering, forcibly terminate them via SIGKILL
+		for (pid_t pid : remainingPids) {
+			::kill(pid, SIGKILL);
+		}
+
+		// Verify all processes are actually gone after SIGKILL
+		std::vector<pid_t> finalPids = GetPidsForPath(targetPath);
+		if (finalPids.empty()) {
+			SendInfoMessage(0, QString("Service '%1' stopped").arg(serviceName), serviceName);
+			EmitChangeSignal(serviceId, IServiceStatusInfo::SS_NOT_RUNNING);
+			retVal = true;
+		} else {
+			SendErrorMessage(0, QString("Failed to stop service '%1': some processes could not be terminated").arg(serviceName), serviceName);
+		}
+	}
+
 #endif
 
 
@@ -167,14 +229,9 @@ void CServiceControllerComp::OnComponentCreated()
 		}
 
 		if (serviceInfoPtr != nullptr){
-			QByteArray servicePath = serviceInfoPtr->GetServicePath();
+			IServiceStatusInfo::ServiceStatus status = GetServiceStatus(serviceId);
 
-			istd::TDelPtr<QProcess> processPtr = new QProcess(this);
-			processPtr->setProgram(servicePath);
-
-			QProcess::ProcessState state = processPtr->state();
-
-			if (state == QProcess::Running || serviceInfoPtr->IsAutoStart()){
+			if (status == IServiceStatusInfo::SS_NOT_RUNNING && serviceInfoPtr->IsAutoStart()){
 				SetupService(serviceId, true);
 			}
 			else{
@@ -348,8 +405,24 @@ QByteArray CServiceControllerComp::GetModuleName(QByteArray servicePath) const
 	}
 
 	closedir(dir);
+
+#elif defined(Q_OS_MACOS)
+	QFileInfo serviceInfo(QString::fromUtf8(servicePath));
+	QString targetPath = serviceInfo.canonicalFilePath();
+	if (targetPath.isEmpty()) {
+		targetPath = QDir::cleanPath(serviceInfo.absoluteFilePath());
+	}
+
+	std::vector<pid_t> pids = GetPidsForPath(targetPath);
+
+	if (!pids.empty()) {
+		return QFileInfo(targetPath).fileName().toUtf8();
+	}
+
 #else
+
 	Q_UNUSED(servicePath)
+
 #endif
 
 
@@ -586,6 +659,56 @@ void CServiceControllerComp::EmitChangeSignal(const QByteArray& serviceId, IServ
 
 	istd::CChangeNotifier notifier(this, &changeSet);
 }
+
+#ifdef Q_OS_MACOS
+
+std::vector<pid_t> CServiceControllerComp::GetPidsForPath(const QString &targetPath)
+{
+	std::vector<pid_t> matchingPids;
+	if (targetPath.isEmpty()) {
+		return matchingPids;
+	}
+
+	int bytesNeeded = proc_listpids(PROC_ALL_PIDS, 0, nullptr, 0);
+	if (bytesNeeded <= 0) {
+		return matchingPids;
+	}
+
+	// Allocate with a safety buffer to absorb newly spawned processes
+	size_t pidCount = (static_cast<size_t>(bytesNeeded) / sizeof(pid_t)) + 64;
+	std::vector<pid_t> processList(pidCount);
+
+	int bytesReturned = proc_listpids(PROC_ALL_PIDS, 0, processList.data(), static_cast<int>(processList.size() * sizeof(pid_t)));
+	if (bytesReturned <= 0) {
+		return matchingPids;
+	}
+
+	size_t actualCount = static_cast<size_t>(bytesReturned) / sizeof(pid_t);
+	if (actualCount > processList.size()) {
+		actualCount = processList.size();
+	}
+
+	for (size_t i = 0; i < actualCount; ++i) {
+		pid_t pid = processList[i];
+		if (pid <= 0) {
+			continue;
+		}
+
+		char pathBuffer[PROC_PIDPATHINFO_MAXSIZE];
+		int pathLen = proc_pidpath(pid, pathBuffer, sizeof(pathBuffer));
+		if (pathLen > 0) {
+			// Using explicit pathLen to avoid redundant strlen parsing inside QString
+			QString currentPath = QString::fromUtf8(pathBuffer, pathLen);
+			if (currentPath.compare(targetPath, Qt::CaseInsensitive) == 0) {
+				matchingPids.push_back(pid);
+			}
+		}
+	}
+
+	return matchingPids;
+}
+
+#endif
 
 
 } // namespace agentinodata

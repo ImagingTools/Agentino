@@ -18,6 +18,11 @@
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/IServiceController.h>
 
+#ifdef Q_OS_MACOS
+#include <sys/types.h>
+#include <vector>
+#endif
+
 
 IMT_DECLARE_PLUGIN_INTERFACE(ServiceSettings, imtservice::IConnectionCollectionPlugin);
 
@@ -94,6 +99,11 @@ private:
 
 	typedef QMap<QByteArray, istd::TDelPtr<PluginManager>> PluginMap;
 	mutable PluginMap m_pluginMap;
+
+private:
+#ifdef Q_OS_MACOS
+	static std::vector<pid_t> GetPidsForPath(const QString &targetPath);
+#endif
 
 private:
 	I_REF(imtbase::IObjectCollection, m_serviceCollectionCompPtr);
