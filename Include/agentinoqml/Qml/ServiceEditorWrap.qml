@@ -37,10 +37,11 @@ ServiceEditor {
 	}
 	
 	property string loadedSettingsServiceId: ""
+	property bool settingsRequested: false
 	onServiceIdChanged: {
 		if (serviceId !== "" && serviceId !== loadedSettingsServiceId){
 			loadedSettingsServiceId = serviceId
-			serviceEditor.loadSettings()
+			settingsRequested = false
 		}
 	}
 	
@@ -49,17 +50,22 @@ ServiceEditor {
 			return
 		}
 		
-		getServiceSettingsInput.m_serviceId = serviceEditor.serviceId
+		if (serviceEditor.settingsPath === "" && settingsRequested){
+			return
+		}
+		
+		settingsRequested = true
+		getServiceSettingsInput.m_serviceId = "" + serviceEditor.serviceId
 		getServiceSettingsRequestSender.send(getServiceSettingsInput)
 	}
 	
 	onSaveSettings: {
-		if (serviceEditor.serviceId === ""){
+		if (serviceEditor.serviceId === "" || serviceEditor.settingsPath === ""){
 			return
 		}
 		
-		updateServiceSettingsInput.m_serviceId = serviceEditor.serviceId
-		updateServiceSettingsInput.m_content = content
+		updateServiceSettingsInput.m_serviceId = "" + serviceEditor.serviceId
+		updateServiceSettingsInput.m_content = "" + content
 		updateServiceSettingsRequestSender.send(updateServiceSettingsInput)
 	}
 	
@@ -169,9 +175,32 @@ ServiceEditor {
 				serviceEditor.serviceData.copyFrom(documentModel)
 				documentManager.setBlockUndoManager(documentId, false)
 				documentManager.clearUndoManager(documentId)
+				serviceEditor.serviceIsDirty = false
 				serviceEditor.doUpdateGui()
 				serviceEditor.setPluginLoaded(serviceEditor.serviceData.m_path)
+				
+				if (serviceEditor.settingsPath !== "" && !settingsRequested){
+					serviceEditor.loadSettings()
+				}
 			}
+		}
+	}
+	
+	Connections {
+		target: serviceEditor.documentManager
+		function onDocumentIsDirtyChanged(documentId, isDirty) {
+			if (documentId === serviceEditor.documentId){
+				serviceEditor.serviceIsDirty = isDirty
+			}
+		}
+	}
+	
+	onDocumentSaved: {
+		serviceEditor.serviceIsDirty = false
+		if (serviceEditor.settingsPath !== ""){
+			serviceEditor.loadSettings()
+		} else if (!settingsRequested){
+			serviceEditor.loadSettings()
 		}
 	}
 	

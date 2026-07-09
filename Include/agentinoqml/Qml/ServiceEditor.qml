@@ -54,6 +54,7 @@ DocumentViewBase {
 	property bool isNewService: !serviceData || serviceData.m_id === ""
 	property bool serviceRunning: false
 	property bool operationInProgress: false
+	property bool serviceIsDirty: false
 	
 	property bool settingsFileExists: false
 	property string settingsPath: ""
@@ -70,7 +71,7 @@ DocumentViewBase {
 		multiPageView.ensurePageLoaded(index);
 		let item = multiPageView.getPageByIndex(index);
 		if (item){
-			item.setContent(content);
+			item.updateGui();
 		}
 	}
 	
@@ -90,6 +91,9 @@ DocumentViewBase {
 			}
 			if (serviceData.hasInputConnections() && serviceData.m_inputConnections.count > 0){
 				setPluginLoaded(serviceData.m_path)
+			}
+			if (serviceData.m_settingsPath !== undefined && serviceData.m_settingsPath !== ""){
+				settingsPath = serviceData.m_settingsPath
 			}
 		}
 	}
@@ -972,11 +976,18 @@ DocumentViewBase {
 			id: settingsViewItem
 			anchors.fill: parent
 			
+			property bool canEditSettings: !serviceEditorContainer.isNewService && serviceEditorContainer.settingsPath !== "" && !serviceEditorContainer.serviceIsDirty
+			
 			function updateGui(){
+				settingsPathInput.text = serviceEditorContainer.settingsPath
 				settingsTextEdit.text = serviceEditorContainer.settingsContent
 			}
 			
 			function updateModel(){
+				if (serviceEditorContainer.serviceData){
+					serviceEditorContainer.settingsPath = settingsPathInput.text
+					serviceEditorContainer.serviceData.m_settingsPath = settingsPathInput.text
+				}
 			}
 			
 			function setContent(content){
@@ -1004,26 +1015,69 @@ DocumentViewBase {
 				GroupHeaderView {
 					title: qsTr("Settings")
 					width: parent.width
+					groupView: settingsGroup
+				}
+				
+				GroupElementView {
+					id: settingsGroup
+					width: parent.width
+					
+					TextInputElementView {
+						id: settingsPathInput
+						name: qsTr("Settings Path")
+						placeHolderText: qsTr("Enter the path to settings file")
+						text: serviceEditorContainer.settingsPath
+						
+						onEditingFinished: {
+							serviceEditorContainer.settingsPath = settingsPathInput.text
+							serviceEditorContainer.doUpdateModel()
+						}
+					}
 				}
 				
 				BaseText {
 					width: parent.width
 					wrapMode: Text.WordWrap
-					text: serviceEditorContainer.settingsPath !== ""
-						? (serviceEditorContainer.settingsFileExists
-							? qsTr("Settings file: ") + serviceEditorContainer.settingsPath
-							: qsTr("Settings file does not exist yet: ") + serviceEditorContainer.settingsPath)
-						: qsTr("No settings file is configured for this service")
+					visible: serviceEditorContainer.isNewService
+					text: qsTr("Save the service first to configure settings")
+					color: Style.warningColor
+				}
+				
+				BaseText {
+					width: parent.width
+					wrapMode: Text.WordWrap
+					visible: !serviceEditorContainer.isNewService && serviceEditorContainer.serviceIsDirty
+					text: qsTr("Service has unsaved changes. Save the service before loading or editing settings")
+					color: Style.warningColor
+				}
+				
+				BaseText {
+					width: parent.width
+					wrapMode: Text.WordWrap
+					visible: !serviceEditorContainer.isNewService && !serviceEditorContainer.serviceIsDirty && serviceEditorContainer.settingsPath === ""
+					text: qsTr("Settings path is not configured. Enter a path and save the service to enable settings")
+					opacity: 0.7
+				}
+				
+				BaseText {
+					width: parent.width
+					wrapMode: Text.WordWrap
+					visible: settingsViewItem.canEditSettings
+					text: serviceEditorContainer.settingsFileExists
+						? qsTr("Settings file: ") + serviceEditorContainer.settingsPath
+						: qsTr("Settings file does not exist yet. It will be created on first save")
 				}
 				
 				Row {
 					spacing: Style.marginM
+					visible: !serviceEditorContainer.isNewService && serviceEditorContainer.settingsPath !== ""
 					
 					Button {
 						id: loadSettingsButton
-						width: 100
-						height: 32
+						width: Style.sizeHintBXS
+						height: Style.controlHeightM
 						text: qsTr("Load")
+						enabled: settingsViewItem.canEditSettings
 						onClicked: {
 							serviceEditorContainer.loadSettings()
 						}
@@ -1031,10 +1085,10 @@ DocumentViewBase {
 					
 					Button {
 						id: saveSettingsButton
-						width: 100
-						height: 32
+						width: Style.sizeHintBXS
+						height: Style.controlHeightM
 						text: qsTr("Save")
-						enabled: !serviceEditorContainer.readOnly
+						enabled: settingsViewItem.canEditSettings && !serviceEditorContainer.readOnly
 						onClicked: {
 							serviceEditorContainer.saveSettings(settingsViewItem.getContent())
 						}
@@ -1051,6 +1105,8 @@ DocumentViewBase {
 				anchors.topMargin: Style.marginM
 				anchors.bottom: parent.bottom
 				anchors.bottomMargin: Style.marginXL
+				
+				visible: settingsViewItem.canEditSettings
 				
 				color: Style.backgroundColor2
 				border.color: Style.borderColor

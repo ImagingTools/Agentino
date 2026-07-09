@@ -400,32 +400,21 @@ QString CServiceControllerComp::GetServiceSettingsFilePath(const QByteArray& ser
 	}
 
 	QByteArray servicePath = serviceInfoPtr->GetServicePath();
-	if (servicePath.isEmpty()){
-		errorMessage = QString("Service '%1' has no path configured").arg(QString::fromUtf8(serviceId));
-
-		return QString();
-	}
-
-	// The settings file must be located inside the service directory to avoid
-	// writing outside of the service folder (e.g. through '..' segments).
-	QDir serviceDir(QFileInfo(QString::fromUtf8(servicePath)).absolutePath());
-	QString canonicalServiceDir = serviceDir.absolutePath();
 
 	QFileInfo settingsFileInfo(QString::fromUtf8(settingsPath));
 	if (!settingsFileInfo.isAbsolute()){
+		// Relative paths are resolved against the service directory
+		if (servicePath.isEmpty()){
+			errorMessage = QString("Service '%1' has no path configured, cannot resolve relative settings path").arg(QString::fromUtf8(serviceId));
+
+			return QString();
+		}
+
+		QDir serviceDir(QFileInfo(QString::fromUtf8(servicePath)).absolutePath());
 		settingsFileInfo.setFile(serviceDir, QString::fromUtf8(settingsPath));
 	}
 
 	QString resolvedSettingsPath = QDir::cleanPath(settingsFileInfo.absoluteFilePath());
-
-	QString containmentPrefix = canonicalServiceDir.endsWith(QLatin1Char('/'))
-		? canonicalServiceDir
-		: canonicalServiceDir + QLatin1Char('/');
-	if (resolvedSettingsPath != canonicalServiceDir && !resolvedSettingsPath.startsWith(containmentPrefix)){
-		errorMessage = QString("Service settings path '%1' is outside of the service directory").arg(resolvedSettingsPath);
-
-		return QString();
-	}
 
 	return resolvedSettingsPath;
 }

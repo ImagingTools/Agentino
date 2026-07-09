@@ -79,6 +79,7 @@ type ServiceData {
 	tracingLevel: Integer
 	startScript: String
 	stopScript: String
+	settingsPath: String
 	version: String
 	status: String
 	inputConnections: [InputConnection]

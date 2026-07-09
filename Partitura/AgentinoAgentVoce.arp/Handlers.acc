@@ -355,10 +355,10 @@
                     <AttributeInfo Id="ConnectionCollectionProvider" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="AgentPages/ServiceCollectionController"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="ServiceCollection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="AgentPages/ServiceCollection"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceCollection" Type="Reference" ExportId="ServiceCollection">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceController" Type="Reference" ExportId="ServiceController">
