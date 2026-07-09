@@ -5,14 +5,12 @@ schema {
 	version: 1.0
 }
 
-type Link {
-	id: ID!
+import {
+	"Services.sdl"
 }
 
-enum ServiceStatus {
-	UNDEFINED
-	RUNNING
-	NOT_RUNNING
+type Link {
+	id: ID!
 }
 
 type Service {
@@ -31,6 +29,7 @@ type Service {
 	selected: Boolean
 	hasError: Boolean
 	isComposite: Boolean
+	agentOnline: Boolean
 }
 
 type Topology {

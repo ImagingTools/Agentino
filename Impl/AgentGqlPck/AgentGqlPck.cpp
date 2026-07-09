@@ -5,6 +5,10 @@
 // ACF includes
 #include <icomp/export.h>
 
+// ImtCore includes
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtCollection.h>
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/DocumentRevision.h>
+
 
 namespace AgentGqlPck
 {
@@ -69,6 +73,11 @@ I_EXPORT_COMPONENT(
 			AgentServicesRemoteSubscriberProxy,
 			"Agent services remote subscriber controller",
 			"Agent Services Remote Subscriber Controller");
+
+I_EXPORT_COMPONENT(
+			AgentTopologyController,
+			"Agent local topology controller",
+			"Agent Local Topology Controller");
 
 I_EXPORT_COMPONENT(
 			AgentRemoteVisualStatusController,

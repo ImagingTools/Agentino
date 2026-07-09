@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentinogql/CAgentCollectionControllerComp.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Agents.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtCollection.h>
 
 
 // Qt includes
@@ -20,7 +23,6 @@
 #include <agentinodata/CServiceInfo.h>
 #include <agentinodata/CServiceStatusInfo.h>
 #include <agentinodata/CAgentStatusInfo.h>
-#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
 
 
 namespace agentinogql
@@ -37,12 +39,12 @@ void CAgentCollectionControllerComp::OnComponentCreated()
 }
 
 
-// reimplemented (sdl::agentino::Agents::CAgentCollectionControllerCompBase)
+// reimplemented (sdl::V1_0::agentino::CAgentCollectionControllerCompBase)
 
 bool CAgentCollectionControllerComp::CreateRepresentationFromObject(
 			const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
-			const sdl::agentino::Agents::CAgentsListGqlRequest& agentsListRequest,
-			sdl::agentino::Agents::CAgentItem::V1_0& representationObject,
+			const sdl::V1_0::agentino::CAgentsListGqlRequest& agentsListRequest,
+			sdl::V1_0::agentino::CAgentItem& representationObject,
 			QString& /*errorMessage*/) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
@@ -58,7 +60,7 @@ bool CAgentCollectionControllerComp::CreateRepresentationFromObject(
 		agentPtr = dynamic_cast<agentinodata::CIdentifiableAgentInfo*>(agentDataPtr.GetPtr());
 	}
 
-	sdl::agentino::Agents::AgentsListRequestInfo requestInfo = agentsListRequest.GetRequestInfo();
+	sdl::V1_0::agentino::AgentsListRequestInfo requestInfo = agentsListRequest.GetRequestInfo();
 	if (requestInfo.items.isIdRequested){
 		representationObject.id = objectId;
 	}
@@ -152,8 +154,8 @@ bool CAgentCollectionControllerComp::CreateRepresentationFromObject(
 
 bool CAgentCollectionControllerComp::CreateRepresentationFromObject(
 	const istd::IChangeable& data,
-	const sdl::agentino::Agents::CGetAgentGqlRequest& agentItemRequest,
-	sdl::agentino::Agents::CAgentData::V1_0& representationPayload,
+	const sdl::V1_0::agentino::CGetAgentGqlRequest& agentItemRequest,
+	sdl::V1_0::agentino::CAgentData& representationPayload,
 	QString& errorMessage) const
 {
 	const agentinodata::CAgentInfo* agentPtr = dynamic_cast<const agentinodata::CAgentInfo*>(&data);
@@ -164,15 +166,15 @@ bool CAgentCollectionControllerComp::CreateRepresentationFromObject(
 		return false;
 	}
 
-	sdl::agentino::Agents::GetAgentRequestArguments arguments = agentItemRequest.GetRequestedArguments();
-	if (!arguments.input.Version_1_0.has_value()){
+	sdl::V1_0::agentino::GetAgentRequestArguments arguments = agentItemRequest.GetRequestedArguments();
+	if (!arguments.input.has_value()){
 		Q_ASSERT(false);
 		return false;
 	}
 
 	QByteArray agentId;
-	if (arguments.input.Version_1_0->id){
-		agentId = *arguments.input.Version_1_0->id;
+	if (arguments.input->id){
+		agentId = *arguments.input->id;
 	}
 
 	QString name = m_objectCollectionCompPtr->GetElementInfo(agentId, imtbase::ICollectionInfo::EIT_NAME).toString();
@@ -190,29 +192,29 @@ bool CAgentCollectionControllerComp::CreateRepresentationFromObject(
 
 bool CAgentCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 	const ::imtgql::CGqlRequest& /*rawGqlRequest*/,
-	const sdl::agentino::Agents::CUpdateAgentGqlRequest& agentUpdateRequest,
+	const sdl::V1_0::agentino::CUpdateAgentGqlRequest& agentUpdateRequest,
 	istd::IChangeable& object,
 	QString& errorMessage) const
 {
-	sdl::agentino::Agents::UpdateAgentRequestArguments inputArguments = agentUpdateRequest.GetRequestedArguments();
-	if (!inputArguments.input.Version_1_0){
+	sdl::V1_0::agentino::UpdateAgentRequestArguments inputArguments = agentUpdateRequest.GetRequestedArguments();
+	if (!inputArguments.input){
 		I_CRITICAL();
 		return false;
 	}
 
-	if (!inputArguments.input.Version_1_0->id.has_value()){
+	if (!inputArguments.input->id.has_value()){
 		I_CRITICAL();
 		return false;
 	}
 
 	QByteArray objectId;
-	if (inputArguments.input.Version_1_0->id){
-		objectId = *inputArguments.input.Version_1_0->id;
+	if (inputArguments.input->id){
+		objectId = *inputArguments.input->id;
 	}
 
-	sdl::agentino::Agents::CAgentData::V1_0 agentData;
-	if (inputArguments.input.Version_1_0->item){
-		agentData = *inputArguments.input.Version_1_0->item;
+	sdl::V1_0::agentino::CAgentData agentData;
+	if (inputArguments.input->item){
+		agentData = *inputArguments.input->item;
 	}
 
 	agentinodata::CAgentInfo* agentPtr = dynamic_cast<agentinodata::CAgentInfo*>(&object);
@@ -376,11 +378,11 @@ bool CAgentCollectionControllerComp::UpdateServiceStatusFromAgent(const QByteArr
 		return false;
 	}
 
-	namespace servicessdl = sdl::agentino::Services;
+	namespace servicessdl = sdl::V1_0::agentino;
 
 	servicessdl::GetServiceStatusRequestArguments arguments;
-	arguments.input.Version_1_0 = sdl::imtbase::ImtCollection::CInputId::V1_0();
-	arguments.input.Version_1_0->id = serviceId;
+	arguments.input = sdl::V1_0::imtbase::CInputId();
+	arguments.input->id = serviceId;
 
 	imtgql::CGqlRequest gqlRequest;
 
@@ -409,7 +411,7 @@ bool CAgentCollectionControllerComp::UpdateServiceStatusFromAgent(const QByteArr
 
 	serviceStatusInfoPtr->SetServiceId(serviceId);
 
-	servicessdl::ServiceStatus status = *response.Version_1_0->status;
+	servicessdl::ServiceStatus status = *response.status;
 	switch (status){
 	case servicessdl::ServiceStatus::NOT_RUNNING:
 		serviceStatusInfoPtr->SetServiceStatus(agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);

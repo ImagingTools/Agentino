@@ -28,11 +28,11 @@ ServiceEditor {
 	onServiceDataChanged: {
 		if (serviceData){
 			if (serviceData.hasInputConnections() && serviceData.m_inputConnections.count > 0){
-				pluginLoaded = true
+				serviceEditor.setPluginLoaded(serviceEditor.serviceData.m_path)
 			}
 		}
 		else{
-			pluginLoaded = false
+			serviceEditor.pluginLoaded = false
 		}
 	}
 	
@@ -170,8 +170,7 @@ ServiceEditor {
 				documentManager.setBlockUndoManager(documentId, false)
 				documentManager.clearUndoManager(documentId)
 				serviceEditor.doUpdateGui()
-				serviceEditor.pluginServicePath = serviceEditor.serviceData.m_path
-				serviceEditor.pluginLoaded = true
+				serviceEditor.setPluginLoaded(serviceEditor.serviceData.m_path)
 			}
 		}
 	}
@@ -209,6 +208,7 @@ ServiceEditor {
 	GqlBasedServiceController {
 		id: serviceController
 		onBeginStartService: {
+			serviceEditor.setOperationInProgress(true)
 			if (serviceEditor.commandsController){
 				serviceEditor.commandsController.setCommandIsEnabled("Start", false)
 				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
@@ -216,6 +216,7 @@ ServiceEditor {
 		}
 		
 		onBeginStopService: {
+			serviceEditor.setOperationInProgress(true)
 			if (serviceEditor.commandsController){
 				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
 				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
@@ -223,6 +224,7 @@ ServiceEditor {
 		}
 		
 		onServiceStarted: {
+			serviceEditor.setOperationInProgress(false)
 			if (serviceEditor.commandsController){
 				serviceEditor.commandsController.setCommandIsEnabled("Start", false)
 				serviceEditor.commandsController.setCommandIsEnabled("Stop", true)
@@ -230,6 +232,7 @@ ServiceEditor {
 		}
 		
 		onServiceStopped: {
+			serviceEditor.setOperationInProgress(false)
 			if (serviceEditor.commandsController){
 				serviceEditor.commandsController.setCommandIsEnabled("Start", true)
 				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
@@ -237,6 +240,7 @@ ServiceEditor {
 		}
 		
 		onServiceStatusChanged: {
+			serviceEditor.setOperationInProgress(false)
 			if (serviceId === serviceEditor.serviceId){
 				serviceEditor.serviceRunning = status === "RUNNING"
 				
@@ -246,6 +250,14 @@ ServiceEditor {
 				}
 				
 			}
+		}
+		
+		onStartServiceFailed: {
+			serviceEditor.setOperationInProgress(false)
+		}
+		
+		onStopServiceFailed: {
+			serviceEditor.setOperationInProgress(false)
 		}
 		
 		function getHeaders(){
@@ -261,6 +273,11 @@ ServiceEditor {
 		id: loadPluginRequestSender
 		gqlCommandId: AgentinoServicesSdlCommandIds.s_loadPlugin
 		requestType: 1
+		onFinished: {
+			if (status === -1) {
+				serviceEditor.pluginLoadingFailed()
+			}
+		}
 		sdlObjectComp: Component {
 			PluginInfo {
 				onFinished: {
@@ -285,8 +302,7 @@ ServiceEditor {
 					documentManager.setBlockUndoManager(serviceEditor.serviceId, false)
 					serviceEditor.doUpdateGui()
 					
-					serviceEditor.pluginServicePath = serviceEditor.serviceData.m_path
-					serviceEditor.pluginLoaded = true
+					serviceEditor.setPluginLoaded(serviceEditor.serviceData.m_path)
 				}
 			}
 		}

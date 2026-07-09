@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6397" Description="ACF"/>
-            <Version Id="1" Number="2394" Description="ACF-Solutions"/>
+            <Version Id="0" Number="6435" Description="ACF"/>
+            <Version Id="1" Number="2410" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -16,6 +16,7 @@
         <Element ComponentName="DatabaseEngine" X="1025" Y="175" Note=""/>
         <Element ComponentName="FeatureContainer" X="775" Y="525" Note=""/>
         <Element ComponentName="HttpServerFramework" X="150" Y="175" Note=""/>
+        <Element ComponentName="JwtSessionController" X="1000" Y="675" Note=""/>
         <Element ComponentName="Language" X="875" Y="50" Note=""/>
         <Element ComponentName="Repositories" X="775" Y="325" Note=""/>
         <Element ComponentName="ServerSettings" X="375" Y="75" Note=""/>
@@ -24,15 +25,6 @@
         <Element ComponentName="WebSocketServerFramework" X="200" Y="500" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="DatabaseEngine">
-            <PositionMap>
-                <Element ComponentName="DatabaseEngine" X="300" Y="150" Note=""/>
-                <Element ComponentName="MigrationController" X="750" Y="300" Note=""/>
-                <Element ComponentName="MigrationFilePath" X="750" Y="425" Note=""/>
-                <Element ComponentName="SystemLocation" X="750" Y="550" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
         <EmbededRegistry Id="Subscriptions">
             <PositionMap>
                 <Element ComponentName="AgentCollectionSubscriber" X="550" Y="75" Note=""/>
@@ -45,6 +37,15 @@
                 <Element ComponentName="TopologySubscriber" X="950" Y="75" Note=""/>
                 <Element ComponentName="UserGroupsSubscriberController" X="525" Y="525" Note=""/>
                 <Element ComponentName="UsersSubscriberController" X="525" Y="350" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="DatabaseEngine">
+            <PositionMap>
+                <Element ComponentName="DatabaseEngine" X="300" Y="150" Note=""/>
+                <Element ComponentName="MigrationController" X="750" Y="300" Note=""/>
+                <Element ComponentName="MigrationFilePath" X="750" Y="425" Note=""/>
+                <Element ComponentName="SystemLocation" X="750" Y="550" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

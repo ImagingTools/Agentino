@@ -9,17 +9,17 @@
 
 // Agentino includes
 #include <agentinodata/IServiceController.h>
-#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services_fwd.h>
 
 
 namespace agentgql
 {
 
 
-class CServiceControllerComp: public sdl::agentino::Services::CGraphQlHandlerCompBase
+class CServiceControllerComp: public sdl::V1_0::agentino::CServicesGqlHandlerCompBase
 {
 public:
-	typedef CGraphQlHandlerCompBase BaseClass;
+	typedef sdl::V1_0::agentino::CServicesGqlHandlerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceControllerComp);
 		I_ASSIGN(m_serviceControllerCompPtr, "ServiceController", "Service controller used to manage services", true, "ServiceController");
@@ -28,29 +28,29 @@ public:
 	I_END_COMPONENT;
 
 protected:
-	// reimplemented (sdl::agentino::Services::CGraphQlHandlerCompBase)
-	virtual sdl::agentino::Services::CServiceStatusResponse OnStartService(
-				const sdl::agentino::Services::CStartServiceGqlRequest& startServiceRequest,
+	// reimplemented (sdl::V1_0::agentino::CServicesGqlHandlerCompBase)
+	virtual sdl::V1_0::agentino::CServiceStatusResponse OnStartService(
+				const sdl::V1_0::agentino::CStartServiceGqlRequest& startServiceRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-	virtual sdl::agentino::Services::CServiceStatusResponse OnStopService(
-				const sdl::agentino::Services::CStopServiceGqlRequest& stopServiceRequest,
+	virtual sdl::V1_0::agentino::CServiceStatusResponse OnStopService(
+				const sdl::V1_0::agentino::CStopServiceGqlRequest& stopServiceRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-	virtual sdl::imtbase::ImtCollection::CRemovedNotificationPayload OnServicesRemove(
-				const sdl::agentino::Services::CServicesRemoveGqlRequest& removeServiceRequest,
+	virtual sdl::V1_0::imtbase::CRemovedNotificationPayload OnServicesRemove(
+				const sdl::V1_0::agentino::CServicesRemoveGqlRequest& removeServiceRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-	virtual sdl::agentino::Services::CServiceStatusResponse OnGetServiceStatus(
-				const sdl::agentino::Services::CGetServiceStatusGqlRequest& getServiceStatusRequest,
+	virtual sdl::V1_0::agentino::CServiceStatusResponse OnGetServiceStatus(
+				const sdl::V1_0::agentino::CGetServiceStatusGqlRequest& getServiceStatusRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-	virtual sdl::agentino::Services::CUpdateConnectionUrlResponse OnUpdateConnectionUrl(
-				const sdl::agentino::Services::CUpdateConnectionUrlGqlRequest& updateConnectionUrlRequest,
+	virtual sdl::V1_0::agentino::CUpdateConnectionUrlResponse OnUpdateConnectionUrl(
+				const sdl::V1_0::agentino::CUpdateConnectionUrlGqlRequest& updateConnectionUrlRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-	virtual sdl::agentino::Services::CPluginInfo OnLoadPlugin(
-				const sdl::agentino::Services::CLoadPluginGqlRequest& loadPluginRequest,
+	virtual sdl::V1_0::agentino::CPluginInfo OnLoadPlugin(
+				const sdl::V1_0::agentino::CLoadPluginGqlRequest& loadPluginRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
 	virtual sdl::agentino::Services::CServiceSettingsPayload OnGetServiceSettings(

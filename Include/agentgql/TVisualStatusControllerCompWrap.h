@@ -39,16 +39,16 @@ bool TVisualStatusControllerCompWrap<RemoteControllerComp>::IsRequestSupported(c
 		return false;
 	}
 
-	sdl::imtbase::ImtCollection::CGetObjectVisualStatusGqlRequest getVisualStatusRequest(gqlRequest, false);
+	sdl::V1_0::imtbase::CGetObjectVisualStatusGqlRequest getVisualStatusRequest(gqlRequest, false);
 	if (getVisualStatusRequest.IsValid()){
-		sdl::imtbase::ImtCollection::GetObjectVisualStatusRequestArguments arguments = getVisualStatusRequest.GetRequestedArguments();
-		if (!arguments.input.Version_1_0.has_value()){
+		sdl::V1_0::imtbase::GetObjectVisualStatusRequestArguments arguments = getVisualStatusRequest.GetRequestedArguments();
+		if (!arguments.input.has_value()){
 			return false;
 		}
 
 		QByteArray typeId;
-		if (arguments.input.Version_1_0->typeId){
-			typeId = *getVisualStatusRequest.GetRequestedArguments().input.Version_1_0->typeId;
+		if (arguments.input->typeId){
+			typeId = *getVisualStatusRequest.GetRequestedArguments().input->typeId;
 		}
 
 		return m_typeIdsAttrPtr.FindValue(typeId) >= 0;

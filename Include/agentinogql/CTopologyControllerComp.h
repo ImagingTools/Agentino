@@ -7,14 +7,14 @@
 
 // Agentino includes
 #include <agentinodata/CServiceCompositeInfoComp.h>
-#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Topology.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Topology_fwd.h>
 
 
 namespace agentinogql
 {
 
 
-class CTopologyControllerComp: public sdl::agentino::Topology::CGraphQlHandlerCompBase
+class CTopologyControllerComp: public sdl::V1_0::agentino::CTopologyGqlHandlerCompBase
 {
 public:
 	typedef imtservergql::CGqlRequestHandlerCompBase BaseClass;
@@ -23,26 +23,29 @@ public:
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", true, "AgentCollection");
 		I_ASSIGN(m_topologyCollectionCompPtr, "TopologyCollection", "Topology collection", true, "TopologyCollection");
 		I_ASSIGN(m_serviceCompositeInfoCompPtr, "ServiceCompositeInfo", "Service composite info", true, "ServiceCompositeInfo");
+		I_ASSIGN(m_agentStatusCollectionCompPtr, "AgentStatusCollection", "Agent status collection used to mark services of offline agents", false, "AgentStatusCollection");
 	I_END_COMPONENT;
 	
-	// reimplemented (sdl::agentino::Topology::CGraphQlHandlerCompBase)
-	virtual sdl::agentino::Topology::CTopology OnGetTopology(
-				const sdl::agentino::Topology::CGetTopologyGqlRequest& getTopologyRequest,
+	// reimplemented (sdl::V1_0::agentino::CTopologyGqlHandlerCompBase)
+	virtual sdl::V1_0::agentino::CTopology OnGetTopology(
+				const sdl::V1_0::agentino::CGetTopologyGqlRequest& getTopologyRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-	virtual sdl::agentino::Topology::CSaveTopologyResponse OnSaveTopology(
-				const sdl::agentino::Topology::CSaveTopologyGqlRequest& saveTopologyRequest,
+	virtual sdl::V1_0::agentino::CSaveTopologyResponse OnSaveTopology(
+				const sdl::V1_0::agentino::CSaveTopologyGqlRequest& saveTopologyRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
 
 private:
 	QPoint GetServiceCoordinate(const QByteArray& serviceId) const;
 	bool SetServiceCoordinate(const QByteArray& serviceId, const QPoint& point) const;
+	bool IsAgentOnline(const QByteArray& agentId) const;
 
 protected:
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
 	I_REF(imtbase::IObjectCollection, m_topologyCollectionCompPtr);
 	I_REF(agentinodata::IServiceCompositeInfo, m_serviceCompositeInfoCompPtr);
+	I_REF(imtbase::IObjectCollection, m_agentStatusCollectionCompPtr);
 };
 
 

@@ -1,12 +1,6 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
-// Qt includes
-#include <QtCore/QDir>
-#include <QtCore/QCoreApplication>
-
-// ACF includes
-#include <ibase/IApplication.h>
-
 // ImtCore includes
+#include <imtbase/Init.h>
 #include <GeneratedFiles/AgentinoAgent/CAgentinoAgent.h>
 
 
@@ -30,18 +24,8 @@ int main(int argc, char *argv[])
 	Q_INIT_RESOURCE(imtauthguiTheme);
 	Q_INIT_RESOURCE(imtguiTheme);
 	Q_INIT_RESOURCE(imtdb);
+	Q_INIT_RESOURCE(imtauthdb);
 	Q_INIT_RESOURCE(imtbase);
 
-
-
-	CAgentinoAgent instance;
-
-	ibase::IApplication* applicationPtr = instance.GetInterface<ibase::IApplication>();
-	if (applicationPtr != nullptr){
-		return applicationPtr->Execute(argc, argv);
-	}
-
-	return -1;
+	return Run<CAgentinoAgent, DefaultImtCoreQmlInitializer>(argc, argv);
 }
-
-

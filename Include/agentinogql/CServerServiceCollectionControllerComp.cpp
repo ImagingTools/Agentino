@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentinogql/CServerServiceCollectionControllerComp.h>
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtBaseTypes.h>
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtCollection.h>
 
 
 // Qt includes
@@ -174,29 +176,28 @@ istd::TSharedInterfacePtr<imtcom::IServerConnectionInterface> CServerServiceColl
 }
 
 
-sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollectionControllerComp::OnGetElementMetaInfo(
-			const sdl::imtbase::ImtCollection::CGetElementMetaInfoGqlRequest& getElementMetaInfoRequest,
+sdl::V1_0::imtbase::CGetElementMetaInfoPayload CServerServiceCollectionControllerComp::OnGetElementMetaInfo(
+			const sdl::V1_0::imtbase::CGetElementMetaInfoGqlRequest& getElementMetaInfoRequest,
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& /*errorMessage*/) const
 {
-	sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload response;
-	response.Version_1_0.Emplace();
+	sdl::V1_0::imtbase::CGetElementMetaInfoPayload response;
 
-	sdl::imtbase::ImtCollection::GetElementMetaInfoRequestArguments arguments = getElementMetaInfoRequest.GetRequestedArguments();
-	if (!arguments.input.Version_1_0){
+	sdl::V1_0::imtbase::GetElementMetaInfoRequestArguments arguments = getElementMetaInfoRequest.GetRequestedArguments();
+	if (!arguments.input){
 		Q_ASSERT(false);
 		return response;
 	}
 
 	QByteArray serviceId;
-	if (arguments.input.Version_1_0->elementId){
-		serviceId = *arguments.input.Version_1_0->elementId;
+	if (arguments.input->elementId){
+		serviceId = *arguments.input->elementId;
 	}
 
 	QByteArray agentId = gqlRequest.GetHeader("clientid");
 
-	sdl::imtbase::ImtCollection::CElementMetaInfo::V1_0 elementMetaInfo;
-	QList<sdl::imtbase::ImtBaseTypes::CParameter::V1_0> infoParams;
+	sdl::V1_0::imtbase::CElementMetaInfo elementMetaInfo;
+	QList<sdl::V1_0::imtbase::CParameter> infoParams;
 
 	imtbase::IObjectCollection* serviceCollectionPtr = nullptr;
 	imtbase::IObjectCollection::DataPtr dataPtr;
@@ -248,8 +249,8 @@ sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollection
 					"agentinogql::CServerServiceCollectionControllerComp");
 			}
 
-			sdl::imtbase::ImtBaseTypes::CParameter::V1_0 parameter;
-			sdl::imtbase::ImtBaseTypes::CParameter::V1_0 extPathsParameter;
+			sdl::V1_0::imtbase::CParameter parameter;
+			sdl::V1_0::imtbase::CParameter extPathsParameter;
 			parameter.id = QByteArrayLiteral("IncomingConnections");
 			parameter.typeId = parameter.id;
 			parameter.name = incomingConnectionStr;
@@ -293,7 +294,7 @@ sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollection
 			infoParams << extPathsParameter;
 
 			if (!connectionInfos.isEmpty()){
-				sdl::imtbase::ImtBaseTypes::CParameter::V1_0 dependantParameter;
+				sdl::V1_0::imtbase::CParameter dependantParameter;
 				dependantParameter.id = QByteArrayLiteral("DependantConnections");
 				dependantParameter.typeId = dependantParameter.id;
 
@@ -317,7 +318,7 @@ sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollection
 	if (dependantCollectionPtr != nullptr){
 		imtbase::ICollectionInfo::Ids connectionIds = dependantCollectionPtr->GetElementIds();
 		if (!connectionIds.isEmpty()){
-			sdl::imtbase::ImtBaseTypes::CParameter::V1_0 serviceDependsParameter;
+			sdl::V1_0::imtbase::CParameter serviceDependsParameter;
 			serviceDependsParameter.id = QByteArrayLiteral("IncomingConnections");
 			serviceDependsParameter.typeId = serviceDependsParameter.id;
 
@@ -358,7 +359,7 @@ sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollection
 	agentinodata::IServiceCompositeInfo::StateOfRequiredServices stateOfRequiredServices = m_serviceCompositeInfoCompPtr->GetStateOfRequiredServices(serviceId);
 	QString dependantStatus = agentinodata::IServiceCompositeInfo::ToString(stateOfRequiredServices);
 	if (serviceStatus == agentinodata::IServiceStatusInfo::SS_RUNNING && stateOfRequiredServices != agentinodata::IServiceCompositeInfo::SORS_RUNNING){
-		sdl::imtbase::ImtBaseTypes::CParameter::V1_0 informationParameter;
+		sdl::V1_0::imtbase::CParameter informationParameter;
 		informationParameter.id = QByteArrayLiteral("Information");
 		informationParameter.typeId = informationParameter.id;
 
@@ -381,7 +382,7 @@ sdl::imtbase::ImtCollection::CGetElementMetaInfoPayload CServerServiceCollection
 
 	elementMetaInfo.infoParams.Emplace();
 	elementMetaInfo.infoParams->FromList(infoParams);
-	response.Version_1_0->elementMetaInfo = elementMetaInfo;
+	response.elementMetaInfo = elementMetaInfo;
 
 	return response;
 }
