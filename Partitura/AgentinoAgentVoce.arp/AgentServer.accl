@@ -25,15 +25,6 @@
         <Element ComponentName="WebSocketServerFramework" X="725" Y="475" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="ServiceCollectionController">
-            <PositionMap>
-                <Element ComponentName="CheckPermissionOr" X="650" Y="450" Note=""/>
-                <Element ComponentName="RepresentationService" X="625" Y="125" Note=""/>
-                <Element ComponentName="ServiceCollectionController" X="650" Y="275" Note=""/>
-                <Element ComponentName="ServiceHeadersDataProvider" X="225" Y="275" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
         <EmbededRegistry Id="Repositories">
             <PositionMap>
                 <Element ComponentName="FileAutoPersistence" X="250" Y="275" Note=""/>
@@ -51,6 +42,15 @@
                 <Element ComponentName="WebSocketClient" X="325" Y="200" Note=""/>
                 <Element ComponentName="WebSocketServlet" X="325" Y="500" Note=""/>
                 <Element ComponentName="WorkerManager" X="725" Y="200" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+        <EmbededRegistry Id="ServiceCollectionController">
+            <PositionMap>
+                <Element ComponentName="CheckPermissionOr" X="650" Y="450" Note=""/>
+                <Element ComponentName="RepresentationService" X="625" Y="125" Note=""/>
+                <Element ComponentName="ServiceCollectionController" X="650" Y="275" Note=""/>
+                <Element ComponentName="ServiceHeadersDataProvider" X="225" Y="275" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

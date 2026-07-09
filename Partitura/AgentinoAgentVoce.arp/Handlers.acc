@@ -347,6 +347,8 @@
                                 <Value>ServiceStart</Value>
                                 <Value>ServiceStop</Value>
                                 <Value>GetServiceStatus</Value>
+                                <Value>GetServiceSettings</Value>
+                                <Value>UpdateServiceSettings</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -354,6 +356,9 @@
                         <Data IsEnabled="true" Value="AgentPages/ServiceCollectionController"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceCollection" Type="Reference" ExportId="ServiceCollection">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceController" Type="Reference" ExportId="ServiceController">

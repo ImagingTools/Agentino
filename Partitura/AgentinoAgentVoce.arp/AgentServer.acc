@@ -52,6 +52,9 @@
                     <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/ServerConnectionInterface"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ServiceCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ServiceController" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServiceController"/>
                     </AttributeInfo>

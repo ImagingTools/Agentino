@@ -3,6 +3,7 @@
 
 
 // ImtCore includes
+#include <imtbase/IObjectCollection.h>
 #include <imtservice/IConnectionCollectionProvider.h>
 #include <imtservergql/CGqlRequestHandlerCompBase.h>
 
@@ -23,6 +24,7 @@ public:
 	I_BEGIN_COMPONENT(CServiceControllerComp);
 		I_ASSIGN(m_serviceControllerCompPtr, "ServiceController", "Service controller used to manage services", true, "ServiceController");
 		I_ASSIGN(m_connectionCollectionProviderCompPtr, "ConnectionCollectionProvider", "Connection collection provider", true, "ConnectionCollectionProvider");
+		I_ASSIGN(m_serviceCollectionCompPtr, "ServiceCollection", "Service collection used to resolve service settings", false, "ServiceCollection");
 	I_END_COMPONENT;
 
 protected:
@@ -51,9 +53,26 @@ protected:
 				const sdl::V1_0::agentino::CLoadPluginGqlRequest& loadPluginRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CServiceSettingsPayload OnGetServiceSettings(
+				const sdl::V1_0::agentino::CGetServiceSettingsGqlRequest& getServiceSettingsRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CServiceSettingsPayload OnUpdateServiceSettings(
+				const sdl::V1_0::agentino::CUpdateServiceSettingsGqlRequest& updateServiceSettingsRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+
+private:
+	/**
+		Resolve the settings file path for a service and ensure it is located
+		inside the service directory. Returns an empty path on failure.
+	*/
+	QString GetServiceSettingsFilePath(const QByteArray& serviceId, QString& errorMessage) const;
+
 protected:
 	I_REF(agentinodata::IServiceController, m_serviceControllerCompPtr);
 	I_REF(imtservice::IConnectionCollectionProvider, m_connectionCollectionProviderCompPtr);
+	I_REF(imtbase::IObjectCollection, m_serviceCollectionCompPtr);
 };
 
 

@@ -48,10 +48,32 @@ DocumentViewBase {
 	
 	signal loadPlugin()
 	signal pluginLoadingFailed()
+	signal loadSettings()
+	signal saveSettings(string content)
 	
 	property bool isNewService: !serviceData || serviceData.m_id === ""
 	property bool serviceRunning: false
 	property bool operationInProgress: false
+	property bool serviceIsDirty: false
+	
+	property bool settingsFileExists: false
+	property string settingsPath: ""
+	property string settingsContent: ""
+	
+	function setSettings(content, exists, path){
+		settingsFileExists = exists;
+		settingsPath = path;
+		settingsContent = content;
+		let index = multiPageView.getIndexById("Settings");
+		if (index < 0){
+			return;
+		}
+		multiPageView.ensurePageLoaded(index);
+		let item = multiPageView.getPageByIndex(index);
+		if (item){
+			item.updateGui();
+		}
+	}
 	
 	property string serviceTypeId: serviceData ? serviceData.m_serviceTypeId : ""
 	onServiceTypeIdChanged: {
@@ -69,6 +91,9 @@ DocumentViewBase {
 			}
 			if (serviceData.hasInputConnections() && serviceData.m_inputConnections.count > 0){
 				setPluginLoaded(serviceData.m_path)
+			}
+			if (serviceData.m_settingsPath !== undefined && serviceData.m_settingsPath !== ""){
+				settingsPath = serviceData.m_settingsPath
 			}
 		}
 	}
@@ -96,6 +121,12 @@ DocumentViewBase {
 			let item = multiPageView.getPageByIndex(idx);
 			if (item) item.updateGui();
 		}
+		idx = multiPageView.getIndexById("Settings");
+		if (idx >= 0) {
+			multiPageView.ensurePageLoaded(idx);
+			let item = multiPageView.getPageByIndex(idx);
+			if (item) item.updateGui();
+		}
 		idx = multiPageView.getIndexById("Plugin");
 		if (idx >= 0) {
 			multiPageView.ensurePageLoaded(idx);
@@ -118,6 +149,12 @@ DocumentViewBase {
 			if (item) item.updateModel();
 		}
 		idx = multiPageView.getIndexById("Options");
+		if (idx >= 0) {
+			multiPageView.ensurePageLoaded(idx);
+			let item = multiPageView.getPageByIndex(idx);
+			if (item) item.updateModel();
+		}
+		idx = multiPageView.getIndexById("Settings");
 		if (idx >= 0) {
 			multiPageView.ensurePageLoaded(idx);
 			let item = multiPageView.getPageByIndex(idx);
@@ -194,6 +231,7 @@ DocumentViewBase {
 			multiPageView.addPage("General", qsTr("General"), generalPageComp, "Icons/Settings")
 			multiPageView.addPage("Connections", qsTr("Connections"), connectionsPageComp, "Icons/Link")
 			multiPageView.addPage("Options", qsTr("Options"), optionsPageComp, "Icons/GeneralSettings")
+			multiPageView.addPage("Settings", qsTr("Settings"), settingsPageComp, "Icons/Settings")
 			multiPageView.addPage("Plugin", qsTr("Plugin"), pluginPageComp, "Icons/Tools")
 			if (serviceTypeId !== "") {
 				multiPageView.addPage("Administration", qsTr("Administration"), administrationViewComp, "Icons/AdminPanel")
@@ -931,7 +969,183 @@ DocumentViewBase {
 				}
 			}
 	}
-
+	Component {
+		id: settingsPageComp
+		
+		Item {
+			id: settingsViewItem
+			anchors.fill: parent
+			
+			property bool canEditSettings: !serviceEditorContainer.isNewService && serviceEditorContainer.settingsPath !== "" && !serviceEditorContainer.serviceIsDirty
+			
+			function updateGui(){
+				settingsPathInput.text = serviceEditorContainer.settingsPath
+				settingsTextEdit.text = serviceEditorContainer.settingsContent
+			}
+			
+			function updateModel(){
+				if (serviceEditorContainer.serviceData){
+					serviceEditorContainer.settingsPath = settingsPathInput.text
+					serviceEditorContainer.serviceData.m_settingsPath = settingsPathInput.text
+				}
+			}
+			
+			function setContent(content){
+				settingsTextEdit.text = content
+			}
+			
+			function getContent(){
+				return settingsTextEdit.text
+			}
+			
+			Component.onCompleted: {
+				updateGui()
+			}
+			
+			Column {
+				id: settingsHeaderColumn
+				anchors.left: parent.left
+				anchors.leftMargin: Style.marginXL
+				anchors.right: parent.right
+				anchors.rightMargin: Style.marginXL
+				anchors.top: parent.top
+				anchors.topMargin: Style.marginXL
+				spacing: Style.marginM
+				
+				GroupHeaderView {
+					title: qsTr("Settings")
+					width: parent.width
+					groupView: settingsGroup
+				}
+				
+				GroupElementView {
+					id: settingsGroup
+					width: parent.width
+					
+					TextInputElementView {
+						id: settingsPathInput
+						name: qsTr("Settings Path")
+						placeHolderText: qsTr("Enter the path to settings file")
+						text: serviceEditorContainer.settingsPath
+						
+						onEditingFinished: {
+							serviceEditorContainer.settingsPath = settingsPathInput.text
+							serviceEditorContainer.doUpdateModel()
+						}
+					}
+				}
+				
+				BaseText {
+					width: parent.width
+					wrapMode: Text.WordWrap
+					visible: serviceEditorContainer.isNewService
+					text: qsTr("Save the service first to configure settings")
+					color: Style.warningColor
+				}
+				
+				BaseText {
+					width: parent.width
+					wrapMode: Text.WordWrap
+					visible: !serviceEditorContainer.isNewService && serviceEditorContainer.serviceIsDirty
+					text: qsTr("Service has unsaved changes. Save the service before loading or editing settings")
+					color: Style.warningColor
+				}
+				
+				BaseText {
+					width: parent.width
+					wrapMode: Text.WordWrap
+					visible: !serviceEditorContainer.isNewService && !serviceEditorContainer.serviceIsDirty && serviceEditorContainer.settingsPath === ""
+					text: qsTr("Settings path is not configured. Enter a path and save the service to enable settings")
+					opacity: 0.7
+				}
+				
+				BaseText {
+					width: parent.width
+					wrapMode: Text.WordWrap
+					visible: settingsViewItem.canEditSettings
+					text: serviceEditorContainer.settingsFileExists
+						? qsTr("Settings file: ") + serviceEditorContainer.settingsPath
+						: qsTr("Settings file does not exist yet. It will be created on first save")
+				}
+				
+				Row {
+					spacing: Style.marginM
+					visible: !serviceEditorContainer.isNewService && serviceEditorContainer.settingsPath !== ""
+					
+					Button {
+						id: loadSettingsButton
+						width: Style.sizeHintBXS
+						height: Style.controlHeightM
+						text: qsTr("Load")
+						enabled: settingsViewItem.canEditSettings
+						onClicked: {
+							serviceEditorContainer.loadSettings()
+						}
+					}
+					
+					Button {
+						id: saveSettingsButton
+						width: Style.sizeHintBXS
+						height: Style.controlHeightM
+						text: qsTr("Save")
+						enabled: settingsViewItem.canEditSettings && !serviceEditorContainer.readOnly
+						onClicked: {
+							serviceEditorContainer.saveSettings(settingsViewItem.getContent())
+						}
+					}
+				}
+			}
+			
+			Rectangle {
+				anchors.left: parent.left
+				anchors.leftMargin: Style.marginXL
+				anchors.right: parent.right
+				anchors.rightMargin: Style.marginXL
+				anchors.top: settingsHeaderColumn.bottom
+				anchors.topMargin: Style.marginM
+				anchors.bottom: parent.bottom
+				anchors.bottomMargin: Style.marginXL
+				
+				visible: settingsViewItem.canEditSettings
+				
+				color: Style.backgroundColor2
+				border.color: Style.borderColor
+				border.width: 1
+				clip: true
+				
+				Flickable {
+					id: settingsFlickable
+					anchors.fill: parent
+					anchors.margins: Style.marginS
+					contentWidth: width
+					contentHeight: settingsTextEdit.contentHeight
+					boundsBehavior: Flickable.StopAtBounds
+					clip: true
+					
+					TextEdit {
+						id: settingsTextEdit
+						width: settingsFlickable.width
+						readOnly: serviceEditorContainer.readOnly
+						selectByMouse: true
+						wrapMode: TextEdit.NoWrap
+						font.family: "Courier New"
+						font.pixelSize: Style.fontSizeM
+						color: Style.textColor
+						
+						onCursorRectangleChanged: {
+							if (cursorRectangle.y + cursorRectangle.height > settingsFlickable.contentY + settingsFlickable.height){
+								settingsFlickable.contentY = cursorRectangle.y + cursorRectangle.height - settingsFlickable.height
+							}
+							else if (cursorRectangle.y < settingsFlickable.contentY){
+								settingsFlickable.contentY = cursorRectangle.y
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	Component {
 		id: pluginPageComp
 			

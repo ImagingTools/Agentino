@@ -79,6 +79,7 @@ type ServiceData {
 	tracingLevel: Integer
 	startScript: String
 	stopScript: String
+	settingsPath: String
 	version: String
 	status: String
 	inputConnections: [InputConnection]
@@ -121,6 +122,18 @@ type LoadPluginInput {
 	servicePath: String!
 }
 
+type ServiceSettingsPayload {
+	serviceId: ID
+	path: String
+	content: String
+	exists: Boolean
+}
+
+input ServiceSettingsInput {
+	serviceId: ID!
+	content: String!
+}
+
 type PluginInfo {
 	servicePath: String!
 	inputConnections: [InputConnection]
@@ -131,6 +144,7 @@ type Query {
 	ServicesList (input: ServiceListInput): ServiceListPayload!
 	GetService (input: InputId): ServiceData!
 	GetServiceStatus (input: InputId): ServiceStatusResponse!
+	GetServiceSettings (input: ServiceInput): ServiceSettingsPayload!
 }
 
 type Mutation {
@@ -143,6 +157,7 @@ type Mutation {
 	
 	ServicesRemove (input: RemoveElementsInput): RemovedNotificationPayload!
 	UpdateConnectionUrl (input: ConnectionUrlInput): UpdateConnectionUrlResponse!
+	UpdateServiceSettings (input: ServiceSettingsInput): ServiceSettingsPayload!
 }
 
 collectionSchema {

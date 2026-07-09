@@ -113,6 +113,11 @@ bool GetServiceFromRepresentation(
 		serviceInfo.SetServiceVersion(version);
 	}
 
+	if (serviceDataRepresentation.settingsPath){
+		QString settingsPath = *serviceDataRepresentation.settingsPath;
+		serviceInfo.SetServiceSettingsPath(settingsPath.toUtf8());
+	}
+
 	if (serviceDataRepresentation.inputConnections){
 		istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CInputConnection>> connections = *serviceDataRepresentation.inputConnections;
 
@@ -230,6 +235,9 @@ bool GetRepresentationFromService(
 
 	QString serviceVersion = serviceInfo.GetServiceVersion();
 	serviceDataRepresentation.version = serviceVersion;
+
+	QString settingsPath = QString::fromUtf8(serviceInfo.GetServiceSettingsPath());
+	serviceDataRepresentation.settingsPath = settingsPath;
 
 	QList<sdl::V1_0::agentino::CInputConnection> inputConnectionList;
 
