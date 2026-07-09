@@ -53,12 +53,12 @@ protected:
 				const sdl::V1_0::agentino::CLoadPluginGqlRequest& loadPluginRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-	virtual sdl::agentino::Services::CServiceSettingsPayload OnGetServiceSettings(
-				const sdl::agentino::Services::CGetServiceSettingsGqlRequest& getServiceSettingsRequest,
+	virtual sdl::V1_0::agentino::CServiceSettingsPayload OnGetServiceSettings(
+				const sdl::V1_0::agentino::CGetServiceSettingsGqlRequest& getServiceSettingsRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-	virtual sdl::agentino::Services::CServiceSettingsPayload OnUpdateServiceSettings(
-				const sdl::agentino::Services::CUpdateServiceSettingsGqlRequest& updateServiceSettingsRequest,
+	virtual sdl::V1_0::agentino::CServiceSettingsPayload OnUpdateServiceSettings(
+				const sdl::V1_0::agentino::CUpdateServiceSettingsGqlRequest& updateServiceSettingsRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
 

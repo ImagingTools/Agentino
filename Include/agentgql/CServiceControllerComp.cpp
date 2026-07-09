@@ -230,31 +230,30 @@ sdl::V1_0::agentino::CPluginInfo CServiceControllerComp::OnLoadPlugin(
 }
 
 
-sdl::agentino::Services::CServiceSettingsPayload CServiceControllerComp::OnGetServiceSettings(
-			const sdl::agentino::Services::CGetServiceSettingsGqlRequest& getServiceSettingsRequest,
+sdl::V1_0::agentino::CServiceSettingsPayload CServiceControllerComp::OnGetServiceSettings(
+			const sdl::V1_0::agentino::CGetServiceSettingsGqlRequest& getServiceSettingsRequest,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,
 			QString& errorMessage) const
 {
-	sdl::agentino::Services::CServiceSettingsPayload response;
-	response.Version_1_0.emplace();
-	response.Version_1_0->exists = false;
+	sdl::V1_0::agentino::CServiceSettingsPayload response;
+	response.exists = false;
 
-	sdl::agentino::Services::GetServiceSettingsRequestArguments arguments = getServiceSettingsRequest.GetRequestedArguments();
-	if (!arguments.input.Version_1_0.has_value()){
+	sdl::V1_0::agentino::GetServiceSettingsRequestArguments arguments = getServiceSettingsRequest.GetRequestedArguments();
+	if (!arguments.input.has_value()){
 		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
 
 		return response;
 	}
 
-	if (!arguments.input.Version_1_0->serviceId.has_value()){
+	if (!arguments.input->serviceId.has_value()){
 		errorMessage = QString("Unable to get service settings with empty ID");
 		SendErrorMessage(0, errorMessage, "CServiceControllerComp");
 
 		return response;
 	}
 
-	QByteArray serviceId = *arguments.input.Version_1_0->serviceId;
-	response.Version_1_0->serviceId = serviceId;
+	QByteArray serviceId = *arguments.input->serviceId;
+	response.serviceId = serviceId;
 
 	QString settingsPath = GetServiceSettingsFilePath(serviceId, errorMessage);
 	if (settingsPath.isEmpty()){
@@ -265,13 +264,13 @@ sdl::agentino::Services::CServiceSettingsPayload CServiceControllerComp::OnGetSe
 		return response;
 	}
 
-	response.Version_1_0->path = settingsPath;
+	response.path = settingsPath;
 
 	QFileInfo fileInfo(settingsPath);
 	if (!fileInfo.exists()){
 		// No settings file yet: this is not an error, the editor can create one.
-		response.Version_1_0->exists = false;
-		response.Version_1_0->content = QString();
+		response.exists = false;
+		response.content = QString();
 
 		return response;
 	}
@@ -287,42 +286,41 @@ sdl::agentino::Services::CServiceSettingsPayload CServiceControllerComp::OnGetSe
 	QByteArray rawContent = file.readAll();
 	file.close();
 
-	response.Version_1_0->exists = true;
-	response.Version_1_0->content = QString::fromUtf8(rawContent);
+	response.exists = true;
+	response.content = QString::fromUtf8(rawContent);
 
 	return response;
 }
 
 
-sdl::agentino::Services::CServiceSettingsPayload CServiceControllerComp::OnUpdateServiceSettings(
-			const sdl::agentino::Services::CUpdateServiceSettingsGqlRequest& updateServiceSettingsRequest,
+sdl::V1_0::agentino::CServiceSettingsPayload CServiceControllerComp::OnUpdateServiceSettings(
+			const sdl::V1_0::agentino::CUpdateServiceSettingsGqlRequest& updateServiceSettingsRequest,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,
 			QString& errorMessage) const
 {
-	sdl::agentino::Services::CServiceSettingsPayload response;
-	response.Version_1_0.emplace();
-	response.Version_1_0->exists = false;
+	sdl::V1_0::agentino::CServiceSettingsPayload response;
+	response.exists = false;
 
-	sdl::agentino::Services::UpdateServiceSettingsRequestArguments arguments = updateServiceSettingsRequest.GetRequestedArguments();
-	if (!arguments.input.Version_1_0.has_value()){
+	sdl::V1_0::agentino::UpdateServiceSettingsRequestArguments arguments = updateServiceSettingsRequest.GetRequestedArguments();
+	if (!arguments.input.has_value()){
 		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
 
 		return response;
 	}
 
-	if (!arguments.input.Version_1_0->serviceId.has_value()){
+	if (!arguments.input->serviceId.has_value()){
 		errorMessage = QString("Unable to update service settings with empty ID");
 		SendErrorMessage(0, errorMessage, "CServiceControllerComp");
 
 		return response;
 	}
 
-	QByteArray serviceId = *arguments.input.Version_1_0->serviceId;
-	response.Version_1_0->serviceId = serviceId;
+	QByteArray serviceId = *arguments.input->serviceId;
+	response.serviceId = serviceId;
 
 	QString content;
-	if (arguments.input.Version_1_0->content.has_value()){
-		content = *arguments.input.Version_1_0->content;
+	if (arguments.input->content.has_value()){
+		content = *arguments.input->content;
 	}
 
 	QString settingsPath = GetServiceSettingsFilePath(serviceId, errorMessage);
@@ -334,7 +332,7 @@ sdl::agentino::Services::CServiceSettingsPayload CServiceControllerComp::OnUpdat
 		return response;
 	}
 
-	response.Version_1_0->path = settingsPath;
+	response.path = settingsPath;
 
 	QFileInfo fileInfo(settingsPath);
 	QDir settingsDir = fileInfo.absoluteDir();
@@ -365,8 +363,8 @@ sdl::agentino::Services::CServiceSettingsPayload CServiceControllerComp::OnUpdat
 		return response;
 	}
 
-	response.Version_1_0->exists = true;
-	response.Version_1_0->content = content;
+	response.exists = true;
+	response.content = content;
 
 	return response;
 }

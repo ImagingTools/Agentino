@@ -428,40 +428,42 @@ sdl::V1_0::agentino::CPluginInfo CServiceControllerProxyComp::OnLoadPlugin(
 
 	return retVal;
 }
-sdl::agentino::Services::CServiceSettingsPayload CServiceControllerProxyComp::OnGetServiceSettings(
-			const sdl::agentino::Services::CGetServiceSettingsGqlRequest& getServiceSettingsRequest,
+
+
+sdl::V1_0::agentino::CServiceSettingsPayload CServiceControllerProxyComp::OnGetServiceSettings(
+			const sdl::V1_0::agentino::CGetServiceSettingsGqlRequest& getServiceSettingsRequest,
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	sdl::agentino::Services::GetServiceSettingsRequestArguments arguments = getServiceSettingsRequest.GetRequestedArguments();
-	if (!arguments.input.Version_1_0.has_value()){
-		return sdl::agentino::Services::CServiceSettingsPayload();
+	sdl::V1_0::agentino::GetServiceSettingsRequestArguments arguments = getServiceSettingsRequest.GetRequestedArguments();
+	if (!arguments.input.has_value()){
+		return sdl::V1_0::agentino::CServiceSettingsPayload();
 	}
 
-	sdl::agentino::Services::CServiceSettingsPayload retVal = SendModelRequest<sdl::agentino::Services::CServiceSettingsPayload>(gqlRequest, errorMessage);
+	sdl::V1_0::agentino::CServiceSettingsPayload retVal = SendModelRequest<sdl::V1_0::agentino::CServiceSettingsPayload>(gqlRequest, errorMessage);
 	if (!errorMessage.isEmpty()){
 		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
-		return sdl::agentino::Services::CServiceSettingsPayload();
+		return sdl::V1_0::agentino::CServiceSettingsPayload();
 	}
 
 	return retVal;
 }
 
 
-sdl::agentino::Services::CServiceSettingsPayload CServiceControllerProxyComp::OnUpdateServiceSettings(
-			const sdl::agentino::Services::CUpdateServiceSettingsGqlRequest& updateServiceSettingsRequest,
+sdl::V1_0::agentino::CServiceSettingsPayload CServiceControllerProxyComp::OnUpdateServiceSettings(
+			const sdl::V1_0::agentino::CUpdateServiceSettingsGqlRequest& updateServiceSettingsRequest,
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	sdl::agentino::Services::UpdateServiceSettingsRequestArguments arguments = updateServiceSettingsRequest.GetRequestedArguments();
-	if (!arguments.input.Version_1_0.has_value()){
-		return sdl::agentino::Services::CServiceSettingsPayload();
+	sdl::V1_0::agentino::UpdateServiceSettingsRequestArguments arguments = updateServiceSettingsRequest.GetRequestedArguments();
+	if (!arguments.input.has_value()){
+		return sdl::V1_0::agentino::CServiceSettingsPayload();
 	}
 
-	sdl::agentino::Services::CServiceSettingsPayload retVal = SendModelRequest<sdl::agentino::Services::CServiceSettingsPayload>(gqlRequest, errorMessage);
+	sdl::V1_0::agentino::CServiceSettingsPayload retVal = SendModelRequest<sdl::V1_0::agentino::CServiceSettingsPayload>(gqlRequest, errorMessage);
 	if (!errorMessage.isEmpty()){
 		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
-		return sdl::agentino::Services::CServiceSettingsPayload();
+		return sdl::V1_0::agentino::CServiceSettingsPayload();
 	}
 
 	return retVal;
@@ -546,20 +548,20 @@ QJsonObject CServiceControllerProxyComp::CreateInternalResponse(
 				return OnLoadPlugin(req, gqlReq, err);
 			});
 	}
-	if (sdl::agentino::Services::CGetServiceSettingsGqlRequest::GetCommandId() == commandId){
+	if (sdl::V1_0::agentino::CGetServiceSettingsGqlRequest::GetCommandId() == commandId){
 		return CreateResponse<
-			sdl::agentino::Services::CGetServiceSettingsGqlRequest,
-			sdl::agentino::Services::CServiceSettingsPayload>(
+			sdl::V1_0::agentino::CGetServiceSettingsGqlRequest,
+			sdl::V1_0::agentino::CServiceSettingsPayload>(
 			gqlRequest,
 			errorMessage,
 			[&](const auto& req, const auto& gqlReq, QString& err){
 				return OnGetServiceSettings(req, gqlReq, err);
 			});
 	}
-	if (sdl::agentino::Services::CUpdateServiceSettingsGqlRequest::GetCommandId() == commandId){
+	if (sdl::V1_0::agentino::CUpdateServiceSettingsGqlRequest::GetCommandId() == commandId){
 		return CreateResponse<
-			sdl::agentino::Services::CUpdateServiceSettingsGqlRequest,
-			sdl::agentino::Services::CServiceSettingsPayload>(
+			sdl::V1_0::agentino::CUpdateServiceSettingsGqlRequest,
+			sdl::V1_0::agentino::CServiceSettingsPayload>(
 			gqlRequest,
 			errorMessage,
 			[&](const auto& req, const auto& gqlReq, QString& err){
