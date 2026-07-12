@@ -32,7 +32,7 @@ RemoteCollectionView {
 						let documentManagerPtr = MainDocumentService.getDocumentService("Agents")
 						if (documentManagerPtr){
 							let view = documentManagerPtr.getActiveView();
-							view.addFixedView(singleDocumentWorkspaceView, name, id, true);
+							view.addFixedView(singleDocumentWorkspaceView, name, id, true, false);
 						}
 					}
 				}

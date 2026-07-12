@@ -28,11 +28,88 @@ ServiceEditor {
 	onServiceDataChanged: {
 		if (serviceData){
 			if (serviceData.hasInputConnections() && serviceData.m_inputConnections.count > 0){
-				pluginLoaded = true
+				serviceEditor.setPluginLoaded(serviceEditor.serviceData.m_path)
 			}
 		}
 		else{
-			pluginLoaded = false
+			serviceEditor.pluginLoaded = false
+		}
+	}
+	
+	property string loadedSettingsServiceId: ""
+	property bool settingsRequested: false
+	onServiceIdChanged: {
+		if (serviceId !== "" && serviceId !== loadedSettingsServiceId){
+			loadedSettingsServiceId = serviceId
+			settingsRequested = false
+		}
+	}
+	
+	onLoadSettings: {
+		if (serviceEditor.serviceId === ""){
+			return
+		}
+		
+		if (serviceEditor.settingsPath === "" && settingsRequested){
+			return
+		}
+		
+		settingsRequested = true
+		getServiceSettingsInput.m_serviceId = "" + serviceEditor.serviceId
+		getServiceSettingsRequestSender.send(getServiceSettingsInput)
+	}
+	
+	onSaveSettings: {
+		if (serviceEditor.serviceId === "" || serviceEditor.settingsPath === ""){
+			return
+		}
+		
+		updateServiceSettingsInput.m_serviceId = "" + serviceEditor.serviceId
+		updateServiceSettingsInput.m_content = "" + content
+		updateServiceSettingsRequestSender.send(updateServiceSettingsInput)
+	}
+	
+	ServiceInput {
+		id: getServiceSettingsInput
+	}
+	
+	ServiceSettingsInput {
+		id: updateServiceSettingsInput
+	}
+	
+	GqlSdlRequestSender {
+		id: getServiceSettingsRequestSender
+		gqlCommandId: AgentinoServicesSdlCommandIds.s_getServiceSettings
+		
+		sdlObjectComp: Component {
+			ServiceSettingsPayload {
+				onFinished: {
+					serviceEditor.setSettings(m_content, m_exists, m_path)
+				}
+			}
+		}
+		
+		function getHeaders(){
+			return serviceEditor.getHeaders()
+		}
+	}
+	
+	GqlSdlRequestSender {
+		id: updateServiceSettingsRequestSender
+		requestType: 1
+		gqlCommandId: AgentinoServicesSdlCommandIds.s_updateServiceSettings
+		
+		sdlObjectComp: Component {
+			ServiceSettingsPayload {
+				onFinished: {
+					serviceEditor.setSettings(m_content, m_exists, m_path)
+					ModalDialogManager.showWarningDialog(qsTr("Service settings saved"))
+				}
+			}
+		}
+		
+		function getHeaders(){
+			return serviceEditor.getHeaders()
 		}
 	}
 
@@ -98,10 +175,32 @@ ServiceEditor {
 				serviceEditor.serviceData.copyFrom(documentModel)
 				documentManager.setBlockUndoManager(documentId, false)
 				documentManager.clearUndoManager(documentId)
+				serviceEditor.serviceIsDirty = false
 				serviceEditor.doUpdateGui()
-				serviceEditor.pluginServicePath = serviceEditor.serviceData.m_path
-				serviceEditor.pluginLoaded = true
+				serviceEditor.setPluginLoaded(serviceEditor.serviceData.m_path)
+				
+				if (serviceEditor.settingsPath !== "" && !settingsRequested){
+					serviceEditor.loadSettings()
+				}
 			}
+		}
+	}
+	
+	Connections {
+		target: serviceEditor.documentManager
+		function onDocumentIsDirtyChanged(documentId, isDirty) {
+			if (documentId === serviceEditor.documentId){
+				serviceEditor.serviceIsDirty = isDirty
+			}
+		}
+	}
+	
+	onDocumentSaved: {
+		serviceEditor.serviceIsDirty = false
+		if (serviceEditor.settingsPath !== ""){
+			serviceEditor.loadSettings()
+		} else if (!settingsRequested){
+			serviceEditor.loadSettings()
 		}
 	}
 	
@@ -138,6 +237,7 @@ ServiceEditor {
 	GqlBasedServiceController {
 		id: serviceController
 		onBeginStartService: {
+			serviceEditor.setOperationInProgress(true)
 			if (serviceEditor.commandsController){
 				serviceEditor.commandsController.setCommandIsEnabled("Start", false)
 				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
@@ -145,6 +245,7 @@ ServiceEditor {
 		}
 		
 		onBeginStopService: {
+			serviceEditor.setOperationInProgress(true)
 			if (serviceEditor.commandsController){
 				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
 				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
@@ -152,6 +253,7 @@ ServiceEditor {
 		}
 		
 		onServiceStarted: {
+			serviceEditor.setOperationInProgress(false)
 			if (serviceEditor.commandsController){
 				serviceEditor.commandsController.setCommandIsEnabled("Start", false)
 				serviceEditor.commandsController.setCommandIsEnabled("Stop", true)
@@ -159,6 +261,7 @@ ServiceEditor {
 		}
 		
 		onServiceStopped: {
+			serviceEditor.setOperationInProgress(false)
 			if (serviceEditor.commandsController){
 				serviceEditor.commandsController.setCommandIsEnabled("Start", true)
 				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
@@ -166,6 +269,7 @@ ServiceEditor {
 		}
 		
 		onServiceStatusChanged: {
+			serviceEditor.setOperationInProgress(false)
 			if (serviceId === serviceEditor.serviceId){
 				serviceEditor.serviceRunning = status === "RUNNING"
 				
@@ -175,6 +279,14 @@ ServiceEditor {
 				}
 				
 			}
+		}
+		
+		onStartServiceFailed: {
+			serviceEditor.setOperationInProgress(false)
+		}
+		
+		onStopServiceFailed: {
+			serviceEditor.setOperationInProgress(false)
 		}
 		
 		function getHeaders(){
@@ -190,6 +302,11 @@ ServiceEditor {
 		id: loadPluginRequestSender
 		gqlCommandId: AgentinoServicesSdlCommandIds.s_loadPlugin
 		requestType: 1
+		onFinished: {
+			if (status === -1) {
+				serviceEditor.pluginLoadingFailed()
+			}
+		}
 		sdlObjectComp: Component {
 			PluginInfo {
 				onFinished: {
@@ -214,8 +331,7 @@ ServiceEditor {
 					documentManager.setBlockUndoManager(serviceEditor.serviceId, false)
 					serviceEditor.doUpdateGui()
 					
-					serviceEditor.pluginServicePath = serviceEditor.serviceData.m_path
-					serviceEditor.pluginLoaded = true
+					serviceEditor.setPluginLoaded(serviceEditor.serviceData.m_path)
 				}
 			}
 		}

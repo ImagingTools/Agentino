@@ -9,6 +9,7 @@
 // Agentino includes
 #include <agentinodata/CServiceInfo.h>
 #include <agentinodata/CServiceCompositeInfoComp.h>
+#include <agentinodata/CAgentServiceCompositeInfoComp.h>
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/CServiceControllerComp.h>
 #include <agentinodata/CAgentCollectionComp.h>
@@ -31,6 +32,7 @@ typedef icomp::TMakeComponentWrap<
 					iser::ISerializable,
 					istd::IChangeable> ServiceInfo;
 typedef icomp::TModelCompWrap<agentinodata::CServiceCompositeInfoComp> ServiceCompositeInfo;
+typedef icomp::TModelCompWrap<agentinodata::CAgentServiceCompositeInfoComp> AgentServiceCompositeInfo;
 typedef icomp::TMakeComponentWrap<
 					agentinodata::CIdentifiableAgentInfo,
 					agentinodata::IAgentInfo,

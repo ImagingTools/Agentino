@@ -316,6 +316,8 @@
                                             <Value>StopService</Value>
                                             <Value>ServicesRemove</Value>
                                             <Value>LoadPlugin</Value>
+                                            <Value>GetServiceSettings</Value>
+                                            <Value>UpdateServiceSettings</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -413,6 +415,9 @@
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="AgentRepository" Type="Reference" ExportId="AgentRepository">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="AgentStatusCollection" Type="Reference" ExportId="AgentStatusCollection">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">

@@ -1,4 +1,4 @@
-import QtQuick 2.0
+import QtQuick 2.12
 import Acf 1.0
 import com.imtcore.imtqml 1.0
 import imtgui 1.0
@@ -8,120 +8,417 @@ import imtauthgui 1.0
 import imtcontrols 1.0
 import agentinoServicesSdl 1.0
 
-ViewBase {
-	id: serviceEditorContainer;
+DocumentViewBase {
+	id: serviceEditorContainer
 	
-	property ServiceData serviceData: model;
+	anchors.fill: parent
+	contentColor: Style.backgroundColor2
+	
+	property ServiceData serviceData: model
+	
+	property bool pluginLoaded: false
+	property string pluginServicePath: ""
+	
+	function requestLoadPlugin() {
+		pluginLoaded = false
+		loadPlugin()
+	}
+	
+	function setPluginLoaded(path) {
+		pluginServicePath = path
+		pluginLoaded = true
+	}
+	
+	function handlePluginPathChange(newPath) {
+		if (newPath !== pluginServicePath) {
+			if (pluginLoaded) {
+				pluginLoaded = false
+				ModalDialogManager.showWarningDialog(qsTr("You have changed the Path for which the plugin was loaded, reload the plugin"))
+			}
+		} else {
+			pluginLoaded = true
+		}
+	}
 	
 	Component.onCompleted: {
 		let ok = PermissionsController.checkPermission("ChangeService");
 		serviceEditorContainer.readOnly = !ok;
-		tabPanel.addTab("General", qsTr("General"), mainEditorComp);
+		multiPageView.addServicePages()
 	}
 	
 	signal loadPlugin()
+	signal pluginLoadingFailed()
+	signal loadSettings()
+	signal saveSettings(string content)
 	
+	property bool isNewService: !serviceData || serviceData.m_id === ""
 	property bool serviceRunning: false
-	property bool pluginLoaded: false
-	property string pluginServicePath: ""
+	property bool operationInProgress: false
+	property bool serviceIsDirty: false
+	
+	property bool settingsFileExists: false
+	property string settingsPath: ""
+	property string settingsContent: ""
+	
+	function setSettings(content, exists, path){
+		settingsFileExists = exists;
+		settingsPath = path;
+		settingsContent = content;
+		let index = multiPageView.getIndexById("Settings");
+		if (index < 0){
+			return;
+		}
+		multiPageView.ensurePageLoaded(index);
+		let item = multiPageView.getPageByIndex(index);
+		if (item){
+			item.updateGui();
+		}
+	}
 	
 	property string serviceTypeId: serviceData ? serviceData.m_serviceTypeId : ""
 	onServiceTypeIdChanged: {
-		let tabId = "Administration"
-		if (tabPanel.getIndexById(tabId) < 0){
-			tabPanel.addTab(tabId, qsTr("Administration"), administrationViewComp)
+		if (serviceTypeId !== "" && multiPageView.getIndexById("Administration") < 0) {
+			multiPageView.addPage("Administration", qsTr("Administration"), administrationViewComp, "Icons/AdminPanel")
 		}
 	}
 	
 	onServiceDataChanged: {
 		if (serviceData){
 			serviceRunning = serviceData.m_status === "running"
+			operationInProgress = false
 			if (pluginServicePath === "" && serviceData.hasPath()){
 				pluginServicePath = serviceData.m_path
+			}
+			if (serviceData.hasInputConnections() && serviceData.m_inputConnections.count > 0){
+				setPluginLoaded(serviceData.m_path)
+			}
+			if (serviceData.m_settingsPath !== undefined && serviceData.m_settingsPath !== ""){
+				settingsPath = serviceData.m_settingsPath
 			}
 		}
 	}
 	
+	function setOperationInProgress(inProgress) {
+		operationInProgress = inProgress
+	}
+	
 	function updateGui(){
-		let item = tabPanel.getTabByIndex(0);
-		item.updateGui();
+		let idx = multiPageView.getIndexById("General");
+		if (idx >= 0) {
+			multiPageView.ensurePageLoaded(idx);
+			let item = multiPageView.getPageByIndex(idx);
+			if (item) item.updateGui();
+		}
+		idx = multiPageView.getIndexById("Connections");
+		if (idx >= 0) {
+			multiPageView.ensurePageLoaded(idx);
+			let item = multiPageView.getPageByIndex(idx);
+			if (item) item.updateGui();
+		}
+		idx = multiPageView.getIndexById("Options");
+		if (idx >= 0) {
+			multiPageView.ensurePageLoaded(idx);
+			let item = multiPageView.getPageByIndex(idx);
+			if (item) item.updateGui();
+		}
+		idx = multiPageView.getIndexById("Settings");
+		if (idx >= 0) {
+			multiPageView.ensurePageLoaded(idx);
+			let item = multiPageView.getPageByIndex(idx);
+			if (item) item.updateGui();
+		}
+		idx = multiPageView.getIndexById("Plugin");
+		if (idx >= 0) {
+			multiPageView.ensurePageLoaded(idx);
+			let item = multiPageView.getPageByIndex(idx);
+			if (item) item.updateGui();
+		}
 	}
 	
 	function updateModel(){
-		let item = tabPanel.getTabByIndex(0);
-		item.updateModel();
+		let idx = multiPageView.getIndexById("General");
+		if (idx >= 0) {
+			multiPageView.ensurePageLoaded(idx);
+			let item = multiPageView.getPageByIndex(idx);
+			if (item) item.updateModel();
+		}
+		idx = multiPageView.getIndexById("Connections");
+		if (idx >= 0) {
+			multiPageView.ensurePageLoaded(idx);
+			let item = multiPageView.getPageByIndex(idx);
+			if (item) item.updateModel();
+		}
+		idx = multiPageView.getIndexById("Options");
+		if (idx >= 0) {
+			multiPageView.ensurePageLoaded(idx);
+			let item = multiPageView.getPageByIndex(idx);
+			if (item) item.updateModel();
+		}
+		idx = multiPageView.getIndexById("Settings");
+		if (idx >= 0) {
+			multiPageView.ensurePageLoaded(idx);
+			let item = multiPageView.getPageByIndex(idx);
+			if (item) item.updateModel();
+		}
+		idx = multiPageView.getIndexById("Plugin");
+		if (idx >= 0) {
+			multiPageView.ensurePageLoaded(idx);
+			let item = multiPageView.getPageByIndex(idx);
+			if (item) item.updateModel();
+		}
 	}
 	
 	function getHeaders(){
 		return {};
 	}
 	
-	TabView {
-		id: tabPanel
-		anchors.fill: parent;
-		currentIndex: 0;
+	Item {
+		id: statusBar
+		anchors.top: parent.top
+		anchors.left: parent.left
+		anchors.right: parent.right
+		height: statusBarRow.height + 2 * Style.marginM
+		
+		Rectangle {
+			anchors.fill: parent
+			color: Style.backgroundColor
+			border.color: Style.borderColor
+			border.width: 1
+		}
+		
+		Row {
+			id: statusBarRow
+			anchors.verticalCenter: parent.verticalCenter
+			anchors.left: parent.left
+			anchors.leftMargin: Style.marginXL
+			spacing: Style.marginM
+			
+			Rectangle {
+				width: 10
+				height: 10
+				radius: 5
+				anchors.verticalCenter: parent.verticalCenter
+				color: serviceEditorContainer.operationInProgress ? Style.grayColor : (serviceEditorContainer.serviceRunning ? Style.greenColor : Style.errorColor)
+			}
+			
+			BaseText {
+				anchors.verticalCenter: parent.verticalCenter
+				text: serviceEditorContainer.operationInProgress ? qsTr("Operation in progress...") : (serviceEditorContainer.serviceRunning ? qsTr("Running") : qsTr("Stopped"))
+				font.pixelSize: Style.fontSizeM
+			}
+		}
+		
+		BusyIndicator {
+			anchors.verticalCenter: parent.verticalCenter
+			anchors.right: parent.right
+			anchors.rightMargin: Style.marginXL
+			width: 20
+			height: 20
+			visible: serviceEditorContainer.operationInProgress
+		}
 	}
+	
+	MultiPageView {
+		id: multiPageView
+		anchors.top: statusBar.bottom
+		anchors.left: parent.left
+		anchors.right: parent.right
+		anchors.bottom: parent.bottom
+		panelWidth: Style.sizeHintXXS
 
-
+		function addServicePages() {
+			multiPageView.clear()
+			multiPageView.addPage("General", qsTr("General"), generalPageComp, "Icons/Settings")
+			multiPageView.addPage("Connections", qsTr("Connections"), connectionsPageComp, "Icons/Link")
+			multiPageView.addPage("Options", qsTr("Options"), optionsPageComp, "Icons/GeneralSettings")
+			multiPageView.addPage("Settings", qsTr("Settings"), settingsPageComp, "Icons/Settings")
+			multiPageView.addPage("Plugin", qsTr("Plugin"), pluginPageComp, "Icons/Tools")
+			if (serviceTypeId !== "") {
+				multiPageView.addPage("Administration", qsTr("Administration"), administrationViewComp, "Icons/AdminPanel")
+			}
+			multiPageView.currentIndex = 0
+		}
+	}
+	
+	
 	
 	Component {
-		id: mainEditorComp;
+		id: generalPageComp
 		
 		Flickable {
-			id: flickable;
+			id: generalFlickable
 			
-			anchors.left: parent.left;
-			anchors.leftMargin: Style.marginXL;
+			anchors.fill: parent
+			anchors.leftMargin: Style.marginXL
+			anchors.topMargin: Style.marginXL
+			anchors.rightMargin: Style.marginXL
+			anchors.bottomMargin: Style.marginXL
 			
-			anchors.top: parent.top;
-			anchors.topMargin: Style.marginXL;
+			contentWidth: generalColumn.width
+			contentHeight: generalColumn.height + Style.marginXL
 			
-			anchors.bottom: parent.bottom;
-			anchors.bottomMargin: Style.marginXL;
-			
-			anchors.right: scrollbar.left;
-			anchors.rightMargin: Style.marginXL;
-			
-			contentWidth: bodyColumn.width;
-			contentHeight: bodyColumn.height + 2 * Style.marginXL + 100
-
-			boundsBehavior: Flickable.StopAtBounds;
-			
-			clip: true;
+			boundsBehavior: Flickable.StopAtBounds
+			clip: true
 			
 			function updateGui(){
 				nameInput.text = serviceEditorContainer.serviceData.m_name;
 				descriptionInput.text = serviceEditorContainer.serviceData.m_description; 
 				pathInput.text = serviceEditorContainer.serviceData.m_path;
 				argumentsInput.text = serviceEditorContainer.serviceData.m_arguments;
-				switchAutoStart.checked = serviceEditorContainer.serviceData.m_isAutoStart;
+			}
+			
+			function updateModel(){
+				serviceEditorContainer.serviceData.m_name = nameInput.text;
+				serviceEditorContainer.serviceData.m_description = descriptionInput.text;
+				serviceEditorContainer.serviceData.m_path = pathInput.text;
+				serviceEditorContainer.serviceData.m_arguments = argumentsInput.text;
+			}
+			
+			Column {
+				id: generalColumn
+				anchors.horizontalCenter: parent.horizontalCenter
+				width: Math.min(700, parent.width - 2 * Style.marginXL)
+				spacing: Style.marginXL
 				
-				if (serviceEditorContainer.serviceData.m_tracingLevel > -1){
-					switchVerboseMessage.checked = true;
+				Column {
+					width: parent.width
+					spacing: Style.marginL
+					
+					GroupHeaderView {
+						title: qsTr("General Information")
+						width: parent.width
+						groupView: generalGroup
+					}
+					
+					GroupElementView {
+						id: generalGroup
+						width: parent.width
+						
+						TextInputElementView {
+							id: nameInput
+							name: qsTr("Name")
+							placeHolderText: qsTr("Enter the name");
+							
+							onEditingFinished: {
+								serviceEditorContainer.doUpdateModel();
+							}
+							
+							KeyNavigation.tab: descriptionInput;
+						}
+						
+						TextInputElementView {
+							id: descriptionInput
+							name: qsTr("Description")
+							placeHolderText: qsTr("Enter the description");
+							
+							onEditingFinished: {
+								serviceEditorContainer.doUpdateModel();
+							}
+							
+							KeyNavigation.tab: pathInput;
+						}
+						
+						TextInputElementView {
+							id: pathInput
+							name: qsTr("Path")
+							placeHolderText: qsTr("Enter the path");
+							
+							onEditingFinished: {
+								serviceEditorContainer.doUpdateModel();
+								
+								let path = serviceEditorContainer.serviceData.m_path
+								serviceEditorContainer.handlePluginPathChange(path)
+							}
+							
+							KeyNavigation.tab: argumentsInput;
+						}
+						
+						TextInputElementView {
+							id: argumentsInput
+							name: qsTr("Arguments")
+							placeHolderText: qsTr("Enter the arguments");
+							
+							onEditingFinished: {
+								serviceEditorContainer.doUpdateModel();
+							}
+							
+							KeyNavigation.tab: nameInput;
+						}
+					}
 				}
-				else{
-					switchVerboseMessage.checked = false;
+			}
+		}
+	}
+	
+	Component {
+		id: connectionsPageComp
+		
+		Item {
+			id: connectionsPageRoot
+			anchors.fill: parent
+			
+			function updateGui(){
+				if (serviceEditorContainer.pluginLoaded) {
+					connectionsFlickable.updateGui()
+				}
+			}
+			
+			function updateModel(){
+				if (serviceEditorContainer.pluginLoaded) {
+					connectionsFlickable.updateModel()
+				}
+			}
+			
+			Column {
+				anchors.centerIn: parent
+				spacing: Style.marginL
+				visible: !serviceEditorContainer.pluginLoaded
+				width: Math.min(400, parent.width - 2 * Style.marginXL)
+				
+				Image {
+					anchors.horizontalCenter: parent.horizontalCenter
+					width: 48
+					height: 48
+					sourceSize.width: 48
+					sourceSize.height: 48
+					source: "../../../../" + Style.getIconPath("Icons/Link", Icon.State.Off, Icon.Mode.Normal)
+					opacity: 0.5
 				}
 				
-				tracingLevelInput.currentIndex = serviceEditorContainer.serviceData.m_tracingLevel;
-				
-				if (serviceEditorContainer.serviceData.m_startScript !== ""){
-					startScriptChecked.checked = true
-					startScriptInput.text = serviceEditorContainer.serviceData.m_startScript
-				}
-				else{
-					startScriptChecked.checked = false
-					startScriptInput.text = ""
+				BaseText {
+					width: parent.width
+					text: qsTr("Connections are not available")
+					font.pixelSize: Style.fontSizeXL
+					horizontalAlignment: Text.AlignHCenter
 				}
 				
-				if (serviceEditorContainer.serviceData.m_stopScript !== ""){
-					stopScriptChecked.checked = true
-					stopScriptInput.text = serviceEditorContainer.serviceData.m_stopScript
+				BaseText {
+					width: parent.width
+					text: qsTr("Load the plugin first on the Plugin tab to see connection settings")
+					horizontalAlignment: Text.AlignHCenter
+					opacity: 0.7
+					wrapMode: Text.WordWrap
 				}
-				else{
-					stopScriptChecked.checked = false
-				}
+			}
+			
+			Flickable {
+				id: connectionsFlickable
 				
+				anchors.fill: parent
+				anchors.leftMargin: Style.marginXL
+				anchors.topMargin: Style.marginXL
+				anchors.rightMargin: Style.marginXL
+				anchors.bottomMargin: Style.marginXL
+				
+				visible: serviceEditorContainer.pluginLoaded
+				
+				contentWidth: connectionsBody.width
+				contentHeight: connectionsBody.height + Style.marginXL
+				
+				boundsBehavior: Flickable.StopAtBounds
+				clip: true
+				
+				function updateGui(){
 				if (serviceEditorContainer.serviceData.m_inputConnections){
 					inputConnectionListView.model = 0
 					inputConnectionListView.model = serviceEditorContainer.serviceData.m_inputConnections
@@ -133,11 +430,10 @@ ViewBase {
 						}
 					}
 				}
-
+				
 				if (serviceEditorContainer.serviceData.m_outputConnections){
 					outputConnectionListView.model = 0
 					outputConnectionListView.model = serviceEditorContainer.serviceData.m_outputConnections
-					let count = serviceEditorContainer.serviceData.m_outputConnections.count
 					
 					for (let i = 0; i < outputConnectionListView.count; i++){
 						let item = outputConnectionListView.itemAtIndex(i)
@@ -149,37 +445,6 @@ ViewBase {
 			}
 			
 			function updateModel(){
-				serviceEditorContainer.serviceData.m_name = nameInput.text;
-				serviceEditorContainer.serviceData.m_description = descriptionInput.text;
-				serviceEditorContainer.serviceData.m_path = pathInput.text;
-				serviceEditorContainer.serviceData.m_arguments = argumentsInput.text;
-				serviceEditorContainer.serviceData.m_isAutoStart = switchAutoStart.checked;
-				
-				if (switchVerboseMessage.checked){
-					if (tracingLevelInput.currentIndex == -1){
-						tracingLevelInput.currentIndex = 0;
-					}
-					
-					serviceEditorContainer.serviceData.m_tracingLevel = tracingLevelInput.currentIndex;
-				}
-				else{
-					serviceEditorContainer.serviceData.m_tracingLevel = -1;
-				}
-				
-				if(startScriptChecked.checked){
-					serviceEditorContainer.serviceData.m_startScript = startScriptInput.text;
-				}
-				else{
-					serviceEditorContainer.serviceData.m_startScript = "";
-				}
-				
-				if(stopScriptChecked.checked){
-					serviceEditorContainer.serviceData.m_stopScript = stopScriptInput.text;
-				}
-				else{
-					serviceEditorContainer.serviceData.m_stopScript = "";
-				}
-				
 				if (serviceEditorContainer.serviceData.m_inputConnections){
 					for (let i = 0; i < inputConnectionListView.count; i++){
 						let item = inputConnectionListView.itemAtIndex(i)
@@ -199,229 +464,18 @@ ViewBase {
 				}
 			}
 			
-			CustomScrollbar {
-				id: scrollbar;
-				
-				anchors.left: flickable.right;
-				anchors.leftMargin: Style.marginXS;
-				anchors.top: parent.top;
-				anchors.bottom: flickable.parent.bottom;
-				
-				secondSize: Style.marginM;
-				targetItem: flickable;
-				
-				visible: parent.visible;
-			}
-			
 			Column {
-				id: bodyColumn;
-				width: 700
-				spacing: Style.marginXL;
-
-				Column {
-					width: parent.width
-					spacing: Style.marginL
-
-					GroupHeaderView {
-						title: qsTr("General Information")
-						width: parent.width
-						groupView: generalGroup
-					}
-
-					GroupElementView {
-						id: generalGroup
-						width: parent.width
-
-						TextInputElementView {
-							id: nameInput
-							name: qsTr("Name")
-							placeHolderText: qsTr("Enter the name");
-
-							onEditingFinished: {
-								serviceEditorContainer.doUpdateModel();
-							}
-
-							KeyNavigation.tab: descriptionInput;
-						}
-
-						TextInputElementView {
-							id: descriptionInput
-							name: qsTr("Description")
-							placeHolderText: qsTr("Enter the description");
-
-							onEditingFinished: {
-								serviceEditorContainer.doUpdateModel();
-							}
-
-							KeyNavigation.tab: pathInput;
-						}
-
-						TextInputElementView {
-							id: pathInput
-							name: qsTr("Path")
-							placeHolderText: qsTr("Enter the path");
-
-							onEditingFinished: {
-								serviceEditorContainer.doUpdateModel();
-
-								let path = serviceEditorContainer.serviceData.m_path
-								if (path === serviceEditorContainer.pluginServicePath){
-									serviceEditorContainer.pluginLoaded = true
-								}
-								else{
-									if (serviceEditorContainer.pluginLoaded){
-										serviceEditorContainer.pluginLoaded = false
-										ModalDialogManager.showWarningDialog(qsTr("You have changed the Path for which the plugin was loaded, reload the plugin"))
-									}
-								}
-							}
-
-							KeyNavigation.tab: argumentsInput;
-						}
-
-						TextInputElementView {
-							id: argumentsInput
-							name: qsTr("Arguments")
-							placeHolderText: qsTr("Enter the arguments");
-
-							onEditingFinished: {
-								serviceEditorContainer.doUpdateModel();
-							}
-
-							KeyNavigation.tab: nameInput;
-						}
-					}
-				}
-
-				Column {
-					width: parent.width
-					spacing: Style.marginL
-
-					GroupHeaderView {
-						title: qsTr("Additional Information")
-						width: parent.width
-						groupView: additionalGroup
-					}
-
-					GroupElementView {
-						id: additionalGroup
-						width: parent.width
-
-						SwitchElementView {
-							id: switchAutoStart
-							name: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("on") : qsTr("off")) + ")";
-							onCheckedChanged: {
-								serviceEditorContainer.doUpdateModel();
-							}
-						}
-
-						SwitchElementView {
-							id: switchVerboseMessage
-							name: qsTr("Verbose Message")
-							onCheckedChanged: {
-								serviceEditorContainer.doUpdateModel();
-							}
-						}
-
-						ComboBoxElementView {
-							id: tracingLevelInput
-							name: qsTr("Tracing level");
-							visible: switchVerboseMessage.checked
-							model: TreeItemModel {
-							}
-							Component.onCompleted: {
-								let index = model.insertNewItem()
-								model.setData("id", "0", index)
-								model.setData("name", "0", index)
-
-								index = model.insertNewItem()
-								model.setData("id", "1", index)
-								model.setData("name", "1", index)
-
-								index = model.insertNewItem()
-								model.setData("id", "2", index)
-								model.setData("name", "2", index)
-
-								index = model.insertNewItem()
-								model.setData("id", "3", index)
-								model.setData("name", "3", index)
-
-								index = model.insertNewItem()
-								model.setData("id", "4", index)
-								model.setData("name", "4", index)
-
-								index = model.insertNewItem()
-								model.setData("id", "5", index)
-								model.setData("name", "5", index)
-							}
-							onCurrentIndexChanged: {
-								serviceEditorContainer.doUpdateModel();
-							}
-						}
-
-						SwitchElementView {
-							id: startScriptChecked
-							name: qsTr("Start script")
-							onCheckedChanged: {
-								serviceEditorContainer.doUpdateModel();
-							}
-						}
-
-						TextInputElementView {
-							id: startScriptInput
-							visible: startScriptChecked.checked
-							placeHolderText: qsTr("Enter the start script path");
-							name: qsTr("Start Script Path")
-							onEditingFinished: {
-								serviceEditorContainer.doUpdateModel();
-							}
-						}
-
-						SwitchElementView {
-							id: stopScriptChecked
-							name: qsTr("Stop script")
-							onCheckedChanged: {
-								serviceEditorContainer.doUpdateModel();
-							}
-						}
-
-						TextInputElementView {
-							id: stopScriptInput
-							visible: stopScriptChecked.checked
-							placeHolderText: qsTr("Enter the stop script path");
-							name: qsTr("Stop Script Path")
-							onEditingFinished: {
-								serviceEditorContainer.doUpdateModel();
-							}
-						}
-					}
-
-				}
+				id: connectionsBody
+				anchors.horizontalCenter: parent.horizontalCenter
+				width: Math.min(700, parent.width - 2 * Style.marginXL)
+				spacing: Style.marginXL
 				
-				Column {
+				BaseText {
+					visible: (!inputConnectionListView || inputConnectionListView.count === 0) && (!outputConnectionListView || outputConnectionListView.count === 0)
+					text: qsTr("No connections")
+					font.pixelSize: Style.fontSizeXL
+					horizontalAlignment: Text.AlignHCenter
 					width: parent.width
-					spacing: Style.marginL
-
-					GroupHeaderView {
-						title: qsTr("Plugin information")
-						width: parent.width
-						groupView: pluginGroup
-					}
-
-					GroupElementView {
-						id: pluginGroup
-						width: parent.width
-						ButtonElementView {
-							id: loadPluginButton
-							name: qsTr("Load Plugin")
-							text: qsTr("Load")
-							description: buttonEnabled ? qsTr("Click if you want to load the plugin data") : qsTr("Plugin succesfully loaded")
-							buttonEnabled: !serviceEditorContainer.pluginLoaded
-							onClicked: {
-								serviceEditorContainer.loadPlugin()
-							}
-						}
-					}
 				}
 				
 				ListView  {
@@ -443,11 +497,11 @@ ViewBase {
 							id: inputConnectionEditor
 							width: inputConnectionListView.width
 							readOnly: serviceEditorContainer.readOnly
-
+							
 							onParamsChanged: {
 								serviceEditorContainer.doUpdateModel()
 							}
-
+							
 							ButtonElementView {
 								id: externConnectionsView
 								name: qsTr("Extern Connections")
@@ -457,19 +511,19 @@ ViewBase {
 								}
 							}
 						}
-
+						
 						function updateGui(){
 							if (!model.item){
 								return
 							}
-
+							
 							if (model.item.m_connectionParam){
 								inputConnectionEditor.host = model.item.m_connectionParam.m_host
 								inputConnectionEditor.httpPort = model.item.m_connectionParam.m_httpPort
 								inputConnectionEditor.wsPort = model.item.m_connectionParam.m_wsPort
 								inputConnectionEditor.isSecure = model.item.m_connectionParam.m_isSecure
 							}
-
+							
 							if (model.item.m_externConnectionList){
 								let values = []
 								for (let i = 0; i < model.item.m_externConnectionList.count; i++){
@@ -478,7 +532,7 @@ ViewBase {
 										values.push((externConnection.m_connectionParam.m_isSecure == true ? "https://" : "http://") + externConnection.m_connectionParam.m_host + ":" + externConnection.m_connectionParam.m_httpPort + externConnection.m_connectionParam.m_httpPath)
 									}
 								}
-
+								
 								if (values.length > 0){
 									externConnectionsView.description = values.join('\n')
 								}
@@ -487,12 +541,12 @@ ViewBase {
 								}
 							}
 						}
-
+						
 						function updateModel(){
 							if (!model.item){
 								return
 							}
-
+							
 							if (model.item.m_connectionParam){
 								model.item.m_connectionParam.m_host = inputConnectionEditor.host
 								model.item.m_connectionParam.m_httpPort = inputConnectionEditor.httpPort
@@ -500,16 +554,16 @@ ViewBase {
 								model.item.m_connectionParam.m_isSecure = inputConnectionEditor.isSecure
 							}
 						}
-
+						
 					}
 				}
-
+				
 				Component {
 					id: externPortsDialogComp;
 					
 					ExternPortsDialog {
 						property var inputConnection: null
-
+						
 						width: serviceEditorContainer.width - Style.marginS < 1200 ? serviceEditorContainer.width - Style.marginS : 1200
 						
 						onStarted: {
@@ -581,7 +635,7 @@ ViewBase {
 							readOnly: true
 							text: model.item.m_connectionName
 						}
-
+						
 						TableElementView {
 							id: tableElementView
 							name: qsTr("Available Connections")
@@ -590,7 +644,7 @@ ViewBase {
 								if (!model.item){
 									return
 								}
-
+								
 								if (table){
 									table.isMultiCheckable = false
 									table.checkable = true
@@ -620,12 +674,12 @@ ViewBase {
 										if (!outputDelegate.modelData){
 											return ""
 										}
-
+										
 										let connectionItem = outputDelegate.modelData.m_dependantConnectionList.get(rowIndex).item.m_connectionParam
 										if (connectionItem){
 											return connectionItem.m_host
 										}
-
+										
 										return ""
 									}
 								}
@@ -644,7 +698,7 @@ ViewBase {
 										if (connectionItem){
 											return connectionItem.m_httpPort
 										}
-
+										
 										return ""
 									}
 								}
@@ -663,7 +717,7 @@ ViewBase {
 										if (connectionItem){
 											return connectionItem.m_wsPort
 										}
-
+										
 										return ""
 									}
 								}
@@ -674,7 +728,7 @@ ViewBase {
 							if (!tableElementView.table || !model.item){
 								return
 							}
-
+							
 							let dependantId = model.item.m_dependantConnectionId;
 							if (dependantId === ""){
 								tableElementView.table.uncheckAll()
@@ -714,122 +768,582 @@ ViewBase {
 						}
 					}
 				}
-			}//Column bodyColumn
+			}
+		}
 		}
 	}
-	
+
 	Component {
-		id: administrationViewComp;
-		
-		Item {
-			id: administrationViewItem
-			anchors.fill: parent;
+		id: optionsPageComp
 			
-			function getHeaders(){
-				if (serviceEditorContainer.serviceTypeId === ""){
-					console.error("Unable to get additional parameters. Product-ID is empty");
-					return null;
-				}
+			Flickable {
+				id: optionsFlickable
 				
-				let obj = serviceEditorContainer.getHeaders();
-				obj["productId"] = serviceEditorContainer.serviceTypeId;
-				obj["token"] = userTokenProvider.accessToken;
-				
-				return obj;
-			}
-			
-			UserTokenProvider {
-				id: userTokenProvider
-				productId: serviceEditorContainer.serviceTypeId;
-				isTokenGlobal: false
-				
-				function getHeaders(){
-					return administrationViewItem.getHeaders();
-				}
-				
-				onAccepted: {
-					authorizationPage.visible = false;
-					loader.sourceComponent = administrationViewDocument
-				}
-			}
-			
-			AuthorizationPage {
-				id: authorizationPage
-				anchors.fill: parent;
-				appName: serviceEditorContainer.serviceTypeId
-				canRegisterUser: false
-				canRecoveryPassword: false
-				onLogin: {
-					userTokenProvider.authorization(login, password)
-				}
-			}
-			
-			Loader {
-				id: loader
-				anchors.fill: parent;
-			}
-			
-			Rectangle {
 				anchors.fill: parent
-				color: Style.backgroundColor2
-				visible: !serviceEditorContainer.serviceRunning
+				anchors.leftMargin: Style.marginXL
+				anchors.topMargin: Style.marginXL
+				anchors.rightMargin: Style.marginXL
+				anchors.bottomMargin: Style.marginXL
 				
-				Row {
-					anchors.centerIn: parent
-					spacing: Style.marginM
+				contentWidth: optionsColumn.width
+				contentHeight: optionsColumn.height + Style.marginXL
+				
+				boundsBehavior: Flickable.StopAtBounds
+				clip: true
+				
+				function updateGui(){
+					if (!serviceEditorContainer.serviceData){
+						return
+					}
+
+					switchAutoStart.checked = serviceEditorContainer.serviceData.m_isAutoStart
 					
-					Image {
-						id: image
-						width: 30
-						height: width
-						
-						sourceSize.width: width
-						sourceSize.height: height
-						
-						source: "../../../../" + Style.getIconPath("Icons/Warning", Icon.State.On, Icon.Mode.Normal)
+					if (serviceEditorContainer.serviceData.m_tracingLevel > -1){
+						switchVerboseMessage.checked = true
+					}
+					else{
+						switchVerboseMessage.checked = false
 					}
 					
-					BaseText {
-						text: qsTr("Service not running")
-						font.pixelSize: Style.fontSizeXXL
+					tracingLevelInput.currentIndex = serviceEditorContainer.serviceData.m_tracingLevel
+					
+					if (serviceEditorContainer.serviceData.m_startScript !== ""){
+						startScriptChecked.checked = true
+						startScriptInput.text = serviceEditorContainer.serviceData.m_startScript
+					}
+					else{
+						startScriptChecked.checked = false
+						startScriptInput.text = ""
+					}
+					
+					if (serviceEditorContainer.serviceData.m_stopScript !== ""){
+						stopScriptChecked.checked = true
+						stopScriptInput.text = serviceEditorContainer.serviceData.m_stopScript
+					}
+					else{
+						stopScriptChecked.checked = false
 					}
 				}
-			}
-			
-			Component {
-				id: administrationViewDocument
-				SingleDocumentWorkspaceView {
-					id: singleDocumentWorkspaceView
-					anchors.fill: administrationViewItem
-					documentManager: DocumentService {}
+				
+				function updateModel(){
+					if (!serviceEditorContainer.serviceData){
+						return
+					}
+
+					serviceEditorContainer.serviceData.m_isAutoStart = switchAutoStart.checked
 					
-					visualStatusProvider: GqlBasedObjectVisualStatusProvider {
-						function getHeaders(){
-							return administrationViewItem.getHeaders();
+					if (switchVerboseMessage.checked){
+						if (tracingLevelInput.currentIndex == -1){
+							tracingLevelInput.currentIndex = 0
 						}
+						serviceEditorContainer.serviceData.m_tracingLevel = tracingLevelInput.currentIndex
+					}
+					else{
+						serviceEditorContainer.serviceData.m_tracingLevel = -1
 					}
 					
-					Component.onCompleted: {
-						addInitialItem(administrationView, "Administration")
+					if (startScriptChecked.checked){
+						serviceEditorContainer.serviceData.m_startScript = startScriptInput.text
+					}
+					else{
+						serviceEditorContainer.serviceData.m_startScript = ""
 					}
 					
-					Component {
-						id: administrationView;
-						AdministrationView {
-							anchors.fill: parent;
-							productId: serviceEditorContainer.serviceTypeId;
-							documentManager: singleDocumentWorkspaceView.documentManager;
+					if (stopScriptChecked.checked){
+						serviceEditorContainer.serviceData.m_stopScript = stopScriptInput.text
+					}
+					else{
+						serviceEditorContainer.serviceData.m_stopScript = ""
+					}
+				}
+				
+				Column {
+					id: optionsColumn
+					anchors.horizontalCenter: parent.horizontalCenter
+					width: Math.min(700, parent.width - 2 * Style.marginXL)
+					spacing: Style.marginXL
+					
+					Column {
+						width: parent.width
+						spacing: Style.marginL
+						
+						GroupHeaderView {
+							title: qsTr("Options")
+							width: parent.width
+							groupView: additionalGroup
+						}
+						
+						GroupElementView {
+							id: additionalGroup
+							width: parent.width
 							
-							function getHeaders(){
-								return administrationViewItem.getHeaders();
+							SwitchElementView {
+								id: switchAutoStart
+								name: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("on") : qsTr("off")) + ")"
+								onCheckedChanged: {
+									serviceEditorContainer.doUpdateModel()
+								}
+							}
+							
+							SwitchElementView {
+								id: switchVerboseMessage
+								name: qsTr("Verbose Message")
+								onCheckedChanged: {
+									serviceEditorContainer.doUpdateModel()
+								}
+							}
+							
+							ComboBoxElementView {
+								id: tracingLevelInput
+								name: qsTr("Tracing level")
+								visible: switchVerboseMessage.checked
+								model: TreeItemModel {
+								}
+								Component.onCompleted: {
+									let index = model.insertNewItem()
+									model.setData("id", "0", index)
+									model.setData("name", "0", index)
+									
+									index = model.insertNewItem()
+									model.setData("id", "1", index)
+									model.setData("name", "1", index)
+									
+									index = model.insertNewItem()
+									model.setData("id", "2", index)
+									model.setData("name", "2", index)
+									
+									index = model.insertNewItem()
+									model.setData("id", "3", index)
+									model.setData("name", "3", index)
+									
+									index = model.insertNewItem()
+									model.setData("id", "4", index)
+									model.setData("name", "4", index)
+									
+									index = model.insertNewItem()
+									model.setData("id", "5", index)
+									model.setData("name", "5", index)
+								}
+								onCurrentIndexChanged: {
+									serviceEditorContainer.doUpdateModel()
+								}
+							}
+							
+							SwitchElementView {
+								id: startScriptChecked
+								name: qsTr("Start script")
+								onCheckedChanged: {
+									serviceEditorContainer.doUpdateModel()
+								}
+							}
+							
+							TextInputElementView {
+								id: startScriptInput
+								visible: startScriptChecked.checked
+								placeHolderText: qsTr("Enter the start script path")
+								name: qsTr("Start Script Path")
+								onEditingFinished: {
+									serviceEditorContainer.doUpdateModel()
+								}
+							}
+							
+							SwitchElementView {
+								id: stopScriptChecked
+								name: qsTr("Stop script")
+								onCheckedChanged: {
+									serviceEditorContainer.doUpdateModel()
+								}
+							}
+							
+							TextInputElementView {
+								id: stopScriptInput
+								visible: stopScriptChecked.checked
+								placeHolderText: qsTr("Enter the stop script path")
+								name: qsTr("Stop Script Path")
+								onEditingFinished: {
+									serviceEditorContainer.doUpdateModel()
+								}
 							}
 						}
 					}
 				}
 			}
+	}
+	Component {
+		id: settingsPageComp
+		
+		Item {
+			id: settingsViewItem
+			anchors.fill: parent
 			
+			property bool canEditSettings: !serviceEditorContainer.isNewService && serviceEditorContainer.settingsPath !== "" && !serviceEditorContainer.serviceIsDirty
 			
+			function updateGui(){
+				settingsPathInput.text = serviceEditorContainer.settingsPath
+				settingsTextEdit.text = serviceEditorContainer.settingsContent
+			}
+			
+			function updateModel(){
+				if (serviceEditorContainer.serviceData){
+					serviceEditorContainer.settingsPath = settingsPathInput.text
+					serviceEditorContainer.serviceData.m_settingsPath = settingsPathInput.text
+				}
+			}
+			
+			function setContent(content){
+				settingsTextEdit.text = content
+			}
+			
+			function getContent(){
+				return settingsTextEdit.text
+			}
+			
+			Component.onCompleted: {
+				updateGui()
+			}
+			
+			Column {
+				id: settingsHeaderColumn
+				anchors.left: parent.left
+				anchors.leftMargin: Style.marginXL
+				anchors.right: parent.right
+				anchors.rightMargin: Style.marginXL
+				anchors.top: parent.top
+				anchors.topMargin: Style.marginXL
+				spacing: Style.marginM
+				
+				GroupHeaderView {
+					title: qsTr("Settings")
+					width: parent.width
+					groupView: settingsGroup
+				}
+				
+				GroupElementView {
+					id: settingsGroup
+					width: parent.width
+					
+					TextInputElementView {
+						id: settingsPathInput
+						name: qsTr("Settings Path")
+						placeHolderText: qsTr("Enter the path to settings file")
+						text: serviceEditorContainer.settingsPath
+						
+						onEditingFinished: {
+							serviceEditorContainer.settingsPath = settingsPathInput.text
+							serviceEditorContainer.doUpdateModel()
+						}
+					}
+				}
+				
+				BaseText {
+					width: parent.width
+					wrapMode: Text.WordWrap
+					visible: serviceEditorContainer.isNewService
+					text: qsTr("Save the service first to configure settings")
+					color: Style.warningColor
+				}
+				
+				BaseText {
+					width: parent.width
+					wrapMode: Text.WordWrap
+					visible: !serviceEditorContainer.isNewService && serviceEditorContainer.serviceIsDirty
+					text: qsTr("Service has unsaved changes. Save the service before loading or editing settings")
+					color: Style.warningColor
+				}
+				
+				BaseText {
+					width: parent.width
+					wrapMode: Text.WordWrap
+					visible: !serviceEditorContainer.isNewService && !serviceEditorContainer.serviceIsDirty && serviceEditorContainer.settingsPath === ""
+					text: qsTr("Settings path is not configured. Enter a path and save the service to enable settings")
+					opacity: 0.7
+				}
+				
+				BaseText {
+					width: parent.width
+					wrapMode: Text.WordWrap
+					visible: settingsViewItem.canEditSettings
+					text: serviceEditorContainer.settingsFileExists
+						? qsTr("Settings file: ") + serviceEditorContainer.settingsPath
+						: qsTr("Settings file does not exist yet. It will be created on first save")
+				}
+				
+				Row {
+					spacing: Style.marginM
+					visible: !serviceEditorContainer.isNewService && serviceEditorContainer.settingsPath !== ""
+					
+					Button {
+						id: loadSettingsButton
+						width: Style.sizeHintBXS
+						height: Style.controlHeightM
+						text: qsTr("Load")
+						enabled: settingsViewItem.canEditSettings
+						onClicked: {
+							serviceEditorContainer.loadSettings()
+						}
+					}
+					
+					Button {
+						id: saveSettingsButton
+						width: Style.sizeHintBXS
+						height: Style.controlHeightM
+						text: qsTr("Save")
+						enabled: settingsViewItem.canEditSettings && !serviceEditorContainer.readOnly
+						onClicked: {
+							serviceEditorContainer.saveSettings(settingsViewItem.getContent())
+						}
+					}
+				}
+			}
+			
+			Rectangle {
+				anchors.left: parent.left
+				anchors.leftMargin: Style.marginXL
+				anchors.right: parent.right
+				anchors.rightMargin: Style.marginXL
+				anchors.top: settingsHeaderColumn.bottom
+				anchors.topMargin: Style.marginM
+				anchors.bottom: parent.bottom
+				anchors.bottomMargin: Style.marginXL
+				
+				visible: settingsViewItem.canEditSettings
+				
+				color: Style.backgroundColor2
+				border.color: Style.borderColor
+				border.width: 1
+				clip: true
+				
+				Flickable {
+					id: settingsFlickable
+					anchors.fill: parent
+					anchors.margins: Style.marginS
+					contentWidth: width
+					contentHeight: settingsTextEdit.contentHeight
+					boundsBehavior: Flickable.StopAtBounds
+					clip: true
+					
+					TextEdit {
+						id: settingsTextEdit
+						width: settingsFlickable.width
+						readOnly: serviceEditorContainer.readOnly
+						selectByMouse: true
+						wrapMode: TextEdit.NoWrap
+						font.family: "Courier New"
+						font.pixelSize: Style.fontSizeM
+						color: Style.textColor
+						
+						onCursorRectangleChanged: {
+							if (cursorRectangle.y + cursorRectangle.height > settingsFlickable.contentY + settingsFlickable.height){
+								settingsFlickable.contentY = cursorRectangle.y + cursorRectangle.height - settingsFlickable.height
+							}
+							else if (cursorRectangle.y < settingsFlickable.contentY){
+								settingsFlickable.contentY = cursorRectangle.y
+							}
+						}
+					}
+				}
+			}
 		}
 	}
-}//serviceEditorContainer
+	
+	Component {
+		id: pluginPageComp
+			
+			Item {
+				id: pluginPage
+				anchors.fill: parent
+				
+				property bool pluginLoading: false
+				
+				function updateGui(){}
+				function updateModel(){}
+				
+				Column {
+					anchors.horizontalCenter: parent.horizontalCenter
+					width: Math.min(700, parent.width - 2 * Style.marginXL)
+					spacing: Style.marginL
+					
+					GroupHeaderView {
+						title: qsTr("Plugin information")
+						width: parent.width
+						groupView: pluginGroup
+					}
+					
+					GroupElementView {
+						id: pluginGroup
+						width: parent.width
+						
+						Item {
+							width: parent.width
+							height: pluginStatusRow.height + Style.marginL
+							
+							Row {
+								id: pluginStatusRow
+								anchors.verticalCenter: parent.verticalCenter
+								anchors.left: parent.left
+								anchors.leftMargin: Style.marginL
+								spacing: Style.marginM
+								
+								Rectangle {
+									width: 10
+									height: 10
+									radius: 5
+									anchors.verticalCenter: parent.verticalCenter
+									color: serviceEditorContainer.pluginLoaded ? Style.successColor : Style.borderColor
+								}
+								
+								BaseText {
+									anchors.verticalCenter: parent.verticalCenter
+									text: serviceEditorContainer.pluginLoaded ? qsTr("Plugin loaded") : qsTr("Plugin not loaded")
+								}
+							}
+						}
+						
+						ButtonElementView {
+							id: loadPluginButton
+							name: qsTr("Load Plugin")
+							text: qsTr("Load")
+							description: serviceEditorContainer.isNewService ? qsTr("Save the service first before loading plugin") : (!serviceEditorContainer.pluginLoaded ? qsTr("Click to load the plugin connection data") : qsTr("Plugin successfully loaded"))
+							buttonEnabled: !serviceEditorContainer.isNewService && !serviceEditorContainer.pluginLoaded && !pluginPage.pluginLoading
+							onClicked: {
+								pluginPage.pluginLoading = true
+								serviceEditorContainer.requestLoadPlugin()
+							}
+						}
+					}
+					
+					BusyIndicator {
+						anchors.horizontalCenter: parent.horizontalCenter
+						width: 40
+						height: 40
+						visible: pluginPage.pluginLoading && !serviceEditorContainer.pluginLoaded
+					}
+				}
+				
+				Connections {
+					target: serviceEditorContainer
+					function onPluginLoadedChanged() {
+						if (serviceEditorContainer.pluginLoaded) {
+							pluginPage.pluginLoading = false
+						}
+					}
+					function onPluginLoadingFailed() {
+						pluginPage.pluginLoading = false
+					}
+				}
+			}
+	}
 
+	Component {
+		id: administrationViewComp;
+			
+			Item {
+				id: administrationViewItem
+				anchors.fill: parent;
+				
+				function getHeaders(){
+					if (serviceEditorContainer.serviceTypeId === ""){
+						console.error("Unable to get additional parameters. Product-ID is empty");
+						return null;
+					}
+					
+					let obj = serviceEditorContainer.getHeaders();
+					obj["productId"] = serviceEditorContainer.serviceTypeId;
+					obj["token"] = userTokenProvider.accessToken;
+					
+					return obj;
+				}
+				
+				UserTokenProvider {
+					id: userTokenProvider
+					productId: serviceEditorContainer.serviceTypeId;
+					isTokenGlobal: false
+					
+					function getHeaders(){
+						return administrationViewItem.getHeaders();
+					}
+					
+					onAccepted: {
+						authorizationPage.visible = false;
+						loader.sourceComponent = administrationViewDocument
+					}
+				}
+				
+				AuthorizationPage {
+					id: authorizationPage
+					anchors.fill: parent;
+					appName: serviceEditorContainer.serviceTypeId
+					canRegisterUser: false
+					canRecoveryPassword: false
+					onLogin: {
+						userTokenProvider.authorization(login, password)
+					}
+				}
+				
+				Loader {
+					id: loader
+					anchors.fill: parent;
+				}
+				
+				Rectangle {
+					anchors.fill: parent
+					color: Style.backgroundColor2
+					visible: !serviceEditorContainer.serviceRunning
+					
+					Row {
+						anchors.centerIn: parent
+						spacing: Style.marginM
+						
+						Image {
+							id: image
+							width: 30
+							height: width
+							
+							sourceSize.width: width
+							sourceSize.height: height
+							
+							source: "../../../../" + Style.getIconPath("Icons/Warning", Icon.State.On, Icon.Mode.Normal)
+						}
+						
+						BaseText {
+							text: qsTr("Service not running")
+							font.pixelSize: Style.fontSizeXXL
+						}
+					}
+				}
+				
+				Component {
+					id: administrationViewDocument
+					SingleDocumentWorkspaceView {
+						id: singleDocumentWorkspaceView
+						anchors.fill: administrationViewItem
+						documentManager: DocumentService {}
+						
+						visualStatusProvider: GqlBasedObjectVisualStatusProvider {
+							function getHeaders(){
+								return administrationViewItem.getHeaders();
+							}
+						}
+						
+						Component.onCompleted: {
+							addInitialItem(administrationView, "Administration")
+						}
+						
+						Component {
+							id: administrationView;
+							AdministrationView {
+								anchors.fill: parent;
+								productId: serviceEditorContainer.serviceTypeId;
+								documentManager: singleDocumentWorkspaceView.documentManager;
+								
+								function getHeaders(){
+									return administrationViewItem.getHeaders();
+								}
+							}
+						}
+					}
+				}
+				
+	}
+}
+}
