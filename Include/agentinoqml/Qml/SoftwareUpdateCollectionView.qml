@@ -27,8 +27,8 @@ RemoteCollectionView {
 
 	Component.onCompleted: {
 		if (documentManager){
-			documentManager.registerDocumentView("Update", updateEditorComp);
-			documentManager.registerDocumentDataController("Update", updateDataControllerComp);
+			documentManager.registerDocumentView("SoftwareUpdate", updateEditorComp);
+			documentManager.registerDocumentDataController("SoftwareUpdate", updateDataControllerComp);
 		}
 	}
 
@@ -72,7 +72,7 @@ RemoteCollectionView {
 			let index = selectedIndexes[0]
 			let updateId = root.table.elements.getData(UpdateItemTypeMetaInfo.s_id, index);
 			if (documentManager){
-				documentManager.openDocument(updateId, "Update");
+				documentManager.openDocument(updateId, "SoftwareUpdate");
 			}
 		}
 	}
@@ -102,13 +102,13 @@ RemoteCollectionView {
 			onReused: {
 				if (rowIndex >= 0){
 					let status = root.table.elements.getData("status", rowIndex);
-					if (status === UpdateStatusEnum.s_Installed){
+					if (status === UpdateStatus.s_Installed){
 						icon.source = "../../../../" + Style.getIconPath("Icons/Running", Icon.State.On, Icon.Mode.Normal);
 					}
-					else if (status === UpdateStatusEnum.s_Failed){
+					else if (status === UpdateStatus.s_Failed){
 						icon.source = "../../../../" + Style.getIconPath("Icons/Alert", Icon.State.On, Icon.Mode.Normal);
 					}
-					else if (status === UpdateStatusEnum.s_Downloading || status === UpdateStatusEnum.s_Installing){
+					else if (status === UpdateStatus.s_Downloading || status === UpdateStatus.s_Installing){
 						icon.source = "../../../../" + Style.getIconPath("Icons/Stopped", Icon.State.On, Icon.Mode.Normal);
 					}
 					else{

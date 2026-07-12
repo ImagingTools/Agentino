@@ -112,12 +112,12 @@ type Subscription {
 }
 
 collectionSchema {
-	type Update {
+	type SoftwareUpdate {
 		ref: UpdateItem
 		operations {
 			list: AvailableUpdates
 		}
-		subtype Update {
+		subtype SoftwareUpdate {
 			ref: UpdateData
 			operations {
 				get: GetUpdateInfo

@@ -28,6 +28,8 @@
 	<file alias="ServiceDocumentDataController.qml">Qml/ServiceDocumentDataController.qml</file>
 	<file alias="ServiceController.qml">Qml/ServiceController.qml</file>
 	<file alias="GqlBasedServiceController.qml">Qml/GqlBasedServiceController.qml</file>
+	<file alias="SoftwareUpdateCollectionView.qml">Qml/SoftwareUpdateCollectionView.qml</file>
+	<file alias="SoftwareUpdateEditor.qml">Qml/SoftwareUpdateEditor.qml</file>
     </qresource>
     <qresource prefix="/Features">
         <file alias="AgentinoFeatures">Resources/Features/AgentinoFeatures.xml</file>

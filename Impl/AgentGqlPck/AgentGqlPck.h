@@ -20,6 +20,8 @@
 #include <agentgql/CAgentGqlRemoteRepresentationControllerComp.h>
 #include <agentgql/CAgentConnectionSubscriberControllerComp.h>
 #include <agentgql/CAgentServicesRemoteSubscriberProxyComp.h>
+#include <agentgql/CSoftwareUpdateCollectionControllerComp.h>
+#include <agentgql/CSoftwareUpdateControllerComp.h>
 
 
 /**
@@ -42,6 +44,8 @@ typedef agentgql::CAgentConnectionSubscriberControllerComp AgentConnectionSubscr
 typedef agentgql::CAgentServicesRemoteSubscriberProxyComp AgentServicesRemoteSubscriberProxy;
 typedef agentgql::TVisualStatusControllerCompWrap<AgentGqlRemoteRepresentationController> AgentRemoteVisualStatusController;
 typedef agentgql::TDocumentRevisionControllerCompWrap<AgentGqlRemoteRepresentationController> AgentRemoteDocumentRevisionController;
+typedef agentgql::CSoftwareUpdateCollectionControllerComp SoftwareUpdateCollectionController;
+typedef agentgql::CSoftwareUpdateControllerComp SoftwareUpdateController;
 
 
 } // namespace AgentGqlPck

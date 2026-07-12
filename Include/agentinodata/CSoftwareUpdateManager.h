@@ -41,7 +41,9 @@ public:
 	virtual UpdateResult RollbackUpdate(const QByteArray& updateId, const QByteArray& agentId) override;
 
 private:
-	bool DownloadArtifact(const QString& sourceUrl, const QString& targetPath, QString& errorMessage);
+	static bool IsValidId(const QByteArray& id);
+
+	bool DownloadArtifact(const QString& sourceUrl, const QString& targetPath, QString& expectedChecksum, QString& errorMessage);
 	bool InstallArtifact(const QString& artifactPath, const QByteArray& agentId, QString& errorMessage);
 	bool VerifyChecksum(const QString& filePath, const QString& expectedChecksum) const;
 	bool BackupCurrentVersion(const QByteArray& updateId, const QByteArray& agentId, QString& errorMessage);

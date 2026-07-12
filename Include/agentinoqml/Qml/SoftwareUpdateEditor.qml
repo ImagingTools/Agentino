@@ -149,7 +149,7 @@ ViewBase {
 					Button {
 						id: applyButton;
 						text: qsTr("Apply Update");
-						enabled: updateData && updateData.m_status !== "INSTALLED" && updateData.m_status !== "INSTALLING"
+						enabled: updateData && updateData.m_status !== UpdateStatus.s_Installed && updateData.m_status !== UpdateStatus.s_Installing
 						onClicked: {
 							applyUpdateRequestSender.send(applyUpdateInput)
 						}
@@ -158,7 +158,7 @@ ViewBase {
 					Button {
 						id: rollbackButton;
 						text: qsTr("Rollback");
-						enabled: updateData && updateData.m_status === "INSTALLED"
+						enabled: updateData && updateData.m_status === UpdateStatus.s_Installed
 						onClicked: {
 							rollbackUpdateRequestSender.send(rollbackUpdateInput)
 						}

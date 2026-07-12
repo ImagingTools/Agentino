@@ -26,6 +26,11 @@ bool CSoftwareUpdateCollectionControllerComp::CreateRepresentationFromObject(
 			sdl::V1_0::agentino::CUpdateItem& representationObject,
 			QString& errorMessage) const
 {
+	if (!m_objectCollectionCompPtr.IsValid()){
+		Q_ASSERT_X(false, "Attribute 'ObjectCollection' was not set", "CSoftwareUpdateCollectionControllerComp");
+		return false;
+	}
+
 	imtbase::IObjectCollection::DataPtr dataPtr = objectCollectionIterator.GetObjectData();
 	if (dataPtr.IsNull()){
 		errorMessage = "Unable to get update data";
@@ -39,6 +44,7 @@ bool CSoftwareUpdateCollectionControllerComp::CreateRepresentationFromObject(
 	}
 
 	representationObject.id = objectCollectionIterator.GetObjectId();
+	representationObject.typeId = m_objectCollectionCompPtr->GetObjectTypeId(objectCollectionIterator.GetObjectId());
 	representationObject.name = updateInfoPtr->GetName();
 	representationObject.version = updateInfoPtr->GetVersion();
 	representationObject.updateType = static_cast<sdl::V1_0::agentino::UpdateType>(updateInfoPtr->GetUpdateType());
@@ -54,16 +60,23 @@ bool CSoftwareUpdateCollectionControllerComp::CreateRepresentationFromObject(
 
 bool CSoftwareUpdateCollectionControllerComp::CreateRepresentationFromObject(
 			const istd::IChangeable& data,
-			const sdl::V1_0::agentino::CGetUpdateInfoGqlRequest& /*getUpdateInfoRequest*/,
+			const sdl::V1_0::agentino::CGetUpdateInfoGqlRequest& getUpdateInfoRequest,
 			sdl::V1_0::agentino::CUpdateData& updateData,
 			QString& errorMessage) const
 {
+	sdl::V1_0::agentino::GetUpdateInfoRequestArguments arguments = getUpdateInfoRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->id.has_value()){
+		errorMessage = "Update ID is missing in the request";
+		return false;
+	}
+
 	const agentinodata::ISoftwareUpdateInfo* updateInfoPtr = dynamic_cast<const agentinodata::ISoftwareUpdateInfo*>(&data);
 	if (updateInfoPtr == nullptr){
 		errorMessage = "Invalid update info object";
 		return false;
 	}
 
+	updateData.id = *arguments.input->id;
 	updateData.name = updateInfoPtr->GetName();
 	updateData.version = updateInfoPtr->GetVersion();
 	updateData.updateType = static_cast<sdl::V1_0::agentino::UpdateType>(updateInfoPtr->GetUpdateType());
