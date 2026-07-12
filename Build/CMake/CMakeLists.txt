@@ -74,3 +74,7 @@ add_subdirectory("${IMPL_DIR}/AgentinoServer/CMake" "${AUX_INCLUDE_DIR}/Agentino
 add_subdirectory("${IMPL_DIR}/AgentinoClient/CMake" "${AUX_INCLUDE_DIR}/AgentinoClient")
 add_subdirectory("${IMPL_DIR}/AgentinoAgent/CMake" "${AUX_INCLUDE_DIR}/AgentinoAgent")
 
+# Tests
+add_subdirectory("${IMPL_DIR}/AgentinoGqlTests/CMake" "${AUX_INCLUDE_DIR}/AgentinoGqlTests")
+add_dependencies(AgentinoGqlTests agentinogql agentgql agentinodata agentinosdl)
+

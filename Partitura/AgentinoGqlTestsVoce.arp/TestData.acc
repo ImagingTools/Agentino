@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Acf>
+    <AcfHeader>
+        <VersionInfos>
+            <Version Id="0" Number="6318" Description="ACF"/>
+            <Version Id="1" Number="2296" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395264" Description="Qt Framework"/>
+        </VersionInfos>
+    </AcfHeader>
+    <Description>Test partitura for Agentino GQL tests. Provides test data configuration for all GQL controllers.</Description>
+    <Keywords>test gql graphql</Keywords>
+    <ElementsList>
+        <!-- Test Agent Collection with sample agents -->
+        <Element Id="TestAgentCollection" PackageId="AgentinoDataPck" ComponentId="AgentCollection">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ObjectFactories" Type="Factory[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>TestAgentInfo</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TypeIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>DocumentInfo</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+
+        <!-- Test Agent Info factory -->
+        <Element Id="TestAgentInfo" PackageId="AgentinoDataPck" ComponentId="AgentInfo">
+            <Data IsEnabled="true" Flags="2">
+                <AttributeInfoMap/>
+            </Data>
+        </Element>
+
+        <!-- Test Service Collection -->
+        <Element Id="TestServiceCollection" PackageId="ImtCorePck" ComponentId="ObjectCollection">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ObjectFactories" Type="Factory[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>TestServiceInfo</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TypeIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>ServiceInfo</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+
+        <!-- Test Service Info factory -->
+        <Element Id="TestServiceInfo" PackageId="AgentinoDataPck" ComponentId="ServiceInfo">
+            <Data IsEnabled="true" Flags="2">
+                <AttributeInfoMap/>
+            </Data>
+        </Element>
+
+        <!-- Test Service Status Collection -->
+        <Element Id="TestServiceStatusCollection" PackageId="ImtCorePck" ComponentId="ObjectCollection">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ObjectFactories" Type="Factory[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>TestServiceStatusInfo</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TypeIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>ServiceStatusInfo</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+
+        <!-- Test Service Status Info factory -->
+        <Element Id="TestServiceStatusInfo" PackageId="AgentinoDataPck" ComponentId="ServiceStatusInfo">
+            <Data IsEnabled="true" Flags="2">
+                <AttributeInfoMap/>
+            </Data>
+        </Element>
+
+        <!-- Test Agent Status Collection -->
+        <Element Id="TestAgentStatusCollection" PackageId="ImtCorePck" ComponentId="ObjectCollection">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ObjectFactories" Type="Factory[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>TestAgentStatusInfo</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TypeIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>AgentStatusInfo</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+
+        <!-- Test Agent Status Info factory -->
+        <Element Id="TestAgentStatusInfo" PackageId="AgentinoDataPck" ComponentId="AgentStatusInfo">
+            <Data IsEnabled="true" Flags="2">
+                <AttributeInfoMap/>
+            </Data>
+        </Element>
+
+        <!-- Test Topology Collection -->
+        <Element Id="TestTopologyCollection" PackageId="ImtCorePck" ComponentId="ObjectCollection">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="TypeIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>Topology</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+
+        <!-- Topology Controller for testing -->
+        <Element Id="TestTopologyController" PackageId="AgentinoGqlPck" ComponentId="TopologyController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="TestAgentCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="TestTopologyCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="TestServiceCompositeInfo"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+
+        <!-- Agent Collection Controller for testing -->
+        <Element Id="TestAgentCollectionController" PackageId="AgentinoGqlPck" ComponentId="AgentCollectionController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="AgentFactory" Type="Factory" ExportId="">
+                        <Data IsEnabled="true" Value="TestAgentInfo"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="TestServiceStatusCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="AgentStatusCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="TestAgentStatusCollection"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+
+        <!-- Server Service Collection Controller for testing -->
+        <Element Id="TestServerServiceCollectionController" PackageId="AgentinoGqlPck" ComponentId="ServerServiceCollectionController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="TestServiceStatusCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="TestServiceCompositeInfo"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="TestAgentCollection"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+
+    </ElementsList>
+    <EmbeddedRegistriesList/>
+    <ExportedInterfaces/>
+    <ExportedComponents>
+        <Component ExportedId="TestAgentCollection" ComponentId="TestAgentCollection"/>
+        <Component ExportedId="TestServiceCollection" ComponentId="TestServiceCollection"/>
+        <Component ExportedId="TestServiceStatusCollection" ComponentId="TestServiceStatusCollection"/>
+        <Component ExportedId="TestAgentStatusCollection" ComponentId="TestAgentStatusCollection"/>
+        <Component ExportedId="TestTopologyCollection" ComponentId="TestTopologyCollection"/>
+        <Component ExportedId="TestTopologyController" ComponentId="TestTopologyController"/>
+        <Component ExportedId="TestAgentCollectionController" ComponentId="TestAgentCollectionController"/>
+        <Component ExportedId="TestServerServiceCollectionController" ComponentId="TestServerServiceCollectionController"/>
+    </ExportedComponents>
+</Acf>
