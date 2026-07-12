@@ -37,6 +37,8 @@ public:
 		UT_SERVICE
 	};
 
+	I_DECLARE_ENUM(UpdateType, UT_AGENT, UT_SERVICE);
+
 	/**
 		Update status values.
 	*/
@@ -72,6 +74,8 @@ public:
 		*/
 		US_ROLLED_BACK
 	};
+
+	I_DECLARE_ENUM(UpdateStatus, US_AVAILABLE, US_DOWNLOADING, US_INSTALLING, US_INSTALLED, US_FAILED, US_ROLLED_BACK);
 
 	/**
 		Get name of the update.

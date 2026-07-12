@@ -6,6 +6,7 @@
 #include <istd/CChangeNotifier.h>
 #include <iser/IArchive.h>
 #include <iser/CArchiveTag.h>
+#include <iser/CPrimitiveTypesSerializer.h>
 
 
 namespace agentinodata
@@ -216,14 +217,10 @@ bool CSoftwareUpdateInfo::Serialize(iser::IArchive& archive)
 	retVal = retVal && archive.Process(m_version);
 	retVal = retVal && archive.EndTag(versionTag);
 
-	int updateType = m_updateType;
 	iser::CArchiveTag updateTypeTag("UpdateType", "UpdateType", iser::CArchiveTag::TT_LEAF);
 	retVal = retVal && archive.BeginTag(updateTypeTag);
-	retVal = retVal && archive.Process(updateType);
+	retVal = retVal && I_SERIALIZE_ENUM(UpdateType, archive, m_updateType);
 	retVal = retVal && archive.EndTag(updateTypeTag);
-	if (!archive.IsStoring()){
-		m_updateType = (UpdateType)updateType;
-	}
 
 	iser::CArchiveTag descriptionTag("Description", "Description", iser::CArchiveTag::TT_LEAF);
 	retVal = retVal && archive.BeginTag(descriptionTag);
@@ -245,14 +242,10 @@ bool CSoftwareUpdateInfo::Serialize(iser::IArchive& archive)
 	retVal = retVal && archive.Process(m_publishedDate);
 	retVal = retVal && archive.EndTag(publishedDateTag);
 
-	int status = m_status;
 	iser::CArchiveTag statusTag("Status", "Status", iser::CArchiveTag::TT_LEAF);
 	retVal = retVal && archive.BeginTag(statusTag);
-	retVal = retVal && archive.Process(status);
+	retVal = retVal && I_SERIALIZE_ENUM(UpdateStatus, archive, m_status);
 	retVal = retVal && archive.EndTag(statusTag);
-	if (!archive.IsStoring()){
-		m_status = (UpdateStatus)status;
-	}
 
 	iser::CArchiveTag changelogTag("Changelog", "Changelog", iser::CArchiveTag::TT_LEAF);
 	retVal = retVal && archive.BeginTag(changelogTag);
