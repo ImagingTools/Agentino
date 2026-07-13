@@ -416,6 +416,9 @@
                                 <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="AutoCreateDatabase" Type="Integer" ExportId="">
+                                    <Data IsEnabled="true" Value="2"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="DatabaseSqlFilePath" Type="String" ExportId="">
                                     <Data IsEnabled="true" Value="agentino.sqlite"/>
                                 </AttributeInfo>
