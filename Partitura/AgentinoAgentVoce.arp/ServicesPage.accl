@@ -16,8 +16,23 @@
         <Element ComponentName="ServiceCommands" X="650" Y="275" Note=""/>
         <Element ComponentName="ServiceHeadersDataProvider" X="125" Y="450" Note=""/>
         <Element ComponentName="ServiceLogController" X="1025" Y="100" Note=""/>
+        <Element ComponentName="TopologyCommands" X="900" Y="400" Note=""/>
+        <Element ComponentName="TopologyController" X="900" Y="100" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
+        <EmbededRegistry Id="TopologyCommands">
+            <PositionMap>
+                <Element ComponentName="AutoFit" X="950" Y="500" Note=""/>
+                <Element ComponentName="CommandsController" X="575" Y="75" Note=""/>
+                <Element ComponentName="Edit" X="200" Y="375" Note=""/>
+                <Element ComponentName="Save" X="200" Y="250" Note=""/>
+                <Element ComponentName="Start" X="575" Y="250" Note=""/>
+                <Element ComponentName="Stop" X="575" Y="375" Note=""/>
+                <Element ComponentName="ZoomIn" X="950" Y="250" Note=""/>
+                <Element ComponentName="ZoomOut" X="950" Y="375" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
         <EmbededRegistry Id="ServiceCollectionCommands">
             <PositionMap>
                 <Element ComponentName="CheckPermissionOr" X="575" Y="225" Note=""/>

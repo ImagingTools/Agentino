@@ -3,6 +3,8 @@ TARGET = agentinodata
 include($(ACFCONFIGDIR)/QMake/StaticConfig.pri)
 include($(IMTCOREDIR)/Config/QMake/ImtCore.pri)
 
+INCLUDEPATH += $$AUXINCLUDEPATH/GeneratedFiles
+
 MODULE_CPP_NAME = agentino
 MODULE_QML_NAME = agentino
 DDL_TEMPLATE_INPUT_DIR = $$PWD/../Resources/Ddl

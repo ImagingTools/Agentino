@@ -5,3 +5,4 @@ include($(ACFDIR)/Config/QMake/AcfQt.pri)
 include($(IMTCOREDIR)/Config/QMake/ImtCore.pri)
 
 
+INCLUDEPATH += $$AUXINCLUDEPATH/GeneratedFiles

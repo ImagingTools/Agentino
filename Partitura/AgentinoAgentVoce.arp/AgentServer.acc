@@ -95,7 +95,7 @@
             <Data IsEnabled="true" Flags="1">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ConnectionCollectionProvider" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServiceCollectionPropvider"/>
+                        <Data IsEnabled="true" Value="ServiceCollectionProvider"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
@@ -271,7 +271,7 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServiceCollectionPropvider" PackageId="" ComponentId="ServiceCollectionController">
+        <Element Id="ServiceCollectionProvider" PackageId="" ComponentId="ServiceCollectionController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
@@ -325,6 +325,9 @@
         <Element Id="WebSocketClient" PackageId="" ComponentId="WebSocketClient">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="AuthenticationManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AuthenticationManager"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/ClientId2"/>
                     </AttributeInfo>
@@ -688,6 +691,9 @@
                     <Element Id="WebSocketServlet" PackageId="ImtServerGqlPck" ComponentId="WebSocketServlet">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
+                                <AttributeInfo Id="GqlContextCreator" Type="Reference" ExportId="AuthenticationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="GqlSubscriberControllers" Type="Reference[]" ExportId="GqlSubscriberControllers">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
