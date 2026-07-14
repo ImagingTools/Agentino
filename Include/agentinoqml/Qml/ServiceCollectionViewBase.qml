@@ -17,6 +17,8 @@ RemoteCollectionView {
 	property string clientName;
 	property string serviceId;
 	property string serviceName;
+	property bool serviceOperationInProgress: false
+	property string serviceOperationText: ""
 	
 	filterMenuVisible: false;
 
@@ -26,6 +28,11 @@ RemoteCollectionView {
 	hasPagination: false
 	
 	property var documentManager: MainDocumentService.getDocumentService(root.collectionId);
+	
+	function setServiceOperation(inProgress, description){
+		serviceOperationInProgress = inProgress
+		serviceOperationText = description
+	}
 	
 	Component.onDestruction: {
 		let documentManagerPtr = MainDocumentService.getDocumentService("Agents")
@@ -190,6 +197,42 @@ RemoteCollectionView {
 						icon.visible =false;
 					}
 				}
+			}
+		}
+	}
+	
+	Rectangle {
+		id: serviceOperationIndicator
+		anchors.top: parent.top
+		anchors.right: parent.right
+		anchors.topMargin: Style.marginXL
+		anchors.rightMargin: Style.marginXL
+		width: serviceOperationRow.width + 2 * Style.marginL
+		height: 36
+		radius: height / 2
+		color: Style.backgroundColor
+		border.color: Style.lightBlueColor
+		border.width: 1
+		visible: root.serviceOperationInProgress
+		z: 100
+		
+		Row {
+			id: serviceOperationRow
+			anchors.centerIn: parent
+			spacing: Style.spacingS
+			
+			Loading {
+				anchors.verticalCenter: parent.verticalCenter
+				width: 18
+				height: 18
+				indicatorSize: 14
+				background.color: "transparent"
+			}
+			
+			BaseText {
+				anchors.verticalCenter: parent.verticalCenter
+				text: root.serviceOperationText
+				font.pixelSize: Style.fontSizeM
 			}
 		}
 	}

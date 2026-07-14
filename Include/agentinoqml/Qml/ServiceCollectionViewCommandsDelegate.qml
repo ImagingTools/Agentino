@@ -12,6 +12,8 @@ import agentinoServicesSdl 1.0
 DocumentCollectionViewDelegate {
 	id: container;
 	
+	property string operationServiceId: ""
+	
 	viewTypeId: "ServiceEditor"
 	documentTypeId: "Service"
 	
@@ -65,6 +67,20 @@ DocumentCollectionViewDelegate {
 	
 	function stopService(serviceId){
 		serviceController.stopService(serviceId)
+	}
+	
+	function beginOperation(serviceId, description){
+		operationServiceId = serviceId
+		if (collectionView && collectionView.setServiceOperation){
+			collectionView.setServiceOperation(true, description)
+		}
+	}
+	
+	function finishOperation(){
+		operationServiceId = ""
+		if (collectionView && collectionView.setServiceOperation){
+			collectionView.setServiceOperation(false, "")
+		}
 	}
 	
 	function onStart(){
@@ -123,6 +139,7 @@ DocumentCollectionViewDelegate {
 		}
 		
 		onBeginStartService: {
+			container.beginOperation(serviceId, qsTr("Starting service..."))
 			if (container.commandsController){
 				container.commandsController.setCommandIsEnabled("Start", false)
 				container.commandsController.setCommandIsEnabled("Stop", false)
@@ -130,13 +147,15 @@ DocumentCollectionViewDelegate {
 		}
 	
 		onBeginStopService: {
+			container.beginOperation(serviceId, qsTr("Stopping service..."))
 			if (container.commandsController){
-				container.commandsController.setCommandIsEnabled("Stop", false)
+				container.commandsController.setCommandIsEnabled("Start", false)
 				container.commandsController.setCommandIsEnabled("Stop", false)
 			}
 		}
 		
 		onServiceStarted: {
+			container.finishOperation()
 			if (container.commandsController){
 				container.commandsController.setCommandIsEnabled("Start", false)
 				container.commandsController.setCommandIsEnabled("Stop", true)
@@ -144,11 +163,15 @@ DocumentCollectionViewDelegate {
 		}
 		
 		onServiceStopped: {
+			container.finishOperation()
 			if (container.commandsController){
 				container.commandsController.setCommandIsEnabled("Start", true)
 				container.commandsController.setCommandIsEnabled("Stop", false)
 			}
 		}
+		
+		onStartServiceFailed: container.finishOperation()
+		onStopServiceFailed: container.finishOperation()
 	}
 }
 

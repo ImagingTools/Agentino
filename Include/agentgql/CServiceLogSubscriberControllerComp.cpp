@@ -2,6 +2,9 @@
 #include <agentgql/CServiceLogSubscriberControllerComp.h>
 
 
+// Qt includes
+#include <QtCore/QMutexLocker>
+
 // Agentino includes
 #include <agentinodata/IServiceController.h>
 #include <agentinodata/CServiceInfo.h>
@@ -47,6 +50,9 @@ void CServiceLogSubscriberControllerComp::OnUpdate(const istd::IChangeable::Chan
 	}
 
 	imtbase::ICollectionInfo::Ids serviceIds = m_serviceCollectionCompPtr->GetElementIds();
+
+	QMutexLocker pluginMapLocker(&m_pluginMapMutex);
+
 	QList<QByteArray> keys = m_pluginMap.keys();
 	for (const QByteArray& serviceId: keys){
 		if (!serviceIds.contains(serviceId)){

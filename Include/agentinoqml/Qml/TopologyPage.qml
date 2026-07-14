@@ -17,11 +17,18 @@ ViewBase {
 	clip: true;
 	
 	property var documentManager: MainDocumentService.getDocumentService("Topology");
+	property bool serviceOperationInProgress: false
+	property string serviceOperationText: ""
 	
 	//for scrollBars
 	property real originX: 0;
 	property real originY: 0;
 	//for scrollBars
+	
+	function setServiceOperation(inProgress, description){
+		serviceOperationInProgress = inProgress
+		serviceOperationText = description
+	}
 	
 	Component.onCompleted: {
 		if (documentManager){
@@ -166,6 +173,42 @@ ViewBase {
 					
 					documentManager.openDocument(serviceId, "Service", serviceName);
 				}
+			}
+		}
+	}
+	
+	Rectangle {
+		id: serviceOperationIndicator
+		anchors.top: parent.top
+		anchors.right: metaInfo.left
+		anchors.topMargin: Style.marginXL
+		anchors.rightMargin: Style.marginXL
+		width: serviceOperationRow.width + 2 * Style.marginL
+		height: 36
+		radius: height / 2
+		color: Style.backgroundColor
+		border.color: Style.lightBlueColor
+		border.width: 1
+		visible: topologyPage.serviceOperationInProgress
+		z: 100
+		
+		Row {
+			id: serviceOperationRow
+			anchors.centerIn: parent
+			spacing: Style.spacingS
+			
+			Loading {
+				anchors.verticalCenter: parent.verticalCenter
+				width: 18
+				height: 18
+				indicatorSize: 14
+				background.color: "transparent"
+			}
+			
+			BaseText {
+				anchors.verticalCenter: parent.verticalCenter
+				text: topologyPage.serviceOperationText
+				font.pixelSize: Style.fontSizeM
 			}
 		}
 	}

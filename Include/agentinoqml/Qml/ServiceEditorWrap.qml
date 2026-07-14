@@ -15,8 +15,22 @@ ServiceEditor {
 	property string serviceId: serviceEditor.serviceData ? serviceEditor.serviceData.m_id : ""
 	property var documentManager
 	
+	// ServiceEditor's own getHeaders() returns {} - without "clientid"/"serviceid" the
+	// server can't route requests like "Authorization" to this specific service
+	// (CAgentGqlRemoteRepresentationControllerComp requires both headers), so every
+	// GQL request issued from within ServiceEditor (login, administration view, ...)
+	// silently fails. Override with the ids this wrapper already has.
+	function getHeaders(){
+		return {
+			"clientid": serviceEditor.clientId,
+			"serviceid": serviceEditor.serviceId
+		};
+	}
+	
 	onLoadPlugin: {
 		serviceEditor.pluginLoaded = false
+		serviceEditor.pluginLoading = true
+		serviceEditor.pluginLoadFailed = false
 		if (!serviceEditor.serviceData){
 			return
 		}
@@ -28,11 +42,15 @@ ServiceEditor {
 	onServiceDataChanged: {
 		if (serviceData){
 			if (serviceData.hasInputConnections() && serviceData.m_inputConnections.count > 0){
+				serviceEditor.pluginLoading = false
+				serviceEditor.pluginLoadFailed = false
 				serviceEditor.setPluginLoaded(serviceEditor.serviceData.m_path)
 			}
 		}
 		else{
 			serviceEditor.pluginLoaded = false
+			serviceEditor.pluginLoading = false
+			serviceEditor.pluginLoadFailed = false
 		}
 	}
 	
@@ -44,21 +62,7 @@ ServiceEditor {
 			settingsRequested = false
 		}
 	}
-	
-	onLoadSettings: {
-		if (serviceEditor.serviceId === ""){
-			return
-		}
-		
-		if (serviceEditor.settingsPath === "" && settingsRequested){
-			return
-		}
-		
-		settingsRequested = true
-		getServiceSettingsInput.m_serviceId = "" + serviceEditor.serviceId
-		getServiceSettingsRequestSender.send(getServiceSettingsInput)
-	}
-	
+
 	onSaveSettings: {
 		if (serviceEditor.serviceId === "" || serviceEditor.settingsPath === ""){
 			return
@@ -93,7 +97,7 @@ ServiceEditor {
 			return serviceEditor.getHeaders()
 		}
 	}
-	
+
 	GqlSdlRequestSender {
 		id: updateServiceSettingsRequestSender
 		requestType: 1
@@ -177,11 +181,9 @@ ServiceEditor {
 				documentManager.clearUndoManager(documentId)
 				serviceEditor.serviceIsDirty = false
 				serviceEditor.doUpdateGui()
+				serviceEditor.pluginLoading = false
+				serviceEditor.pluginLoadFailed = false
 				serviceEditor.setPluginLoaded(serviceEditor.serviceData.m_path)
-				
-				if (serviceEditor.settingsPath !== "" && !settingsRequested){
-					serviceEditor.loadSettings()
-				}
 			}
 		}
 	}
@@ -193,14 +195,16 @@ ServiceEditor {
 				serviceEditor.serviceIsDirty = isDirty
 			}
 		}
-	}
-	
-	onDocumentSaved: {
-		serviceEditor.serviceIsDirty = false
-		if (serviceEditor.settingsPath !== ""){
-			serviceEditor.loadSettings()
-		} else if (!settingsRequested){
-			serviceEditor.loadSettings()
+		
+		function onDocumentSaved(savedDocumentId) {
+			if (savedDocumentId !== serviceEditor.documentId){
+				return
+			}
+			
+			serviceEditor.serviceIsDirty = false
+			if (serviceEditor.serviceData && serviceEditor.serviceData.hasPath()) {
+				serviceEditor.requestLoadPlugin()
+			}
 		}
 	}
 	
@@ -226,6 +230,8 @@ ServiceEditor {
 
 					if (ok){
 						serviceEditor.pluginLoaded = false
+						serviceEditor.pluginLoading = false
+						serviceEditor.pluginLoadFailed = false
 						serviceDocumentDataController.documentId = serviceId
 						serviceDocumentDataController.updateDocumentModel()
 					}
@@ -237,7 +243,7 @@ ServiceEditor {
 	GqlBasedServiceController {
 		id: serviceController
 		onBeginStartService: {
-			serviceEditor.setOperationInProgress(true)
+			serviceEditor.setOperationInProgress(true, qsTr("Starting service..."))
 			if (serviceEditor.commandsController){
 				serviceEditor.commandsController.setCommandIsEnabled("Start", false)
 				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
@@ -245,15 +251,15 @@ ServiceEditor {
 		}
 		
 		onBeginStopService: {
-			serviceEditor.setOperationInProgress(true)
+			serviceEditor.setOperationInProgress(true, qsTr("Stopping service..."))
 			if (serviceEditor.commandsController){
-				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
+				serviceEditor.commandsController.setCommandIsEnabled("Start", false)
 				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
 			}
 		}
 		
 		onServiceStarted: {
-			serviceEditor.setOperationInProgress(false)
+			serviceEditor.setOperationInProgress(false, "")
 			if (serviceEditor.commandsController){
 				serviceEditor.commandsController.setCommandIsEnabled("Start", false)
 				serviceEditor.commandsController.setCommandIsEnabled("Stop", true)
@@ -261,7 +267,7 @@ ServiceEditor {
 		}
 		
 		onServiceStopped: {
-			serviceEditor.setOperationInProgress(false)
+			serviceEditor.setOperationInProgress(false, "")
 			if (serviceEditor.commandsController){
 				serviceEditor.commandsController.setCommandIsEnabled("Start", true)
 				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
@@ -269,7 +275,7 @@ ServiceEditor {
 		}
 		
 		onServiceStatusChanged: {
-			serviceEditor.setOperationInProgress(false)
+			serviceEditor.setOperationInProgress(false, "")
 			if (serviceId === serviceEditor.serviceId){
 				serviceEditor.serviceRunning = status === "RUNNING"
 				
@@ -282,11 +288,11 @@ ServiceEditor {
 		}
 		
 		onStartServiceFailed: {
-			serviceEditor.setOperationInProgress(false)
+			serviceEditor.setOperationInProgress(false, "")
 		}
 		
 		onStopServiceFailed: {
-			serviceEditor.setOperationInProgress(false)
+			serviceEditor.setOperationInProgress(false, "")
 		}
 		
 		function getHeaders(){
@@ -322,16 +328,30 @@ ServiceEditor {
 
 					if (hasInputConnections()){
 						serviceEditor.serviceData.m_inputConnections = m_inputConnections.copyMe()
+						// copyMe() doesn't set .owner, which BaseClass/BaseModel's change-bubbling
+						// relies on to forward nested modelChanged signals up to serviceData
+						// (compare ServiceData.qml's emplaceInputConnections(), which sets it
+						// right after creating the field the normal way). Without this, editing
+						// anything inside the reloaded Connections page stops marking the
+						// document dirty / registering undo steps.
+						serviceEditor.serviceData.m_inputConnections.owner = serviceEditor.serviceData
 					}
 
 					if (hasOutputConnections()){
 						serviceEditor.serviceData.m_outputConnections = m_outputConnections.copyMe()
+						serviceEditor.serviceData.m_outputConnections.owner = serviceEditor.serviceData
 					}
 
 					documentManager.setBlockUndoManager(serviceEditor.serviceId, false)
-					serviceEditor.doUpdateGui()
-					
+
+					// doUpdateGui() no-ops while ViewBase's internal blockingUpdateGui/
+					// blockingUpdateModel flag is set (e.g. right after the model was just
+					// touched above), which is why the Connections page previously stayed
+					// empty until the editor was reopened. Call updateGui() directly instead -
+					// same fix already applied for the post-save case in onServiceDataChanged.
 					serviceEditor.setPluginLoaded(serviceEditor.serviceData.m_path)
+					serviceEditor.pluginLoading = false
+					serviceEditor.updateGui()
 				}
 			}
 		}

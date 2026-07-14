@@ -156,7 +156,7 @@ sdl::V1_0::imtbase::CUpdatedNotificationPayload CServiceControllerProxyComp::OnU
 	}
 
 	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr.GetPtr(), serviceData, errorMessage)){
-		errorMessage = QString("Unable to get service from representation");
+		errorMessage = QString("Unable to get service from representation. Error: %1").arg(errorMessage);
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 
 		return sdl::V1_0::imtbase::CUpdatedNotificationPayload();
@@ -235,7 +235,7 @@ sdl::V1_0::imtbase::CAddedNotificationPayload CServiceControllerProxyComp::OnAdd
 	serviceInfoPtr.SetPtr(new agentinodata::CIdentifiableServiceInfo);
 
 	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, serviceData, errorMessage)){
-		errorMessage = QString("Unable to get service from representation");
+		errorMessage = QString("Unable to get service from representation. Error: %1").arg(errorMessage);
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 
 		return sdl::V1_0::imtbase::CAddedNotificationPayload();
@@ -370,6 +370,53 @@ sdl::V1_0::imtbase::CRemovedNotificationPayload CServiceControllerProxyComp::OnS
 }
 
 
+sdl::V1_0::imtbase::CRemoveElementsPayload CServiceControllerProxyComp::OnRemoveElements(
+			const sdl::V1_0::imtbase::CRemoveElementsGqlRequest& removeElementsRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
+{
+	sdl::V1_0::imtbase::CRemoveElementsPayload response;
+	response.success = false;
+
+	if (!m_serviceManagerCompPtr.IsValid()){
+		Q_ASSERT_X(false, "Attribute 'ServiceManager' was not set", "CServiceControllerProxyComp");
+		return response;
+	}
+
+	sdl::V1_0::imtbase::RemoveElementsRequestArguments arguments = removeElementsRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->elementIds.has_value()){
+		errorMessage = QString("Unable to remove service(s). Error: Element-IDs not provided");
+		return response;
+	}
+
+	QByteArrayList serviceIds = (*arguments.input->elementIds).ToList();
+	if (serviceIds.isEmpty()){
+		errorMessage = QString("Unable to remove service(s). Error: Element-IDs not provided");
+		return response;
+	}
+
+	QByteArray agentId = gqlRequest.GetHeader("clientid");
+
+	// Forward the original 'RemoveElements' request to the owning Agent unchanged - the
+	// Agent's ServiceCollectionController owns the real 'ServiceRepository' collection and
+	// handles this generic command correctly (unlike the server-side local mirror).
+	sdl::V1_0::imtbase::CRemoveElementsPayload retVal = SendModelRequest<sdl::V1_0::imtbase::CRemoveElementsPayload>(gqlRequest, errorMessage);
+	if (!errorMessage.isEmpty()){
+		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
+		return response;
+	}
+
+	if (!m_serviceManagerCompPtr->RemoveServices(agentId, imtbase::ICollectionInfo::Ids(serviceIds.begin(), serviceIds.end()))){
+		SendErrorMessage(
+			0,
+			QString("Unable to remove service '%1' from agent '%2'").arg(qPrintable(serviceIds.join(';')), qPrintable(agentId)),
+			"CServiceControllerProxyComp");
+	}
+
+	return retVal;
+}
+
+
 sdl::V1_0::agentino::CServiceStatusResponse CServiceControllerProxyComp::OnGetServiceStatus(
 			const sdl::V1_0::agentino::CGetServiceStatusGqlRequest& getServiceStatusRequest,
 			const ::imtgql::CGqlRequest& gqlRequest,
@@ -406,6 +453,8 @@ sdl::V1_0::agentino::CPluginInfo CServiceControllerProxyComp::OnLoadPlugin(
 {
 	sdl::V1_0::agentino::LoadPluginRequestArguments arguments = loadPluginRequest.GetRequestedArguments();
 	if (!arguments.input.has_value()){
+		errorMessage = QString("Unable to load plugin. Error: Service path is invalid");
+
 		return sdl::V1_0::agentino::CPluginInfo();
 	}
 
@@ -538,6 +587,16 @@ QJsonObject CServiceControllerProxyComp::CreateInternalResponse(
 				return OnServicesRemove(req, gqlReq, err);
 			});
 	}
+	if (sdl::V1_0::imtbase::CRemoveElementsGqlRequest::GetCommandId() == commandId){
+		return CreateResponse<
+			sdl::V1_0::imtbase::CRemoveElementsGqlRequest,
+			sdl::V1_0::imtbase::CRemoveElementsPayload>(
+			gqlRequest,
+			errorMessage,
+			[&](const auto& req, const auto& gqlReq, QString& err){
+				return OnRemoveElements(req, gqlReq, err);
+			});
+	}
 	if (sdl::V1_0::agentino::CLoadPluginGqlRequest::GetCommandId() == commandId){
 		return CreateResponse<
 			sdl::V1_0::agentino::CLoadPluginGqlRequest,
@@ -570,6 +629,29 @@ QJsonObject CServiceControllerProxyComp::CreateInternalResponse(
 	}
 
 	return QJsonObject();
+}
+
+
+bool CServiceControllerProxyComp::IsRequestSupported(const imtgql::CGqlRequest& gqlRequest) const
+{
+	if (BaseClass::IsRequestSupported(gqlRequest)){
+		return true;
+	}
+
+	// The generic 'RemoveElements' command (imtbase collection schema) isn't part of
+	// Services.sdl, so CServicesGqlHandlerCompBase never recognizes it - accept it here
+	// too, but only for the 'Services' collection, so this proxy doesn't steal the
+	// command from unrelated collections.
+	if (gqlRequest.GetCommandId() != sdl::V1_0::imtbase::CRemoveElementsGqlRequest::GetCommandId()){
+		return false;
+	}
+
+	const imtgql::CGqlParamObject* inputParamPtr = gqlRequest.GetParamObject("input");
+	if (inputParamPtr == nullptr){
+		return false;
+	}
+
+	return inputParamPtr->GetParamArgumentValue("collectionId").toByteArray() == QByteArrayLiteral("Services");
 }
 
 

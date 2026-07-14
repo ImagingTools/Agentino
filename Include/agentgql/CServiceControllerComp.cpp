@@ -102,11 +102,70 @@ sdl::V1_0::agentino::CServiceStatusResponse CServiceControllerComp::OnStopServic
 
 
 sdl::V1_0::imtbase::CRemovedNotificationPayload CServiceControllerComp::OnServicesRemove(
-	const sdl::V1_0::agentino::CServicesRemoveGqlRequest& /*removeServiceRequest*/,
-	const ::imtgql::CGqlRequest& /*gqlRequest*/,
-	QString& /*errorMessage*/) const
+			const sdl::V1_0::agentino::CServicesRemoveGqlRequest& removeServiceRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
 {
-	return sdl::V1_0::imtbase::CRemovedNotificationPayload();
+	sdl::V1_0::imtbase::CRemovedNotificationPayload response;
+
+	if (!m_serviceCollectionCompPtr.IsValid()){
+		errorMessage = QString("Unable to remove service(s). Component reference 'ServiceCollection' was not set");
+		SendCriticalMessage(0, errorMessage);
+
+		return response;
+	}
+
+	sdl::V1_0::agentino::ServicesRemoveRequestArguments arguments = removeServiceRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->elementIds.has_value()){
+		errorMessage = QString("Unable to remove service(s). Error: Element-IDs not provided");
+		SendErrorMessage(0, errorMessage, "CServiceControllerComp");
+
+		return response;
+	}
+
+	QByteArrayList elementIds = arguments.input->elementIds->ToList();
+	if (elementIds.isEmpty()){
+		errorMessage = QString("Unable to remove service(s). Error: Element-IDs not provided");
+		SendErrorMessage(0, errorMessage, "CServiceControllerComp");
+
+		return response;
+	}
+
+	imtbase::ICollectionInfo::Ids allElementIds = m_serviceCollectionCompPtr->GetElementIds();
+	for (const QByteArray& elementId: elementIds){
+		if (!allElementIds.contains(elementId)){
+			errorMessage = QString("Unable to remove service. Service with ID '%1' does not exists").arg(qPrintable(elementId));
+			SendErrorMessage(0, errorMessage, "CServiceControllerComp");
+
+			return response;
+		}
+	}
+
+	if (m_serviceControllerCompPtr.IsValid()){
+		for (const QByteArray& elementId: elementIds){
+			agentinodata::IServiceStatusInfo::ServiceStatus status = m_serviceControllerCompPtr->GetServiceStatus(elementId);
+			if (status == agentinodata::IServiceStatusInfo::SS_RUNNING || status == agentinodata::IServiceStatusInfo::SS_STARTING){
+				if (!m_serviceControllerCompPtr->StopService(elementId)){
+					errorMessage = QString("Unable to remove service. Service with ID '%1' cannot be stopped").arg(qPrintable(elementId));
+					SendErrorMessage(0, errorMessage, "CServiceControllerComp");
+
+					return response;
+				}
+			}
+		}
+	}
+
+	if (!m_serviceCollectionCompPtr->RemoveElements(elementIds, nullptr)){
+		errorMessage = QString("Unable to remove service(s). Error: Can't remove object with ID: '%1'").arg(qPrintable(elementIds.join(';')));
+		SendErrorMessage(0, errorMessage, "CServiceControllerComp");
+
+		return response;
+	}
+
+	response.elementIds.Emplace();
+	response.elementIds->FromList(elementIds);
+
+	return response;
 }
 
 
@@ -201,6 +260,7 @@ sdl::V1_0::agentino::CPluginInfo CServiceControllerComp::OnLoadPlugin(
 	sdl::V1_0::agentino::CPluginInfo response;
 	if (!m_connectionCollectionProviderCompPtr.IsValid()){
 		Q_ASSERT(false);
+		errorMessage = QString("Unable to load plugin. Error: Component reference 'ConnectionCollectionProvider' was not set");
 
 		return response;
 	}
@@ -224,6 +284,22 @@ sdl::V1_0::agentino::CPluginInfo CServiceControllerComp::OnLoadPlugin(
 
 		response = pluginRepresentation;
 		response.servicePath = servicePath;
+	}
+	else{
+		// GetConnectionCollectionByServicePath() has no error-message out-param, so recover
+		// the most likely reason here instead of silently returning a response with the
+		// required 'servicePath' field unset - that used to fail JSON serialization further
+		// up the call chain with a generic "Internal error. Unable to create response for
+		// command-ID: 'LoadPlugin'" instead of a message that actually explains the problem.
+		QFileInfo fileInfo(servicePath);
+		if (!fileInfo.exists()){
+			errorMessage = QString("Unable to load plugin. Error: Service path '%1' does not exist").arg(servicePath);
+		}
+		else{
+			errorMessage = QString("Unable to load plugin. Error: No connection settings plugin found next to '%1'").arg(servicePath);
+		}
+
+		return response;
 	}
 
 	return response;

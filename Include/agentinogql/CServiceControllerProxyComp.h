@@ -82,9 +82,16 @@ protected:
 		const sdl::V1_0::agentino::CUpdateServiceSettingsGqlRequest& updateServiceSettingsRequest,
 		const ::imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage) const override;
+	// Handles the generic 'RemoveElements' command (imtbase collection schema) for the
+	// 'Services' collection - forwards it to the owning Agent, mirroring OnServicesRemove.
+	virtual sdl::V1_0::imtbase::CRemoveElementsPayload OnRemoveElements(
+		const sdl::V1_0::imtbase::CRemoveElementsGqlRequest& removeElementsRequest,
+		const ::imtgql::CGqlRequest& gqlRequest,
+		QString& errorMessage) const;
 
 	// reimplemented (imtgql::CGqlRequestHandlerCompBase)
 	virtual QJsonObject CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
+	virtual bool IsRequestSupported(const imtgql::CGqlRequest& gqlRequest) const override;
 	
 private:
 	template<class SdlGqlRequest, class SdlResponse>

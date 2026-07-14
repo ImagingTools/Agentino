@@ -210,7 +210,7 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 	}
 
 	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoImplPtr, serviceDataRepresentation, errorMessage)){
-		errorMessage = QString("Unable to create service from representation. Error: Representation invalid");
+		errorMessage = QString("Unable to create service from representation. Error: %1").arg(errorMessage);
 		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 
 		return nullptr;

@@ -71,15 +71,55 @@ SplitView {
 				complexFilter: log.collectionFilter
 				property string services: agentCollectionView.selectedServices
 				
-				onServicesChanged: {
-					if (services != ""){
-						checkMenu.dataModel.clear()
-						var servicesModel = services.split(';')
-						for (let i = 0; i < servicesModel.length; i++){
-							checkMenu.dataModel.insertNewItem()
-							checkMenu.dataModel.setData("name", servicesModel[i], i)
+				function applySourceFilter(){
+					if (!sourceGroupFilter.hasFieldFilters()){
+						sourceGroupFilter.emplaceFieldFilters()
+					}
+
+					sourceGroupFilter.m_fieldFilters.clear()
+					
+					log.collectionFilter.removeGroupFilter(sourceGroupFilter)
+					
+					let count = checkMenu.dataModel.getItemsCount()
+					for (let i = 0; i < count; i++){
+						let service = checkMenu.dataModel.getData("name", i)
+						let status = checkMenu.dataModel.getData("checkState", i)
+						if (status){
+							let filter = sourceFilter.copyMe();
+							filter.m_filterValue = service
+							sourceGroupFilter.m_fieldFilters.addElement(filter)
 						}
 					}
+					
+					if (sourceGroupFilter.m_fieldFilters.count == 0){
+						let filter = sourceFilter.copyMe();
+						filter.m_filterValue = "__no_match__"
+						sourceGroupFilter.m_fieldFilters.addElement(filter)
+					}
+					
+					log.collectionFilter.addGroupFilter(sourceGroupFilter)
+					
+					log.collectionFilter.filterChanged()
+				}
+				
+				onServicesChanged: {
+					checkMenu.dataModel.clear()
+					if (services != ""){
+						let servicesList = services.split(';')
+						for (let i = 0; i < servicesList.length; i++){
+							let idx = checkMenu.dataModel.insertNewItem()
+							checkMenu.dataModel.setData("name", servicesList[i], idx)
+							checkMenu.dataModel.setData("checkState", Qt.Checked, idx)
+						}
+					}
+					
+					checkMenu.allChecked = checkMenu.dataModel.getItemsCount() > 0
+					if (checkMenu.allChecked){
+						checkMenu.currentText = " "
+					}
+					checkMenu.menuHeight = checkMenu.delegateHeight * (checkMenu.dataModel.getItemsCount() + 1)
+					
+					applySourceFilter()
 				}
 				
 				CheckBoxMenu{
@@ -87,39 +127,19 @@ SplitView {
 					
 					anchors.verticalCenter: parent.verticalCenter
 					anchors.left: filterDecorator.segmentedButton.right
-					anchors.leftMargin: Style.marginXS
+					anchors.leftMargin: Style.marginM
 					width: 200
-					height: 30
-					visible: filterDecorator.filtermenu.x - x < width ? false : true
+					height: Style.controlHeightM
+					visible: filterDecorator.filtermenu.x - (filterDecorator.segmentedButton.x + filterDecorator.segmentedButton.width + Style.marginM) >= width
 					placeHolderText: qsTr("Services");
-					menuHeight: delegateHeight  * (dataModel.getItemsCount() + 1) ;
+					menuHeight: delegateHeight * (dataModel.getItemsCount() + 1);
 					delegateHeight: 40;
 					hasSearch: false;
 					canOpenMenu: true;
 					nameId: "name";
 
 					onChangedSignal: {
-						if (!sourceGroupFilter.hasFieldFilters()){
-							sourceGroupFilter.emplaceFieldFilters()
-						}
-
-						sourceGroupFilter.m_fieldFilters.clear()
-						
-						log.collectionFilter.removeGroupFilter(sourceGroupFilter)
-						
-						for (let i = 0; i < checkMenu.dataModel.getItemsCount(); i++){
-							let service = checkMenu.dataModel.getData("name", i)
-							let status = checkMenu.dataModel.getData("checkState", i)
-							if (status){
-								let filter = sourceFilter.copyMe();
-								filter.m_filterValue = service
-								sourceGroupFilter.m_fieldFilters.addElement(filter)
-							}
-						}
-						
-						log.collectionFilter.addGroupFilter(sourceGroupFilter)
-						
-						log.collectionFilter.filterChanged()
+						filterDecorator.applySourceFilter()
 					}
 				}
 				

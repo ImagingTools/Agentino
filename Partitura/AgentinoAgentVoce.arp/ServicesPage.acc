@@ -63,11 +63,11 @@
                                 <Value>ServicesInfo</Value>
                                 <Value>ServicesList</Value>
                                 <Value>ServicesObjectView</Value>
-                                <Value>ServicesRemove</Value>
                                 <Value>ServicesSetDescription</Value>
                                 <Value>ServiceItem</Value>
                                 <Value>ServiceAdd</Value>
                                 <Value>ServiceUpdate</Value>
+                                <Value>RemoveElements</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

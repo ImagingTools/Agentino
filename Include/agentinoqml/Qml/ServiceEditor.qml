@@ -1,4 +1,4 @@
-import QtQuick 2.12
+import QtQuick 2.15
 import Acf 1.0
 import com.imtcore.imtqml 1.0
 import imtgui 1.0
@@ -17,29 +17,35 @@ DocumentViewBase {
 	property ServiceData serviceData: model
 	
 	property bool pluginLoaded: false
+	property bool pluginLoading: false
+	property bool pluginLoadFailed: false
 	property string pluginServicePath: ""
 	
 	function requestLoadPlugin() {
 		pluginLoaded = false
+		pluginLoading = true
+		pluginLoadFailed = false
 		loadPlugin()
 	}
 	
 	function setPluginLoaded(path) {
 		pluginServicePath = path
 		pluginLoaded = true
+		pluginLoadFailed = false
 	}
 	
 	function handlePluginPathChange(newPath) {
 		if (newPath !== pluginServicePath) {
 			if (pluginLoaded) {
 				pluginLoaded = false
-				ModalDialogManager.showWarningDialog(qsTr("You have changed the Path for which the plugin was loaded, reload the plugin"))
+				pluginLoadFailed = false
+				ModalDialogManager.showWarningDialog(qsTr("Path changed. The plugin will be reloaded automatically after you save the service."))
 			}
 		} else {
 			pluginLoaded = true
 		}
 	}
-	
+
 	Component.onCompleted: {
 		let ok = PermissionsController.checkPermission("ChangeService");
 		serviceEditorContainer.readOnly = !ok;
@@ -50,11 +56,52 @@ DocumentViewBase {
 	signal pluginLoadingFailed()
 	signal loadSettings()
 	signal saveSettings(string content)
+
+	Connections {
+		target: serviceEditorContainer
+		function onPluginLoadedChanged() {
+			if (serviceEditorContainer.pluginLoaded) {
+				serviceEditorContainer.pluginLoading = false
+				serviceEditorContainer.pluginLoadFailed = false
+			}
+		}
+		function onPluginLoadingFailed() {
+			serviceEditorContainer.pluginLoading = false
+			serviceEditorContainer.pluginLoadFailed = true
+		}
+	}
 	
-	property bool isNewService: !serviceData || serviceData.m_id === ""
+	property bool isNewService: true
 	property bool serviceRunning: false
 	property bool operationInProgress: false
+	property string operationDescription: ""
 	property bool serviceIsDirty: false
+
+	// isNewService must reflect whether the document has actually been persisted via
+	// Save, not whether serviceData.m_id is empty: the document framework
+	// (DocumentService.qml) allocates a real object id for a new service as soon as
+	// the "New" command creates the draft document, well before the user clicks Save -
+	// so m_id is never actually empty once the editor is open, and the old check was
+	// always false. documentManager.documentIsNew(documentId) tracks the real
+	// saved/unsaved state (flips to false only after a real Save - see
+	// DocumentService.qml's onDocumentSaved), so use that instead.
+	function refreshIsNewService(){
+		if (documentManager && documentId !== ""){
+			isNewService = documentManager.documentIsNew(documentId)
+		}
+	}
+
+	onDocumentIdChanged: refreshIsNewService()
+	onDocumentManagerChanged: refreshIsNewService()
+
+	Connections {
+		target: serviceEditorContainer.documentManager
+		function onDocumentSaved(savedDocumentId){
+			if (savedDocumentId === serviceEditorContainer.documentId){
+				serviceEditorContainer.refreshIsNewService()
+			}
+		}
+	}
 	
 	property bool settingsFileExists: false
 	property string settingsPath: ""
@@ -90,7 +137,11 @@ DocumentViewBase {
 				pluginServicePath = serviceData.m_path
 			}
 			if (serviceData.hasInputConnections() && serviceData.m_inputConnections.count > 0){
+				pluginLoading = false
+				pluginLoadFailed = false
 				setPluginLoaded(serviceData.m_path)
+				// setPluginLoaded() only flips the flag; subpage ListViews are populated via updateGui()
+				updateGui()
 			}
 			if (serviceData.m_settingsPath !== undefined && serviceData.m_settingsPath !== ""){
 				settingsPath = serviceData.m_settingsPath
@@ -98,18 +149,13 @@ DocumentViewBase {
 		}
 	}
 	
-	function setOperationInProgress(inProgress) {
+	function setOperationInProgress(inProgress, description) {
 		operationInProgress = inProgress
+		operationDescription = inProgress ? description : ""
 	}
 	
 	function updateGui(){
-		let idx = multiPageView.getIndexById("General");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateGui();
-		}
-		idx = multiPageView.getIndexById("Connections");
+		let idx = multiPageView.getIndexById("Information");
 		if (idx >= 0) {
 			multiPageView.ensurePageLoaded(idx);
 			let item = multiPageView.getPageByIndex(idx);
@@ -121,13 +167,19 @@ DocumentViewBase {
 			let item = multiPageView.getPageByIndex(idx);
 			if (item) item.updateGui();
 		}
-		idx = multiPageView.getIndexById("Settings");
+		idx = multiPageView.getIndexById("Server");
 		if (idx >= 0) {
 			multiPageView.ensurePageLoaded(idx);
 			let item = multiPageView.getPageByIndex(idx);
 			if (item) item.updateGui();
 		}
-		idx = multiPageView.getIndexById("Plugin");
+		idx = multiPageView.getIndexById("OutputConnections");
+		if (idx >= 0) {
+			multiPageView.ensurePageLoaded(idx);
+			let item = multiPageView.getPageByIndex(idx);
+			if (item) item.updateGui();
+		}
+		idx = multiPageView.getIndexById("Settings");
 		if (idx >= 0) {
 			multiPageView.ensurePageLoaded(idx);
 			let item = multiPageView.getPageByIndex(idx);
@@ -136,13 +188,7 @@ DocumentViewBase {
 	}
 	
 	function updateModel(){
-		let idx = multiPageView.getIndexById("General");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateModel();
-		}
-		idx = multiPageView.getIndexById("Connections");
+		let idx = multiPageView.getIndexById("Information");
 		if (idx >= 0) {
 			multiPageView.ensurePageLoaded(idx);
 			let item = multiPageView.getPageByIndex(idx);
@@ -154,13 +200,19 @@ DocumentViewBase {
 			let item = multiPageView.getPageByIndex(idx);
 			if (item) item.updateModel();
 		}
-		idx = multiPageView.getIndexById("Settings");
+		idx = multiPageView.getIndexById("Server");
 		if (idx >= 0) {
 			multiPageView.ensurePageLoaded(idx);
 			let item = multiPageView.getPageByIndex(idx);
 			if (item) item.updateModel();
 		}
-		idx = multiPageView.getIndexById("Plugin");
+		idx = multiPageView.getIndexById("OutputConnections");
+		if (idx >= 0) {
+			multiPageView.ensurePageLoaded(idx);
+			let item = multiPageView.getPageByIndex(idx);
+			if (item) item.updateModel();
+		}
+		idx = multiPageView.getIndexById("Settings");
 		if (idx >= 0) {
 			multiPageView.ensurePageLoaded(idx);
 			let item = multiPageView.getPageByIndex(idx);
@@ -182,7 +234,7 @@ DocumentViewBase {
 		Rectangle {
 			anchors.fill: parent
 			color: Style.backgroundColor
-			border.color: Style.borderColor
+			border.color: serviceEditorContainer.operationInProgress ? Style.lightBlueColor : Style.borderColor
 			border.width: 1
 		}
 		
@@ -192,30 +244,46 @@ DocumentViewBase {
 			anchors.left: parent.left
 			anchors.leftMargin: Style.marginXL
 			spacing: Style.marginM
+			// A service that hasn't been created yet has no running/stopped state on any
+			// agent - showing "Stopped" for it is misleading, so hide the indicator entirely
+			// until the service actually exists.
+			visible: !serviceEditorContainer.isNewService
+			
+			Loading {
+				width: 18
+				height: 18
+				indicatorSize: 14
+				anchors.verticalCenter: parent.verticalCenter
+				background.color: "transparent"
+				visible: serviceEditorContainer.operationInProgress
+			}
 			
 			Rectangle {
 				width: 10
 				height: 10
 				radius: 5
 				anchors.verticalCenter: parent.verticalCenter
-				color: serviceEditorContainer.operationInProgress ? Style.grayColor : (serviceEditorContainer.serviceRunning ? Style.greenColor : Style.errorColor)
+				color: serviceEditorContainer.serviceRunning ? Style.greenColor : Style.errorColor
+				visible: !serviceEditorContainer.operationInProgress
 			}
 			
 			BaseText {
 				anchors.verticalCenter: parent.verticalCenter
-				text: serviceEditorContainer.operationInProgress ? qsTr("Operation in progress...") : (serviceEditorContainer.serviceRunning ? qsTr("Running") : qsTr("Stopped"))
+				text: serviceEditorContainer.operationInProgress ? serviceEditorContainer.operationDescription : (serviceEditorContainer.serviceRunning ? qsTr("Running") : qsTr("Stopped"))
 				font.pixelSize: Style.fontSizeM
 			}
 		}
 		
-		BusyIndicator {
+		BaseText {
 			anchors.verticalCenter: parent.verticalCenter
-			anchors.right: parent.right
-			anchors.rightMargin: Style.marginXL
-			width: 20
-			height: 20
-			visible: serviceEditorContainer.operationInProgress
+			anchors.left: parent.left
+			anchors.leftMargin: Style.marginXL
+			text: qsTr("Not saved yet")
+			font.pixelSize: Style.fontSizeM
+			opacity: 0.6
+			visible: serviceEditorContainer.isNewService
 		}
+		
 	}
 	
 	MultiPageView {
@@ -228,15 +296,21 @@ DocumentViewBase {
 
 		function addServicePages() {
 			multiPageView.clear()
-			multiPageView.addPage("General", qsTr("General"), generalPageComp, "Icons/Settings")
-			multiPageView.addPage("Connections", qsTr("Connections"), connectionsPageComp, "Icons/Link")
-			multiPageView.addPage("Options", qsTr("Options"), optionsPageComp, "Icons/GeneralSettings")
-			multiPageView.addPage("Settings", qsTr("Settings"), settingsPageComp, "Icons/Settings")
-			multiPageView.addPage("Plugin", qsTr("Plugin"), pluginPageComp, "Icons/Tools")
+			multiPageView.addPage("General", qsTr("General"), null, "Icons/Settings")
+			multiPageView.addSubPage("General", "Information", qsTr("Information"), generalPageComp)
+			multiPageView.addSubPage("General", "Options", qsTr("Options"), optionsPageComp)
+			multiPageView.addPage("Connections", qsTr("Connections"), null, "Icons/Link")
+			multiPageView.addSubPage("Connections", "Server", qsTr("Server"), serverPageComp)
+			multiPageView.addSubPage("Connections", "OutputConnections", qsTr("Output Connections"), outputConnectionsPageComp)
+			// Settings page is hidden for now - not safe yet.
 			if (serviceTypeId !== "") {
 				multiPageView.addPage("Administration", qsTr("Administration"), administrationViewComp, "Icons/AdminPanel")
 			}
-			multiPageView.currentIndex = 0
+			// Categories are collapsed by default (MultiPageView.addPage()/addSubPage() always
+			// start with expanded=false) - expand them so their subpages are visible right away.
+			multiPageView.toggleExpanded("General")
+			multiPageView.toggleExpanded("Connections")
+			multiPageView.currentIndex = multiPageView.getIndexById("Information")
 		}
 	}
 	
@@ -264,6 +338,9 @@ DocumentViewBase {
 				nameInput.text = serviceEditorContainer.serviceData.m_name;
 				descriptionInput.text = serviceEditorContainer.serviceData.m_description; 
 				pathInput.text = serviceEditorContainer.serviceData.m_path;
+
+				pathInput.ensureVisible(pathInput.text.length - 1)
+
 				argumentsInput.text = serviceEditorContainer.serviceData.m_arguments;
 			}
 			
@@ -285,7 +362,7 @@ DocumentViewBase {
 					spacing: Style.marginL
 					
 					GroupHeaderView {
-						title: qsTr("General Information")
+						title: qsTr("Information")
 						width: parent.width
 						groupView: generalGroup
 					}
@@ -298,12 +375,20 @@ DocumentViewBase {
 							id: nameInput
 							name: qsTr("Name")
 							placeHolderText: qsTr("Enter the name");
+							textInputValidator: nameRequiredRegexp;
+							showErrorWhenInvalid: true;
+							errorText: qsTr("Please enter the name");
 							
 							onEditingFinished: {
 								serviceEditorContainer.doUpdateModel();
 							}
 							
 							KeyNavigation.tab: descriptionInput;
+							
+							RegularExpressionValidator {
+								id: nameRequiredRegexp;
+								regularExpression: /^(?!\s*$).+/;
+							}
 						}
 						
 						TextInputElementView {
@@ -322,6 +407,9 @@ DocumentViewBase {
 							id: pathInput
 							name: qsTr("Path")
 							placeHolderText: qsTr("Enter the path");
+							textInputValidator: pathRequiredRegexp;
+							showErrorWhenInvalid: true;
+							errorText: qsTr("Please enter the path");
 							
 							onEditingFinished: {
 								serviceEditorContainer.doUpdateModel();
@@ -331,6 +419,11 @@ DocumentViewBase {
 							}
 							
 							KeyNavigation.tab: argumentsInput;
+							
+							RegularExpressionValidator {
+								id: pathRequiredRegexp;
+								regularExpression: /^(?!\s*$).+/;
+							}
 						}
 						
 						TextInputElementView {
@@ -351,30 +444,57 @@ DocumentViewBase {
 	}
 	
 	Component {
-		id: connectionsPageComp
-		
+		id: serverPageComp
+
 		Item {
-			id: connectionsPageRoot
+			id: serverPageRoot
 			anchors.fill: parent
-			
+
 			function updateGui(){
-				if (serviceEditorContainer.pluginLoaded) {
-					connectionsFlickable.updateGui()
+				if (!serviceEditorContainer.pluginLoaded) {
+					return
+				}
+				if (serviceEditorContainer.serviceData && serviceEditorContainer.serviceData.m_inputConnections){
+					inputListView.model = 0
+					inputListView.model = serviceEditorContainer.serviceData.m_inputConnections
+
+					for (let i = 0; i < inputListView.count; i++){
+						let item = inputListView.itemAtIndex(i)
+						if (item){
+							item.updateGui()
+						}
+					}
 				}
 			}
-			
+
 			function updateModel(){
-				if (serviceEditorContainer.pluginLoaded) {
-					connectionsFlickable.updateModel()
+				if (!serviceEditorContainer.pluginLoaded) {
+					return
+				}
+				if (serviceEditorContainer.serviceData && serviceEditorContainer.serviceData.m_inputConnections){
+					for (let i = 0; i < inputListView.count; i++){
+						let item = inputListView.itemAtIndex(i)
+						if (item){
+							item.updateModel()
+						}
+					}
 				}
 			}
-			
+
+			// Placeholder when plugin not loaded
 			Column {
 				anchors.centerIn: parent
 				spacing: Style.marginL
 				visible: !serviceEditorContainer.pluginLoaded
 				width: Math.min(400, parent.width - 2 * Style.marginXL)
-				
+
+				BusyIndicator {
+					anchors.horizontalCenter: parent.horizontalCenter
+					width: 40
+					height: 40
+					visible: serviceEditorContainer.pluginLoading
+				}
+
 				Image {
 					anchors.horizontalCenter: parent.horizontalCenter
 					width: 48
@@ -383,382 +503,552 @@ DocumentViewBase {
 					sourceSize.height: 48
 					source: "../../../../" + Style.getIconPath("Icons/Link", Icon.State.Off, Icon.Mode.Normal)
 					opacity: 0.5
+					visible: !serviceEditorContainer.pluginLoading
 				}
-				
+
 				BaseText {
 					width: parent.width
-					text: qsTr("Connections are not available")
+					text: serviceEditorContainer.pluginLoading ? qsTr("Loading plugin data...") :
+					      (serviceEditorContainer.pluginLoadFailed ? qsTr("Failed to load plugin") : qsTr("Plugin data not loaded"))
 					font.pixelSize: Style.fontSizeXL
 					horizontalAlignment: Text.AlignHCenter
 				}
-				
+
 				BaseText {
 					width: parent.width
-					text: qsTr("Load the plugin first on the Plugin tab to see connection settings")
+					text: serviceEditorContainer.pluginServicePath ? qsTr("Path: ") + serviceEditorContainer.pluginServicePath : ""
+					horizontalAlignment: Text.AlignHCenter
+					opacity: 0.6
+					elide: Text.ElideMiddle
+					font.pixelSize: Style.fontSizeS
+					visible: !serviceEditorContainer.pluginLoading && serviceEditorContainer.pluginServicePath !== ""
+				}
+
+				BaseText {
+					width: parent.width
+					text: serviceEditorContainer.isNewService
+						? qsTr("Save the service to automatically load plugin connection settings")
+						: (serviceEditorContainer.pluginLoadFailed
+							? qsTr("Check the path and try reloading")
+							: qsTr("Will be loaded automatically after saving"))
 					horizontalAlignment: Text.AlignHCenter
 					opacity: 0.7
 					wrapMode: Text.WordWrap
+					visible: !serviceEditorContainer.pluginLoading
+				}
+
+				BaseText {
+					text: qsTr("Reload")
+					font.pixelSize: Style.fontSizeM
+							font.underline: serverEmptyReloadMouseArea.containsMouse
+					color: Style.linkColor
+					width: parent.width
+					horizontalAlignment: Text.AlignHCenter
+					visible: !serviceEditorContainer.isNewService && !serviceEditorContainer.pluginLoading
+					MouseArea {
+								id: serverEmptyReloadMouseArea
+						anchors.fill: parent
+								hoverEnabled: true
+						cursorShape: Qt.PointingHandCursor
+						onClicked: serviceEditorContainer.requestLoadPlugin()
+					}
 				}
 			}
-			
+
 			Flickable {
-				id: connectionsFlickable
-				
+				id: serverFlickable
 				anchors.fill: parent
 				anchors.leftMargin: Style.marginXL
 				anchors.topMargin: Style.marginXL
 				anchors.rightMargin: Style.marginXL
 				anchors.bottomMargin: Style.marginXL
-				
+
 				visible: serviceEditorContainer.pluginLoaded
-				
-				contentWidth: connectionsBody.width
-				contentHeight: connectionsBody.height + Style.marginXL
-				
+
+				contentWidth: serverBody.width
+				contentHeight: serverBody.height + Style.marginXL
+
 				boundsBehavior: Flickable.StopAtBounds
 				clip: true
-				
-				function updateGui(){
-				if (serviceEditorContainer.serviceData.m_inputConnections){
-					inputConnectionListView.model = 0
-					inputConnectionListView.model = serviceEditorContainer.serviceData.m_inputConnections
-					
-					for (let i = 0; i < inputConnectionListView.count; i++){
-						let item = inputConnectionListView.itemAtIndex(i)
-						if (item){
-							item.updateGui()
-						}
-					}
-				}
-				
-				if (serviceEditorContainer.serviceData.m_outputConnections){
-					outputConnectionListView.model = 0
-					outputConnectionListView.model = serviceEditorContainer.serviceData.m_outputConnections
-					
-					for (let i = 0; i < outputConnectionListView.count; i++){
-						let item = outputConnectionListView.itemAtIndex(i)
-						if (item){
-							item.updateGui()
-						}
-					}
-				}
-			}
-			
-			function updateModel(){
-				if (serviceEditorContainer.serviceData.m_inputConnections){
-					for (let i = 0; i < inputConnectionListView.count; i++){
-						let item = inputConnectionListView.itemAtIndex(i)
-						if (item){
-							item.updateModel()
-						}
-					}
-				}
-				
-				if (serviceEditorContainer.serviceData.m_outputConnections){
-					for (let i = 0; i < outputConnectionListView.count; i++){
-						let item = outputConnectionListView.itemAtIndex(i)
-						if (item){
-							item.updateModel()
-						}
-					}
-				}
-			}
-			
-			Column {
-				id: connectionsBody
-				anchors.horizontalCenter: parent.horizontalCenter
-				width: Math.min(700, parent.width - 2 * Style.marginXL)
-				spacing: Style.marginXL
-				
-				BaseText {
-					visible: (!inputConnectionListView || inputConnectionListView.count === 0) && (!outputConnectionListView || outputConnectionListView.count === 0)
-					text: qsTr("No connections")
-					font.pixelSize: Style.fontSizeXL
-					horizontalAlignment: Text.AlignHCenter
-					width: parent.width
-				}
-				
-				ListView  {
-					id: inputConnectionListView
-					width: parent.width
-					height: contentHeight
-					cacheBuffer: 1000
-					boundsBehavior: Flickable.StopAtBounds
+
+				Column {
+					id: serverBody
+					anchors.horizontalCenter: parent.horizontalCenter
+					width: Math.min(700, parent.width - 2 * Style.marginXL)
 					spacing: Style.marginXL
-					delegate: Column {
+
+					Row {
 						width: parent.width
-						spacing: Style.marginL
-						GroupHeaderView {
-							title:  model.item.m_connectionName + qsTr(" (input)")
+						spacing: Style.marginS
+						visible: serviceEditorContainer.pluginLoaded
+
+						BaseText {
+							text: "\u2713"
+							color: Style.successColor
+							font.bold: true
+							font.pixelSize: Style.fontSizeM
+							anchors.verticalCenter: parent.verticalCenter
+						}
+
+						BaseText {
+							text: qsTr("Plugin loaded")
+							font.pixelSize: Style.fontSizeS
+							opacity: 0.6
+							anchors.verticalCenter: parent.verticalCenter
+						}
+
+						BaseText {
+							text: qsTr("Reload")
+							font.pixelSize: Style.fontSizeS
+							font.underline: serverLoadedReloadMouseArea.containsMouse
+							color: Style.linkColor
+							anchors.verticalCenter: parent.verticalCenter
+							MouseArea {
+								id: serverLoadedReloadMouseArea
+								anchors.fill: parent
+								hoverEnabled: true
+								cursorShape: Qt.PointingHandCursor
+								onClicked: serviceEditorContainer.requestLoadPlugin()
+							}
+						}
+					}
+
+					BaseText {
+						visible: !inputListView || inputListView.count === 0
+						text: qsTr("No connections")
+						font.pixelSize: Style.fontSizeXL
+						horizontalAlignment: Text.AlignHCenter
+						width: parent.width
+					}
+
+					ListView {
+						id: inputListView
+						width: parent.width
+						height: contentHeight
+						cacheBuffer: 1000
+						boundsBehavior: Flickable.StopAtBounds
+						spacing: Style.marginXL
+						delegate: Column {
 							width: parent.width
-							visible: inputConnectionListView.count > 0
-						}
-						ServerConnectionParamElementView {
-							id: inputConnectionEditor
-							width: inputConnectionListView.width
-							readOnly: serviceEditorContainer.readOnly
-							
-							onParamsChanged: {
-								serviceEditorContainer.doUpdateModel()
+							spacing: Style.marginL
+
+							GroupHeaderView {
+								title: model.item.m_connectionName + qsTr(" (input)")
+								width: parent.width
+								visible: inputListView.count > 0
 							}
-							
-							ButtonElementView {
-								id: externConnectionsView
-								name: qsTr("Extern Connections")
-								text: qsTr("Edit")
-								onClicked: {
-									ModalDialogManager.openDialog(externPortsDialogComp, {inputConnection: model.item});
+
+							ServerConnectionParamElementView {
+								id: inputConnectionEditor
+								width: inputListView.width
+								readOnly: serviceEditorContainer.readOnly
+
+								onParamsChanged: {
+									serviceEditorContainer.doUpdateModel()
 								}
-							}
-						}
-						
-						function updateGui(){
-							if (!model.item){
-								return
-							}
-							
-							if (model.item.m_connectionParam){
-								inputConnectionEditor.host = model.item.m_connectionParam.m_host
-								inputConnectionEditor.httpPort = model.item.m_connectionParam.m_httpPort
-								inputConnectionEditor.wsPort = model.item.m_connectionParam.m_wsPort
-								inputConnectionEditor.isSecure = model.item.m_connectionParam.m_isSecure
-							}
-							
-							if (model.item.m_externConnectionList){
-								let values = []
-								for (let i = 0; i < model.item.m_externConnectionList.count; i++){
-									let externConnection = model.item.m_externConnectionList.get(i).item
-									if (externConnection){
-										values.push((externConnection.m_connectionParam.m_isSecure == true ? "https://" : "http://") + externConnection.m_connectionParam.m_host + ":" + externConnection.m_connectionParam.m_httpPort + externConnection.m_connectionParam.m_httpPath)
+
+								ButtonElementView {
+									id: externConnectionsView
+									name: qsTr("Extern Connections")
+									text: qsTr("Edit")
+									onClicked: {
+										ModalDialogManager.openDialog(externPortsDialogComp, {inputConnection: model.item})
 									}
 								}
-								
-								if (values.length > 0){
-									externConnectionsView.description = values.join('\n')
-								}
-								else{
-									externConnectionsView.description = ""
-								}
 							}
-						}
-						
-						function updateModel(){
-							if (!model.item){
-								return
-							}
-							
-							if (model.item.m_connectionParam){
-								model.item.m_connectionParam.m_host = inputConnectionEditor.host
-								model.item.m_connectionParam.m_httpPort = inputConnectionEditor.httpPort
-								model.item.m_connectionParam.m_wsPort = inputConnectionEditor.wsPort
-								model.item.m_connectionParam.m_isSecure = inputConnectionEditor.isSecure
-							}
-						}
-						
-					}
-				}
-				
-				Component {
-					id: externPortsDialogComp;
-					
-					ExternPortsDialog {
-						property var inputConnection: null
-						
-						width: serviceEditorContainer.width - Style.marginS < 1200 ? serviceEditorContainer.width - Style.marginS : 1200
-						
-						onStarted: {
-							if (inputConnection){
-								if (inputConnection.m_externConnectionList){
-									connectionListModel = inputConnection.m_externConnectionList.copyMe()
-								}
-							}
-						}
-						
-						onFinished: {
-							if (buttonId == Enums.save){
-								if (inputConnection){
-									inputConnection.m_externConnectionList = connectionListModel.copyMe()
-									serviceEditorContainer.doUpdateModel()
-									
-									serviceEditorContainer.doUpdateGui()
-								}
-							}
-						}
-					}
-				}
-				
-				GroupHeaderView {
-					title: qsTr("Output Connections")
-					width: parent.width
-					visible: outputConnectionListView.count > 0
-				}
-				
-				TreeItemModel {
-					id: headersModel
-					Component.onCompleted: {
-						let index = headersModel.insertNewItem()
-						headersModel.setData("id", "host", index)
-						headersModel.setData("name", qsTr("Host"), index)
-						
-						index = headersModel.insertNewItem()
-						headersModel.setData("id", "httpPort", index)
-						headersModel.setData("name", qsTr("HTTP Port"), index)
-						
-						index = headersModel.insertNewItem()
-						headersModel.setData("id", "wsPort", index)
-						headersModel.setData("name", qsTr("Web Socket Port"), index)
-					}
-				}
-				
-				ListView  {
-					id: outputConnectionListView
-					width: parent.width
-					height: contentHeight
-					cacheBuffer: 1000
-					boundsBehavior: Flickable.StopAtBounds
-					spacing: Style.marginXL
-					delegate: GroupElementView {
-						id: outputDelegate
-						width: outputConnectionListView.width
-						
-						property var connectionParam: model && model.item ? model.item.m_connectionParam : null
-						property var modelData: model ? model.item : null
-						
-						TextInputElementView {
-							name: qsTr("Service Type")
-							readOnly: true
-							text: model.item.m_serviceTypeId
-						}
-						
-						TextInputElementView {
-							name: qsTr("Connection Name")
-							readOnly: true
-							text: model.item.m_connectionName
-						}
-						
-						TableElementView {
-							id: tableElementView
-							name: qsTr("Available Connections")
-							description: table && table.elementsCount == 0 ? qsTr("No available connections") : qsTr("Select one of the available connections")
-							onTableChanged: {
+
+							function updateGui(){
 								if (!model.item){
 									return
 								}
-								
-								if (table){
-									table.isMultiCheckable = false
-									table.checkable = true
-									table.headers = headersModel
-									
-									table.setColumnContentById("host", hostCellDelegateComp);
-									table.setColumnContentById("httpPort", httpPortCellDelegateComp);
-									table.setColumnContentById("wsPort", wsPortCellDelegateComp);
-									
-									table.elements = model.item.m_dependantConnectionList
+								// Setting these properties one by one below fires onXxxChanged ->
+								// paramsChanged() -> onParamsChanged -> serviceEditorContainer.doUpdateModel()
+								// synchronously for *each* property. Without this guard, that
+								// mid-refresh doUpdateModel() call writes the not-yet-updated fields
+								// (still holding their previous/default values) straight back into
+								// model.item.m_connectionParam, clobbering the very port values this
+								// same updateGui() is about to read for the next property.
+								serviceEditorContainer.setBlockingUpdateModel(true)
+								if (model.item.m_connectionParam){
+									inputConnectionEditor.host = model.item.m_connectionParam.m_host
+									inputConnectionEditor.httpPort = model.item.m_connectionParam.m_httpPort
+									inputConnectionEditor.wsPort = model.item.m_connectionParam.m_wsPort
+									inputConnectionEditor.isSecure = model.item.m_connectionParam.m_isSecure
 								}
-							}
-							
-							Connections {
-								target: tableElementView.table
-								function onCheckedItemsChanged(){
-									console.log("onCheckedItemsChanged")
-									serviceEditorContainer.doUpdateModel()
-								}
-							}
-							
-							Component {
-								id: hostCellDelegateComp
-								
-								TableCellTextDelegate{
-									function getValue(){
-										if (!outputDelegate.modelData){
-											return ""
+								serviceEditorContainer.setBlockingUpdateModel(false)
+								if (model.item.m_externConnectionList){
+									let values = []
+									for (let i = 0; i < model.item.m_externConnectionList.count; i++){
+										let externConnection = model.item.m_externConnectionList.get(i).item
+										if (externConnection){
+											values.push((externConnection.m_connectionParam.m_isSecure == true ? "https://" : "http://") + externConnection.m_connectionParam.m_host + ":" + externConnection.m_connectionParam.m_httpPort + externConnection.m_connectionParam.m_httpPath)
 										}
-										
-										let connectionItem = outputDelegate.modelData.m_dependantConnectionList.get(rowIndex).item.m_connectionParam
-										if (connectionItem){
-											return connectionItem.m_host
-										}
-										
-										return ""
+									}
+									if (values.length > 0){
+										externConnectionsView.description = values.join('\n')
+									}
+									else{
+										externConnectionsView.description = ""
 									}
 								}
 							}
-							
-							Component {
-								id: httpPortCellDelegateComp
-								
-								TableCellTextDelegate{
-									function getValue(){
-										if (!outputDelegate.modelData){
-											return ""
-										}
-										
-										let connectionItem = outputDelegate.modelData.m_dependantConnectionList.get(rowIndex).item.m_connectionParam
-										if (connectionItem){
-											return connectionItem.m_httpPort
-										}
-										
-										return ""
-									}
+
+							function updateModel(){
+								if (!model.item){
+									return
 								}
-							}
-							
-							Component {
-								id: wsPortCellDelegateComp
-								
-								TableCellTextDelegate{
-									function getValue(){
-										if (!outputDelegate.modelData){
-											return ""
-										}
-										
-										let connectionItem = outputDelegate.modelData.m_dependantConnectionList.get(rowIndex).item.m_connectionParam
-										if (connectionItem){
-											return connectionItem.m_wsPort
-										}
-										
-										return ""
-									}
+								if (model.item.m_connectionParam){
+									model.item.m_connectionParam.m_host = inputConnectionEditor.host
+									model.item.m_connectionParam.m_httpPort = inputConnectionEditor.httpPort
+									model.item.m_connectionParam.m_wsPort = inputConnectionEditor.wsPort
+									model.item.m_connectionParam.m_isSecure = inputConnectionEditor.isSecure
 								}
 							}
 						}
-						
-						function updateGui(){
-							if (!tableElementView.table || !model.item){
-								return
+					}
+				}
+			}
+
+			Component {
+				id: externPortsDialogComp
+
+				ExternPortsDialog {
+					property var inputConnection: null
+
+					width: serviceEditorContainer.width - Style.marginS < 1200 ? serviceEditorContainer.width - Style.marginS : 1200
+
+					onStarted: {
+						if (inputConnection){
+							if (inputConnection.m_externConnectionList){
+								connectionListModel = inputConnection.m_externConnectionList.copyMe()
 							}
-							
-							let dependantId = model.item.m_dependantConnectionId;
-							if (dependantId === ""){
-								tableElementView.table.uncheckAll()
+						}
+					}
+
+					onFinished: {
+						if (buttonId == Enums.save){
+							if (inputConnection){
+								inputConnection.m_externConnectionList = connectionListModel.copyMe()
+								serviceEditorContainer.doUpdateModel()
+								serviceEditorContainer.doUpdateGui()
 							}
-							else{
-								let connectionList = model.item.m_dependantConnectionList
-								for (let i = 0; i < connectionList.count; i++){
-									let connectionInfo = connectionList.get(i).item
-									if (connectionInfo.m_id == dependantId){
-										tableElementView.table.checkItem(i)
-										break
+						}
+					}
+				}
+			}
+		}
+	}
+
+	Component {
+		id: outputConnectionsPageComp
+
+		Item {
+			id: outputPageRoot
+			anchors.fill: parent
+
+			function updateGui(){
+				if (!serviceEditorContainer.pluginLoaded) {
+					return
+				}
+				if (serviceEditorContainer.serviceData && serviceEditorContainer.serviceData.m_outputConnections){
+					outputListView.model = 0
+					outputListView.model = serviceEditorContainer.serviceData.m_outputConnections
+
+					for (let i = 0; i < outputListView.count; i++){
+						let item = outputListView.itemAtIndex(i)
+						if (item){
+							item.updateGui()
+						}
+					}
+				}
+			}
+
+			function updateModel(){
+				if (!serviceEditorContainer.pluginLoaded) {
+					return
+				}
+				if (serviceEditorContainer.serviceData && serviceEditorContainer.serviceData.m_outputConnections){
+					for (let i = 0; i < outputListView.count; i++){
+						let item = outputListView.itemAtIndex(i)
+						if (item){
+							item.updateModel()
+						}
+					}
+				}
+			}
+
+			// Placeholder when plugin not loaded
+			Column {
+				anchors.centerIn: parent
+				spacing: Style.marginL
+				visible: !serviceEditorContainer.pluginLoaded
+				width: Math.min(400, parent.width - 2 * Style.marginXL)
+
+				BusyIndicator {
+					anchors.horizontalCenter: parent.horizontalCenter
+					width: 40
+					height: 40
+					visible: serviceEditorContainer.pluginLoading
+				}
+
+				Image {
+					anchors.horizontalCenter: parent.horizontalCenter
+					width: 48
+					height: 48
+					sourceSize.width: 48
+					sourceSize.height: 48
+					source: "../../../../" + Style.getIconPath("Icons/Link", Icon.State.Off, Icon.Mode.Normal)
+					opacity: 0.5
+					visible: !serviceEditorContainer.pluginLoading
+				}
+
+				BaseText {
+					width: parent.width
+					text: serviceEditorContainer.pluginLoading ? qsTr("Loading plugin data...") :
+					      (serviceEditorContainer.pluginLoadFailed ? qsTr("Failed to load plugin") : qsTr("Plugin data not loaded"))
+					font.pixelSize: Style.fontSizeXL
+					horizontalAlignment: Text.AlignHCenter
+				}
+
+				BaseText {
+					width: parent.width
+					text: serviceEditorContainer.pluginServicePath ? qsTr("Path: ") + serviceEditorContainer.pluginServicePath : ""
+					horizontalAlignment: Text.AlignHCenter
+					opacity: 0.6
+					elide: Text.ElideMiddle
+					font.pixelSize: Style.fontSizeS
+					visible: !serviceEditorContainer.pluginLoading && serviceEditorContainer.pluginServicePath !== ""
+				}
+
+				BaseText {
+					width: parent.width
+					text: serviceEditorContainer.isNewService
+						? qsTr("Save the service to automatically load plugin connection settings")
+						: (serviceEditorContainer.pluginLoadFailed
+							? qsTr("Check the path and try reloading")
+							: qsTr("Will be loaded automatically after saving"))
+					horizontalAlignment: Text.AlignHCenter
+					opacity: 0.7
+					wrapMode: Text.WordWrap
+					visible: !serviceEditorContainer.pluginLoading
+				}
+
+				BaseText {
+					text: qsTr("Reload")
+					font.pixelSize: Style.fontSizeM
+							font.underline: outputEmptyReloadMouseArea.containsMouse
+					color: Style.linkColor
+					width: parent.width
+					horizontalAlignment: Text.AlignHCenter
+					visible: !serviceEditorContainer.isNewService && !serviceEditorContainer.pluginLoading
+					MouseArea {
+								id: outputEmptyReloadMouseArea
+						anchors.fill: parent
+								hoverEnabled: true
+						cursorShape: Qt.PointingHandCursor
+						onClicked: serviceEditorContainer.requestLoadPlugin()
+					}
+				}
+			}
+
+			Flickable {
+				id: outputFlickable
+				anchors.fill: parent
+				anchors.leftMargin: Style.marginXL
+				anchors.topMargin: Style.marginXL
+				anchors.rightMargin: Style.marginXL
+				anchors.bottomMargin: Style.marginXL
+
+				visible: serviceEditorContainer.pluginLoaded
+
+				contentWidth: outputBody.width
+				contentHeight: outputBody.height + Style.marginXL
+
+				boundsBehavior: Flickable.StopAtBounds
+				clip: true
+
+				Column {
+					id: outputBody
+					anchors.horizontalCenter: parent.horizontalCenter
+					width: Math.min(700, parent.width - 2 * Style.marginXL)
+					spacing: Style.marginXL
+
+					Row {
+						width: parent.width
+						spacing: Style.marginS
+						visible: serviceEditorContainer.pluginLoaded
+
+						BaseText {
+							text: "\u2713"
+							color: Style.successColor
+							font.bold: true
+							font.pixelSize: Style.fontSizeM
+							anchors.verticalCenter: parent.verticalCenter
+						}
+
+						BaseText {
+							text: qsTr("Plugin loaded")
+							font.pixelSize: Style.fontSizeS
+							opacity: 0.6
+							anchors.verticalCenter: parent.verticalCenter
+						}
+
+						BaseText {
+							text: qsTr("Reload")
+							font.pixelSize: Style.fontSizeS
+							font.underline: outputLoadedReloadMouseArea.containsMouse
+							color: Style.linkColor
+							anchors.verticalCenter: parent.verticalCenter
+							MouseArea {
+								id: outputLoadedReloadMouseArea
+								anchors.fill: parent
+								hoverEnabled: true
+								cursorShape: Qt.PointingHandCursor
+								onClicked: serviceEditorContainer.requestLoadPlugin()
+							}
+						}
+					}
+
+					GroupHeaderView {
+						title: qsTr("Output Connections")
+						width: parent.width
+						visible: outputListView.count > 0
+					}
+
+					TreeItemModel {
+						id: outputHeadersModel
+						Component.onCompleted: {
+							let index = outputHeadersModel.insertNewItem()
+							outputHeadersModel.setData("id", "host", index)
+							outputHeadersModel.setData("name", qsTr("Host"), index)
+
+							index = outputHeadersModel.insertNewItem()
+							outputHeadersModel.setData("id", "httpPort", index)
+							outputHeadersModel.setData("name", qsTr("HTTP Port"), index)
+
+							index = outputHeadersModel.insertNewItem()
+							outputHeadersModel.setData("id", "wsPort", index)
+							outputHeadersModel.setData("name", qsTr("Web Socket Port"), index)
+						}
+					}
+
+					ListView {
+						id: outputListView
+						width: parent.width
+						height: contentHeight
+						cacheBuffer: 1000
+						boundsBehavior: Flickable.StopAtBounds
+						spacing: Style.marginXL
+						delegate: GroupElementView {
+							id: outputDelegate
+							width: outputListView.width
+
+							property var connectionParam: model && model.item ? model.item.m_connectionParam : null
+							property var modelData: model ? model.item : null
+
+							TextInputElementView {
+								name: qsTr("Service Type")
+								readOnly: true
+								text: model.item.m_serviceTypeId
+							}
+
+							TextInputElementView {
+								name: qsTr("Connection Name")
+								readOnly: true
+								text: model.item.m_connectionName
+							}
+
+							TableElementView {
+								id: outTable
+								name: qsTr("Available Connections")
+								description: table && table.elementsCount == 0 ? qsTr("No available connections") : qsTr("Select one of the available connections")
+								onTableChanged: {
+									if (!model.item){
+										return
+									}
+									if (table){
+										table.isMultiCheckable = false
+										table.checkable = true
+										table.headers = outputHeadersModel
+
+										table.setColumnContentById("host", outHostCell)
+										table.setColumnContentById("httpPort", outHttpCell)
+										table.setColumnContentById("wsPort", outWsCell)
+
+										table.elements = model.item.m_dependantConnectionList
+									}
+								}
+
+								Connections {
+									target: outTable.table
+									function onCheckedItemsChanged(){
+										serviceEditorContainer.doUpdateModel()
+									}
+								}
+
+								Component {
+									id: outHostCell
+									TableCellTextDelegate{
+										function getValue(){
+											if (!outputDelegate.modelData) return ""
+											let connectionItem = outputDelegate.modelData.m_dependantConnectionList.get(rowIndex).item.m_connectionParam
+											return connectionItem ? connectionItem.m_host : ""
+										}
+									}
+								}
+
+								Component {
+									id: outHttpCell
+									TableCellTextDelegate{
+										function getValue(){
+											if (!outputDelegate.modelData) return ""
+											let connectionItem = outputDelegate.modelData.m_dependantConnectionList.get(rowIndex).item.m_connectionParam
+											return connectionItem ? connectionItem.m_httpPort : ""
+										}
+									}
+								}
+
+								Component {
+									id: outWsCell
+									TableCellTextDelegate{
+										function getValue(){
+											if (!outputDelegate.modelData) return ""
+											let connectionItem = outputDelegate.modelData.m_dependantConnectionList.get(rowIndex).item.m_connectionParam
+											return connectionItem ? connectionItem.m_wsPort : ""
+										}
 									}
 								}
 							}
-						}
-						
-						function updateModel(){
-							if (tableElementView.table || !model.item){
-								let indexes = tableElementView.table.getCheckedItems();
+
+							function updateGui(){
+								if (!outTable.table || !model.item) return
+								let dependantId = model.item.m_dependantConnectionId
+								if (dependantId === ""){
+									outTable.table.uncheckAll()
+								} else {
+									let connectionList = model.item.m_dependantConnectionList
+									for (let i = 0; i < connectionList.count; i++){
+										let connectionInfo = connectionList.get(i).item
+										if (connectionInfo.m_id == dependantId){
+											outTable.table.checkItem(i)
+											break
+										}
+									}
+								}
+							}
+
+							function updateModel(){
+								if (!outTable.table || !model.item) return
+								let indexes = outTable.table.getCheckedItems()
 								if (indexes.length > 0){
 									let index = indexes[0]
 									let connectionList = model.item.m_dependantConnectionList
 									let connectionInfo = connectionList.get(index).item
 									model.item.m_dependantConnectionId = connectionInfo.m_id
-									
 									model.item.m_connectionParam.m_host = connectionInfo.m_connectionParam.m_host
 									model.item.m_connectionParam.m_httpPort = connectionInfo.m_connectionParam.m_httpPort
 									model.item.m_connectionParam.m_wsPort = connectionInfo.m_connectionParam.m_wsPort
-								}
-								else{
+								} else {
 									model.item.m_dependantConnectionId = ""
 									model.item.m_connectionParam.m_host = "localhost"
 									model.item.m_connectionParam.m_httpPort = -1
@@ -769,7 +1059,6 @@ DocumentViewBase {
 					}
 				}
 			}
-		}
 		}
 	}
 
@@ -1146,94 +1435,6 @@ DocumentViewBase {
 		}
 	}
 	
-	Component {
-		id: pluginPageComp
-			
-			Item {
-				id: pluginPage
-				anchors.fill: parent
-				
-				property bool pluginLoading: false
-				
-				function updateGui(){}
-				function updateModel(){}
-				
-				Column {
-					anchors.horizontalCenter: parent.horizontalCenter
-					width: Math.min(700, parent.width - 2 * Style.marginXL)
-					spacing: Style.marginL
-					
-					GroupHeaderView {
-						title: qsTr("Plugin information")
-						width: parent.width
-						groupView: pluginGroup
-					}
-					
-					GroupElementView {
-						id: pluginGroup
-						width: parent.width
-						
-						Item {
-							width: parent.width
-							height: pluginStatusRow.height + Style.marginL
-							
-							Row {
-								id: pluginStatusRow
-								anchors.verticalCenter: parent.verticalCenter
-								anchors.left: parent.left
-								anchors.leftMargin: Style.marginL
-								spacing: Style.marginM
-								
-								Rectangle {
-									width: 10
-									height: 10
-									radius: 5
-									anchors.verticalCenter: parent.verticalCenter
-									color: serviceEditorContainer.pluginLoaded ? Style.successColor : Style.borderColor
-								}
-								
-								BaseText {
-									anchors.verticalCenter: parent.verticalCenter
-									text: serviceEditorContainer.pluginLoaded ? qsTr("Plugin loaded") : qsTr("Plugin not loaded")
-								}
-							}
-						}
-						
-						ButtonElementView {
-							id: loadPluginButton
-							name: qsTr("Load Plugin")
-							text: qsTr("Load")
-							description: serviceEditorContainer.isNewService ? qsTr("Save the service first before loading plugin") : (!serviceEditorContainer.pluginLoaded ? qsTr("Click to load the plugin connection data") : qsTr("Plugin successfully loaded"))
-							buttonEnabled: !serviceEditorContainer.isNewService && !serviceEditorContainer.pluginLoaded && !pluginPage.pluginLoading
-							onClicked: {
-								pluginPage.pluginLoading = true
-								serviceEditorContainer.requestLoadPlugin()
-							}
-						}
-					}
-					
-					BusyIndicator {
-						anchors.horizontalCenter: parent.horizontalCenter
-						width: 40
-						height: 40
-						visible: pluginPage.pluginLoading && !serviceEditorContainer.pluginLoaded
-					}
-				}
-				
-				Connections {
-					target: serviceEditorContainer
-					function onPluginLoadedChanged() {
-						if (serviceEditorContainer.pluginLoaded) {
-							pluginPage.pluginLoading = false
-						}
-					}
-					function onPluginLoadingFailed() {
-						pluginPage.pluginLoading = false
-					}
-				}
-			}
-	}
-
 	Component {
 		id: administrationViewComp;
 			

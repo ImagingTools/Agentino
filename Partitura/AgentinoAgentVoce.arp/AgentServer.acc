@@ -543,6 +543,48 @@
                             <AttributeInfoMap/>
                         </Data>
                     </Element>
+                    <Element Id="CollectionHeadersProvider" PackageId="ImtColPck" ComponentId="CollectionHeadersProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="FilterableHeaderIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Name</Value>
+                                            <Value>Description</Value>
+                                            <Value>StatusName</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="HeaderIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Name</Value>
+                                            <Value>Description</Value>
+                                            <Value>StatusName</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="HeaderNames" Type="Text[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Name</Value>
+                                            <Value>Description</Value>
+                                            <Value>Status</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="SortableHeaderIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>Name</Value>
+                                            <Value>Description</Value>
+                                            <Value>StatusName</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
                     <Element Id="RepresentationService" PackageId="AgentinoDataPck" ComponentId="ServiceInfo">
                         <Data IsEnabled="true" Flags="2">
                             <AttributeInfoMap/>
@@ -566,7 +608,7 @@
                                     </Data>
                                 </AttributeInfo>
                                 <AttributeInfo Id="HeadersProvider" Type="Reference" ExportId="">
-                                    <Data IsEnabled="true" Value="ServiceHeadersDataProvider"/>
+                                    <Data IsEnabled="true" Value="CollectionHeadersProvider"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                                     <Data IsEnabled="false"/>
@@ -582,47 +624,6 @@
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServiceFactory" Type="Factory" ExportId="">
                                     <Data IsEnabled="true" Value="RepresentationService"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                            </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="ServiceHeadersDataProvider" PackageId="ImtServerGqlPck" ComponentId="HeadersDataProvider">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap>
-                                <AttributeInfo Id="HeadersIds" Type="String[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>Name</Value>
-                                            <Value>Description</Value>
-                                            <Value>StatusName</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
-                                <AttributeInfo Id="HeadersNames" Type="Text[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>Name</Value>
-                                            <Value>Description</Value>
-                                            <Value>Status</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
-                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="SearchByFilterIds" Type="String[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>Name</Value>
-                                            <Value>Description</Value>
-                                        </Values>
-                                    </Data>
-                                </AttributeInfo>
-                                <AttributeInfo Id="ShowComponentId" Type="Boolean" ExportId="">
-                                    <Data IsEnabled="true" Value="true"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>

@@ -53,17 +53,6 @@ ViewBase {
         }
     }
 
-    Connections {
-        target: subscriptionManager;
-
-        function onStatusChanged(){
-            if (subscriptionManager.status == WebSocket.Error ||
-                    subscriptionManager.status == WebSocket.Closed){
-                agentSettingsContainer.agentStatus = "Disconnected";
-            }
-        }
-    }
-
     function updateGui(){
         if (agentSettingsContainer.model.containsKey("Url")){
             agentinoUrlInput.text = agentSettingsContainer.model.getData("Url");

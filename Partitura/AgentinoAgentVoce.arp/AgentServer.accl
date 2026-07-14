@@ -25,15 +25,12 @@
         <Element ComponentName="WebSocketServerFramework" X="725" Y="475" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="Repositories">
+        <EmbededRegistry Id="ServiceCollectionController">
             <PositionMap>
-                <Element ComponentName="FileAutoPersistence" X="250" Y="275" Note=""/>
-                <Element ComponentName="ServiceCollection" X="500" Y="425" Note=""/>
-                <Element ComponentName="ServiceInfo" X="500" Y="525" Note=""/>
-                <Element ComponentName="TopologyCollection" X="275" Y="175" Note=""/>
-                <Element ComponentName="TopologyFileAutoPersistence" X="675" Y="175" Note=""/>
-                <Element ComponentName="TopologyPosition2d" X="275" Y="75" Note=""/>
-                <Element ComponentName="UserLocalRepositories" X="900" Y="275" Note=""/>
+                <Element ComponentName="CheckPermissionOr" X="650" Y="450" Note=""/>
+                <Element ComponentName="CollectionHeadersProvider" X="250" Y="275" Note=""/>
+                <Element ComponentName="RepresentationService" X="625" Y="125" Note=""/>
+                <Element ComponentName="ServiceCollectionController" X="650" Y="275" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
@@ -45,12 +42,15 @@
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
-        <EmbededRegistry Id="ServiceCollectionController">
+        <EmbededRegistry Id="Repositories">
             <PositionMap>
-                <Element ComponentName="CheckPermissionOr" X="650" Y="450" Note=""/>
-                <Element ComponentName="RepresentationService" X="625" Y="125" Note=""/>
-                <Element ComponentName="ServiceCollectionController" X="650" Y="275" Note=""/>
-                <Element ComponentName="ServiceHeadersDataProvider" X="225" Y="275" Note=""/>
+                <Element ComponentName="FileAutoPersistence" X="250" Y="275" Note=""/>
+                <Element ComponentName="ServiceCollection" X="500" Y="425" Note=""/>
+                <Element ComponentName="ServiceInfo" X="500" Y="525" Note=""/>
+                <Element ComponentName="TopologyCollection" X="275" Y="175" Note=""/>
+                <Element ComponentName="TopologyFileAutoPersistence" X="675" Y="175" Note=""/>
+                <Element ComponentName="TopologyPosition2d" X="275" Y="75" Note=""/>
+                <Element ComponentName="UserLocalRepositories" X="900" Y="275" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
