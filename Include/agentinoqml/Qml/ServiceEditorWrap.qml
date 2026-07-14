@@ -15,18 +15,6 @@ ServiceEditor {
 	property string serviceId: serviceEditor.serviceData ? serviceEditor.serviceData.m_id : ""
 	property var documentManager
 	
-	// ServiceEditor's own getHeaders() returns {} - without "clientid"/"serviceid" the
-	// server can't route requests like "Authorization" to this specific service
-	// (CAgentGqlRemoteRepresentationControllerComp requires both headers), so every
-	// GQL request issued from within ServiceEditor (login, administration view, ...)
-	// silently fails. Override with the ids this wrapper already has.
-	function getHeaders(){
-		return {
-			"clientid": serviceEditor.clientId,
-			"serviceid": serviceEditor.serviceId
-		};
-	}
-	
 	onLoadPlugin: {
 		serviceEditor.pluginLoaded = false
 		serviceEditor.pluginLoading = true
