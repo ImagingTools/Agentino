@@ -72,6 +72,7 @@
                     <AttributeInfo Id="GuiElementModels" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
+                                <Value>TopologyPage</Value>
                                 <Value>SettingsPage</Value>
                             </Values>
                         </Data>
@@ -168,6 +169,27 @@
                     </AttributeInfo>
                     <AttributeInfo Id="PageQmlItem" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="../../AgentSettings.qml"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="StartQmlItem" Type="Text" ExportId="">
+                        <Data IsEnabled="true" Value=""/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="TopologyPage" PackageId="ImtServerAppPck" ComponentId="PageGuiElementModel">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="IconPath" Type="Text" ExportId="">
+                        <Data IsEnabled="true" Value="Icons/Production"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Id" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="Topology"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Name" Type="Text" ExportId="">
+                        <Data IsEnabled="true" Value="Topology"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="PageQmlItem" Type="Text" ExportId="">
+                        <Data IsEnabled="true" Value="../../TopologyPage.qml"/>
                     </AttributeInfo>
                     <AttributeInfo Id="StartQmlItem" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value=""/>

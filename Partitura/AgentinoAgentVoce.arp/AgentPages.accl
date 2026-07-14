@@ -17,6 +17,7 @@
         <Element ComponentName="PagesRepresentation" X="525" Y="325" Note=""/>
         <Element ComponentName="PagesVisualStatusController" X="325" Y="200" Note=""/>
         <Element ComponentName="SettingsPage" X="125" Y="450" Note=""/>
+        <Element ComponentName="TopologyPage" X="125" Y="550" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
         <EmbededRegistry Id="PagesPermissions">
