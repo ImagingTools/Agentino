@@ -297,7 +297,7 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 	}
 
 	istd::IChangeableUniquePtr retVal;
-	retVal.MoveCastedPtr<agentinodata::IServiceInfo>(serviceInstancePtr);
+	retVal.MoveCastedPtr<agentinodata::IServiceInfo>(std::move(serviceInstancePtr));
 
 	return retVal;
 }
@@ -455,7 +455,7 @@ imtservice::IConnectionCollectionSharedPtr CServiceCollectionControllerComp::Get
 		return nullptr;
 	}
 
-	pluginInfo.connectionCollectionPtr.FromUnique(connectionCollectionPtr);
+	pluginInfo.connectionCollectionPtr.FromUnique(std::move(connectionCollectionPtr));
 
 	return pluginInfo.connectionCollectionPtr;
 }
@@ -589,5 +589,4 @@ bool CServiceCollectionControllerComp::UpdateConnectionCollectionFromService(age
 
 
 } // namespace agentgql
-
 

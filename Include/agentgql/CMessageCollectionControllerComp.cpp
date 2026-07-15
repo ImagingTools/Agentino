@@ -242,7 +242,7 @@ istd::TSharedInterfacePtr<imtbase::IObjectCollection> CMessageCollectionControll
 					istd::TUniqueInterfacePtr<imtbase::IObjectCollection> messageCollection = messageCollectionFactoryPtr->CreateInstance();
 
 					istd::TSharedInterfacePtr<imtbase::IObjectCollection> messageCollectionPtr;
-					messageCollectionPtr.FromUnique(messageCollection);
+					messageCollectionPtr.FromUnique(std::move(messageCollection));
 
 					if (messageCollectionPtr.IsValid()){
 						m_messageCollectionMap[serviceId] = messageCollectionPtr;
@@ -259,5 +259,4 @@ istd::TSharedInterfacePtr<imtbase::IObjectCollection> CMessageCollectionControll
 
 
 } // namespace agentgql
-
 
