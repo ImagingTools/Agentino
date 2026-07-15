@@ -9,30 +9,47 @@ ServiceController {
 	
 	function startService(serviceId){
 		beginStartService(serviceId)
-		serviceInput.m_serviceId = serviceId
-		startServiceRequestSender.send(root.serviceInput)
+		startServiceRequestSender.serviceId = serviceId
+		startServiceInput.m_serviceId = serviceId
+		startServiceRequestSender.send(startServiceInput)
 	}
 	
 	function stopService(serviceId){
 		beginStopService(serviceId)
-		serviceInput.m_serviceId = serviceId
-		stopServiceRequestSender.send(root.serviceInput)
+		stopServiceRequestSender.serviceId = serviceId
+		stopServiceInput.m_serviceId = serviceId
+		stopServiceRequestSender.send(stopServiceInput)
 	}
 	
-	property ServiceInput serviceInput: ServiceInput {}
+	property ServiceInput startServiceInput: ServiceInput {}
+	property ServiceInput stopServiceInput: ServiceInput {}
+
+	function normalizeServiceStatus(status){
+		switch (status){
+			case "RUNNING": return ServiceStatus.s_Running
+			case "NOT_RUNNING": return ServiceStatus.s_NotRunning
+			case "STARTING": return ServiceStatus.s_Starting
+			case "STOPPING": return ServiceStatus.s_Stopping
+			case "UNDEFINED":
+			case "RUNNING_IMPOSSIBLE": return ServiceStatus.s_Undefined
+		}
+		return status
+	}
 	
 	function getHeaders(){
 		return {}
 	}
 	
 	property GqlSdlRequestSender startServiceRequestSender : GqlSdlRequestSender {
+		property string serviceId: ""
 		requestType: 1
 		gqlCommandId: AgentinoServicesSdlCommandIds.s_startService
 		
 		sdlObjectComp: Component {
 			ServiceStatusResponse {
 				onFinished: {
-					root.serviceStarted("")
+					root.serviceStatusChanged(startServiceRequestSender.serviceId, root.normalizeServiceStatus(m_status), this)
+					root.serviceStarted(startServiceRequestSender.serviceId)
 				}
 			}
 		}
@@ -43,13 +60,15 @@ ServiceController {
 	}
 	
 	property GqlSdlRequestSender stopServiceRequestSender : GqlSdlRequestSender {
+		property string serviceId: ""
 		requestType: 1
 		gqlCommandId: AgentinoServicesSdlCommandIds.s_stopService
 		
 		sdlObjectComp: Component {
 			ServiceStatusResponse {
 				onFinished: {
-					root.serviceStopped("")
+					root.serviceStatusChanged(stopServiceRequestSender.serviceId, root.normalizeServiceStatus(m_status), this)
+					root.serviceStopped(stopServiceRequestSender.serviceId)
 				}
 			}
 		}
@@ -64,7 +83,7 @@ ServiceController {
 		onMessageReceived: {
 			let serviceId = data.getData("serviceid")
 			let serviceStatus = data.getData(ServiceStatus.s_Key)
-			root.serviceStatusChanged(serviceId, serviceStatus, data) 
+			root.serviceStatusChanged(serviceId, root.normalizeServiceStatus(serviceStatus), data)
 		}
 	}
 }

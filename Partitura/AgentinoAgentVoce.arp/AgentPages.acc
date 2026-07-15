@@ -189,10 +189,10 @@
                         <Data IsEnabled="true" Value="Topology"/>
                     </AttributeInfo>
                     <AttributeInfo Id="PageQmlItem" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="../../TopologyPage.qml"/>
+                        <Data IsEnabled="true" Value="qrc:/qml/imtdocgui/MultiDocWorkspacePageView.qml"/>
                     </AttributeInfo>
                     <AttributeInfo Id="StartQmlItem" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value=""/>
+                        <Data IsEnabled="true" Value="qrc:/qml/TopologyPage.qml"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>

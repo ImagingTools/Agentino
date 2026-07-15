@@ -6,6 +6,7 @@ import imtguigql 1.0
 import imtdocgui 1.0
 import imtauthgui 1.0
 import imtcontrols 1.0
+import agentino 1.0
 import agentinoServicesSdl 1.0
 
 ServiceEditor {
@@ -138,8 +139,9 @@ ServiceEditor {
 	property bool updateCommands: commandsReceived && serviceData !== null
 	onUpdateCommandsChanged: {
 		if (updateCommands && commandsController){
-			commandsController.setCommandIsEnabled("Start", serviceData.m_status === "notRunning")
-			commandsController.setCommandIsEnabled("Stop", serviceData.m_status === "running")
+			let status = serviceEditor.serviceStatus !== "" ? serviceEditor.serviceStatus : serviceData.m_status
+			commandsController.setCommandIsEnabled("Start", status === ServiceStatus.s_NotRunning)
+			commandsController.setCommandIsEnabled("Stop", status === ServiceStatus.s_Running)
 		}
 	}
 	
@@ -167,6 +169,11 @@ ServiceEditor {
 				serviceEditor.serviceData.copyFrom(documentModel)
 				documentManager.setBlockUndoManager(documentId, false)
 				documentManager.clearUndoManager(documentId)
+				serviceEditor.serviceStatus = documentModel.m_status
+				if (serviceEditor.commandsController){
+					serviceEditor.commandsController.setCommandIsEnabled("Start", serviceEditor.serviceStatus === ServiceStatus.s_NotRunning)
+					serviceEditor.commandsController.setCommandIsEnabled("Stop", serviceEditor.serviceStatus === ServiceStatus.s_Running)
+				}
 				serviceEditor.serviceIsDirty = false
 				serviceEditor.doUpdateGui()
 				serviceEditor.pluginLoading = false
@@ -190,9 +197,8 @@ ServiceEditor {
 			}
 			
 			serviceEditor.serviceIsDirty = false
-			if (serviceEditor.serviceData && serviceEditor.serviceData.hasPath()) {
-				serviceEditor.requestLoadPlugin()
-			}
+			serviceDocumentDataController.documentId = savedDocumentId
+			serviceDocumentDataController.updateDocumentModel()
 		}
 	}
 	
@@ -246,41 +252,37 @@ ServiceEditor {
 			}
 		}
 		
-		onServiceStarted: {
-			serviceEditor.setOperationInProgress(false, "")
-			if (serviceEditor.commandsController){
-				serviceEditor.commandsController.setCommandIsEnabled("Start", false)
-				serviceEditor.commandsController.setCommandIsEnabled("Stop", true)
-			}
-		}
-		
-		onServiceStopped: {
-			serviceEditor.setOperationInProgress(false, "")
-			if (serviceEditor.commandsController){
-				serviceEditor.commandsController.setCommandIsEnabled("Start", true)
-				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
-			}
-		}
-		
 		onServiceStatusChanged: {
-			serviceEditor.setOperationInProgress(false, "")
 			if (serviceId === serviceEditor.serviceId){
-				serviceEditor.serviceRunning = status === "RUNNING"
+				serviceEditor.serviceStatus = status
+				if (status === ServiceStatus.s_Starting){
+					serviceEditor.setOperationInProgress(true, qsTr("Starting service..."))
+				}
+				else if (status === ServiceStatus.s_Stopping){
+					serviceEditor.setOperationInProgress(true, qsTr("Stopping service..."))
+				}
+				else {
+					serviceEditor.setOperationInProgress(false, "")
+				}
 				
 				if (serviceEditor.commandsController){
-					serviceEditor.commandsController.setCommandIsEnabled("Start", status === "NOT_RUNNING")
-					serviceEditor.commandsController.setCommandIsEnabled("Stop", status === "RUNNING")
+					serviceEditor.commandsController.setCommandIsEnabled("Start", status === ServiceStatus.s_NotRunning)
+					serviceEditor.commandsController.setCommandIsEnabled("Stop", status === ServiceStatus.s_Running)
 				}
 				
 			}
 		}
 		
 		onStartServiceFailed: {
-			serviceEditor.setOperationInProgress(false, "")
+			if (serviceId === serviceEditor.serviceId){
+				serviceEditor.setOperationInProgress(false, "")
+			}
 		}
 		
 		onStopServiceFailed: {
-			serviceEditor.setOperationInProgress(false, "")
+			if (serviceId === serviceEditor.serviceId){
+				serviceEditor.setOperationInProgress(false, "")
+			}
 		}
 		
 		function getHeaders(){

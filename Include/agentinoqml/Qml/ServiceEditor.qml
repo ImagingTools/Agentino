@@ -3,9 +3,11 @@ import Acf 1.0
 import com.imtcore.imtqml 1.0
 import imtgui 1.0
 import imtguigql 1.0
+import imtcolgui 1.0
 import imtdocgui 1.0
 import imtauthgui 1.0
 import imtcontrols 1.0
+import agentino 1.0
 import agentinoServicesSdl 1.0
 
 DocumentViewBase {
@@ -49,6 +51,7 @@ DocumentViewBase {
 	Component.onCompleted: {
 		let ok = PermissionsController.checkPermission("ChangeService");
 		serviceEditorContainer.readOnly = !ok;
+		refreshIsNewService()
 		multiPageView.addServicePages()
 	}
 	
@@ -72,10 +75,17 @@ DocumentViewBase {
 	}
 	
 	property bool isNewService: true
-	property bool serviceRunning: false
+	property string serviceStatus: ""
+	readonly property bool serviceRunning: serviceStatus === ServiceStatus.s_Running
 	property bool operationInProgress: false
 	property string operationDescription: ""
 	property bool serviceIsDirty: false
+	property int editorControlWidth: Style.sizeHintXL
+
+	function getEditorControlWidth(element){
+		return Math.min(editorControlWidth,
+			Math.max(0, element.width - 2 * element.contentMargin - element.nameMargin - Style.sizeHintBXS))
+	}
 
 	// isNewService must reflect whether the document has actually been persisted via
 	// Save, not whether serviceData.m_id is empty: the document framework
@@ -91,14 +101,27 @@ DocumentViewBase {
 		}
 	}
 
+	function ensureLogPage(){
+		if (isNewService || multiPageView.getIndexById("Log") >= 0){
+			return
+		}
+		multiPageView.addPage("Log", qsTr("Service Log"), serviceLogPageComp, "Icons/Diagnostics")
+	}
+
 	onDocumentIdChanged: refreshIsNewService()
 	onDocumentManagerChanged: refreshIsNewService()
+	onIsNewServiceChanged: {
+		if (!isNewService){
+			ensureLogPage()
+		}
+	}
 
 	Connections {
 		target: serviceEditorContainer.documentManager
 		function onDocumentSaved(savedDocumentId){
 			if (savedDocumentId === serviceEditorContainer.documentId){
 				serviceEditorContainer.refreshIsNewService()
+				serviceEditorContainer.ensureLogPage()
 			}
 		}
 	}
@@ -131,7 +154,9 @@ DocumentViewBase {
 	
 	onServiceDataChanged: {
 		if (serviceData){
-			serviceRunning = serviceData.m_status === "running"
+			refreshIsNewService()
+			ensureLogPage()
+			serviceStatus = serviceData.m_status
 			operationInProgress = false
 			if (pluginServicePath === "" && serviceData.hasPath()){
 				pluginServicePath = serviceData.m_path
@@ -224,30 +249,39 @@ DocumentViewBase {
 		return {};
 	}
 	
-	Item {
-		id: statusBar
+	Rectangle {
+		id: statusPopup
+		property int statusIndicatorWidth: serviceEditorContainer.operationInProgress ? 18 :
+			(serviceEditorContainer.isNewService ? 0 : 10)
+		property string statusText: serviceEditorContainer.operationInProgress ? serviceEditorContainer.operationDescription :
+			(serviceEditorContainer.isNewService ? qsTr("Not saved yet") :
+				(serviceEditorContainer.serviceStatus === ServiceStatus.s_Running ? qsTr("Running") :
+					(serviceEditorContainer.serviceStatus === ServiceStatus.s_Starting ? qsTr("Starting") :
+						(serviceEditorContainer.serviceStatus === ServiceStatus.s_Stopping ? qsTr("Stopping") :
+							(serviceEditorContainer.serviceStatus === ServiceStatus.s_NotRunning ? qsTr("Stopped") : qsTr("Unknown"))))))
 		anchors.top: parent.top
-		anchors.left: parent.left
 		anchors.right: parent.right
-		height: statusBarRow.height + 2 * Style.marginM
-		
-		Rectangle {
-			anchors.fill: parent
-			color: Style.backgroundColor
-			border.color: serviceEditorContainer.operationInProgress ? Style.lightBlueColor : Style.borderColor
-			border.width: 1
-		}
+		anchors.topMargin: Style.marginXL
+		anchors.rightMargin: Style.marginXL
+		width: Math.min(statusTextItem.implicitWidth + statusIndicatorWidth +
+			(statusIndicatorWidth > 0 ? statusPopupRow.spacing : 0) + 2 * Style.marginL,
+			Math.max(0, parent.width - 2 * Style.marginXL))
+		height: 36
+		clip: true
+		radius: height / 2
+		color: Style.backgroundColor
+		border.color: serviceEditorContainer.operationInProgress ? Style.lightBlueColor :
+			(serviceEditorContainer.isNewService ? Style.borderColor :
+				(serviceEditorContainer.serviceRunning ? Style.greenColor :
+					(serviceEditorContainer.serviceStatus === ServiceStatus.s_Starting ||
+					serviceEditorContainer.serviceStatus === ServiceStatus.s_Stopping ? Style.lightBlueColor : Style.errorColor)))
+		border.width: 1
+		z: 100
 		
 		Row {
-			id: statusBarRow
-			anchors.verticalCenter: parent.verticalCenter
-			anchors.left: parent.left
-			anchors.leftMargin: Style.marginXL
-			spacing: Style.marginM
-			// A service that hasn't been created yet has no running/stopped state on any
-			// agent - showing "Stopped" for it is misleading, so hide the indicator entirely
-			// until the service actually exists.
-			visible: !serviceEditorContainer.isNewService
+			id: statusPopupRow
+			anchors.centerIn: parent
+			spacing: Style.spacingS
 			
 			Loading {
 				width: 18
@@ -264,34 +298,24 @@ DocumentViewBase {
 				radius: 5
 				anchors.verticalCenter: parent.verticalCenter
 				color: serviceEditorContainer.serviceRunning ? Style.greenColor : Style.errorColor
-				visible: !serviceEditorContainer.operationInProgress
+				visible: !serviceEditorContainer.isNewService && !serviceEditorContainer.operationInProgress
 			}
 			
 			BaseText {
+				id: statusTextItem
 				anchors.verticalCenter: parent.verticalCenter
-				text: serviceEditorContainer.operationInProgress ? serviceEditorContainer.operationDescription : (serviceEditorContainer.serviceRunning ? qsTr("Running") : qsTr("Stopped"))
+				width: Math.max(0, statusPopup.width - 2 * Style.marginL -
+					statusPopup.statusIndicatorWidth - (statusPopup.statusIndicatorWidth > 0 ? statusPopupRow.spacing : 0))
+				text: statusPopup.statusText
 				font.pixelSize: Style.fontSizeM
+				elide: Text.ElideRight
 			}
 		}
-		
-		BaseText {
-			anchors.verticalCenter: parent.verticalCenter
-			anchors.left: parent.left
-			anchors.leftMargin: Style.marginXL
-			text: qsTr("Not saved yet")
-			font.pixelSize: Style.fontSizeM
-			opacity: 0.6
-			visible: serviceEditorContainer.isNewService
-		}
-		
 	}
 	
 	MultiPageView {
 		id: multiPageView
-		anchors.top: statusBar.bottom
-		anchors.left: parent.left
-		anchors.right: parent.right
-		anchors.bottom: parent.bottom
+		anchors.fill: parent
 		panelWidth: Style.sizeHintXXS
 
 		function addServicePages() {
@@ -306,6 +330,7 @@ DocumentViewBase {
 			if (serviceTypeId !== "") {
 				multiPageView.addPage("Administration", qsTr("Administration"), administrationViewComp, "Icons/AdminPanel")
 			}
+			serviceEditorContainer.ensureLogPage()
 			// Categories are collapsed by default (MultiPageView.addPage()/addSubPage() always
 			// start with expanded=false) - expand them so their subpages are visible right away.
 			multiPageView.toggleExpanded("General")
@@ -353,8 +378,8 @@ DocumentViewBase {
 			
 			Column {
 				id: generalColumn
-				anchors.horizontalCenter: parent.horizontalCenter
-				width: Math.min(700, parent.width - 2 * Style.marginXL)
+				x: Math.max(0, (generalFlickable.width - width) / 2)
+				width: Math.max(0, Math.min(900, generalFlickable.width - 2 * Style.marginXL))
 				spacing: Style.marginXL
 				
 				Column {
@@ -373,6 +398,7 @@ DocumentViewBase {
 						
 						TextInputElementView {
 							id: nameInput
+							controlWidth: serviceEditorContainer.getEditorControlWidth(nameInput)
 							name: qsTr("Name")
 							placeHolderText: qsTr("Enter the name");
 							textInputValidator: nameRequiredRegexp;
@@ -393,6 +419,7 @@ DocumentViewBase {
 						
 						TextInputElementView {
 							id: descriptionInput
+							controlWidth: serviceEditorContainer.getEditorControlWidth(descriptionInput)
 							name: qsTr("Description")
 							placeHolderText: qsTr("Enter the description");
 							
@@ -405,6 +432,7 @@ DocumentViewBase {
 						
 						TextInputElementView {
 							id: pathInput
+							controlWidth: serviceEditorContainer.getEditorControlWidth(pathInput)
 							name: qsTr("Path")
 							placeHolderText: qsTr("Enter the path");
 							textInputValidator: pathRequiredRegexp;
@@ -428,6 +456,7 @@ DocumentViewBase {
 						
 						TextInputElementView {
 							id: argumentsInput
+							controlWidth: serviceEditorContainer.getEditorControlWidth(argumentsInput)
 							name: qsTr("Arguments")
 							placeHolderText: qsTr("Enter the arguments");
 							
@@ -486,7 +515,7 @@ DocumentViewBase {
 				anchors.centerIn: parent
 				spacing: Style.marginL
 				visible: !serviceEditorContainer.pluginLoaded
-				width: Math.min(400, parent.width - 2 * Style.marginXL)
+				width: Math.max(0, Math.min(400, parent.width - 2 * Style.marginXL))
 
 				BusyIndicator {
 					anchors.horizontalCenter: parent.horizontalCenter
@@ -573,8 +602,8 @@ DocumentViewBase {
 
 				Column {
 					id: serverBody
-					anchors.horizontalCenter: parent.horizontalCenter
-					width: Math.min(700, parent.width - 2 * Style.marginXL)
+					x: Math.max(0, (serverFlickable.width - width) / 2)
+					width: Math.max(0, Math.min(900, serverFlickable.width - 2 * Style.marginXL))
 					spacing: Style.marginXL
 
 					Row {
@@ -642,6 +671,7 @@ DocumentViewBase {
 								id: inputConnectionEditor
 								width: inputListView.width
 								readOnly: serviceEditorContainer.readOnly
+								controlWidth: serviceEditorContainer.getEditorControlWidth(inputConnectionEditor.hostInput)
 
 								onParamsChanged: {
 									serviceEditorContainer.doUpdateModel()
@@ -649,6 +679,7 @@ DocumentViewBase {
 
 								ButtonElementView {
 									id: externConnectionsView
+									controlWidth: serviceEditorContainer.getEditorControlWidth(externConnectionsView)
 									name: qsTr("Extern Connections")
 									text: qsTr("Edit")
 									onClicked: {
@@ -782,7 +813,7 @@ DocumentViewBase {
 				anchors.centerIn: parent
 				spacing: Style.marginL
 				visible: !serviceEditorContainer.pluginLoaded
-				width: Math.min(400, parent.width - 2 * Style.marginXL)
+				width: Math.max(0, Math.min(400, parent.width - 2 * Style.marginXL))
 
 				BusyIndicator {
 					anchors.horizontalCenter: parent.horizontalCenter
@@ -869,8 +900,8 @@ DocumentViewBase {
 
 				Column {
 					id: outputBody
-					anchors.horizontalCenter: parent.horizontalCenter
-					width: Math.min(700, parent.width - 2 * Style.marginXL)
+					x: Math.max(0, (outputFlickable.width - width) / 2)
+					width: Math.max(0, Math.min(900, outputFlickable.width - 2 * Style.marginXL))
 					spacing: Style.marginXL
 
 					Row {
@@ -947,12 +978,16 @@ DocumentViewBase {
 							property var modelData: model ? model.item : null
 
 							TextInputElementView {
+								id: serviceTypeInput
+								controlWidth: serviceEditorContainer.getEditorControlWidth(serviceTypeInput)
 								name: qsTr("Service Type")
 								readOnly: true
 								text: model.item.m_serviceTypeId
 							}
 
 							TextInputElementView {
+								id: connectionNameInput
+								controlWidth: serviceEditorContainer.getEditorControlWidth(connectionNameInput)
 								name: qsTr("Connection Name")
 								readOnly: true
 								text: model.item.m_connectionName
@@ -960,6 +995,7 @@ DocumentViewBase {
 
 							TableElementView {
 								id: outTable
+								controlWidth: serviceEditorContainer.getEditorControlWidth(outTable)
 								name: qsTr("Available Connections")
 								description: table && table.elementsCount == 0 ? qsTr("No available connections") : qsTr("Select one of the available connections")
 								onTableChanged: {
@@ -1148,8 +1184,8 @@ DocumentViewBase {
 				
 				Column {
 					id: optionsColumn
-					anchors.horizontalCenter: parent.horizontalCenter
-					width: Math.min(700, parent.width - 2 * Style.marginXL)
+					x: Math.max(0, (optionsFlickable.width - width) / 2)
+					width: Math.max(0, Math.min(900, optionsFlickable.width - 2 * Style.marginXL))
 					spacing: Style.marginXL
 					
 					Column {
@@ -1168,6 +1204,7 @@ DocumentViewBase {
 							
 							SwitchElementView {
 								id: switchAutoStart
+								controlWidth: serviceEditorContainer.getEditorControlWidth(switchAutoStart)
 								name: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("on") : qsTr("off")) + ")"
 								onCheckedChanged: {
 									serviceEditorContainer.doUpdateModel()
@@ -1176,6 +1213,7 @@ DocumentViewBase {
 							
 							SwitchElementView {
 								id: switchVerboseMessage
+								controlWidth: serviceEditorContainer.getEditorControlWidth(switchVerboseMessage)
 								name: qsTr("Verbose Message")
 								onCheckedChanged: {
 									serviceEditorContainer.doUpdateModel()
@@ -1184,6 +1222,7 @@ DocumentViewBase {
 							
 							ComboBoxElementView {
 								id: tracingLevelInput
+								controlWidth: serviceEditorContainer.getEditorControlWidth(tracingLevelInput)
 								name: qsTr("Tracing level")
 								visible: switchVerboseMessage.checked
 								model: TreeItemModel {
@@ -1220,6 +1259,7 @@ DocumentViewBase {
 							
 							SwitchElementView {
 								id: startScriptChecked
+								controlWidth: serviceEditorContainer.getEditorControlWidth(startScriptChecked)
 								name: qsTr("Start script")
 								onCheckedChanged: {
 									serviceEditorContainer.doUpdateModel()
@@ -1228,6 +1268,7 @@ DocumentViewBase {
 							
 							TextInputElementView {
 								id: startScriptInput
+								controlWidth: serviceEditorContainer.getEditorControlWidth(startScriptInput)
 								visible: startScriptChecked.checked
 								placeHolderText: qsTr("Enter the start script path")
 								name: qsTr("Start Script Path")
@@ -1238,6 +1279,7 @@ DocumentViewBase {
 							
 							SwitchElementView {
 								id: stopScriptChecked
+								controlWidth: serviceEditorContainer.getEditorControlWidth(stopScriptChecked)
 								name: qsTr("Stop script")
 								onCheckedChanged: {
 									serviceEditorContainer.doUpdateModel()
@@ -1246,6 +1288,7 @@ DocumentViewBase {
 							
 							TextInputElementView {
 								id: stopScriptInput
+								controlWidth: serviceEditorContainer.getEditorControlWidth(stopScriptInput)
 								visible: stopScriptChecked.checked
 								placeHolderText: qsTr("Enter the stop script path")
 								name: qsTr("Stop Script Path")
@@ -1313,6 +1356,7 @@ DocumentViewBase {
 					
 					TextInputElementView {
 						id: settingsPathInput
+						controlWidth: serviceEditorContainer.getEditorControlWidth(settingsPathInput)
 						name: qsTr("Settings Path")
 						placeHolderText: qsTr("Enter the path to settings file")
 						text: serviceEditorContainer.settingsPath
@@ -1430,6 +1474,31 @@ DocumentViewBase {
 							}
 						}
 					}
+				}
+			}
+		}
+	}
+
+	Component {
+		id: serviceLogPageComp
+
+		MessageCollectionView {
+			anchors.fill: parent
+			filterRightMargin: statusPopup.width + Style.marginXL
+			collectionId: "ServiceLog"
+			gqlGetListCommandId: "GetServiceLog"
+			subscriptionCommandId: "OnServiceLogChanged"
+
+			function getHeaders(){
+				return serviceEditorContainer.getHeaders()
+			}
+
+			function handleSubscription(dataModel){
+				if (!dataModel || !dataModel.containsKey("serviceid")){
+					return
+				}
+				if (dataModel.getData("serviceid") === serviceEditorContainer.serviceData.m_id){
+					doUpdateGui()
 				}
 			}
 		}

@@ -42,6 +42,7 @@ public:
 
 	I_BEGIN_COMPONENT(CServiceControllerComp);
 		I_REGISTER_INTERFACE(agentinodata::IServiceController);
+		I_REGISTER_INTERFACE(agentinodata::IServiceStatusProvider);
 		I_ASSIGN(m_serviceCollectionCompPtr, "ServiceCollection", "Service collection", true, "ServiceCollection");
 	I_END_COMPONENT;
 

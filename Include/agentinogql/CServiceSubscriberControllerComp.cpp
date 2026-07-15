@@ -49,8 +49,8 @@ void CServiceSubscriberControllerComp::OnUpdate(const istd::IChangeable::ChangeS
 	}
 
 	QString data = QString("{ \"serviceid\": \"%1\", \"serviceStatus\": \"%2\" }").arg(qPrintable(notifierStatusInfo.serviceId)).arg(status);
-	if (m_commandIdsAttrPtr.GetCount() > 0){
-		PublishData(m_commandIdsAttrPtr[0], data.toUtf8());
+	for (int index = 0; index < m_commandIdsAttrPtr.GetCount(); ++index){
+		PublishData(m_commandIdsAttrPtr[index], data.toUtf8());
 	}
 
 	if (m_serviceStatusCollectionCompPtr.IsValid()){

@@ -117,7 +117,9 @@ SplitView {
 					if (checkMenu.allChecked){
 						checkMenu.currentText = " "
 					}
-					checkMenu.menuHeight = checkMenu.delegateHeight * (checkMenu.dataModel.getItemsCount() + 1)
+					checkMenu.menuHeight = checkMenu.delegateHeight * checkMenu.dataModel.getItemsCount()
+						+ Style.marginM + (Style.controlHeightM + Style.controlHeightS) / 2
+						+ 2 * Style.marginXS
 					
 					applySourceFilter()
 				}
@@ -132,7 +134,9 @@ SplitView {
 					height: Style.controlHeightM
 					visible: filterDecorator.filtermenu.x - (filterDecorator.segmentedButton.x + filterDecorator.segmentedButton.width + Style.marginM) >= width
 					placeHolderText: qsTr("Services");
-					menuHeight: delegateHeight * (dataModel.getItemsCount() + 1);
+					menuHeight: delegateHeight * dataModel.getItemsCount()
+						+ Style.marginM + (Style.controlHeightM + Style.controlHeightS) / 2
+						+ 2 * Style.marginXS;
 					delegateHeight: 40;
 					hasSearch: false;
 					canOpenMenu: true;

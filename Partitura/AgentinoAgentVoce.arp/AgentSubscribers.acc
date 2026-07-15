@@ -113,6 +113,28 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="LocalServiceStatusSubscriberController" PackageId="AgentinoGqlPck" ComponentId="ServiceSubscriberController">
+            <Data IsEnabled="true" Flags="1">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>OnServiceStatusChanged</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Model" Type="Reference" ExportId="ServiceController">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RequestManager" Type="Reference" ExportId="WebSocketServer">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="ServicetCollectionSubscriberController" PackageId="ImtServerGqlPck" ComponentId="ObjectCollectionChangeNotifier">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
@@ -142,6 +164,7 @@
         <Component ExportedId="AgentConnectionSubscriberController" ComponentId="AgentConnectionSubscriberController"/>
         <Component ExportedId="AgentLogCollectionSubscriberController" ComponentId="AgentLogCollectionSubscriberController"/>
         <Component ExportedId="AgentServicesRemoteSubscriberProxy" ComponentId="AgentServicesRemoteSubscriberProxy"/>
+        <Component ExportedId="LocalServiceStatusSubscriberController" ComponentId="LocalServiceStatusSubscriberController"/>
         <Component ExportedId="ServiceLogSubscriberController" ComponentId="ServiceLogSubscriberController"/>
         <Component ExportedId="ServiceStatusSubscriberController" ComponentId="ServiceStatusSubscriberController"/>
     </ExportedComponents>
