@@ -108,7 +108,7 @@ void CServiceLogSubscriberControllerComp::OnUpdate(const istd::IChangeable::Chan
 					istd::TUniqueInterfacePtr<imtbase::IObjectCollection> messageCollection = messageCollectionFactoryPtr->CreateInstance();
 					if (messageCollection.IsValid()){
 						MessageStatusInfo& messageStatusInfo = m_servicesMessageInfo[serviceId];
-						messageStatusInfo.messageCollectionPtr.FromUnique(messageCollection);
+						messageStatusInfo.messageCollectionPtr.FromUnique(std::move(messageCollection));
 						messageStatusInfo.messageCount = 0;
 					}
 				}
@@ -138,5 +138,4 @@ void CServiceLogSubscriberControllerComp::TimerUpdate()
 
 
 } // namespace agentgql
-
 

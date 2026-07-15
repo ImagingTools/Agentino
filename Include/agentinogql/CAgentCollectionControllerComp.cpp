@@ -274,7 +274,7 @@ istd::IChangeableUniquePtr CAgentCollectionControllerComp::CreateObjectFromReque
 	}
 
 	istd::TUniqueInterfacePtr<agentinodata::CIdentifiableAgentInfo> agentImplPtr;
-	agentImplPtr.MoveCastedPtr<agentinodata::IAgentInfo>(agentInstancePtr);
+	agentImplPtr.MoveCastedPtr<agentinodata::IAgentInfo>(std::move(agentInstancePtr));
 	if (!agentImplPtr.IsValid()){
 		errorMessage = QT_TR_NOOP("Unable to get an service info!");
 
@@ -306,7 +306,7 @@ istd::IChangeableUniquePtr CAgentCollectionControllerComp::CreateObjectFromReque
 	}
 
 	istd::IChangeableUniquePtr retVal;
-	retVal.MoveCastedPtr<agentinodata::CIdentifiableAgentInfo>(agentImplPtr);
+	retVal.MoveCastedPtr<agentinodata::CIdentifiableAgentInfo>(std::move(agentImplPtr));
 
 	return retVal;
 }
@@ -354,7 +354,7 @@ QJsonObject CAgentCollectionControllerComp::InsertObject(
 		}
 
 		istd::TUniqueInterfacePtr<agentinodata::CIdentifiableAgentInfo> agentImplPtr;
-		agentImplPtr.MoveCastedPtr<istd::IChangeable>(agentInstancePtr);
+		agentImplPtr.MoveCastedPtr<istd::IChangeable>(std::move(agentInstancePtr));
 		if (!agentImplPtr.IsValid()){
 			return QJsonObject();
 		}
@@ -512,5 +512,4 @@ void CAgentCollectionControllerComp::OnTimeout()
 
 
 } // namespace agentinogql
-
 
