@@ -590,3 +590,4 @@ bool CServiceCollectionControllerComp::UpdateConnectionCollectionFromService(age
 
 } // namespace agentgql
 
+

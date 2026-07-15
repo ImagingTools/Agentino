@@ -139,3 +139,4 @@ void CServiceLogSubscriberControllerComp::TimerUpdate()
 
 } // namespace agentgql
 
+
