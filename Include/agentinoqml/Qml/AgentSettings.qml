@@ -19,7 +19,6 @@ ViewBase {
 
     onAgentStatusChanged: {
         console.log("onAgentStatusChanged", agentStatus);
-        loading.visible = false;
         statusText.text = "";
         button.enabled = false;
 
@@ -34,7 +33,6 @@ ViewBase {
             button.enabled = true;
         }
         else if (agentStatus == "Checking"){
-            loading.visible = true;
             statusText.text = qsTr("Checking the connection")
         }
         else{
@@ -119,7 +117,7 @@ ViewBase {
 
                         indicatorSize: 20;
 
-                        visible: true;
+                        visible: agentSettingsContainer.agentStatus == "Checking";
                     }
 
                     Rectangle {
@@ -151,7 +149,7 @@ ViewBase {
 
                         elide: Text.ElideRight;
 
-                        text: qsTr("Checking the connection");
+                        text: qsTr("Unknown");
                     }
                 }
 
@@ -205,13 +203,8 @@ ViewBase {
 		gqlCommandId: "OnAgentConnectionChanged";
 
 		onMessageReceived: {
-			if (data.containsKey("OnAgentConnectionChanged")){
-				let dataModel = data.getData("OnAgentConnectionChanged");
-
-				if (dataModel.containsKey("status")){
-					let status = dataModel.getData("status");
-					agentSettingsContainer.agentStatus = status;
-				}
+            if (data.containsKey("status")){
+                agentSettingsContainer.agentStatus = data.getData("status");
 			}
 		}
     }

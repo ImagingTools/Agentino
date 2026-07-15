@@ -489,7 +489,7 @@
                                     <Data IsEnabled="true">
                                         <Values>
                                             <Value>ViewServices</Value>
-                                            <Value>EditService</Value>
+											<Value>ChangeService</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -499,14 +499,14 @@
                                 <AttributeInfo Id="NewCommandPermissions" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>EditService</Value>
+											<Value>ChangeService</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
                                 <AttributeInfo Id="RemoveCommandPermissions" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>EditService</Value>
+											<Value>ChangeService</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -819,7 +819,7 @@
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>ViewLicenses</Value>
+											<Value>ViewServices</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -858,6 +858,8 @@
                                             <Value>Redo</Value>
                                             <Value>Empty</Value>
                                             <Value>Save</Value>
+											<Value>Start</Value>
+											<Value>Stop</Value>
                                             <Value>Empty</Value>
                                             <Value>Close</Value>
                                         </Values>
@@ -954,9 +956,8 @@
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>EditLicense</Value>
-                                            <Value>ChangeLicense</Value>
-                                            <Value>ChangeLisenseNumber</Value>
+                                            <Value>ChangeService</Value>
+                                            <Value>AddService</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -999,9 +1000,8 @@
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>EditLicense</Value>
-                                            <Value>ChangeLicense</Value>
-                                            <Value>ChangeLisenseNumber</Value>
+                                            <Value>ChangeService</Value>
+                                            <Value>AddService</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -1086,9 +1086,8 @@
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>EditLicense</Value>
-                                            <Value>ChangeLicense</Value>
-                                            <Value>ChangeLisenseNumber</Value>
+                                            <Value>ChangeService</Value>
+                                            <Value>AddService</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>

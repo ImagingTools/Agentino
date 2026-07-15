@@ -156,17 +156,17 @@ DocumentCollectionViewDelegate {
 		
 		onServiceStarted: {
 			container.finishOperation()
-			if (container.commandsController){
-				container.commandsController.setCommandIsEnabled("Start", false)
-				container.commandsController.setCommandIsEnabled("Stop", true)
-			}
 		}
 		
 		onServiceStopped: {
 			container.finishOperation()
-			if (container.commandsController){
-				container.commandsController.setCommandIsEnabled("Start", true)
-				container.commandsController.setCommandIsEnabled("Stop", false)
+		}
+
+		onServiceStatusChanged: {
+			container.finishOperation()
+			if (serviceId === container.serviceId && container.commandsController){
+				container.commandsController.setCommandIsEnabled("Start", status === ServiceStatus.s_NotRunning)
+				container.commandsController.setCommandIsEnabled("Stop", status === ServiceStatus.s_Running)
 			}
 		}
 		

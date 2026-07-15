@@ -57,9 +57,14 @@ sdl::V1_0::agentino::CServiceStatusResponse CServiceControllerComp::OnStartServi
 		return response;
 	}
 	QByteArray serviceId = *arguments.input->serviceId;
-	m_serviceControllerCompPtr->StartService(serviceId);
+	if (!m_serviceControllerCompPtr->StartService(serviceId)){
+		return response;
+	}
+
 	agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
-	response.status = (sdl::V1_0::agentino::ServiceStatus) state;
+	response.status = state == agentinodata::IServiceStatusInfo::SS_RUNNING ?
+			sdl::V1_0::agentino::ServiceStatus::RUNNING :
+			sdl::V1_0::agentino::ServiceStatus::STARTING;
 
 	return response;
 }

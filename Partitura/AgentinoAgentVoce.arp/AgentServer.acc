@@ -369,7 +369,7 @@
                     <AttributeInfo Id="GqlSubscriberControllers" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>AgentSubscribers/ServiceStatusSubscriberController</Value>
+                                <Value>AgentSubscribers/LocalServiceStatusSubscriberController</Value>
                                 <Value>AgentSubscribers/AgentConnectionSubscriberController</Value>
                                 <Value>AgentSubscribers/ServiceLogSubscriberController</Value>
                                 <Value>AgentSubscribers/AgentLogCollectionSubscriberController</Value>

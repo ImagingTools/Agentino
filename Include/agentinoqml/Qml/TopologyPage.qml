@@ -29,6 +29,20 @@ ViewBase {
 		serviceOperationInProgress = inProgress
 		serviceOperationText = description
 	}
+
+	function normalizeServiceStatus(status){
+		switch (status){
+			case "RUNNING":
+			case ServiceStatus.s_Running: return ServiceStatus.s_Running
+			case "NOT_RUNNING":
+			case ServiceStatus.s_NotRunning: return ServiceStatus.s_NotRunning
+			case "STARTING":
+			case ServiceStatus.s_Starting: return ServiceStatus.s_Starting
+			case "STOPPING":
+			case ServiceStatus.s_Stopping: return ServiceStatus.s_Stopping
+		}
+		return ServiceStatus.s_Undefined
+	}
 	
 	Component.onCompleted: {
 		if (documentManager){
@@ -44,6 +58,7 @@ ViewBase {
 			typeId: "Topology"
 			
 			onCommandsChanged: {
+				setCommandVisible("Save", false)
 				setIsToggleable("AutoFit", true);
 				setToggled("AutoFit", scheme.autoFit);
 			}
@@ -62,10 +77,7 @@ ViewBase {
 			view: topologyPage;
 			
 			onCommandActivated: {
-				if (commandId === "Save"){
-					saveModelRequestSender.send()
-				}
-				else if (commandId === "ZoomIn"){
+				if (commandId === "ZoomIn"){
 					scheme.setAutoFit(false);
 					
 					scheme.zoomIn();
@@ -113,6 +125,10 @@ ViewBase {
 	
 	SchemeView {
 		id: scheme
+		maximumObjectWidth: 360
+		objectFontSize: Style.fontSizeXL
+		objectSecondaryFontSize: Style.fontSizeS
+		strokeSecondaryText: false
 		
 		anchors.left: parent.left;
 		anchors.right: metaInfo.left;
@@ -128,10 +144,8 @@ ViewBase {
 			}
 		}
 		
-		onModelDataChanged: {
-			if (topologyPage.commandsController){
-				topologyPage.commandsController.setCommandIsEnabled("Save", true)
-			}
+		onObjectMoveFinished: {
+			saveModelRequestSender.send()
 		}
 		
 		onSelectedIndexChanged: {
@@ -144,10 +158,10 @@ ViewBase {
 				let serviceId = item.m_id;
 				
 				selectedService = serviceId;
-				let status = item.m_status;
+				let status = topologyPage.normalizeServiceStatus(item.m_status);
 				
-				topologyPage.commandsController.setCommandIsEnabled("Start", status === "NOT_RUNNING")
-				topologyPage.commandsController.setCommandIsEnabled("Stop", status === "RUNNING")
+				topologyPage.commandsController.setCommandIsEnabled("Start", status === ServiceStatus.s_NotRunning)
+				topologyPage.commandsController.setCommandIsEnabled("Stop", status === ServiceStatus.s_Running)
 				topologyPage.commandsController.setCommandIsEnabled("Edit", true)
 				
 				metaInfo.contentVisible = true;
@@ -183,8 +197,10 @@ ViewBase {
 		anchors.right: metaInfo.left
 		anchors.topMargin: Style.marginXL
 		anchors.rightMargin: Style.marginXL
-		width: serviceOperationRow.width + 2 * Style.marginL
+		width: Math.min(serviceOperationRow.width + 2 * Style.marginL,
+			Math.max(0, metaInfo.x - 2 * Style.marginXL))
 		height: 36
+		clip: true
 		radius: height / 2
 		color: Style.backgroundColor
 		border.color: Style.lightBlueColor
@@ -207,8 +223,10 @@ ViewBase {
 			
 			BaseText {
 				anchors.verticalCenter: parent.verticalCenter
+				width: Math.max(0, serviceOperationIndicator.width - 2 * Style.marginL - 18 - serviceOperationRow.spacing)
 				text: topologyPage.serviceOperationText
 				font.pixelSize: Style.fontSizeM
+				elide: Text.ElideRight
 			}
 		}
 	}
@@ -335,7 +353,6 @@ ViewBase {
 		}
 	}
 	
-	// TODO: Status ?
 	SubscriptionClient {
 		id: subscriptionClient;
 		gqlCommandId: "OnServiceStatusChanged";
@@ -343,7 +360,7 @@ ViewBase {
 		onMessageReceived: {
 			let dataModel = data
 			let serviceId = dataModel.getData("serviceid")
-			let serviceStatus = dataModel.getData(ServiceStatus.s_Key)
+			let serviceStatus = topologyPage.normalizeServiceStatus(dataModel.getData(ServiceStatus.s_Key))
 			let dependencyStatus
 			
 			let index = scheme.findModelIndex(serviceId);
@@ -354,41 +371,48 @@ ViewBase {
 			let item = scheme.objectsModel.get(index).item
 			
 			item.m_status = serviceStatus;
-			if (serviceStatus === "RUNNING"){
+			if (serviceStatus === ServiceStatus.s_Running){
 				item.m_icon1 = "Icons/Running";
 			}
-			else if (serviceStatus === "NOT_RUNNING"){
+			else if (serviceStatus === ServiceStatus.s_NotRunning){
 				item.m_icon1 = "Icons/Stopped";
 			}
-			else if (serviceStatus === "UNDEFINED"){
+			else if (serviceStatus === ServiceStatus.s_Undefined){
 				item.m_icon1 = "Icons/Alert";
 			}
 
 			if (index === scheme.selectedIndex && topologyPage.commandsController){
-				topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus === "NOT_RUNNING");
-				topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === "RUNNING");
+				topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus === ServiceStatus.s_NotRunning);
+				topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === ServiceStatus.s_Running);
 			}
 			
 			serviceStatus = item.m_status;
 			
 			let dependencyStatusModel = dataModel.getData(DependencyStatus.s_Key)
+			if (!dependencyStatusModel){
+				scheme.requestPaint()
+				return
+			}
 			for (let i = 0; i < dependencyStatusModel.getItemsCount(); i++){
 				serviceId = dependencyStatusModel.getData("id", i);
 				index = scheme.findModelIndex(serviceId);
-				dependencyStatus = dependencyStatusModel.getData(DependencyStatus.s_Key, i)
+				dependencyStatus = topologyPage.normalizeServiceStatus(dependencyStatusModel.getData(DependencyStatus.s_Key, i))
+				if (index < 0){
+					continue
+				}
 				
 				let serviceItem = scheme.objectsModel.get(index).item;
-				if (dependencyStatus === "NOT_RUNNING"){
+				if (dependencyStatus === ServiceStatus.s_NotRunning){
 					serviceItem.m_icon2 = "Icons/Error"
 				}
-				else if (dependencyStatus === "UNDEFINED"){
+				else if (dependencyStatus === ServiceStatus.s_Undefined){
 					serviceItem.m_icon2 = "Icons/Warning"
 				}
 				else {
 					serviceItem.m_icon2 = ""
 				}
 				
-				if (serviceStatus !== "RUNNING"){
+				if (serviceStatus !== ServiceStatus.s_Running){
 					item.m_icon2 = ""
 				}
 				
@@ -413,13 +437,7 @@ ViewBase {
 		}
 		
 		sdlObjectComp: Component {
-			SaveTopologyResponse {
-				onFinished: {
-					if (topologyPage.commandsController){
-						topologyPage.commandsController.setCommandIsEnabled("Save", !m_successful);
-					}
-				}
-			}
+			SaveTopologyResponse {}
 		}
 	}
 	
@@ -433,10 +451,6 @@ ViewBase {
 				onFinished: {
 					scheme.objectsModel = m_services;
 					scheme.requestPaint()
-					
-					if (topologyPage.commandsController){
-						topologyPage.commandsController.setCommandIsEnabled("Save", false)
-					}
 				}
 			}
 		}
