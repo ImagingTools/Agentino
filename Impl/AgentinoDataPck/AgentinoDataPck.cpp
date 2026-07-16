@@ -55,6 +55,16 @@ I_EXPORT_COMPONENT(
 			"Agent status info",
 			"Agent Status Info");
 
+I_EXPORT_COMPONENT(
+			SoftwareUpdateInfo,
+			"Software update information",
+			"Software Update Information");
+
+I_EXPORT_COMPONENT(
+			SoftwareUpdateManager,
+			"Software update manager",
+			"Software Update Manager");
+
 
 } // namespace AgentinoDataPck
 

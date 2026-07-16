@@ -89,6 +89,16 @@ I_EXPORT_COMPONENT(
 			"Agent remote document revision controller",
 			"Agent Remote Document Revision Controller");
 
+I_EXPORT_COMPONENT(
+			SoftwareUpdateCollectionController,
+			"Software update collection controller",
+			"GraphQl Software Update Collection Controller");
+
+I_EXPORT_COMPONENT(
+			SoftwareUpdateController,
+			"Software update controller for applying and rolling back updates",
+			"GraphQl Software Update Controller");
+
 
 } // namespace AgentGqlPck
 

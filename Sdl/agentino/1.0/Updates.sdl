@@ -1,0 +1,127 @@
+schema {
+	query: Query
+	mutation: Mutation
+	subscription: Subscription
+	namespace: agentino
+	version: 1.0
+}
+
+import {
+	"../../../../ImtCore/Sdl/imtbase/1.0/ImtCollection.sdl"
+	"../../../../ImtCore/Sdl/imtbase/1.0/ImtBaseTypes.sdl"
+}
+
+enum UpdateType {
+	AGENT
+	SERVICE
+}
+
+enum UpdateStatus {
+	AVAILABLE
+	DOWNLOADING
+	INSTALLING
+	INSTALLED
+	FAILED
+	ROLLED_BACK
+}
+
+type UpdateListInputViewParams {
+	count: Int
+	offset: Int
+	filterModel: String
+}
+
+input UpdateListInput {
+	viewParams: UpdateListInputViewParams
+}
+
+type UpdateItem {
+	id: ID!
+	typeId: ID!
+	name: String!
+	version: String!
+	updateType: UpdateType!
+	description: String
+	fileSize: Integer
+	checksum: String
+	publishedDate: String
+	status: UpdateStatus
+}
+
+type UpdateListPayload {
+	items: [UpdateItem]!
+}
+
+type UpdateData {
+	id: ID!
+	name: String!
+	version: String!
+	updateType: UpdateType!
+	description: String
+	fileSize: Integer
+	checksum: String
+	publishedDate: String
+	status: UpdateStatus
+	changelog: String
+	targetVersion: String
+	sourceUrl: String
+}
+
+type ApplyUpdateInput {
+	updateId: ID!
+	agentId: ID!
+}
+
+type ApplyUpdateResponse {
+	successful: Boolean!
+	status: UpdateStatus
+	errorMessage: String
+}
+
+type RollbackUpdateInput {
+	updateId: ID!
+	agentId: ID!
+}
+
+type RollbackUpdateResponse {
+	successful: Boolean!
+	status: UpdateStatus
+	errorMessage: String
+}
+
+type UpdateProgressPayload {
+	updateId: ID!
+	agentId: ID!
+	status: UpdateStatus!
+	progress: Int
+	message: String
+}
+
+type Query {
+	AvailableUpdates (input: UpdateListInput): UpdateListPayload!
+	GetUpdateInfo (input: InputId): UpdateData!
+}
+
+type Mutation {
+	ApplyUpdate (input: ApplyUpdateInput): ApplyUpdateResponse!
+	RollbackUpdate (input: RollbackUpdateInput): RollbackUpdateResponse!
+}
+
+type Subscription {
+	OnUpdateProgress: UpdateProgressPayload!
+}
+
+collectionSchema {
+	type SoftwareUpdate {
+		ref: UpdateItem
+		operations {
+			list: AvailableUpdates
+		}
+		subtype SoftwareUpdate {
+			ref: UpdateData
+			operations {
+				get: GetUpdateInfo
+			}
+		}
+	}
+}
