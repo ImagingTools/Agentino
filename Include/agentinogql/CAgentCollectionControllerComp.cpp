@@ -466,9 +466,29 @@ bool CAgentCollectionControllerComp::UpdateServiceStatusFromAgent(const QByteArr
 
 void CAgentCollectionControllerComp::OnTimeout()
 {
+	// Prevent re-entrancy while SendModelRequest pumps the local event loop.
+	// New AgentAdd entries stay in m_connectedAgents and are drained by this loop
+	// or by a subsequent single-shot timer start after we leave.
+	if (m_timeoutRunning){
+		return;
+	}
+	m_timeoutRunning = true;
+
 	while (!m_connectedAgents.isEmpty()){
-		QByteArray agentId = m_connectedAgents.at(0);
-		m_connectedAgents.removeFirst();
+		QByteArray agentId = m_connectedAgents.takeFirst();
+
+		// Full service-set reconciliation before status refresh (closes offline blackout window).
+		if (m_serviceSynchronizerCompPtr.IsValid()){
+			QString reconcileError;
+			if (!m_serviceSynchronizerCompPtr->SyncAgentServicesInMirror(agentId, reconcileError)){
+				SendErrorMessage(
+							0,
+							QString("Unable to reconcile services of agent '%1'. Error: %2")
+										.arg(QString::fromUtf8(agentId), reconcileError),
+							"CAgentCollectionControllerComp");
+				// Status loop still runs on whatever is currently in the mirror.
+			}
+		}
 
 		agentinodata::CAgentInfo* agentInfoPtr = nullptr;
 		imtbase::IObjectCollection::DataPtr dataPtr;
@@ -477,16 +497,18 @@ void CAgentCollectionControllerComp::OnTimeout()
 		}
 
 		if (agentInfoPtr == nullptr){
-			SendErrorMessage(0, QString("Unable to update services for agent '%1'. Error: Agent is invalid"), "CAgentCollectionControllerComp");
+			SendErrorMessage(
+						0,
+						QString("Unable to update services for agent '%1'. Error: Agent is invalid")
+									.arg(QString::fromUtf8(agentId)),
+						"CAgentCollectionControllerComp");
 
-			return;
+			continue;
 		}
 
 		imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-		Q_ASSERT(serviceCollectionPtr != nullptr);
-		if (agentInfoPtr == nullptr){
-
-			return;
+		if (serviceCollectionPtr == nullptr){
+			continue;
 		}
 
 		imtbase::ICollectionInfo::Ids ids = serviceCollectionPtr->GetElementIds();
@@ -502,12 +524,17 @@ void CAgentCollectionControllerComp::OnTimeout()
 			}
 
 			if (!UpdateServiceStatusFromAgent(agentId, id)){
-				SendErrorMessage(0, QString("Unable to update service status"), "CAgentCollectionControllerComp");
-
-				return;
+				SendErrorMessage(
+							0,
+							QString("Unable to update service status for service '%1' of agent '%2'")
+										.arg(QString::fromUtf8(id), QString::fromUtf8(agentId)),
+							"CAgentCollectionControllerComp");
+				// Continue: one failed status must not abort the rest of the queue.
 			}
 		}
 	}
+
+	m_timeoutRunning = false;
 }
 
 

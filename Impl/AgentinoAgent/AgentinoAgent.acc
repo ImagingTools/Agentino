@@ -59,6 +59,7 @@
                                 <Value>AgentServer/Preferences</Value>
                                 <Value>AgentServer/AutoPersistence</Value>
                                 <Value>AgentServer/ServiceManagerSubscriptionClient</Value>
+                                <Value>AgentServer/AgentServiceCollectionSyncClient</Value>
                                 <Value>AgentServer/ServiceCollection</Value>
                                 <Value>AgentServer/ServiceController</Value>
                                 <Value>AgentServer/HttpServerFramework</Value>

@@ -17,6 +17,8 @@ ViewBase {
 	clip: true;
 	
 	property var documentManager: MainDocumentService.getDocumentService("Topology");
+	property string collectionId: "Services"
+	property string selectedAgentId: ""
 	property bool serviceOperationInProgress: false
 	property string serviceOperationText: ""
 	
@@ -58,7 +60,11 @@ ViewBase {
 			typeId: "Topology"
 			
 			onCommandsChanged: {
+				let serviceSelected = scheme.selectedIndex >= 0 && scheme.selectedIndex < scheme.objectsModel.count
 				setCommandVisible("Save", false)
+				setCommandIsEnabled("New", true)
+				setCommandIsEnabled("Edit", serviceSelected)
+				setCommandIsEnabled("Remove", serviceSelected)
 				setIsToggleable("AutoFit", true);
 				setToggled("AutoFit", scheme.autoFit);
 			}
@@ -75,6 +81,10 @@ ViewBase {
 			id: serviceCommandsDelegate
 			collectionView: topologyPage
 			view: topologyPage;
+			documentTypeId: "Service"
+			documentManager: topologyPage.documentManager
+			removeDialogTitle: qsTr("Deleting a service")
+			removeMessage: qsTr("Delete the selected service?")
 			
 			onCommandActivated: {
 				if (commandId === "ZoomIn"){
@@ -116,9 +126,105 @@ ViewBase {
 			function onEdit(){
 				scheme.goInside()
 			}
-			
+
+			function onNew(){
+				// Server app has an "Agents" document service → pick target agent.
+				// Agent app has no Agents page → create service locally without clientid.
+				if (MainDocumentService.getDocumentService("Agents")){
+					ModalDialogManager.openDialog(newServiceAgentDialogComp, {})
+					return
+				}
+
+				MainDocumentService.tryRegisterDocumentService("Agents", function(result){
+					if (result){
+						ModalDialogManager.openDialog(newServiceAgentDialogComp, {})
+					}
+					else if (topologyPage.documentManager){
+						topologyPage.selectedAgentId = ""
+						topologyPage.documentManager.insertNewDocument("Service", qsTr("New service"))
+					}
+				})
+			}
+
+			function onRemove(){
+				ModalDialogManager.openDialog(topologyRemoveDialogComp, {})
+			}
+
 			function getHeaders(){
 				return topologyPage.getHeaders();
+			}
+
+			Component {
+				id: topologyRemoveDialogComp
+
+				MessageDialog {
+					width: Style.sizeHintM
+					title: serviceCommandsDelegate.removeDialogTitle
+					message: serviceCommandsDelegate.removeMessage
+					onFinished: {
+						if (buttonId == Enums.yes && scheme.selectedService !== ""){
+							collectionDataProvider.removeElements([scheme.selectedService])
+						}
+					}
+				}
+			}
+
+			Component {
+				id: newServiceAgentDialogComp
+
+				Dialog {
+					id: newServiceAgentDialog
+					width: Style.sizeHintM
+					title: qsTr("Select target agent")
+
+					property string chosenAgentId: ""
+
+					Component.onCompleted: {
+						addButton(Enums.apply, qsTr("Select"), false)
+						addButton(Enums.cancel, qsTr("Cancel"), true)
+					}
+
+					onFinished: {
+						if (buttonId === Enums.apply && chosenAgentId !== "" && topologyPage.documentManager){
+							topologyPage.selectedAgentId = chosenAgentId
+							topologyPage.documentManager.insertNewDocument("Service", qsTr("New service"))
+						}
+					}
+
+					contentComp: Component {
+						Item {
+							width: newServiceAgentDialog.width
+							height: Style.controlHeightM + 2 * Style.marginL
+
+							ComboBoxGqlSimple {
+								id: agentCombo
+								anchors.centerIn: parent
+								width: parent.width - 2 * Style.marginL
+								height: Style.controlHeightM
+								gqlCommandId: "AgentsList"
+								fields: ["id", "computerName"]
+								nameId: "computerName"
+
+								onModelChanged: {
+									if (model && model.getItemsCount() > 0){
+										currentIndex = 0
+									}
+								}
+
+								onCurrentIndexChanged: {
+									if (currentIndex >= 0 && model && model.containsKey("id", currentIndex)){
+										newServiceAgentDialog.chosenAgentId = model.getData("id", currentIndex)
+										newServiceAgentDialog.setButtonEnabled(Enums.apply, true)
+									}
+									else{
+										newServiceAgentDialog.chosenAgentId = ""
+										newServiceAgentDialog.setButtonEnabled(Enums.apply, false)
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -147,31 +253,40 @@ ViewBase {
 		onObjectMoveFinished: {
 			saveModelRequestSender.send()
 		}
-		
+
+		onDeleteSignal: {
+			if (scheme.selectedService !== ""){
+				ModalDialogManager.openDialog(topologyRemoveDialogComp, {})
+			}
+		}
+
 		onSelectedIndexChanged: {
 			if (!topologyPage.commandsController){
 				return;
 			}
-			
 			if(objectsModel.count > selectedIndex && selectedIndex >= 0){
 				let item = scheme.objectsModel.get(scheme.selectedIndex).item
 				let serviceId = item.m_id;
-				
+
 				selectedService = serviceId;
+				topologyPage.selectedAgentId = item.m_agentId
 				let status = topologyPage.normalizeServiceStatus(item.m_status);
-				
+
 				topologyPage.commandsController.setCommandIsEnabled("Start", status === ServiceStatus.s_NotRunning)
 				topologyPage.commandsController.setCommandIsEnabled("Stop", status === ServiceStatus.s_Running)
 				topologyPage.commandsController.setCommandIsEnabled("Edit", true)
+				topologyPage.commandsController.setCommandIsEnabled("Remove", true)
 				
 				metaInfo.contentVisible = true;
 				collectionDataProvider.getObjectMetaInfo(selectedService)
 			}
 			else{
 				selectedService = ""
+				topologyPage.selectedAgentId = ""
 				topologyPage.commandsController.setCommandIsEnabled("Start", false)
 				topologyPage.commandsController.setCommandIsEnabled("Stop", false)
 				topologyPage.commandsController.setCommandIsEnabled("Edit", false)
+				topologyPage.commandsController.setCommandIsEnabled("Remove", false)
 				
 				metaInfo.contentVisible = false;
 			}
@@ -189,8 +304,16 @@ ViewBase {
 				}
 			}
 		}
+
+		Shortcut {
+			sequence: "Return"
+			enabled: true
+			onActivated: {
+				scheme.goInside()
+			}
+		}
 	}
-	
+
 	Rectangle {
 		id: serviceOperationIndicator
 		anchors.top: parent.top
@@ -259,11 +382,11 @@ ViewBase {
 	
 	function getHeaders(){
 		let headers = {}
-		
-		if(scheme.selectedIndex >= 0){
-			let item = scheme.objectsModel.get(scheme.selectedIndex).item
-			let agentId = item.m_agentId;
-			headers["clientid"] = agentId;
+
+		if (topologyPage.selectedAgentId !== ""){
+			headers["clientid"] = topologyPage.selectedAgentId;
+		}
+		if (scheme.selectedService !== ""){
 			headers["serviceid"] = scheme.selectedService;
 		}
 		
@@ -327,10 +450,7 @@ ViewBase {
 			documentManager: topologyPage.documentManager
 			
 			Component.onCompleted: {
-				if (scheme.selectedIndex >= 0){
-					let item = scheme.objectsModel.get(scheme.selectedIndex).item
-					clientId = item.m_agentId;
-				}
+				clientId = topologyPage.selectedAgentId
 			}
 		}
 	}
@@ -339,8 +459,18 @@ ViewBase {
 		id: serviceDataControllerComp
 		
 		ServiceDocumentDataController {
+			property string clientId: ""
+
+			Component.onCompleted: {
+				clientId = topologyPage.selectedAgentId
+			}
+
 			function getHeaders(){
-				return topologyPage.getHeaders();
+				let headers = {}
+				if (clientId !== ""){
+					headers["clientid"] = clientId
+				}
+				return headers
 			}
 		}
 	}
@@ -349,7 +479,27 @@ ViewBase {
 		id: topologySubscriptionClient;
 		gqlCommandId: "OnTopologyChanged";
 		onMessageReceived: {
-			// getTopologyRequestSender.send()
+			getTopologyRequestSender.send()
+		}
+	}
+
+	SubscriptionClient {
+		id: servicesCollectionSubscriptionClient
+		gqlCommandId: "OnServicesCollectionChanged"
+
+		onMessageReceived: {
+			getTopologyRequestSender.send()
+		}
+	}
+
+	// Server-only: agent connect/disconnect must refresh offline markers (agentOnline / icons).
+	// On the agent app this subscription is a no-op if the command is not published.
+	SubscriptionClient {
+		id: agentStatusSubscriptionClient
+		gqlCommandId: "OnAgentStatusChanged"
+
+		onMessageReceived: {
+			getTopologyRequestSender.send()
 		}
 	}
 	
@@ -369,6 +519,19 @@ ViewBase {
 			}
 			
 			let item = scheme.objectsModel.get(index).item
+
+			// Offline agent: keep Alert/Warning from GetTopology; do not paint stale live status.
+			if (item.m_agentOnline === false){
+				item.m_status = ServiceStatus.s_Undefined
+				item.m_icon1 = "Icons/Alert"
+				item.m_icon2 = "Icons/Warning"
+				if (index === scheme.selectedIndex && topologyPage.commandsController){
+					topologyPage.commandsController.setCommandIsEnabled("Start", false)
+					topologyPage.commandsController.setCommandIsEnabled("Stop", false)
+				}
+				scheme.requestPaint()
+				return
+			}
 			
 			item.m_status = serviceStatus;
 			if (serviceStatus === ServiceStatus.s_Running){
@@ -402,6 +565,10 @@ ViewBase {
 				}
 				
 				let serviceItem = scheme.objectsModel.get(index).item;
+				if (serviceItem.m_agentOnline === false){
+					serviceItem.m_icon2 = "Icons/Warning"
+					continue
+				}
 				if (dependencyStatus === ServiceStatus.s_NotRunning){
 					serviceItem.m_icon2 = "Icons/Error"
 				}
@@ -449,8 +616,18 @@ ViewBase {
 		sdlObjectComp: Component {
 			Topology {
 				onFinished: {
+					scheme.selectedIndex = -1
+					scheme.selectedService = ""
+					topologyPage.selectedAgentId = ""
+					metaInfo.contentVisible = false
 					scheme.objectsModel = m_services;
 					scheme.requestPaint()
+					if (topologyPage.commandsController){
+						topologyPage.commandsController.setCommandIsEnabled("Start", false)
+						topologyPage.commandsController.setCommandIsEnabled("Stop", false)
+						topologyPage.commandsController.setCommandIsEnabled("Edit", false)
+						topologyPage.commandsController.setCommandIsEnabled("Remove", false)
+					}
 				}
 			}
 		}

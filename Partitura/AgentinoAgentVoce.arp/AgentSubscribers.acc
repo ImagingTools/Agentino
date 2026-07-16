@@ -135,13 +135,35 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServicetCollectionSubscriberController" PackageId="ImtServerGqlPck" ComponentId="ObjectCollectionChangeNotifier">
+        <Element Id="LocalServiceCollectionSubscriberController" PackageId="ImtServerGqlPck" ComponentId="ObjectCollectionChangeNotifier">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>OnServiceChanged</Value>
+                                <Value>OnServicesCollectionChanged</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="ServiceCollection">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RequestManager" Type="Reference" ExportId="WebSocketServer">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="RemoteServiceCollectionSubscriberController" PackageId="ImtServerGqlPck" ComponentId="ObjectCollectionChangeNotifier">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>OnAgentServicesCollectionChanged</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -164,7 +186,9 @@
         <Component ExportedId="AgentConnectionSubscriberController" ComponentId="AgentConnectionSubscriberController"/>
         <Component ExportedId="AgentLogCollectionSubscriberController" ComponentId="AgentLogCollectionSubscriberController"/>
         <Component ExportedId="AgentServicesRemoteSubscriberProxy" ComponentId="AgentServicesRemoteSubscriberProxy"/>
+        <Component ExportedId="LocalServiceCollectionSubscriberController" ComponentId="LocalServiceCollectionSubscriberController"/>
         <Component ExportedId="LocalServiceStatusSubscriberController" ComponentId="LocalServiceStatusSubscriberController"/>
+        <Component ExportedId="RemoteServiceCollectionSubscriberController" ComponentId="RemoteServiceCollectionSubscriberController"/>
         <Component ExportedId="ServiceLogSubscriberController" ComponentId="ServiceLogSubscriberController"/>
         <Component ExportedId="ServiceStatusSubscriberController" ComponentId="ServiceStatusSubscriberController"/>
     </ExportedComponents>

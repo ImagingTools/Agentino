@@ -4,6 +4,7 @@
 
 // Qt includes
 #include <QtCore/QJsonObject>
+#include <QtCore/QSet>
 
 // ImtCore includes
 #include <imtclientgql/TClientRequestManagerCompWrap.h>
@@ -11,10 +12,17 @@
 // Agentino includes
 #include <agentinodata/IServiceManager.h>
 #include <agentinodata/CServiceStatusInfo.h>
+#include <agentinogql/IServiceCollectionSynchronizer.h>
 #include <imtclientgql/CGqlRemoteRepresentationControllerCompBase.h>
 
 #include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtBaseTypes_fwd.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services_fwd.h>
+
+
+namespace imtgql
+{
+class CGqlRequest;
+}
 
 
 namespace agentinogql
@@ -23,17 +31,32 @@ namespace agentinogql
 
 class CServiceControllerProxyComp:
 			public imtclientgql::TClientRequestManagerCompWrap<
-										sdl::V1_0::agentino::CServicesGqlHandlerCompBase>
+										sdl::V1_0::agentino::CServicesGqlHandlerCompBase>,
+			virtual public IServiceCollectionSynchronizer
 {
 public:
 	typedef imtclientgql::TClientRequestManagerCompWrap<
 		sdl::V1_0::agentino::CServicesGqlHandlerCompBase> BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceControllerProxyComp);
+		I_REGISTER_INTERFACE(IServiceCollectionSynchronizer);
 		I_ASSIGN(m_serviceManagerCompPtr, "ServiceManager", "ServceManager", true, "ServiceManager");
 		I_ASSIGN(m_serviceStatusCollectionCompPtr, "ServiceStatusCollection", "Service status collection", false, "ServiceStatusCollection");
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", false, "AgentCollection");
 	I_END_COMPONENT;
+
+	// reimplemented (IServiceCollectionSynchronizer)
+	virtual bool SyncServiceInMirror(
+				const QByteArray& agentId,
+				const QByteArray& serviceId,
+				QString& errorMessage) override;
+	virtual bool RemoveServicesInMirror(
+				const QByteArray& agentId,
+				const QByteArrayList& serviceIds,
+				QString& errorMessage) override;
+	virtual bool SyncAgentServicesInMirror(
+				const QByteArray& agentId,
+				QString& errorMessage) override;
 
 protected:
 	virtual sdl::V1_0::agentino::CServiceData OnGetService(
@@ -92,6 +115,9 @@ protected:
 	// reimplemented (imtgql::CGqlRequestHandlerCompBase)
 	virtual QJsonObject CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 	virtual bool IsRequestSupported(const imtgql::CGqlRequest& gqlRequest) const override;
+
+	// Live agent → server collection notify (does not use reverse subscription path).
+	QJsonObject HandleAgentServiceCollectionNotify(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const;
 	
 private:
 	template<class SdlGqlRequest, class SdlResponse>
@@ -121,11 +147,28 @@ private:
 		const QByteArray& agentId,
 		const QByteArray& connectionId,
 		const sdl::V1_0::imtbase::CServerConnectionParam& connectionParam) const;
+
+	QByteArrayList GetMirrorServiceIds(const QByteArray& agentId) const;
+	void RemoveServiceStatuses(const QByteArrayList& serviceIds) const;
+	/**
+		Drop mirror entries for the same agent that share \a servicePath but not \a keepServiceId.
+		Needed when a service is recreated with a new UUID after a missed/failed live remove:
+		topology would otherwise show the stale entry (status UNDEFINED) next to the new one.
+	*/
+	void RemoveStaleMirrorServicesByPath(
+				const QByteArray& agentId,
+				const QByteArray& keepServiceId,
+				const QByteArray& servicePath) const;
+	static void AppendServicesListFields(imtgql::CGqlRequest& gqlRequest);
+	static void AppendServiceDataFields(imtgql::CGqlRequest& gqlRequest);
 	
 protected:
 	I_REF(agentinodata::IServiceManager, m_serviceManagerCompPtr);
 	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
+
+	// Agents currently inside SyncAgentServicesInMirror (re-entrancy via SendModelRequest event loop).
+	QSet<QByteArray> m_agentsBeingReconciled;
 };
 
 

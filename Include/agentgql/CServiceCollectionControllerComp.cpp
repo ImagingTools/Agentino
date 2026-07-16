@@ -183,6 +183,11 @@ bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 	}
 	
 	serviceData.id = objectId;
+
+	// Agent: Available Connections from local services only (server uses all agents via proxy).
+	if (m_objectCollectionCompPtr.IsValid()){
+		agentinodata::FillAvailableConnectionsForServiceData(serviceData, *m_objectCollectionCompPtr.GetPtr());
+	}
 	
 	return true;
 }
@@ -227,6 +232,13 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 	QFileInfo fileInfo(servicePath);
 	if (!fileInfo.exists()){
 		errorMessage = QString("Unable to create service from representation. Error: Service path '%1' not exists").arg(qPrintable(servicePath));
+		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
+		return nullptr;
+	}
+
+	if (IsServicePathInUse(servicePath, QByteArray())){
+		errorMessage = QString("Unable to create service from representation. Error: A service with path '%1' already exists").arg(qPrintable(servicePath));
 		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 
 		return nullptr;
@@ -350,7 +362,14 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 
 		return false;
 	}
-	
+
+	if (IsServicePathInUse(serviceInfoPtr->GetServicePath(), objectId)){
+		errorMessage = QString("Unable to update service from representation. Error: A service with path '%1' already exists").arg(qPrintable(serviceInfoPtr->GetServicePath()));
+		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
+		return false;
+	}
+
 	QByteArray serviceTypeName = serviceInfoPtr->GetServiceTypeId().toUtf8();
 	
 	imtservice::IConnectionCollectionSharedPtr connectionCollectionPtr = GetConnectionCollectionByServiceId(objectId);
@@ -500,6 +519,32 @@ void CServiceCollectionControllerComp::OnComponentDestroyed()
 
 
 // private methods
+
+bool CServiceCollectionControllerComp::IsServicePathInUse(const QByteArray& servicePath, const QByteArray& excludeObjectId) const
+{
+	if (!m_objectCollectionCompPtr.IsValid()){
+		return false;
+	}
+
+	imtbase::ICollectionInfo::Ids elementIds = m_objectCollectionCompPtr->GetElementIds();
+	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
+		if (elementId == excludeObjectId){
+			continue;
+		}
+
+		const agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<const agentinodata::IServiceInfo*>(m_objectCollectionCompPtr->GetObjectPtr(elementId));
+		if (serviceInfoPtr == nullptr){
+			continue;
+		}
+
+		if (QString(serviceInfoPtr->GetServicePath()).compare(QString(servicePath), Qt::CaseInsensitive) == 0){
+			return true;
+		}
+	}
+
+	return false;
+}
+
 
 bool CServiceCollectionControllerComp::CheckInputPortsUpdated(
 	agentinodata::IServiceInfo& serviceInfo,

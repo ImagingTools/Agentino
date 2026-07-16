@@ -322,6 +322,24 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="AgentServiceCollectionSyncClient" PackageId="AgentGqlPck" ComponentId="AgentServiceCollectionSyncClient">
+            <Data IsEnabled="true" Flags="1">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/ClientId2"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="GqlClient" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="WebSocketClient"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="WebSocketClient" PackageId="" ComponentId="WebSocketClient">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
@@ -334,6 +352,7 @@
                     <AttributeInfo Id="GqlSubscriberControllers" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
+                                <Value>AgentSubscribers/RemoteServiceCollectionSubscriberController</Value>
                                 <Value>AgentSubscribers/ServiceStatusSubscriberController</Value>
                                 <Value>AgentSubscribers/AgentConnectionSubscriberController</Value>
                                 <Value>AgentSubscribers/ServiceLogSubscriberController</Value>
@@ -369,6 +388,8 @@
                     <AttributeInfo Id="GqlSubscriberControllers" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
+                                <Value>AgentSubscribers/LocalServiceCollectionSubscriberController</Value>
+                                <Value>AgentSubscribers/RemoteServiceCollectionSubscriberController</Value>
                                 <Value>AgentSubscribers/LocalServiceStatusSubscriberController</Value>
                                 <Value>AgentSubscribers/AgentConnectionSubscriberController</Value>
                                 <Value>AgentSubscribers/ServiceLogSubscriberController</Value>
@@ -758,6 +779,7 @@
         <Component ExportedId="ServerSettings" ComponentId="ServerSettings"/>
         <Component ExportedId="ServiceCollection" ComponentId="Repositories/ServiceCollection"/>
         <Component ExportedId="ServiceController" ComponentId="ServiceController"/>
+        <Component ExportedId="AgentServiceCollectionSyncClient" ComponentId="AgentServiceCollectionSyncClient"/>
         <Component ExportedId="ServiceManagerSubscriptionClient" ComponentId="ServiceManagerSubscriptionClient"/>
         <Component ExportedId="WebSocketServerFramework" ComponentId="WebSocketServerFramework"/>
     </ExportedComponents>

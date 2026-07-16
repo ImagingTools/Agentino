@@ -52,6 +52,8 @@ sdl::V1_0::agentino::CTopology CAgentTopologyControllerComp::OnGetTopology(
 
 		service.id = serviceElementId;
 		service.agentId = agentId;
+		// Local topology is served by this agent - all listed services belong to the online host.
+		service.agentOnline = true;
 
 		QPoint point = GetServiceCoordinate(serviceElementId);
 

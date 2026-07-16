@@ -289,6 +289,12 @@ sdl::V1_0::agentino::CPluginInfo CServiceControllerComp::OnLoadPlugin(
 
 		response = pluginRepresentation;
 		response.servicePath = servicePath;
+
+		// Same as server LoadPlugin proxy: fill Available Connections for output slots.
+		// Agent scope = local ServiceCollection only.
+		if (m_serviceCollectionCompPtr.IsValid()){
+			agentinodata::FillAvailableConnectionsForPluginInfo(response, *m_serviceCollectionCompPtr.GetPtr());
+		}
 	}
 	else{
 		// GetConnectionCollectionByServicePath() has no error-message out-param, so recover

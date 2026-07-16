@@ -89,6 +89,11 @@ I_EXPORT_COMPONENT(
 			"Agent remote document revision controller",
 			"Agent Remote Document Revision Controller");
 
+I_EXPORT_COMPONENT(
+			AgentServiceCollectionSyncClient,
+			"Pushes local service-collection changes to the central server over WebSocket",
+			"Agent Service Collection Sync Client");
+
 
 } // namespace AgentGqlPck
 

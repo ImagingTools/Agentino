@@ -360,6 +360,10 @@ DocumentViewBase {
 			clip: true
 			
 			function updateGui(){
+				if (!serviceEditorContainer.serviceData){
+					return
+				}
+
 				nameInput.text = serviceEditorContainer.serviceData.m_name;
 				descriptionInput.text = serviceEditorContainer.serviceData.m_description; 
 				pathInput.text = serviceEditorContainer.serviceData.m_path;
@@ -370,6 +374,10 @@ DocumentViewBase {
 			}
 			
 			function updateModel(){
+				if (!serviceEditorContainer.serviceData){
+					return
+				}
+
 				serviceEditorContainer.serviceData.m_name = nameInput.text;
 				serviceEditorContainer.serviceData.m_description = descriptionInput.text;
 				serviceEditorContainer.serviceData.m_path = pathInput.text;
@@ -400,6 +408,7 @@ DocumentViewBase {
 							id: nameInput
 							controlWidth: serviceEditorContainer.getEditorControlWidth(nameInput)
 							name: qsTr("Name")
+							description: qsTr("Identifies the service in lists, topology, and editor tabs")
 							placeHolderText: qsTr("Enter the name");
 							textInputValidator: nameRequiredRegexp;
 							showErrorWhenInvalid: true;
@@ -421,6 +430,7 @@ DocumentViewBase {
 							id: descriptionInput
 							controlWidth: serviceEditorContainer.getEditorControlWidth(descriptionInput)
 							name: qsTr("Description")
+							description: qsTr("Explains the service purpose and is shown in service views")
 							placeHolderText: qsTr("Enter the description");
 							
 							onEditingFinished: {
@@ -434,6 +444,7 @@ DocumentViewBase {
 							id: pathInput
 							controlWidth: serviceEditorContainer.getEditorControlWidth(pathInput)
 							name: qsTr("Path")
+							description: qsTr("Executable path used to start the service and detect its running process")
 							placeHolderText: qsTr("Enter the path");
 							textInputValidator: pathRequiredRegexp;
 							showErrorWhenInvalid: true;
@@ -458,6 +469,7 @@ DocumentViewBase {
 							id: argumentsInput
 							controlWidth: serviceEditorContainer.getEditorControlWidth(argumentsInput)
 							name: qsTr("Arguments")
+							description: qsTr("Command-line arguments passed to the service executable")
 							placeHolderText: qsTr("Enter the arguments");
 							
 							onEditingFinished: {
@@ -480,6 +492,10 @@ DocumentViewBase {
 			anchors.fill: parent
 
 			function updateGui(){
+				if (!serviceEditorContainer.serviceData){
+					return
+				}
+
 				if (!serviceEditorContainer.pluginLoaded) {
 					return
 				}
@@ -497,6 +513,10 @@ DocumentViewBase {
 			}
 
 			function updateModel(){
+				if (!serviceEditorContainer.serviceData){
+					return
+				}
+
 				if (!serviceEditorContainer.pluginLoaded) {
 					return
 				}
@@ -613,7 +633,7 @@ DocumentViewBase {
 
 						BaseText {
 							text: "\u2713"
-							color: Style.successColor
+							color: Style.positiveAccentColor
 							font.bold: true
 							font.pixelSize: Style.fontSizeM
 							anchors.verticalCenter: parent.verticalCenter
@@ -681,6 +701,7 @@ DocumentViewBase {
 									id: externConnectionsView
 									controlWidth: serviceEditorContainer.getEditorControlWidth(externConnectionsView)
 									name: qsTr("Extern Connections")
+									description: qsTr("Configures externally accessible endpoints for this input connection")
 									text: qsTr("Edit")
 									onClicked: {
 										ModalDialogManager.openDialog(externPortsDialogComp, {inputConnection: model.item})
@@ -778,12 +799,19 @@ DocumentViewBase {
 			anchors.fill: parent
 
 			function updateGui(){
+				if (!serviceEditorContainer.serviceData){
+					return
+				}
+
 				if (!serviceEditorContainer.pluginLoaded) {
 					return
 				}
 				if (serviceEditorContainer.serviceData && serviceEditorContainer.serviceData.m_outputConnections){
-					outputListView.model = 0
-					outputListView.model = serviceEditorContainer.serviceData.m_outputConnections
+					// Keep the same ListView model instance when possible so delegates stay alive
+					// and can re-bind Available Connections after undo/redo (createFromJson).
+					if (outputListView.model !== serviceEditorContainer.serviceData.m_outputConnections){
+						outputListView.model = serviceEditorContainer.serviceData.m_outputConnections
+					}
 
 					for (let i = 0; i < outputListView.count; i++){
 						let item = outputListView.itemAtIndex(i)
@@ -911,7 +939,7 @@ DocumentViewBase {
 
 						BaseText {
 							text: "\u2713"
-							color: Style.successColor
+							color: Style.positiveAccentColor
 							font.bold: true
 							font.pixelSize: Style.fontSizeM
 							anchors.verticalCenter: parent.verticalCenter
@@ -977,10 +1005,17 @@ DocumentViewBase {
 							property var connectionParam: model && model.item ? model.item.m_connectionParam : null
 							property var modelData: model ? model.item : null
 
+							// When ListView creates/recreates the row (model reassigned after undo/redo),
+							// sync Available Connections from the current model without deferred calls.
+							Component.onCompleted: {
+								outputDelegate.updateGui()
+							}
+
 							TextInputElementView {
 								id: serviceTypeInput
 								controlWidth: serviceEditorContainer.getEditorControlWidth(serviceTypeInput)
 								name: qsTr("Service Type")
+								description: qsTr("Required service type provided by the selected connection")
 								readOnly: true
 								text: model.item.m_serviceTypeId
 							}
@@ -989,6 +1024,7 @@ DocumentViewBase {
 								id: connectionNameInput
 								controlWidth: serviceEditorContainer.getEditorControlWidth(connectionNameInput)
 								name: qsTr("Connection Name")
+								description: qsTr("Identifies this output connection in the service configuration")
 								readOnly: true
 								text: model.item.m_connectionName
 							}
@@ -1011,13 +1047,19 @@ DocumentViewBase {
 										table.setColumnContentById("httpPort", outHttpCell)
 										table.setColumnContentById("wsPort", outWsCell)
 
-										table.elements = model.item.m_dependantConnectionList
+										// Bind once when table appears; updateGui rebinds after undo/redo.
+										outputDelegate.bindAvailableConnectionsTable()
+										outputDelegate.syncAvailableConnectionsCheck()
 									}
 								}
 
 								Connections {
 									target: outTable.table
 									function onCheckedItemsChanged(){
+										// While restoring checks from model, do not write model from table.
+										if (serviceEditorContainer.internal__ && serviceEditorContainer.internal__.blockingUpdateModel){
+											return
+										}
 										serviceEditorContainer.doUpdateModel()
 									}
 								}
@@ -1056,39 +1098,83 @@ DocumentViewBase {
 								}
 							}
 
-							function updateGui(){
-								if (!outTable.table || !model.item) return
-								let dependantId = model.item.m_dependantConnectionId
-								if (dependantId === ""){
-									outTable.table.uncheckAll()
-								} else {
+							// After undo/redo createFromJson rebuilds nested lists. Table.elements must
+							// point at the new m_dependantConnectionList; TableBase.onElementsChanged
+							// clears checkmarks, so selection is restored from m_dependantConnectionId.
+							function bindAvailableConnectionsTable(){
+								if (!outTable.table || !model.item){
+									return
+								}
+								if (model.item.m_dependantConnectionList){
+									outTable.table.elements = model.item.m_dependantConnectionList
+								}
+							}
+
+							function syncAvailableConnectionsCheck(){
+								if (!outTable.table || !model.item){
+									return
+								}
+
+								serviceEditorContainer.setBlockingUpdateModel(true)
+
+								let dependantId = ""
+								if (model.item.m_dependantConnectionId !== undefined && model.item.m_dependantConnectionId !== null){
+									dependantId = "" + model.item.m_dependantConnectionId
+								}
+
+								outTable.table.uncheckAll()
+
+								if (dependantId !== "" && model.item.m_dependantConnectionList){
 									let connectionList = model.item.m_dependantConnectionList
 									for (let i = 0; i < connectionList.count; i++){
-										let connectionInfo = connectionList.get(i).item
-										if (connectionInfo.m_id == dependantId){
+										let entry = connectionList.get(i)
+										let connectionInfo = entry ? entry.item : null
+										if (!connectionInfo){
+											continue
+										}
+										let rowId = "" + connectionInfo.m_id
+										if (rowId === dependantId){
 											outTable.table.checkItem(i)
 											break
 										}
 									}
 								}
+
+								serviceEditorContainer.setBlockingUpdateModel(false)
+							}
+
+							function updateGui(){
+								bindAvailableConnectionsTable()
+								syncAvailableConnectionsCheck()
 							}
 
 							function updateModel(){
-								if (!outTable.table || !model.item) return
+								if (!outTable.table || !model.item){
+									return
+								}
 								let indexes = outTable.table.getCheckedItems()
 								if (indexes.length > 0){
 									let index = indexes[0]
 									let connectionList = model.item.m_dependantConnectionList
-									let connectionInfo = connectionList.get(index).item
+									let entry = connectionList ? connectionList.get(index) : null
+									let connectionInfo = entry ? entry.item : null
+									if (!connectionInfo || !connectionInfo.m_connectionParam){
+										return
+									}
 									model.item.m_dependantConnectionId = connectionInfo.m_id
-									model.item.m_connectionParam.m_host = connectionInfo.m_connectionParam.m_host
-									model.item.m_connectionParam.m_httpPort = connectionInfo.m_connectionParam.m_httpPort
-									model.item.m_connectionParam.m_wsPort = connectionInfo.m_connectionParam.m_wsPort
-								} else {
+									if (model.item.m_connectionParam){
+										model.item.m_connectionParam.m_host = connectionInfo.m_connectionParam.m_host
+										model.item.m_connectionParam.m_httpPort = connectionInfo.m_connectionParam.m_httpPort
+										model.item.m_connectionParam.m_wsPort = connectionInfo.m_connectionParam.m_wsPort
+									}
+								}
+								else{
 									model.item.m_dependantConnectionId = ""
-									model.item.m_connectionParam.m_host = "localhost"
-									model.item.m_connectionParam.m_httpPort = -1
-									model.item.m_connectionParam.m_wsPort = -1
+									if (model.item.m_connectionParam){
+										model.item.m_connectionParam.m_host = "localhost"
+										model.item.m_connectionParam.m_httpPort = -1
+										model.item.m_connectionParam.m_wsPort = -1
+									}
 								}
 							}
 						}
@@ -1206,6 +1292,7 @@ DocumentViewBase {
 								id: switchAutoStart
 								controlWidth: serviceEditorContainer.getEditorControlWidth(switchAutoStart)
 								name: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("on") : qsTr("off")) + ")"
+								description: qsTr("Starts the service automatically when the Agent starts")
 								onCheckedChanged: {
 									serviceEditorContainer.doUpdateModel()
 								}
@@ -1215,6 +1302,7 @@ DocumentViewBase {
 								id: switchVerboseMessage
 								controlWidth: serviceEditorContainer.getEditorControlWidth(switchVerboseMessage)
 								name: qsTr("Verbose Message")
+								description: qsTr("Enables service tracing messages at the selected level")
 								onCheckedChanged: {
 									serviceEditorContainer.doUpdateModel()
 								}
@@ -1224,6 +1312,7 @@ DocumentViewBase {
 								id: tracingLevelInput
 								controlWidth: serviceEditorContainer.getEditorControlWidth(tracingLevelInput)
 								name: qsTr("Tracing level")
+								description: qsTr("Controls the amount of diagnostic information produced by the service")
 								visible: switchVerboseMessage.checked
 								model: TreeItemModel {
 								}
@@ -1261,6 +1350,7 @@ DocumentViewBase {
 								id: startScriptChecked
 								controlWidth: serviceEditorContainer.getEditorControlWidth(startScriptChecked)
 								name: qsTr("Start script")
+								description: qsTr("Uses a custom script when starting the service")
 								onCheckedChanged: {
 									serviceEditorContainer.doUpdateModel()
 								}
@@ -1272,6 +1362,7 @@ DocumentViewBase {
 								visible: startScriptChecked.checked
 								placeHolderText: qsTr("Enter the start script path")
 								name: qsTr("Start Script Path")
+								description: qsTr("Path to the script executed to start the service")
 								onEditingFinished: {
 									serviceEditorContainer.doUpdateModel()
 								}
@@ -1281,6 +1372,7 @@ DocumentViewBase {
 								id: stopScriptChecked
 								controlWidth: serviceEditorContainer.getEditorControlWidth(stopScriptChecked)
 								name: qsTr("Stop script")
+								description: qsTr("Uses a custom script when stopping the service")
 								onCheckedChanged: {
 									serviceEditorContainer.doUpdateModel()
 								}
@@ -1292,6 +1384,7 @@ DocumentViewBase {
 								visible: stopScriptChecked.checked
 								placeHolderText: qsTr("Enter the stop script path")
 								name: qsTr("Stop Script Path")
+								description: qsTr("Path to the script executed to stop the service")
 								onEditingFinished: {
 									serviceEditorContainer.doUpdateModel()
 								}
@@ -1358,6 +1451,7 @@ DocumentViewBase {
 						id: settingsPathInput
 						controlWidth: serviceEditorContainer.getEditorControlWidth(settingsPathInput)
 						name: qsTr("Settings Path")
+						description: qsTr("Path to the service settings file loaded and saved by this editor")
 						placeHolderText: qsTr("Enter the path to settings file")
 						text: serviceEditorContainer.settingsPath
 						

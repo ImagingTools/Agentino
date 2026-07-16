@@ -171,6 +171,9 @@
                                 <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="ServiceStatusCollection">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="ServiceSynchronizer" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="ServiceControllerProxy"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
@@ -314,10 +317,12 @@
                                             <Value>GetService</Value>
                                             <Value>StartService</Value>
                                             <Value>StopService</Value>
+                                            <Value>RemoveElements</Value>
                                             <Value>ServicesRemove</Value>
                                             <Value>LoadPlugin</Value>
                                             <Value>GetServiceSettings</Value>
                                             <Value>UpdateServiceSettings</Value>
+                                            <Value>NotifyAgentServicesCollectionChanged</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -443,6 +448,7 @@
                 <ExportedComponents>
                     <Component ExportedId="AgentsPage" ComponentId="AgentsPage"/>
                     <Component ExportedId="GraphQLDemultiplexer" ComponentId="GraphQLDemultiplexer"/>
+                    <Component ExportedId="ServiceControllerProxy" ComponentId="ServiceControllerProxy"/>
                     <Component ExportedId="ServicesRemoteRepresentationController" ComponentId="ServicesRemoteRepresentationController"/>
                     <Component ExportedId="TopologyPage" ComponentId="TopologyPage"/>
                 </ExportedComponents>
@@ -539,5 +545,7 @@
         <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="PagesDemultiplexer"/>
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="PagesDemultiplexer"/>
     </ExportedInterfaces>
-    <ExportedComponents/>
+    <ExportedComponents>
+        <Component ExportedId="ServiceControllerProxy" ComponentId="PageData/ServiceControllerProxy"/>
+    </ExportedComponents>
 </Acf>

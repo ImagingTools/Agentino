@@ -77,6 +77,9 @@ protected:
 private:
 	bool CheckInputPortsUpdated(agentinodata::IServiceInfo& serviceInfo, const imtservice::IConnectionCollection& connectionCollection) const;
 	bool UpdateConnectionCollectionFromService(agentinodata::IServiceInfo& serviceInfo, imtservice::IConnectionCollection& connectionCollection) const;
+
+	// Checks whether another service in the collection already uses the given path.
+	bool IsServicePathInUse(const QByteArray& servicePath, const QByteArray& excludeObjectId) const;
 	
 protected:
 	I_FACT(agentinodata::IServiceInfo, m_serviceInfoFactCompPtr);
