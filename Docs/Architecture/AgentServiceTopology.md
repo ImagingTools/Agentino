@@ -22,51 +22,46 @@ visualizes the overall topology of all agents.
 
 ### Agent side
 
-- `agentinodata::CServiceCompositeInfoBase` (`Include/agentinodata/CServiceCompositeInfoBase.h`):
-  shared topology-resolution logic (URL → service, dependant connection ID → service,
-  state of required services, dependency collection) operating on a single service collection.
-- `agentinodata::CAgentServiceCompositeInfoComp` (`AgentinoDataPck::AgentServiceCompositeInfo`):
-  agent-local implementation of `IServiceCompositeInfo` working directly on the agent's own
-  `ServiceCollection` and the local service controller (`IServiceStatusProvider`).
-  Dependencies on services of other agents cannot be resolved locally and are reported as
-  *unknown* (not as an error).
-- `agentgql::CAgentTopologyControllerComp` (`AgentGqlPck::AgentTopologyController`):
-  GraphQL handler answering `GetTopology` and `SaveTopology` for the agent's own services.
-  Registered in the agent's `ServicesPage` composition
-  (`Partitura/AgentinoAgentVoce.arp/ServicesPage.acc`). The local topology layout is
-  persisted in a local `TopologyCollection` (`Partitura/AgentinoAgentVoce.arp/AgentServer.acc`).
-
-A client (or the central server) can query the topology of a single agent directly from the
-agent, or via the central server by adding the `clientid` addition to the request, which is
-forwarded to the agent by the existing request redirection mechanism.
+- `agentinodata::CServiceCompositeInfoBase` — shared topology-resolution logic.
+- `agentinodata::CAgentServiceCompositeInfoComp` — agent-local `IServiceCompositeInfo`.
+- `agentgql::CAgentTopologyControllerComp` — `GetTopology`/`SaveTopology` for own services; sets `agentOnline=true`.
+- Dual notifiers on `ServiceCollection`:
+  - `LocalServiceCollectionSubscriberController` → `OnServicesCollectionChanged` (agent GUI, WebSocket server).
+  - `RemoteServiceCollectionSubscriberController` → `OnAgentServicesCollectionChanged` (central server, WebSocket client).
 
 ### Server side
 
-- `agentinogql::CTopologyControllerComp` builds the overall topology from the
-  `AgentCollection` cache. It now has an optional `AgentStatusCollection` reference:
-  services of agents that are currently **disconnected** are marked in the response with
-  - `agentOnline = false` (new field in `Sdl/agentino/1.0/Topology.sdl`),
-  - status `UNDEFINED` with the alert icon (the cached status may be outdated),
-  - a warning icon for the dependency state.
-- Write operations (`AddService`, `UpdateService`, `ServicesRemove`,
-  `UpdateConnectionUrl`) in `agentinogql::CServiceControllerProxyComp` are forwarded to the
-  agent **first** (`SendModelRequest`); the server-side `AgentCollection` cache is only
-  updated after the agent confirmed the change. If the agent is offline, the mutation fails
-  and the cache is left untouched.
+- `agentinogql::CTopologyControllerComp` — overall topology from mirror; `agentOnline` + offline icons.
+- `agentinogql::CServiceControllerProxyComp` — mutations forward to agent first; implements `IServiceCollectionSynchronizer`.
+- `agentinogql::CSubscriptionControllerComp` — per-agent status + collection subscriptions; reconciles mirror on push.
+- `agentinogql::CAgentCollectionControllerComp` — on every AgentAdd/(re)connect (500ms timer): **full** `SyncAgentServicesInMirror` then status refresh.
+
+## Synchronisation channels
+
+| Channel | Direction | When |
+|---|---|---|
+| Proxy GQL mutations | Server GUI → Agent → Mirror | Add/Update/Remove/Start/Stop… |
+| Push `OnAgentServicesCollectionChanged` | Agent → Server mirror | Online insert/update/remove on agent |
+| Full reconcile `SyncAgentServicesInMirror` | Server pulls agent `ServicesList` + `GetService` | Every (re)connect |
+| Status `OnAgentServiceStatusChanged` | Agent → Server status collection | Live status |
+| GUI `OnServicesCollectionChanged` / `OnAgentStatusChanged` | Server → Topology UI | Mirror/status/online changes |
 
 ## Offline behavior
 
-- **Agent without central server**: the agent still answers `GetTopology`/`SaveTopology`
-  for its own services from its locally persisted service collection. The status of
-  services of other agents cannot be resolved and is shown as *unknown* (warning, not error).
-- **Server with offline agent**: the server visualizes the last known (cached) state of the
-  agent's services and marks them as offline (`agentOnline = false`).
+- **Agent without central server**: answers local `GetTopology`/`SaveTopology`; deps on other agents = warning.
+- **Server with offline agent**: last known mirror; `agentOnline=false`, status `UNDEFINED`, Alert/Warning icons. Services remain until purged.
 
-## Follow-up work
+## Topology UI (`TopologyPage.qml`)
 
-- Push-synchronisation of topology/connection changes from the agent to the server cache via
-  the existing subscription mechanism (`AgentServicesRemoteSubscriberProxy`), including a
-  full reconciliation when the agent reconnects (agent state overrides the server cache).
-- Initial seeding of agents that do not have local connection/topology data yet.
-- Client UI: display of the `agentOnline` flag in `TopologyPage.qml`.
-- An agent-local topology page in the agent web UI.
+- Shared by server and agent apps.
+- **New service**: server → agent picker (`Agents` document service); agent → create without picker/`clientid`.
+- Live refresh: `OnServicesCollectionChanged`, `OnTopologyChanged`, `OnAgentStatusChanged`, `OnServiceStatusChanged` (respects `m_agentOnline`).
+
+## Layout coordinates
+
+`TopologyCollection` x/y are **local to each side** (server app vs agent app).  
+They are **not** part of agent↔server service synchronisation and must not be synced.
+
+## Detailed implementation plan
+
+See `Docs/Architecture/ServiceSyncArchitecturePlan.md`.

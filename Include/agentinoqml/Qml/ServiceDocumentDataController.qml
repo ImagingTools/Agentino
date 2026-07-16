@@ -13,7 +13,7 @@ GqlRequestDocumentDataController {
 	
 	subscriptionCommandId: "OnServicesCollectionChanged";
 	
-	property ServiceData serviceData: documentModel;
+	property var serviceData: documentModel;
 	
 	// typeId: "Service";
 	documentName: serviceData ? serviceData.m_name: "";

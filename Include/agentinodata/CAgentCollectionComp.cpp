@@ -55,8 +55,12 @@ bool CAgentCollectionComp::RemoveServices(
 			if (serviceCollectionPtr != nullptr){
 				bool result = serviceCollectionPtr->RemoveElements(serviceIds);
 				if (result){
-					ChangeSet changeSet(CF_SERVICE_REMOVED);
-					istd::CChangeNotifier changeNotifier(this, &changeSet);
+					for (const QByteArray& serviceId: serviceIds){
+						ChangeSet changeSet(CF_SERVICE_REMOVED);
+						changeSet.SetChangeInfo("agentid", agentId);
+						changeSet.SetChangeInfo("serviceid", serviceId);
+						istd::CChangeNotifier changeNotifier(this, &changeSet);
+					}
 				}
 
 				return result;

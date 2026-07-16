@@ -66,16 +66,10 @@ bool GetServiceFromRepresentation(
 	}
 
 	if (serviceDataRepresentation.path){
-		QString path = *serviceDataRepresentation.path;
-
-		QFileInfo fileInfo(path);
-		if (!fileInfo.exists()){
-			errorMessage = QString("Service path '%1' not exists").arg(qPrintable(path));
-
-			return false;
-		}
-
-		serviceInfo.SetServicePath(path.toUtf8());
+		// Do not require the path to exist on this host: the server mirror stores agent-local
+		// paths that are only valid on the agent machine. Existence is checked when the agent
+		// starts the service, not when building/mirroring the representation.
+		serviceInfo.SetServicePath((*serviceDataRepresentation.path).toUtf8());
 	}
 
 	if (serviceDataRepresentation.startScript){
@@ -460,14 +454,25 @@ bool GetServerConnectionParamFromRepresentation(
 		serverConnectionParam.SetHost(host);
 	}
 
+	// SetPort requires the protocol to be registered first (Q_ASSERT otherwise; empty/partial
+	// maps then blow up later during AgentCollection AutoPersistence serialize).
 	if (sdlRepresentation.httpPort){
 		int httpPort = *sdlRepresentation.httpPort;
+		serverConnectionParam.RegisterProtocol(imtcom::IServerConnectionInterface::PT_HTTP);
 		serverConnectionParam.SetPort(imtcom::IServerConnectionInterface::PT_HTTP, httpPort);
 	}
 
 	if (sdlRepresentation.wsPort){
 		int wsPort = *sdlRepresentation.wsPort;
+		serverConnectionParam.RegisterProtocol(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
 		serverConnectionParam.SetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET, wsPort);
+	}
+
+	if (sdlRepresentation.httpPath){
+		serverConnectionParam.RegisterProtocol(imtcom::IServerConnectionInterface::PT_HTTP);
+		serverConnectionParam.SetPath(
+					imtcom::IServerConnectionInterface::PT_HTTP,
+					*sdlRepresentation.httpPath);
 	}
 
 	if (sdlRepresentation.isSecure){
@@ -570,6 +575,134 @@ bool GetRepresentationFromConnectionCollection(
 	}
 
 	return false;
+}
+
+
+void AppendAvailableConnectionsFromServiceCollection(
+			imtbase::IObjectCollection& serviceCollection,
+			const QByteArray& connectionUsageId,
+			QList<sdl::V1_0::agentino::CDependantConnectionInfo>& outList)
+{
+	if (connectionUsageId.isEmpty()){
+		return;
+	}
+
+	const imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollection.GetElementIds();
+	for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
+		imtbase::IObjectCollection::DataPtr serviceDataPtr;
+		if (!serviceCollection.GetObjectData(serviceElementId, serviceDataPtr)){
+			continue;
+		}
+
+		agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+		if (serviceInfoPtr == nullptr){
+			continue;
+		}
+
+		imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
+		if (connectionCollectionPtr == nullptr){
+			continue;
+		}
+
+		const imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
+		for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
+			imtbase::IObjectCollection::DataPtr connectionDataPtr;
+			if (!connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
+				continue;
+			}
+
+			imtservice::CUrlConnectionParam* connectionParamPtr =
+						dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
+			if (connectionParamPtr == nullptr){
+				continue;
+			}
+
+			if (connectionParamPtr->GetConnectionType() != imtservice::IServiceConnectionInfo::CT_INPUT){
+				continue;
+			}
+
+			if (connectionElementId != connectionUsageId){
+				continue;
+			}
+
+			sdl::V1_0::imtbase::CServerConnectionParam sdlRepresentation;
+			if (!GetRepresentationFromServerConnectionParam(*connectionParamPtr, sdlRepresentation)){
+				continue;
+			}
+
+			sdl::V1_0::agentino::CDependantConnectionInfo dependantConnectionInfo;
+			QString host = connectionParamPtr->GetHost();
+			if (host.isEmpty()){
+				host = QStringLiteral("localhost");
+			}
+			const int httpPort = connectionParamPtr->GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
+			dependantConnectionInfo.id = connectionElementId;
+			dependantConnectionInfo.name = host + QStringLiteral("/") + QString::number(httpPort);
+			dependantConnectionInfo.connectionParam = sdlRepresentation;
+			outList << dependantConnectionInfo;
+
+			const imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections =
+						connectionParamPtr->GetIncomingConnections();
+			for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
+				sdl::V1_0::agentino::CDependantConnectionInfo incomingConnectionInfo;
+				incomingConnectionInfo.id = incomingConnection.GetObjectUuid();
+
+				const QString incomingHost = incomingConnection.GetHost();
+				const int incomingHttpPort = incomingConnection.GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
+				incomingConnectionInfo.name = incomingHost + QStringLiteral("/") + QString::number(incomingHttpPort);
+
+				sdl::V1_0::imtbase::CServerConnectionParam connectionParam;
+				connectionParam.host = incomingHost;
+				connectionParam.wsPort = incomingConnection.GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
+				connectionParam.httpPort = incomingHttpPort;
+				incomingConnectionInfo.connectionParam = connectionParam;
+
+				outList << incomingConnectionInfo;
+			}
+		}
+	}
+}
+
+
+void FillAvailableConnectionsForServiceData(
+			sdl::V1_0::agentino::CServiceData& serviceData,
+			imtbase::IObjectCollection& serviceCollection)
+{
+	if (!serviceData.outputConnections.has_value()){
+		return;
+	}
+
+	for (istd::TNullableValue<sdl::V1_0::agentino::COutputConnection>& outputConnection : *serviceData.outputConnections){
+		if (!outputConnection.has_value() || !outputConnection->id.has_value()){
+			continue;
+		}
+
+		QList<sdl::V1_0::agentino::CDependantConnectionInfo> available;
+		AppendAvailableConnectionsFromServiceCollection(serviceCollection, *outputConnection->id, available);
+		outputConnection->dependantConnectionList.Emplace();
+		outputConnection->dependantConnectionList->FromList(available);
+	}
+}
+
+
+void FillAvailableConnectionsForPluginInfo(
+			sdl::V1_0::agentino::CPluginInfo& pluginInfo,
+			imtbase::IObjectCollection& serviceCollection)
+{
+	if (!pluginInfo.outputConnections.has_value()){
+		return;
+	}
+
+	for (istd::TNullableValue<sdl::V1_0::agentino::COutputConnection>& outputConnection : *pluginInfo.outputConnections){
+		if (!outputConnection.has_value() || !outputConnection->id.has_value()){
+			continue;
+		}
+
+		QList<sdl::V1_0::agentino::CDependantConnectionInfo> available;
+		AppendAvailableConnectionsFromServiceCollection(serviceCollection, *outputConnection->id, available);
+		outputConnection->dependantConnectionList.Emplace();
+		outputConnection->dependantConnectionList->FromList(available);
+	}
 }
 
 

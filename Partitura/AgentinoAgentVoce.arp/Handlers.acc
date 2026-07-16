@@ -349,6 +349,7 @@
                                 <Value>GetServiceStatus</Value>
                                 <Value>GetServiceSettings</Value>
                                 <Value>UpdateServiceSettings</Value>
+                                <Value>LoadPlugin</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

@@ -34,11 +34,17 @@
                     <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/AgentCollection"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="AgentStatusCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/AgentStatusCollection"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Model" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/AgentCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceSynchronizer" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Pages/ServiceControllerProxy"/>
                     </AttributeInfo>
                     <AttributeInfo Id="SubscriptionManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketServerFramework"/>

@@ -16,6 +16,14 @@ Testing/
 _deps/
 Build/*/*.dir/
 
+# Out-of-source CMake / Qt Creator build trees
+# e.g. Build/CMake/build/Qt_6_8_0_msvc2022_64-Debug/
+Build/CMake/build/
+
+# CMake File API (IDE query files: cache-v2, codemodel-v2, cmakeFiles-v1, ...)
+# e.g. .../.cmake/api/v1/query/cache-v2
+**/.cmake/
+
 # Visual Studio artifacts
 # Note: We keep 3rdParty Visual Studio files tracked
 # Generated .sln and .vcxproj in Build directories

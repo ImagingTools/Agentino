@@ -107,6 +107,9 @@
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="ServiceStatusCollection">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ServiceSynchronizer" Type="Reference" ExportId="ServiceSynchronizer">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>

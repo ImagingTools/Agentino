@@ -12,6 +12,7 @@
 
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
+#include <agentinogql/IServiceCollectionSynchronizer.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Agents_fwd.h>
 
 
@@ -32,6 +33,7 @@ public:
 		I_ASSIGN(m_agentFactCompPtr, "AgentFactory", "Factory used for creation of the new agent instance", true, "AgentFactory");
 		I_ASSIGN(m_serviceStatusCollectionCompPtr, "ServiceStatusCollection", "Service status collection", false, "ServiceStatusCollection");
 		I_ASSIGN(m_agentStatusCollectionCompPtr, "AgentStatusCollection", "Agent status collection", false, "AgentStatusCollection");
+		I_ASSIGN(m_serviceSynchronizerCompPtr, "ServiceSynchronizer", "Reconciles the mirrored service collection of a (re)connected agent", false, "ServiceSynchronizer");
 	I_END_COMPONENT;
 
 protected:
@@ -71,9 +73,11 @@ protected:
 	I_FACT(agentinodata::IAgentInfo, m_agentFactCompPtr);
 	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);
 	I_REF(imtbase::IObjectCollection, m_agentStatusCollectionCompPtr);
+	I_REF(IServiceCollectionSynchronizer, m_serviceSynchronizerCompPtr);
 
 	mutable QTimer m_timer;
 	mutable QList<QByteArray> m_connectedAgents;
+	bool m_timeoutRunning = false;
 };
 
 

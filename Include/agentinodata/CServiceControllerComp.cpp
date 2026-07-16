@@ -55,7 +55,6 @@ IServiceStatusInfo::ServiceStatus  CServiceControllerComp::GetServiceStatus(cons
 	}
 
 	if (serviceInfoPtr == nullptr){
-		Q_ASSERT(false);
 		return IServiceStatusInfo::ServiceStatus::SS_UNDEFINED;
 	}
 
