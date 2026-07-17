@@ -26,12 +26,23 @@ ServiceController {
 
 	function normalizeServiceStatus(status){
 		switch (status){
-			case "RUNNING": return ServiceStatus.s_Running
-			case "NOT_RUNNING": return ServiceStatus.s_NotRunning
-			case "STARTING": return ServiceStatus.s_Starting
-			case "STOPPING": return ServiceStatus.s_Stopping
+			case "RUNNING":
+			case "SS_RUNNING":
+			case ServiceStatus.s_Running: return ServiceStatus.s_Running
+			case "NOT_RUNNING":
+			case "SS_NOT_RUNNING":
+			case ServiceStatus.s_NotRunning: return ServiceStatus.s_NotRunning
+			case "STARTING":
+			case "SS_STARTING":
+			case ServiceStatus.s_Starting: return ServiceStatus.s_Starting
+			case "STOPPING":
+			case "SS_STOPPING":
+			case ServiceStatus.s_Stopping: return ServiceStatus.s_Stopping
 			case "UNDEFINED":
-			case "RUNNING_IMPOSSIBLE": return ServiceStatus.s_Undefined
+			case "SS_UNDEFINED":
+			case "RUNNING_IMPOSSIBLE":
+			case "SS_RUNNING_IMPOSSIBLE":
+			case ServiceStatus.s_Undefined: return ServiceStatus.s_Undefined
 		}
 		return status
 	}
@@ -48,8 +59,8 @@ ServiceController {
 		sdlObjectComp: Component {
 			ServiceStatusResponse {
 				onFinished: {
-					root.serviceStatusChanged(startServiceRequestSender.serviceId, root.normalizeServiceStatus(m_status), this)
-					root.serviceStarted(startServiceRequestSender.serviceId)
+					root.serviceStatusChanged(root.startServiceRequestSender.serviceId, root.normalizeServiceStatus(m_status), this)
+					root.serviceStarted(root.startServiceRequestSender.serviceId)
 				}
 			}
 		}
@@ -67,8 +78,8 @@ ServiceController {
 		sdlObjectComp: Component {
 			ServiceStatusResponse {
 				onFinished: {
-					root.serviceStatusChanged(stopServiceRequestSender.serviceId, root.normalizeServiceStatus(m_status), this)
-					root.serviceStopped(stopServiceRequestSender.serviceId)
+					root.serviceStatusChanged(root.stopServiceRequestSender.serviceId, root.normalizeServiceStatus(m_status), this)
+					root.serviceStopped(root.stopServiceRequestSender.serviceId)
 				}
 			}
 		}

@@ -35,7 +35,7 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="PermissionChecker" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="CheckPermissionOr"/>
+                        <Data IsEnabled="false" Value="CheckPermissionOr"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ReplaceableFilterFields" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
@@ -152,7 +152,7 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="PermissionChecker" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="CheckPermissionOr"/>
+                        <Data IsEnabled="false" Value="CheckPermissionOr"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ReplaceableFilterFields" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">

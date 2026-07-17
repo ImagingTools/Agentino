@@ -316,6 +316,11 @@ bool GetUrlConnectionFromRepresentation(
 		if (!GetServerConnectionParamFromRepresentation(connectionInfo, urlRepresentation)){
 			return false;
 		}
+
+		// CServiceConnectionInfo serializes both the base maps and m_defaultConnection.
+		// FillDefault from the same base so GetDefaultInterface() and persistence stay consistent
+		// (mirror path previously left m_defaultConnection empty → brittle AutoPersistence).
+		connectionInfo.SetDefaultServiceInterface(connectionInfo);
 	}
 
 	if (connectionRepresentation.externConnectionList){
@@ -417,6 +422,9 @@ bool GetUrlConnectionLinkFromRepresentation(
 		if (!GetServerConnectionParamFromRepresentation(connectionInfo, *connectionRepresentation.connectionParam)){
 			return false;
 		}
+
+		// Same as input connections: keep m_defaultConnection aligned with base maps.
+		connectionInfo.SetDefaultServiceInterface(connectionInfo);
 	}
 
 	return true;
@@ -449,27 +457,29 @@ bool GetServerConnectionParamFromRepresentation(
 			imtcom::CServerConnectionInterfaceParam& serverConnectionParam,
 			const sdl::V1_0::imtbase::CServerConnectionParam& sdlRepresentation)
 {
+	// Always register both service protocols so SetPort/SetPath never hit the
+	// unregistered-protocol path and AutoPersistence never sees a half-built map.
+	serverConnectionParam.RegisterProtocol(imtcom::IServerConnectionInterface::PT_HTTP);
+	serverConnectionParam.RegisterProtocol(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
+
 	if (sdlRepresentation.host){
 		QString host = *sdlRepresentation.host;
 		serverConnectionParam.SetHost(host);
 	}
 
-	// SetPort requires the protocol to be registered first (Q_ASSERT otherwise; empty/partial
-	// maps then blow up later during AgentCollection AutoPersistence serialize).
 	if (sdlRepresentation.httpPort){
-		int httpPort = *sdlRepresentation.httpPort;
-		serverConnectionParam.RegisterProtocol(imtcom::IServerConnectionInterface::PT_HTTP);
-		serverConnectionParam.SetPort(imtcom::IServerConnectionInterface::PT_HTTP, httpPort);
+		serverConnectionParam.SetPort(
+					imtcom::IServerConnectionInterface::PT_HTTP,
+					*sdlRepresentation.httpPort);
 	}
 
 	if (sdlRepresentation.wsPort){
-		int wsPort = *sdlRepresentation.wsPort;
-		serverConnectionParam.RegisterProtocol(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
-		serverConnectionParam.SetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET, wsPort);
+		serverConnectionParam.SetPort(
+					imtcom::IServerConnectionInterface::PT_WEBSOCKET,
+					*sdlRepresentation.wsPort);
 	}
 
 	if (sdlRepresentation.httpPath){
-		serverConnectionParam.RegisterProtocol(imtcom::IServerConnectionInterface::PT_HTTP);
 		serverConnectionParam.SetPath(
 					imtcom::IServerConnectionInterface::PT_HTTP,
 					*sdlRepresentation.httpPath);

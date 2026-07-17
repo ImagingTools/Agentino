@@ -102,7 +102,9 @@ bool CServiceControllerProxyComp::SyncServiceInMirror(
 	else{
 		SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);
 
-		if (!m_serviceManagerCompPtr->AddService(agentId, *serviceInfoPtr.PopPtr(), serviceId, serviceName, serviceDescription)){
+		// AddService / InsertNewObject CopyFrom the IServiceInfo — do NOT PopPtr (that leaked
+		// the heap object after the collection already copied it).
+		if (!m_serviceManagerCompPtr->AddService(agentId, *serviceInfoPtr, serviceId, serviceName, serviceDescription)){
 			errorMessage = QString("Unable to add service '%1' to the server mirror").arg(qPrintable(serviceId));
 			SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 
@@ -508,8 +510,11 @@ sdl::V1_0::agentino::CServiceStatusResponse CServiceControllerProxyComp::OnStart
 		serviceId = *arguments.input->serviceId;
 	}
 
-	istd::CChangeGroup changeGroup(m_serviceStatusCollectionCompPtr.GetPtr());
-
+	// Do NOT hold CChangeGroup across SendModelRequest: that call blocks in a nested
+	// event loop while the agent starts the process, and live OnAgentServiceStatusChanged
+	// pushes (queued to main) also write ServiceStatusCollection. A long-lived change group
+	// here raced those writes and left subsequent GUI commands (e.g. SaveTopology) broken
+	// until the client reconnected.
 	SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_STARTING);
 
 	sdl::V1_0::agentino::CServiceStatusResponse retVal = SendModelRequest<sdl::V1_0::agentino::CServiceStatusResponse>(gqlRequest, errorMessage);
@@ -543,8 +548,7 @@ sdl::V1_0::agentino::CServiceStatusResponse CServiceControllerProxyComp::OnStopS
 		serviceId = *arguments.input->serviceId;
 	}
 
-	istd::CChangeGroup changeGroup(m_serviceStatusCollectionCompPtr.GetPtr());
-
+	// Same rationale as OnStartService: never hold CChangeGroup across SendModelRequest.
 	SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_STOPPING);
 
 	sdl::V1_0::agentino::CServiceStatusResponse retVal = SendModelRequest<sdl::V1_0::agentino::CServiceStatusResponse>(gqlRequest, errorMessage);
@@ -1063,6 +1067,15 @@ bool CServiceControllerProxyComp::SetServiceStatus(const QByteArray& serviceId, 
 		imtbase::IObjectCollection::DataPtr dataPtr;
 		if (m_serviceStatusCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
 			agentinodata::CServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::CServiceStatusInfo*>(dataPtr.GetPtr());
+			if (serviceStatusInfoPtr == nullptr){
+				return false;
+			}
+
+			// Skip identical status — each SetObjectData fans out OnServiceStatusChanged.
+			if (serviceStatusInfoPtr->GetServiceStatus() == status){
+				return true;
+			}
+
 			serviceStatusInfoPtr->SetServiceStatus(status);
 
 			if (!m_serviceStatusCollectionCompPtr->SetObjectData(serviceId, *serviceStatusInfoPtr)){

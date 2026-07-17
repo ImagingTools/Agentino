@@ -32,18 +32,43 @@ ViewBase {
 		serviceOperationText = description
 	}
 
+	// Topology.Service.status is SDL enum wire format (RUNNING / NOT_RUNNING / ...).
+	// Subscription payloads and DDL ServiceStatus.qml use running / notRunning.
+	// Always normalize TO SDL values so SaveTopology can re-parse scheme.objectsModel
+	// (ReadFromGraphQlObject rejects lowercase DDL strings → "Unexpected request for
+	// command-ID: 'SaveTopology'" until GetTopology reloads clean data).
 	function normalizeServiceStatus(status){
 		switch (status){
 			case "RUNNING":
-			case ServiceStatus.s_Running: return ServiceStatus.s_Running
+			case "SS_RUNNING":
+			case ServiceStatus.s_Running:
+			case "running":
+				return "RUNNING"
 			case "NOT_RUNNING":
-			case ServiceStatus.s_NotRunning: return ServiceStatus.s_NotRunning
+			case "SS_NOT_RUNNING":
+			case ServiceStatus.s_NotRunning:
+			case "notRunning":
+				return "NOT_RUNNING"
 			case "STARTING":
-			case ServiceStatus.s_Starting: return ServiceStatus.s_Starting
+			case "SS_STARTING":
+			case ServiceStatus.s_Starting:
+			case "starting":
+				return "STARTING"
 			case "STOPPING":
-			case ServiceStatus.s_Stopping: return ServiceStatus.s_Stopping
+			case "SS_STOPPING":
+			case ServiceStatus.s_Stopping:
+			case "stopping":
+				return "STOPPING"
+			case "RUNNING_IMPOSSIBLE":
+			case "SS_RUNNING_IMPOSSIBLE":
+				return "RUNNING_IMPOSSIBLE"
+			case "UNDEFINED":
+			case "SS_UNDEFINED":
+			case ServiceStatus.s_Undefined:
+			case "undefined":
+				return "UNDEFINED"
 		}
-		return ServiceStatus.s_Undefined
+		return "UNDEFINED"
 	}
 	
 	Component.onCompleted: {
@@ -272,8 +297,8 @@ ViewBase {
 				topologyPage.selectedAgentId = item.m_agentId
 				let status = topologyPage.normalizeServiceStatus(item.m_status);
 
-				topologyPage.commandsController.setCommandIsEnabled("Start", status === ServiceStatus.s_NotRunning)
-				topologyPage.commandsController.setCommandIsEnabled("Stop", status === ServiceStatus.s_Running)
+				topologyPage.commandsController.setCommandIsEnabled("Start", status === "NOT_RUNNING")
+				topologyPage.commandsController.setCommandIsEnabled("Stop", status === "RUNNING")
 				topologyPage.commandsController.setCommandIsEnabled("Edit", true)
 				topologyPage.commandsController.setCommandIsEnabled("Remove", true)
 				
@@ -305,48 +330,59 @@ ViewBase {
 			}
 		}
 
+		// Disabled while any modal is open: otherwise Return is stolen from
+		// FileSystemBrowserDialog (and any other dialog that needs Enter).
 		Shortcut {
 			sequence: "Return"
-			enabled: true
+			enabled: ModalDialogManager.count === 0
 			onActivated: {
 				scheme.goInside()
 			}
 		}
 	}
 
+	// Status popup while Start/Stop is in progress (aligned with ServiceEditor.statusPopup).
+	// Width is derived from available space + text implicitWidth only — no circular bindings.
 	Rectangle {
 		id: serviceOperationIndicator
+		property int spinnerSize: 18
+		property real maxPopupWidth: Math.max(0, metaInfo.x - 2 * Style.marginXL)
+		property real maxTextWidth: Math.max(0, maxPopupWidth - 2 * Style.marginL - spinnerSize - Style.spacingS)
+		property real textWidth: Math.min(serviceOperationTextItem.implicitWidth, maxTextWidth)
+
 		anchors.top: parent.top
 		anchors.right: metaInfo.left
 		anchors.topMargin: Style.marginXL
 		anchors.rightMargin: Style.marginXL
-		width: Math.min(serviceOperationRow.width + 2 * Style.marginL,
-			Math.max(0, metaInfo.x - 2 * Style.marginXL))
+		width: Math.min(
+			spinnerSize + Style.spacingS + textWidth + 2 * Style.marginL,
+			maxPopupWidth)
 		height: 36
 		clip: true
 		radius: height / 2
 		color: Style.backgroundColor
 		border.color: Style.lightBlueColor
 		border.width: 1
-		visible: topologyPage.serviceOperationInProgress
+		visible: topologyPage.serviceOperationInProgress && topologyPage.serviceOperationText !== ""
 		z: 100
-		
+
 		Row {
 			id: serviceOperationRow
 			anchors.centerIn: parent
 			spacing: Style.spacingS
-			
+
 			Loading {
 				anchors.verticalCenter: parent.verticalCenter
-				width: 18
-				height: 18
+				width: serviceOperationIndicator.spinnerSize
+				height: serviceOperationIndicator.spinnerSize
 				indicatorSize: 14
 				background.color: "transparent"
 			}
-			
+
 			BaseText {
+				id: serviceOperationTextItem
 				anchors.verticalCenter: parent.verticalCenter
-				width: Math.max(0, serviceOperationIndicator.width - 2 * Style.marginL - 18 - serviceOperationRow.spacing)
+				width: serviceOperationIndicator.textWidth
 				text: topologyPage.serviceOperationText
 				font.pixelSize: Style.fontSizeM
 				elide: Text.ElideRight
@@ -448,10 +484,8 @@ ViewBase {
 		ServiceEditorWrap {
 			id: serviceEditor
 			documentManager: topologyPage.documentManager
-			
-			Component.onCompleted: {
-				clientId = topologyPage.selectedAgentId
-			}
+			// Binding (not only onCompleted) so clientid header stays current for FS browse.
+			clientId: topologyPage.selectedAgentId
 		}
 	}
 	
@@ -522,7 +556,7 @@ ViewBase {
 
 			// Offline agent: keep Alert/Warning from GetTopology; do not paint stale live status.
 			if (item.m_agentOnline === false){
-				item.m_status = ServiceStatus.s_Undefined
+				item.m_status = "UNDEFINED"
 				item.m_icon1 = "Icons/Alert"
 				item.m_icon2 = "Icons/Warning"
 				if (index === scheme.selectedIndex && topologyPage.commandsController){
@@ -533,20 +567,29 @@ ViewBase {
 				return
 			}
 			
+			// Keep SDL wire format in m_status so SaveTopology can re-serialize the model.
 			item.m_status = serviceStatus;
-			if (serviceStatus === ServiceStatus.s_Running){
+			if (serviceStatus === "RUNNING"){
 				item.m_icon1 = "Icons/Running";
 			}
-			else if (serviceStatus === ServiceStatus.s_NotRunning){
+			else if (serviceStatus === "NOT_RUNNING"){
 				item.m_icon1 = "Icons/Stopped";
 			}
-			else if (serviceStatus === ServiceStatus.s_Undefined){
+			else if (serviceStatus === "STARTING" || serviceStatus === "STOPPING"){
+				// Keep previous Running/Stopped glyph if any; light-blue popup shows progress.
+				// Prefer a neutral stopped icon when none was set yet.
+				if (item.m_icon1 === "" || item.m_icon1 === "Icons/Alert"){
+					item.m_icon1 = "Icons/Stopped";
+				}
+			}
+			else if (serviceStatus === "UNDEFINED"){
 				item.m_icon1 = "Icons/Alert";
 			}
 
 			if (index === scheme.selectedIndex && topologyPage.commandsController){
-				topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus === ServiceStatus.s_NotRunning);
-				topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === ServiceStatus.s_Running);
+				let busy = serviceStatus === "STARTING" || serviceStatus === "STOPPING"
+				topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus === "NOT_RUNNING" && !busy);
+				topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === "RUNNING" && !busy);
 			}
 			
 			serviceStatus = item.m_status;
@@ -569,17 +612,17 @@ ViewBase {
 					serviceItem.m_icon2 = "Icons/Warning"
 					continue
 				}
-				if (dependencyStatus === ServiceStatus.s_NotRunning){
+				if (dependencyStatus === "NOT_RUNNING"){
 					serviceItem.m_icon2 = "Icons/Error"
 				}
-				else if (dependencyStatus === ServiceStatus.s_Undefined){
+				else if (dependencyStatus === "UNDEFINED"){
 					serviceItem.m_icon2 = "Icons/Warning"
 				}
 				else {
 					serviceItem.m_icon2 = ""
 				}
 				
-				if (serviceStatus !== ServiceStatus.s_Running){
+				if (serviceStatus !== "RUNNING"){
 					item.m_icon2 = ""
 				}
 				
@@ -616,18 +659,22 @@ ViewBase {
 		sdlObjectComp: Component {
 			Topology {
 				onFinished: {
+					// A full reload happens on every OnServicesCollectionChanged /
+					// OnTopologyChanged / OnAgentStatusChanged push - including the
+					// one triggered by saving the very service currently open in
+					// the editor. Unconditionally clearing the selection here reset
+					// selectedAgentId (and with it the open ServiceEditor's
+					// clientId, which binds to it) mid-edit, disabling Browse for
+					// no reason. Re-find the same service by id in the fresh model
+					// instead; selectedIndex's own onSelectedIndexChanged handler
+					// already restores agentId/commands/metaInfo, or clears them
+					// the same way as before when the service is genuinely gone
+					// (removed, or this is the first load).
+					let previousServiceId = scheme.selectedService
 					scheme.selectedIndex = -1
-					scheme.selectedService = ""
-					topologyPage.selectedAgentId = ""
-					metaInfo.contentVisible = false
 					scheme.objectsModel = m_services;
+					scheme.selectedIndex = scheme.findModelIndex(previousServiceId)
 					scheme.requestPaint()
-					if (topologyPage.commandsController){
-						topologyPage.commandsController.setCommandIsEnabled("Start", false)
-						topologyPage.commandsController.setCommandIsEnabled("Stop", false)
-						topologyPage.commandsController.setCommandIsEnabled("Edit", false)
-						topologyPage.commandsController.setCommandIsEnabled("Remove", false)
-					}
 				}
 			}
 		}

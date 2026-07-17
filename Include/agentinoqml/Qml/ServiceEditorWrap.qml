@@ -12,10 +12,11 @@ import agentinoServicesSdl 1.0
 ServiceEditor {
 	id: serviceEditor
 	
-	property string clientId
+	// clientId is declared on ServiceEditor; set by collection/topology views.
+	// documentManager is declared on DocumentViewBase — do not redeclare it here
+	// (shadowing breaks isNewService / status refresh that read the base property).
 	property string serviceId: serviceEditor.serviceData ? serviceEditor.serviceData.m_id : ""
-	property var documentManager
-	
+
 	onLoadPlugin: {
 		serviceEditor.pluginLoaded = false
 		serviceEditor.pluginLoading = true
@@ -139,22 +140,15 @@ ServiceEditor {
 	property bool updateCommands: commandsReceived && serviceData !== null
 	onUpdateCommandsChanged: {
 		if (updateCommands && commandsController){
-			let status = serviceEditor.serviceStatus !== "" ? serviceEditor.serviceStatus : serviceData.m_status
+			let status = serviceEditor.serviceStatus !== ""
+				? serviceEditor.serviceStatus
+				: serviceEditor.normalizeServiceStatus(serviceData.m_status)
 			commandsController.setCommandIsEnabled("Start", status === ServiceStatus.s_NotRunning)
 			commandsController.setCommandIsEnabled("Stop", status === ServiceStatus.s_Running)
 		}
 	}
 	
-	function getHeaders(){
-		if (!serviceEditor.serviceData){
-			return {}
-		}
-
-		let headers = {}
-		headers["clientid"] = serviceEditor.clientId;
-		headers["serviceid"] = serviceEditor.serviceData.m_id;
-		return headers
-	}
+	// getHeaders is provided by ServiceEditor base (clientid + serviceid)
 	
 	ServiceDocumentDataController {
 		id: serviceDocumentDataController
@@ -169,7 +163,8 @@ ServiceEditor {
 				serviceEditor.serviceData.copyFrom(documentModel)
 				documentManager.setBlockUndoManager(documentId, false)
 				documentManager.clearUndoManager(documentId)
-				serviceEditor.serviceStatus = documentModel.m_status
+				serviceEditor.setServiceStatus(documentModel.m_status)
+				serviceEditor.refreshIsNewService()
 				if (serviceEditor.commandsController){
 					serviceEditor.commandsController.setCommandIsEnabled("Start", serviceEditor.serviceStatus === ServiceStatus.s_NotRunning)
 					serviceEditor.commandsController.setCommandIsEnabled("Stop", serviceEditor.serviceStatus === ServiceStatus.s_Running)
@@ -254,22 +249,22 @@ ServiceEditor {
 		
 		onServiceStatusChanged: {
 			if (serviceId === serviceEditor.serviceId){
-				serviceEditor.serviceStatus = status
-				if (status === ServiceStatus.s_Starting){
+				serviceEditor.setServiceStatus(status)
+				let normalized = serviceEditor.serviceStatus
+				if (normalized === ServiceStatus.s_Starting){
 					serviceEditor.setOperationInProgress(true, qsTr("Starting service..."))
 				}
-				else if (status === ServiceStatus.s_Stopping){
+				else if (normalized === ServiceStatus.s_Stopping){
 					serviceEditor.setOperationInProgress(true, qsTr("Stopping service..."))
 				}
 				else {
 					serviceEditor.setOperationInProgress(false, "")
 				}
-				
+
 				if (serviceEditor.commandsController){
-					serviceEditor.commandsController.setCommandIsEnabled("Start", status === ServiceStatus.s_NotRunning)
-					serviceEditor.commandsController.setCommandIsEnabled("Stop", status === ServiceStatus.s_Running)
+					serviceEditor.commandsController.setCommandIsEnabled("Start", normalized === ServiceStatus.s_NotRunning)
+					serviceEditor.commandsController.setCommandIsEnabled("Stop", normalized === ServiceStatus.s_Running)
 				}
-				
 			}
 		}
 		

@@ -9,6 +9,7 @@
     </AcfHeader>
     <PositionMap>
         <Element ComponentName="AgentHandlers" X="500" Y="325" Note=""/>
+        <Element ComponentName="AgentServiceCollectionSyncClient" X="1025" Y="125" Note=""/>
         <Element ComponentName="AgentSubscribers" X="975" Y="600" Note=""/>
         <Element ComponentName="AgentinoLocalization" X="200" Y="75" Note=""/>
         <Element ComponentName="AuthenticationManager" X="450" Y="750" Note=""/>
@@ -18,13 +19,25 @@
         <Element ComponentName="JwtSessionController" X="1050" Y="775" Note=""/>
         <Element ComponentName="Repositories" X="750" Y="225" Note=""/>
         <Element ComponentName="ServerSettings" X="125" Y="350" Note=""/>
-        <Element ComponentName="ServiceCollectionPropvider" X="1025" Y="126" Note=""/>
+        <Element ComponentName="ServiceCollectionProvider" X="700" Y="50" Note=""/>
         <Element ComponentName="ServiceController" X="825" Y="375" Note=""/>
         <Element ComponentName="ServiceManagerSubscriptionClient" X="175" Y="650" Note=""/>
         <Element ComponentName="WebSocketClient" X="600" Y="625" Note=""/>
         <Element ComponentName="WebSocketServerFramework" X="725" Y="475" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
+        <EmbededRegistry Id="Repositories">
+            <PositionMap>
+                <Element ComponentName="FileAutoPersistence" X="250" Y="275" Note=""/>
+                <Element ComponentName="ServiceCollection" X="500" Y="425" Note=""/>
+                <Element ComponentName="ServiceInfo" X="500" Y="525" Note=""/>
+                <Element ComponentName="TopologyCollection" X="275" Y="175" Note=""/>
+                <Element ComponentName="TopologyFileAutoPersistence" X="675" Y="175" Note=""/>
+                <Element ComponentName="TopologyPosition2d" X="275" Y="75" Note=""/>
+                <Element ComponentName="UserLocalRepositories" X="900" Y="275" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
         <EmbededRegistry Id="ServiceCollectionController">
             <PositionMap>
                 <Element ComponentName="CheckPermissionOr" X="650" Y="450" Note=""/>
@@ -39,18 +52,6 @@
                 <Element ComponentName="WebSocketClient" X="325" Y="200" Note=""/>
                 <Element ComponentName="WebSocketServlet" X="325" Y="500" Note=""/>
                 <Element ComponentName="WorkerManager" X="725" Y="200" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
-        <EmbededRegistry Id="Repositories">
-            <PositionMap>
-                <Element ComponentName="FileAutoPersistence" X="250" Y="275" Note=""/>
-                <Element ComponentName="ServiceCollection" X="500" Y="425" Note=""/>
-                <Element ComponentName="ServiceInfo" X="500" Y="525" Note=""/>
-                <Element ComponentName="TopologyCollection" X="275" Y="175" Note=""/>
-                <Element ComponentName="TopologyFileAutoPersistence" X="675" Y="175" Note=""/>
-                <Element ComponentName="TopologyPosition2d" X="275" Y="75" Note=""/>
-                <Element ComponentName="UserLocalRepositories" X="900" Y="275" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

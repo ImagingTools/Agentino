@@ -68,9 +68,17 @@ public	Q_SLOTS:
 	void OnReadyReadStandardOutput();
 
 private:
-	QByteArray GetModuleName(QByteArray servicePath) const;
+	// True if a live OS process matches \a servicePath (normalized full path).
+	// When \a outPid is non-null and a match is found, writes the process id.
+	bool IsServiceExecutableRunning(const QByteArray& servicePath, qint64* outPid = nullptr) const;
+	// True if tracked PID is still alive, or (fallback) path scan finds the executable.
+	bool IsServiceProcessAlive(const QByteArray& serviceId, const QByteArray& servicePath) const;
+	// Base name of a running executable for taskkill/pkill; empty if not found.
+	QByteArray GetModuleName(const QByteArray& servicePath) const;
+	static QString NormalizeExecutablePath(const QByteArray& servicePath);
+	static bool IsOsProcessRunning(qint64 pid);
+
 	bool SetupService(const QByteArray& serviceId, bool startRequired);
-	void SetupProcess(QProcess& process, const QByteArray& programPath, const QStringList& arguments) const;
 	void UpdateServiceVersion(const QByteArray& serviceId);
 	void OnTimeout();
 	void EmitChangeSignal(const QByteArray& serviceId, IServiceStatusInfo::ServiceStatus serviceStatus);
@@ -79,6 +87,9 @@ private:
 	{
 		IServiceStatusInfo::ServiceStatus lastStatus = IServiceStatusInfo::SS_UNDEFINED;
 		int countOfStarting = 0;
+		// PID from startDetached / last successful path scan; 0 = unknown.
+		// mutable: refreshed from path scan inside const IsServiceProcessAlive / GetServiceStatus.
+		mutable qint64 processId = 0;
 	};
 
 	class PluginManager: public imtbase::TPluginManager<
@@ -109,7 +120,8 @@ private:
 private:
 	I_REF(imtbase::IObjectCollection, m_serviceCollectionCompPtr);
 
-	QMap<QByteArray, ServiceProcess> m_processMap;
+	// Mutable: processId cache is updated from const status queries.
+	mutable QMap<QByteArray, ServiceProcess> m_processMap;
 	QTimer m_timer;
 	QByteArray m_activeServiceId;
 };

@@ -17,11 +17,47 @@ DocumentViewBase {
 	contentColor: Style.backgroundColor2
 	
 	property ServiceData serviceData: model
+
+	// Agent id used for agent-scoped GQL routing (header clientid). Overridden by ServiceEditorWrap.
+	property string clientId: ""
+
+	// Server UI hosts the Agents document service → path browse is remote and needs clientId.
+	// Agent app has no Agents page → path browse hits local FileSystemController, clientId not required.
+	property bool remoteAgentBrowse: false
+
+	// Browse enabled when local (agent app) or when a target agent id is known (server app).
+	property bool pathBrowseEnabled: !serviceEditorContainer.remoteAgentBrowse
+		|| serviceEditorContainer.clientId !== ""
 	
 	property bool pluginLoaded: false
 	property bool pluginLoading: false
 	property bool pluginLoadFailed: false
 	property string pluginServicePath: ""
+
+	function getHeaders(){
+		let headers = {}
+		if (serviceEditorContainer.clientId !== ""){
+			headers["clientid"] = serviceEditorContainer.clientId
+		}
+		if (serviceEditorContainer.serviceData){
+			headers["serviceid"] = serviceEditorContainer.serviceData.m_id
+		}
+		return headers
+	}
+
+	function pathBrowsePlaceHolder(forRemoteOnAgent){
+		if (!serviceEditorContainer.remoteAgentBrowse){
+			return forRemoteOnAgent
+				? qsTr("Browse for the file")
+				: qsTr("Browse for the executable")
+		}
+		if (serviceEditorContainer.clientId !== ""){
+			return forRemoteOnAgent
+				? qsTr("Browse for the file on the agent")
+				: qsTr("Browse for the executable on the agent")
+		}
+		return qsTr("Select an agent first to browse")
+	}
 	
 	function requestLoadPlugin() {
 		pluginLoaded = false
@@ -41,7 +77,6 @@ DocumentViewBase {
 			if (pluginLoaded) {
 				pluginLoaded = false
 				pluginLoadFailed = false
-				ModalDialogManager.showWarningDialog(qsTr("Path changed. The plugin will be reloaded automatically after you save the service."))
 			}
 		} else {
 			pluginLoaded = true
@@ -49,8 +84,17 @@ DocumentViewBase {
 	}
 
 	Component.onCompleted: {
-		let ok = PermissionsController.checkPermission("ChangeService");
-		serviceEditorContainer.readOnly = !ok;
+		// Detect server vs agent app (same rule as TopologyPage new-service flow).
+		serviceEditorContainer.remoteAgentBrowse = !!MainDocumentService.getDocumentService("Agents")
+
+		// Agent: no permission gating for the editor. Server: keep ChangeService lock.
+		if (serviceEditorContainer.remoteAgentBrowse){
+			let ok = PermissionsController.checkPermission("ChangeService");
+			serviceEditorContainer.readOnly = !ok;
+		}
+		else{
+			serviceEditorContainer.readOnly = false;
+		}
 		refreshIsNewService()
 		multiPageView.addServicePages()
 	}
@@ -87,6 +131,52 @@ DocumentViewBase {
 			Math.max(0, element.width - 2 * element.contentMargin - element.nameMargin - Style.sizeHintBXS))
 	}
 
+	// Normalize status strings from every source into agentino.ServiceStatus values
+	// ("running", "notRunning", ...). Sources differ:
+	//   - GetService / ProcessState: "running" / "notRunning"
+	//   - GraphQL ServiceStatus enum / Start-Stop: "RUNNING" / "NOT_RUNNING"
+	//   - I_DECLARE_ENUM ToString on subscriptions: "SS_RUNNING" / "RUNNING"
+	//   - Display labels: "Running" / "Not running"
+	function normalizeServiceStatus(status){
+		if (status === undefined || status === null || status === "")
+			return ""
+		let value = String(status)
+		switch (value){
+			case ServiceStatus.s_Running:
+			case "RUNNING":
+			case "SS_RUNNING":
+			case "Running":
+				return ServiceStatus.s_Running
+			case ServiceStatus.s_NotRunning:
+			case "NOT_RUNNING":
+			case "SS_NOT_RUNNING":
+			case "NotRunning":
+			case "Not running":
+				return ServiceStatus.s_NotRunning
+			case ServiceStatus.s_Starting:
+			case "STARTING":
+			case "SS_STARTING":
+			case "Starting":
+				return ServiceStatus.s_Starting
+			case ServiceStatus.s_Stopping:
+			case "STOPPING":
+			case "SS_STOPPING":
+			case "Stopping":
+				return ServiceStatus.s_Stopping
+			case ServiceStatus.s_Undefined:
+			case "UNDEFINED":
+			case "SS_UNDEFINED":
+			case "RUNNING_IMPOSSIBLE":
+			case "Undefined":
+				return ServiceStatus.s_Undefined
+		}
+		return value
+	}
+
+	function setServiceStatus(status){
+		serviceStatus = normalizeServiceStatus(status)
+	}
+
 	// isNewService must reflect whether the document has actually been persisted via
 	// Save, not whether serviceData.m_id is empty: the document framework
 	// (DocumentService.qml) allocates a real object id for a new service as soon as
@@ -96,9 +186,11 @@ DocumentViewBase {
 	// saved/unsaved state (flips to false only after a real Save - see
 	// DocumentService.qml's onDocumentSaved), so use that instead.
 	function refreshIsNewService(){
-		if (documentManager && documentId !== ""){
-			isNewService = documentManager.documentIsNew(documentId)
-		}
+		if (!documentManager || documentId === "")
+			return
+		if (typeof documentManager.documentIsNew !== "function")
+			return
+		isNewService = documentManager.documentIsNew(documentId)
 	}
 
 	function ensureLogPage(){
@@ -122,6 +214,20 @@ DocumentViewBase {
 			if (savedDocumentId === serviceEditorContainer.documentId){
 				serviceEditorContainer.refreshIsNewService()
 				serviceEditorContainer.ensureLogPage()
+			}
+		}
+		// openDocument marks isNew=false before the view gets documentId; once the
+		// model is bound and documentOpened fires, re-sync so "Not saved yet" does
+		// not stick on an existing service opened at first start.
+		function onDocumentOpened(openedDocumentId){
+			if (openedDocumentId === serviceEditorContainer.documentId){
+				serviceEditorContainer.refreshIsNewService()
+				serviceEditorContainer.ensureLogPage()
+			}
+		}
+		function onDocumentAdded(addedDocumentId){
+			if (addedDocumentId === serviceEditorContainer.documentId){
+				serviceEditorContainer.refreshIsNewService()
 			}
 		}
 	}
@@ -156,7 +262,7 @@ DocumentViewBase {
 		if (serviceData){
 			refreshIsNewService()
 			ensureLogPage()
-			serviceStatus = serviceData.m_status
+			setServiceStatus(serviceData.m_status)
 			operationInProgress = false
 			if (pluginServicePath === "" && serviceData.hasPath()){
 				pluginServicePath = serviceData.m_path
@@ -245,10 +351,6 @@ DocumentViewBase {
 		}
 	}
 	
-	function getHeaders(){
-		return {};
-	}
-	
 	Rectangle {
 		id: statusPopup
 		property int statusIndicatorWidth: serviceEditorContainer.operationInProgress ? 18 :
@@ -327,7 +429,7 @@ DocumentViewBase {
 			multiPageView.addSubPage("Connections", "Server", qsTr("Server"), serverPageComp)
 			multiPageView.addSubPage("Connections", "OutputConnections", qsTr("Output Connections"), outputConnectionsPageComp)
 			// Settings page is hidden for now - not safe yet.
-			if (serviceTypeId !== "") {
+			if (serviceEditorContainer.serviceTypeId !== "") {
 				multiPageView.addPage("Administration", qsTr("Administration"), administrationViewComp, "Icons/AdminPanel")
 			}
 			serviceEditorContainer.ensureLogPage()
@@ -366,9 +468,7 @@ DocumentViewBase {
 
 				nameInput.text = serviceEditorContainer.serviceData.m_name;
 				descriptionInput.text = serviceEditorContainer.serviceData.m_description; 
-				pathInput.text = serviceEditorContainer.serviceData.m_path;
-
-				pathInput.ensureVisible(pathInput.text.length - 1)
+				pathInput.path = serviceEditorContainer.serviceData.m_path;
 
 				argumentsInput.text = serviceEditorContainer.serviceData.m_arguments;
 			}
@@ -380,7 +480,7 @@ DocumentViewBase {
 
 				serviceEditorContainer.serviceData.m_name = nameInput.text;
 				serviceEditorContainer.serviceData.m_description = descriptionInput.text;
-				serviceEditorContainer.serviceData.m_path = pathInput.text;
+				serviceEditorContainer.serviceData.m_path = pathInput.path;
 				serviceEditorContainer.serviceData.m_arguments = argumentsInput.text;
 			}
 			
@@ -440,21 +540,32 @@ DocumentViewBase {
 							KeyNavigation.tab: pathInput;
 						}
 						
-						TextInputElementView {
+						ServerPathPickerElementView {
 							id: pathInput
 							controlWidth: serviceEditorContainer.getEditorControlWidth(pathInput)
 							name: qsTr("Path")
 							description: qsTr("Executable path used to start the service and detect its running process")
-							placeHolderText: qsTr("Enter the path");
+							placeHolderText: serviceEditorContainer.pathBrowsePlaceHolder(false)
+							pathKind: Enums.pathKindFile
+							// Server: need clientId (remote agent FS). Agent app: local FS always.
+							browseEnabled: serviceEditorContainer.pathBrowseEnabled
+							// Path can only come from the browse dialog - manual typing is
+							// error-prone (wrong separators, no existence check).
+							readOnlyPath: true
 							textInputValidator: pathRequiredRegexp;
 							showErrorWhenInvalid: true;
 							errorText: qsTr("Please enter the path");
+
+							function getHeaders(){
+								return serviceEditorContainer.getHeaders()
+							}
 							
-							onEditingFinished: {
+							onPathEdited: {
+								if (serviceEditorContainer.serviceData){
+									serviceEditorContainer.serviceData.m_path = pathInput.path
+								}
 								serviceEditorContainer.doUpdateModel();
-								
-								let path = serviceEditorContainer.serviceData.m_path
-								serviceEditorContainer.handlePluginPathChange(path)
+								serviceEditorContainer.handlePluginPathChange(pathInput.path)
 							}
 							
 							KeyNavigation.tab: argumentsInput;
@@ -1220,16 +1331,16 @@ DocumentViewBase {
 					
 					if (serviceEditorContainer.serviceData.m_startScript !== ""){
 						startScriptChecked.checked = true
-						startScriptInput.text = serviceEditorContainer.serviceData.m_startScript
+						startScriptInput.path = serviceEditorContainer.serviceData.m_startScript
 					}
 					else{
 						startScriptChecked.checked = false
-						startScriptInput.text = ""
+						startScriptInput.path = ""
 					}
-					
+
 					if (serviceEditorContainer.serviceData.m_stopScript !== ""){
 						stopScriptChecked.checked = true
-						stopScriptInput.text = serviceEditorContainer.serviceData.m_stopScript
+						stopScriptInput.path = serviceEditorContainer.serviceData.m_stopScript
 					}
 					else{
 						stopScriptChecked.checked = false
@@ -1254,14 +1365,14 @@ DocumentViewBase {
 					}
 					
 					if (startScriptChecked.checked){
-						serviceEditorContainer.serviceData.m_startScript = startScriptInput.text
+						serviceEditorContainer.serviceData.m_startScript = startScriptInput.path
 					}
 					else{
 						serviceEditorContainer.serviceData.m_startScript = ""
 					}
-					
+
 					if (stopScriptChecked.checked){
-						serviceEditorContainer.serviceData.m_stopScript = stopScriptInput.text
+						serviceEditorContainer.serviceData.m_stopScript = stopScriptInput.path
 					}
 					else{
 						serviceEditorContainer.serviceData.m_stopScript = ""
@@ -1356,14 +1467,22 @@ DocumentViewBase {
 								}
 							}
 							
-							TextInputElementView {
+							ServerPathPickerElementView {
 								id: startScriptInput
 								controlWidth: serviceEditorContainer.getEditorControlWidth(startScriptInput)
 								visible: startScriptChecked.checked
-								placeHolderText: qsTr("Enter the start script path")
+								placeHolderText: serviceEditorContainer.pathBrowsePlaceHolder(true)
 								name: qsTr("Start Script Path")
 								description: qsTr("Path to the script executed to start the service")
-								onEditingFinished: {
+								pathKind: Enums.pathKindFile
+								browseEnabled: serviceEditorContainer.pathBrowseEnabled
+								readOnlyPath: true
+
+								function getHeaders(){
+									return serviceEditorContainer.getHeaders()
+								}
+
+								onPathEdited: {
 									serviceEditorContainer.doUpdateModel()
 								}
 							}
@@ -1378,14 +1497,22 @@ DocumentViewBase {
 								}
 							}
 							
-							TextInputElementView {
+							ServerPathPickerElementView {
 								id: stopScriptInput
 								controlWidth: serviceEditorContainer.getEditorControlWidth(stopScriptInput)
 								visible: stopScriptChecked.checked
-								placeHolderText: qsTr("Enter the stop script path")
+								placeHolderText: serviceEditorContainer.pathBrowsePlaceHolder(true)
 								name: qsTr("Stop Script Path")
 								description: qsTr("Path to the script executed to stop the service")
-								onEditingFinished: {
+								pathKind: Enums.pathKindFile
+								browseEnabled: serviceEditorContainer.pathBrowseEnabled
+								readOnlyPath: true
+
+								function getHeaders(){
+									return serviceEditorContainer.getHeaders()
+								}
+
+								onPathEdited: {
 									serviceEditorContainer.doUpdateModel()
 								}
 							}

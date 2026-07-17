@@ -137,39 +137,84 @@ DocumentCollectionViewDelegate {
 		function getHeaders(){
 			return container.getHeaders()
 		}
-		
-		onBeginStartService: {
-			container.beginOperation(serviceId, qsTr("Starting service..."))
-			if (container.commandsController){
-				container.commandsController.setCommandIsEnabled("Start", false)
-				container.commandsController.setCommandIsEnabled("Stop", false)
-			}
-		}
-	
-		onBeginStopService: {
-			container.beginOperation(serviceId, qsTr("Stopping service..."))
-			if (container.commandsController){
-				container.commandsController.setCommandIsEnabled("Start", false)
-				container.commandsController.setCommandIsEnabled("Stop", false)
-			}
-		}
-		
-		onServiceStarted: {
-			container.finishOperation()
-		}
-		
-		onServiceStopped: {
-			container.finishOperation()
+
+		function isTransitionalStatus(status){
+			let value = String(status)
+			return value === ServiceStatus.s_Starting
+				|| value === "STARTING"
+				|| value === "SS_STARTING"
+				|| value === "starting"
+				|| value === ServiceStatus.s_Stopping
+				|| value === "STOPPING"
+				|| value === "SS_STOPPING"
+				|| value === "stopping"
 		}
 
-		onServiceStatusChanged: {
-			container.finishOperation()
-			if (serviceId === container.serviceId && container.commandsController){
-				container.commandsController.setCommandIsEnabled("Start", status === ServiceStatus.s_NotRunning)
-				container.commandsController.setCommandIsEnabled("Stop", status === ServiceStatus.s_Running)
+		function isStartingStatus(status){
+			let value = String(status)
+			return value === ServiceStatus.s_Starting
+				|| value === "STARTING"
+				|| value === "SS_STARTING"
+				|| value === "starting"
+		}
+
+		function disableStartStopCommands(){
+			if (container.commandsController){
+				container.commandsController.setCommandIsEnabled("Start", false)
+				container.commandsController.setCommandIsEnabled("Stop", false)
 			}
 		}
-		
+
+		onBeginStartService: {
+			container.beginOperation(serviceId, qsTr("Starting service..."))
+			disableStartStopCommands()
+		}
+
+		onBeginStopService: {
+			container.beginOperation(serviceId, qsTr("Stopping service..."))
+			disableStartStopCommands()
+		}
+
+		// Do not finish on serviceStarted/serviceStopped: StartService often returns STARTING
+		// while the process is still coming up. Popup stays until a terminal status
+		// (RUNNING / NOT_RUNNING) arrives via onServiceStatusChanged (subscription or response).
+
+		onServiceStatusChanged: {
+			// Only drive the operation popup for the service we started/stopped (or any
+			// when operationServiceId is empty after a race).
+			if (container.operationServiceId !== "" && serviceId !== container.operationServiceId){
+				return
+			}
+
+			if (isStartingStatus(status)){
+				container.beginOperation(serviceId, qsTr("Starting service..."))
+				disableStartStopCommands()
+				return
+			}
+			if (isTransitionalStatus(status)){
+				container.beginOperation(serviceId, qsTr("Stopping service..."))
+				disableStartStopCommands()
+				return
+			}
+
+			// RUNNING / NOT_RUNNING / UNDEFINED — hide popup and restore commands.
+			container.finishOperation()
+
+			if (container.commandsController){
+				let value = String(status)
+				let isRunning = value === ServiceStatus.s_Running
+					|| value === "RUNNING"
+					|| value === "SS_RUNNING"
+					|| value === "running"
+				let isStopped = value === ServiceStatus.s_NotRunning
+					|| value === "NOT_RUNNING"
+					|| value === "SS_NOT_RUNNING"
+					|| value === "notRunning"
+				container.commandsController.setCommandIsEnabled("Start", isStopped)
+				container.commandsController.setCommandIsEnabled("Stop", isRunning)
+			}
+		}
+
 		onStartServiceFailed: container.finishOperation()
 		onStopServiceFailed: container.finishOperation()
 	}

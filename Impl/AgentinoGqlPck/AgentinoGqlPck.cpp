@@ -45,6 +45,11 @@ I_EXPORT_COMPONENT(
 			"Service Controller Proxy");
 
 I_EXPORT_COMPONENT(
+			FileSystemControllerProxy,
+			"File system controller proxy forwarding browse requests to an agent by clientid",
+			"File System Controller Proxy Folder Browser");
+
+I_EXPORT_COMPONENT(
 			TopologyController,
 			"Topology controller",
 			"Topology controller");

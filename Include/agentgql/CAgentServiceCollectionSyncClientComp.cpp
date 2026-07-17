@@ -3,9 +3,7 @@
 
 
 // Qt includes
-#include <QtCore/QDebug>
 #include <QtCore/QMetaObject>
-#include <QtCore/QThread>
 
 // ImtCore includes
 #include <imtbase/ICollectionInfo.h>
@@ -82,10 +80,6 @@ void CAgentServiceCollectionSyncClientComp::OnComponentCreated()
 						"Unable to attach observer to ServiceCollection model",
 						"CAgentServiceCollectionSyncClientComp");
 		}
-		else{
-			qDebug() << "CAgentServiceCollectionSyncClientComp: observer attached to ServiceCollection"
-					 << "thread=" << QThread::currentThread();
-		}
 	}
 	else{
 		SendErrorMessage(
@@ -110,16 +104,6 @@ void CAgentServiceCollectionSyncClientComp::OnComponentDestroyed()
 
 void CAgentServiceCollectionSyncClientComp::OnUpdate(const istd::IChangeable::ChangeSet& changeSet)
 {
-	qDebug() << "CAgentServiceCollectionSyncClientComp::OnUpdate"
-			 << "thread=" << QThread::currentThread()
-			 << "main=" << (QThread::currentThread() == thread())
-			 << "CF_ADDED=" << changeSet.Contains(imtbase::ICollectionInfo::CF_ADDED)
-			 << "CF_REMOVED=" << changeSet.Contains(imtbase::ICollectionInfo::CF_REMOVED)
-			 << "CF_ELEMENT_RENAMED=" << changeSet.Contains(imtbase::ICollectionInfo::CF_ELEMENT_RENAMED)
-			 << "CF_ELEMENT_DESCRIPTION_CHANGED=" << changeSet.Contains(imtbase::ICollectionInfo::CF_ELEMENT_DESCRIPTION_CHANGED)
-			 << "CF_ELEMENT_STATE=" << changeSet.Contains(imtbase::ICollectionInfo::CF_ELEMENT_STATE)
-			 << "CF_OBJECT_DATA_CHANGED=" << changeSet.Contains(imtbase::IObjectCollection::CF_OBJECT_DATA_CHANGED);
-
 	if (!m_gqlClientCompPtr.IsValid()){
 		SendErrorMessage(0, "GqlClient is not set — cannot notify server", "CAgentServiceCollectionSyncClientComp");
 
@@ -130,7 +114,6 @@ void CAgentServiceCollectionSyncClientComp::OnUpdate(const istd::IChangeable::Ch
 	if (changeSet.Contains(imtbase::ICollectionInfo::CF_ADDED)){
 		const QByteArray itemId = ChangeInfoToItemId(
 					changeSet.GetChangeInfo(imtbase::ICollectionInfo::CN_ELEMENT_INSERTED));
-		qDebug() << "CAgentServiceCollectionSyncClientComp::OnUpdate CF_ADDED itemId=" << itemId;
 		if (itemId.isEmpty()){
 			SendErrorMessage(
 						0,
@@ -148,7 +131,6 @@ void CAgentServiceCollectionSyncClientComp::OnUpdate(const istd::IChangeable::Ch
 	// (filled before CChangeNotifier copy in CObjectCollectionBase::RemoveElements).
 	if (changeSet.Contains(imtbase::ICollectionInfo::CF_REMOVED)){
 		const QByteArrayList itemIds = ExtractRemovedItemIds(changeSet);
-		qDebug() << "CAgentServiceCollectionSyncClientComp::OnUpdate CF_REMOVED itemIds=" << itemIds;
 		if (itemIds.isEmpty()){
 			SendErrorMessage(
 						0,
@@ -191,8 +173,6 @@ void CAgentServiceCollectionSyncClientComp::OnUpdate(const istd::IChangeable::Ch
 		return;
 	}
 
-	qDebug() << "CAgentServiceCollectionSyncClientComp::OnUpdate updated"
-			 << updateKind << "itemId=" << itemId;
 	if (itemId.isEmpty()){
 		SendErrorMessage(
 					0,
@@ -214,17 +194,9 @@ void CAgentServiceCollectionSyncClientComp::QueueNotifyServer(
 	// same thread. QWebSocket / QSocketNotifier must only be touched on the client's thread
 	// (main). Queue the actual SendRequest to this QObject's thread affinity.
 	// Functor form avoids Q_ARG meta-type registration for QByteArrayList.
-	qDebug() << "CAgentServiceCollectionSyncClientComp: queue NotifyServer"
-			 << typeOperation << itemId << itemIds
-			 << "fromThread=" << QThread::currentThread()
-			 << "toThread=" << thread();
-
 	const bool queued = QMetaObject::invokeMethod(
 				this,
 				[this, typeOperation, itemId, itemIds](){
-					qDebug() << "CAgentServiceCollectionSyncClientComp::NotifyServer (main thread)"
-							 << typeOperation << itemId << itemIds
-							 << "thread=" << QThread::currentThread();
 					NotifyServer(typeOperation, itemId, itemIds);
 				},
 				Qt::QueuedConnection);
@@ -276,9 +248,6 @@ void CAgentServiceCollectionSyncClientComp::NotifyServer(
 		}
 	}
 
-	qDebug() << "CAgentServiceCollectionSyncClientComp::NotifyServer"
-			 << typeOperation << itemId << itemIds;
-
 	imtclientgql::IGqlClient::GqlRequestPtr requestPtr(gqlRequestPtr);
 	imtclientgql::IGqlClient::GqlResponsePtr responsePtr = m_gqlClientCompPtr->SendRequest(requestPtr);
 	if (!responsePtr.IsValid()){
@@ -286,10 +255,6 @@ void CAgentServiceCollectionSyncClientComp::NotifyServer(
 					0,
 					QString("Live service sync notify failed (%1 / %2)").arg(typeOperation, QString::fromUtf8(itemId)),
 					"CAgentServiceCollectionSyncClientComp");
-	}
-	else{
-		qDebug() << "CAgentServiceCollectionSyncClientComp::NotifyServer OK"
-				 << typeOperation << itemId << itemIds;
 	}
 }
 

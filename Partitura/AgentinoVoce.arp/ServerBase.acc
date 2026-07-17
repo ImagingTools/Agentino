@@ -43,8 +43,11 @@
                     <AttributeInfo Id="Model" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/AgentCollection"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ServiceSynchronizer" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Pages/ServiceControllerProxy"/>
+                        <Data IsEnabled="true" Value="ServiceControllerProxy"/>
                     </AttributeInfo>
                     <AttributeInfo Id="SubscriptionManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketServerFramework"/>
@@ -300,13 +303,54 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="ServiceControllerProxy" PackageId="AgentinoGqlPck" ComponentId="ServiceControllerProxy">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/AgentCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ApiClient" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="WebSocketServerFramework"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>AddService</Value>
+                                <Value>UpdateService</Value>
+                                <Value>GetService</Value>
+                                <Value>StartService</Value>
+                                <Value>StopService</Value>
+                                <Value>RemoveElements</Value>
+                                <Value>ServicesRemove</Value>
+                                <Value>LoadPlugin</Value>
+                                <Value>GetServiceSettings</Value>
+                                <Value>UpdateServiceSettings</Value>
+                                <Value>NotifyAgentServicesCollectionChanged</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/AgentCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="ServiceStatusSubscriberController" PackageId="AgentinoGqlPck" ComponentId="ServiceSubscriberController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>OnServiceStateChanged</Value>
+                                <Value>OnServiceStatusChanged</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

@@ -91,6 +91,24 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="AgentServiceCollectionSyncClient" PackageId="AgentGqlPck" ComponentId="AgentServiceCollectionSyncClient">
+            <Data IsEnabled="true" Flags="1">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/ClientId2"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="GqlClient" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="WebSocketClient"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="AgentSubscribers" PackageId="AgentinoAgentVoce" ComponentId="AgentSubscribers">
             <Data IsEnabled="true" Flags="1">
                 <AttributeInfoMap>
@@ -111,9 +129,6 @@
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceController" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServiceController"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
                     </AttributeInfo>
                     <AttributeInfo Id="WebSocketClient" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketClient"/>
@@ -318,24 +333,6 @@
                     </AttributeInfo>
                     <AttributeInfo Id="WebLoginStatus" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketClient"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="AgentServiceCollectionSyncClient" PackageId="AgentGqlPck" ComponentId="AgentServiceCollectionSyncClient">
-            <Data IsEnabled="true" Flags="1">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings/ClientId2"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="GqlClient" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="WebSocketClient"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ServiceCollection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -640,9 +637,6 @@
                                 <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="ServiceRepository">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="PermissionChecker" Type="Reference" ExportId="">
-                                    <Data IsEnabled="true" Value="CheckPermissionOr"/>
-                                </AttributeInfo>
                                 <AttributeInfo Id="ServiceController" Type="Reference" ExportId="ServiceController">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
@@ -772,6 +766,7 @@
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="HttpServerFramework"/>
     </ExportedInterfaces>
     <ExportedComponents>
+        <Component ExportedId="AgentServiceCollectionSyncClient" ComponentId="AgentServiceCollectionSyncClient"/>
         <Component ExportedId="AutoPersistence" ComponentId="ServerSettings/AutoPersistence"/>
         <Component ExportedId="FileAutoPersistence" ComponentId="Repositories/FileAutoPersistence"/>
         <Component ExportedId="HttpServerFramework" ComponentId="HttpServerFramework"/>
@@ -779,7 +774,6 @@
         <Component ExportedId="ServerSettings" ComponentId="ServerSettings"/>
         <Component ExportedId="ServiceCollection" ComponentId="Repositories/ServiceCollection"/>
         <Component ExportedId="ServiceController" ComponentId="ServiceController"/>
-        <Component ExportedId="AgentServiceCollectionSyncClient" ComponentId="AgentServiceCollectionSyncClient"/>
         <Component ExportedId="ServiceManagerSubscriptionClient" ComponentId="ServiceManagerSubscriptionClient"/>
         <Component ExportedId="WebSocketServerFramework" ComponentId="WebSocketServerFramework"/>
     </ExportedComponents>

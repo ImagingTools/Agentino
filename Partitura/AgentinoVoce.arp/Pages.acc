@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5715" Description="ACF"/>
-            <Version Id="1" Number="2274" Description="ACF-Solutions"/>
+            <Version Id="0" Number="6435" Description="ACF"/>
+            <Version Id="1" Number="2410" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -180,6 +180,52 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
+                    <Element Id="CheckPermissionOr" PackageId="ImtAuthPck" ComponentId="CheckPermissionOr">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap/>
+                        </Data>
+                    </Element>
+                    <Element Id="FileSystemBrowsePermissions" PackageId="ImtServerAppPck" ComponentId="SingleCommandPermissionsProvider">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="GetFileSystemEntries"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>ChangeService</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="FileSystemControllerProxy" PackageId="AgentinoGqlPck" ComponentId="FileSystemControllerProxy">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ApiClient" Type="Reference" ExportId="ApiClient">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>GetFileSystemEntries</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
                     <Element Id="GraphQLDemultiplexer" PackageId="ImtServerGqlPck" ComponentId="GraphQLDemultiplexer">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
@@ -187,6 +233,7 @@
                                     <Data IsEnabled="true">
                                         <Values>
                                             <Value>ServiceControllerProxy</Value>
+                                            <Value>FileSystemControllerProxy</Value>
                                             <Value>ServicesRemoteRepresentationController</Value>
                                             <Value>TopologyPage</Value>
                                             <Value>AgentsPage</Value>
@@ -300,6 +347,9 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
+                    <!-- GQL service proxy for this factory world only (Start/Stop/GetService, …).
+                         Live agent reconnect sync uses ServerBase/ServiceControllerProxy instead —
+                         AgentinoHandlers is factorizable and must not export components. -->
                     <Element Id="ServiceControllerProxy" PackageId="AgentinoGqlPck" ComponentId="ServiceControllerProxy">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
@@ -545,7 +595,5 @@
         <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="PagesDemultiplexer"/>
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="PagesDemultiplexer"/>
     </ExportedInterfaces>
-    <ExportedComponents>
-        <Component ExportedId="ServiceControllerProxy" ComponentId="PageData/ServiceControllerProxy"/>
-    </ExportedComponents>
+    <ExportedComponents/>
 </Acf>
