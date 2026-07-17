@@ -455,7 +455,7 @@
                                 <AttributeInfo Id="TypeIds" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-                                            <Value>DocumentInfo</Value>
+                                            <Value>ServiceInfo</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
