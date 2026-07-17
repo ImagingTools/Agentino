@@ -15,7 +15,7 @@ GqlRequestDocumentDataController {
 	
 	property var serviceData: documentModel;
 	
-	// typeId: "Service";
+	typeId: "ServiceInfo";
 	documentName: serviceData ? serviceData.m_name: "";
 	documentDescription: serviceData ? serviceData.m_description: "";
 	

@@ -361,7 +361,7 @@ QJsonObject CAgentCollectionControllerComp::InsertObject(
 
 		QString name = agentImplPtr->GetComputerName();
 		agentImplPtr->SetLastConnection(QDateTime::currentDateTimeUtc());
-		m_objectCollectionCompPtr->InsertNewObject("DocumentInfo", name, "", agentImplPtr.GetPtr(), agentId);
+		m_objectCollectionCompPtr->InsertNewObject("AgentInfo", name, "", agentImplPtr.GetPtr(), agentId);
 	}
 
 	m_connectedAgents.append(agentId);
