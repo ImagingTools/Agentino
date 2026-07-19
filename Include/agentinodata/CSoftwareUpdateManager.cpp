@@ -45,18 +45,21 @@ ISoftwareUpdateManager::UpdateResult CSoftwareUpdateManager::ApplyUpdate(const Q
 
 	if (updateId.isEmpty()){
 		result.successful = false;
+		result.status = ISoftwareUpdateInfo::US_FAILED;
 		result.errorMessage = "Update ID is empty";
 		return result;
 	}
 
 	if (agentId.isEmpty()){
 		result.successful = false;
+		result.status = ISoftwareUpdateInfo::US_FAILED;
 		result.errorMessage = "Agent ID is empty";
 		return result;
 	}
 
 	if (!IsValidId(updateId) || !IsValidId(agentId)){
 		result.successful = false;
+		result.status = ISoftwareUpdateInfo::US_FAILED;
 		result.errorMessage = "Invalid update or agent ID";
 		return result;
 	}
@@ -65,7 +68,7 @@ ISoftwareUpdateManager::UpdateResult CSoftwareUpdateManager::ApplyUpdate(const Q
 	QString errorMessage;
 	if (!BackupCurrentVersion(updateId, agentId, errorMessage)){
 		result.successful = false;
-		result.status = static_cast<int>(ISoftwareUpdateInfo::US_FAILED);
+		result.status = ISoftwareUpdateInfo::US_FAILED;
 		result.errorMessage = QString("Failed to create backup: %1").arg(errorMessage);
 		return result;
 	}
@@ -79,7 +82,7 @@ ISoftwareUpdateManager::UpdateResult CSoftwareUpdateManager::ApplyUpdate(const Q
 		m_installedUpdates.remove(updateId);
 
 		result.successful = false;
-		result.status = static_cast<int>(ISoftwareUpdateInfo::US_FAILED);
+		result.status = ISoftwareUpdateInfo::US_FAILED;
 		result.errorMessage = QString("Download failed: %1").arg(errorMessage);
 		return result;
 	}
@@ -90,7 +93,7 @@ ISoftwareUpdateManager::UpdateResult CSoftwareUpdateManager::ApplyUpdate(const Q
 		QFile::remove(targetPath);
 
 		result.successful = false;
-		result.status = static_cast<int>(ISoftwareUpdateInfo::US_FAILED);
+		result.status = ISoftwareUpdateInfo::US_FAILED;
 		result.errorMessage = "Checksum verification of the downloaded artifact failed";
 		return result;
 	}
@@ -98,7 +101,7 @@ ISoftwareUpdateManager::UpdateResult CSoftwareUpdateManager::ApplyUpdate(const Q
 	// Install the artifact
 	if (!InstallArtifact(targetPath, agentId, errorMessage)){
 		result.successful = false;
-		result.status = static_cast<int>(ISoftwareUpdateInfo::US_FAILED);
+		result.status = ISoftwareUpdateInfo::US_FAILED;
 		result.errorMessage = QString("Installation failed: %1").arg(errorMessage);
 
 		// Attempt to restore backup on failure
@@ -110,10 +113,10 @@ ISoftwareUpdateManager::UpdateResult CSoftwareUpdateManager::ApplyUpdate(const Q
 	}
 
 	// Record the path of the installed artifact
-	m_installedUpdates[updateId].installedPath = targetPath;
+	m_installedUpdates[updateId].installedPath.clear();
 
 	result.successful = true;
-	result.status = static_cast<int>(ISoftwareUpdateInfo::US_INSTALLED);
+	result.status = ISoftwareUpdateInfo::US_INSTALLED;
 
 	// Clean up downloaded artifact
 	QFile::remove(targetPath);
@@ -128,12 +131,28 @@ ISoftwareUpdateManager::UpdateResult CSoftwareUpdateManager::RollbackUpdate(cons
 
 	if (updateId.isEmpty()){
 		result.successful = false;
+		result.status = ISoftwareUpdateInfo::US_FAILED;
 		result.errorMessage = "Update ID is empty";
+		return result;
+	}
+
+	if (agentId.isEmpty()){
+		result.successful = false;
+		result.status = ISoftwareUpdateInfo::US_FAILED;
+		result.errorMessage = "Agent ID is empty";
+		return result;
+	}
+
+	if (!IsValidId(updateId) || !IsValidId(agentId)){
+		result.successful = false;
+		result.status = ISoftwareUpdateInfo::US_FAILED;
+		result.errorMessage = "Invalid update or agent ID";
 		return result;
 	}
 
 	if (!m_installedUpdates.contains(updateId)){
 		result.successful = false;
+		result.status = ISoftwareUpdateInfo::US_FAILED;
 		result.errorMessage = "Update was not previously installed or no backup available";
 		return result;
 	}
@@ -141,7 +160,7 @@ ISoftwareUpdateManager::UpdateResult CSoftwareUpdateManager::RollbackUpdate(cons
 	QString errorMessage;
 	if (!RestoreBackup(updateId, agentId, errorMessage)){
 		result.successful = false;
-		result.status = static_cast<int>(ISoftwareUpdateInfo::US_FAILED);
+		result.status = ISoftwareUpdateInfo::US_FAILED;
 		result.errorMessage = QString("Rollback failed: %1").arg(errorMessage);
 		return result;
 	}
@@ -149,7 +168,7 @@ ISoftwareUpdateManager::UpdateResult CSoftwareUpdateManager::RollbackUpdate(cons
 	m_installedUpdates.remove(updateId);
 
 	result.successful = true;
-	result.status = static_cast<int>(ISoftwareUpdateInfo::US_ROLLED_BACK);
+	result.status = ISoftwareUpdateInfo::US_ROLLED_BACK;
 	return result;
 }
 
@@ -230,14 +249,9 @@ bool CSoftwareUpdateManager::BackupCurrentVersion(const QByteArray& updateId, co
 	// TODO: Implement backup of current installation before applying update
 	// Should copy current binaries/configs to a backup directory
 	// and store the backup location and previous version in the record below
-	errorMessage = "";
+	errorMessage = "Backup not yet implemented";
 	qDebug() << "CSoftwareUpdateManager::BackupCurrentVersion - Update:" << updateId << "Agent:" << agentId;
-
-	// Record the backup so that a restore is possible if the installation fails
-	InstalledUpdateInfo info;
-	m_installedUpdates[updateId] = info;
-
-	return true;
+	return false;
 }
 
 
@@ -252,12 +266,12 @@ bool CSoftwareUpdateManager::RestoreBackup(const QByteArray& updateId, const QBy
 
 	// TODO: Implement restore from backup
 	// Should copy backed-up binaries/configs back to the installation directory
+	errorMessage = "Restore not yet implemented";
 	qDebug() << "CSoftwareUpdateManager::RestoreBackup - Update:" << updateId << "Agent:" << agentId;
 
-	return true;
+	return false;
 }
 
 
 } // namespace agentinodata
-
 

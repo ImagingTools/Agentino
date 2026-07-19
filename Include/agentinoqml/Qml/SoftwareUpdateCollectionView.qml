@@ -101,6 +101,7 @@ RemoteCollectionView {
 			icon.width: icon.visible ? 9 : 0;
 			onReused: {
 				if (rowIndex >= 0){
+					icon.visible = true;
 					let status = root.table.elements.getData("status", rowIndex);
 					if (status === UpdateStatus.s_Installed){
 						icon.source = "../../../../" + Style.getIconPath("Icons/Running", Icon.State.On, Icon.Mode.Normal);

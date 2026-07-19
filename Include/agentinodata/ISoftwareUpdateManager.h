@@ -9,6 +9,9 @@
 #include <QByteArray>
 #include <QString>
 
+// Agentino includes
+#include <agentinodata/ISoftwareUpdateInfo.h>
+
 
 namespace agentinodata
 {
@@ -28,7 +31,7 @@ public:
 	struct UpdateResult
 	{
 		bool successful = false;
-		int status = 0;
+		ISoftwareUpdateInfo::UpdateStatus status = ISoftwareUpdateInfo::US_FAILED;
 		QString errorMessage;
 	};
 
@@ -52,5 +55,4 @@ public:
 
 
 } // namespace agentinodata
-
 
