@@ -25,7 +25,7 @@ namespace agentinogql
 	- Agent: Model=ServiceController, ServiceStatusCollection unset.
 	  Source of truth is the live process controller; this component only publishes
 	  OnServiceStatusChanged (local GUI) / OnAgentServiceStatusChanged (central server).
-	- Server: Model=AgentSubscriptionController (CN_STATUS_CHANGED from agent push) and/or
+	- Server: Model=AgentChangeObserver (CN_STATUS_CHANGED from agent push) and/or
 	  ServiceStatusCollection wired so the optional mirror is kept in sync.
 
 	ServiceStatusCollection is always optional. Missing collection must never block PublishData.

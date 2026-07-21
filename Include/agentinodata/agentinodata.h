@@ -54,25 +54,16 @@ bool GetRepresentationFromConnectionCollection(
 			sdl::V1_0::agentino::CPluginInfo& connectionCollectionRepresentation);
 
 /**
-	Collect Available Connections for an output slot (\a connectionUsageId) from services
-	in \a serviceCollection (matching input connection ids + their extern endpoints).
-	Used on agent (local services only) and server (each agent mirror).
+	Append the candidate producers for one output slot (\a connectionUsageId) from the
+	services in \a serviceCollection: every service whose input connection id matches,
+	as one stable endpoint each (see agentinodata::ServiceEndpointId). Used by the
+	AvailableConnections query — on the agent over its local services, on the server
+	over each agent's mirror.
 */
 void AppendAvailableConnectionsFromServiceCollection(
 			imtbase::IObjectCollection& serviceCollection,
 			const QByteArray& connectionUsageId,
 			QList<sdl::V1_0::agentino::CDependantConnectionInfo>& outList);
-
-/**
-	Fill outputConnections[*].dependantConnectionList for the service editor.
-*/
-void FillAvailableConnectionsForServiceData(
-			sdl::V1_0::agentino::CServiceData& serviceData,
-			imtbase::IObjectCollection& serviceCollection);
-
-void FillAvailableConnectionsForPluginInfo(
-			sdl::V1_0::agentino::CPluginInfo& pluginInfo,
-			imtbase::IObjectCollection& serviceCollection);
 
 
 } // namespace agentinodata

@@ -2,24 +2,24 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6435" Description="ACF"/>
-            <Version Id="1" Number="2410" Description="ACF-Solutions"/>
+            <Version Id="0" Number="6500" Description="ACF"/>
+            <Version Id="1" Number="2438" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
-        <Element ComponentName="AgentConnectionObserver" X="1025" Y="425" Note=""/>
-        <Element ComponentName="AgentSubscriptionController" X="150" Y="750" Note=""/>
+        <Element ComponentName="AgentChangeObserver" X="150" Y="750" Note=""/>
         <Element ComponentName="AgentinoHandlers" X="625" Y="175" Note=""/>
         <Element ComponentName="AgentinoLocalization" X="625" Y="50" Note=""/>
         <Element ComponentName="AuthenticationManager" X="525" Y="400" Note=""/>
         <Element ComponentName="DatabaseEngine" X="1025" Y="175" Note=""/>
+        <Element ComponentName="EnrollmentManager" X="175" Y="334" Note=""/>
         <Element ComponentName="FeatureContainer" X="775" Y="525" Note=""/>
         <Element ComponentName="HttpServerFramework" X="150" Y="175" Note=""/>
         <Element ComponentName="JwtSessionController" X="1000" Y="675" Note=""/>
         <Element ComponentName="Language" X="875" Y="50" Note=""/>
         <Element ComponentName="Repositories" X="775" Y="325" Note=""/>
-        <Element ComponentName="ServerSettings" X="375" Y="75" Note=""/>
+        <Element ComponentName="ServerSettings" X="450" Y="100" Note=""/>
         <Element ComponentName="ServiceControllerProxy" X="375" Y="625" Note=""/>
         <Element ComponentName="ServiceStatusSubscriberController" X="625" Y="675" Note=""/>
         <Element ComponentName="Subscribers" X="500" Y="300" Note=""/>

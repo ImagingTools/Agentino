@@ -23,7 +23,7 @@
                 <Element ComponentName="FileSystemControllerProxy" X="300" Y="125" Note=""/>
                 <Element ComponentName="GraphQLDemultiplexer" X="575" Y="100" Note=""/>
                 <Element ComponentName="RemoteLogCollectionController" X="575" Y="275" Note=""/>
-                <Element ComponentName="ServerServiceCollectionController" X="575" Y="600" Note=""/>
+                <Element ComponentName="MirroredServiceCollectionController" X="575" Y="600" Note=""/>
                 <Element ComponentName="ServiceControllerProxy" X="950" Y="275" Note=""/>
                 <Element ComponentName="ServiceHeadersDataProvider" X="575" Y="700" Note=""/>
                 <Element ComponentName="ServiceInfo" X="850" Y="700" Note=""/>

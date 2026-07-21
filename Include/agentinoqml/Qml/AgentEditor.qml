@@ -1,221 +1,406 @@
-import QtQuick 2.0
+import QtQuick 2.15
 import Acf 1.0
 import com.imtcore.imtqml 1.0
 import imtgui 1.0
+import imtguigql 1.0
+import imtcolgui 1.0
+import imtdocgui 1.0
 import imtcontrols 1.0
 import agentinoAgentsSdl 1.0
 
-ViewBase {
-	id: serviceEditorContainer;
-	
-	property int mainMargin: 0;
-	property int panelWidth: 700;
-	
-	property AgentData agentData: model ? model : null;
-	
+/**
+	MultiPageView editor, by analogy with ServiceEditor: General is the agent's own fields,
+	Services/Log are what used to be reachable only from AgentCollectionView (the standalone
+	"Services" toolbar command and the collection page's split-view agent log) - moved here so
+	both live with the agent they belong to, the same way ServiceEditor hosts its own Log page.
+*/
+DocumentViewBase {
+	id: agentEditorContainer
+
+	anchors.fill: parent
+	contentColor: Style.baseColor
+
+	property AgentData agentData: model
+
+	// Services/Log need a real, persisted agent id - mirrors ServiceEditor's isNewService/
+	// ensureLogPage() gating (documentManager.documentIsNew(), not m_id emptiness - the
+	// document framework allocates a real id as soon as the document is created, well before
+	// any Save).
+	property bool isNewAgent: true
+
+	function refreshIsNewAgent(){
+		if (!documentManager || documentId === "")
+			return
+		if (typeof documentManager.documentIsNew !== "function")
+			return
+		isNewAgent = documentManager.documentIsNew(documentId)
+	}
+
+	function ensureServicesPage(){
+		if (isNewAgent || multiPageView.getIndexById("Services") >= 0){
+			return
+		}
+		multiPageView.addPage("Services", qsTr("Services"), servicesPageComp, "Icons/Product")
+		agentEditorContainer.updateServicesBadge()
+	}
+
+	function ensureLogPage(){
+		if (isNewAgent || multiPageView.getIndexById("Log") >= 0){
+			return
+		}
+		multiPageView.addPage("Log", qsTr("Agent Log"), agentLogPageComp, "Icons/Diagnostics")
+	}
+
+	// "Services (N)" in the page list - N comes straight off the AgentData payload
+	// (serviceCount, populated the same way the Agents grid's own "services" column is:
+	// m_serviceManagerCompPtr->GetServiceCollection(agentId)), so it's known as soon as the
+	// document loads, no separate query needed.
+	function updateServicesBadge(){
+		if (!agentEditorContainer.agentData){
+			return
+		}
+		let count = agentEditorContainer.agentData.m_serviceCount
+		if (count === undefined || count === null){
+			return
+		}
+		multiPageView.setPageBadge("Services", "(" + count + ")")
+	}
+
+	onAgentDataChanged: agentEditorContainer.updateServicesBadge()
+
+	// "New messages" marker for the Log page: the backend already proxies
+	// OnAgentLogCollectionChanged end-to-end (agent -> server -> GUI clients, same path as
+	// OnServiceLogCollectionChanged) but nothing subscribed to it client-side before. This
+	// does not filter by agent id (the payload's exact field isn't confirmed) - same
+	// coarse-grained "any change of this type refreshes/marks" convention this app already
+	// uses for OnAgentStatusChanged - so it can mark the dot while looking at an unrelated
+	// agent's editor tab; acceptable for a "something changed, go check" indicator.
+	property bool hasNewLogMessages: false
+
+	onHasNewLogMessagesChanged: {
+		multiPageView.setPageBadge("Log", hasNewLogMessages ? "•" : "");
+	}
+
+	SubscriptionClient {
+		id: agentLogSubscriptionClient
+		gqlCommandId: "OnAgentLogCollectionChanged"
+
+		onMessageReceived: {
+			if (multiPageView.currentIndex !== multiPageView.getIndexById("Log")){
+				agentEditorContainer.hasNewLogMessages = true;
+			}
+		}
+	}
+
+	Connections {
+		target: multiPageView
+		function onCurrentIndexChanged(){
+			if (multiPageView.currentIndex >= 0 && multiPageView.currentIndex === multiPageView.getIndexById("Log")){
+				agentEditorContainer.hasNewLogMessages = false;
+			}
+		}
+	}
+
+	onDocumentIdChanged: refreshIsNewAgent()
+	onDocumentManagerChanged: refreshIsNewAgent()
+	onIsNewAgentChanged: {
+		if (!isNewAgent){
+			ensureServicesPage()
+			ensureLogPage()
+		}
+	}
+
+	Connections {
+		target: agentEditorContainer.documentManager
+		function onDocumentSaved(savedDocumentId){
+			if (savedDocumentId === agentEditorContainer.documentId){
+				agentEditorContainer.refreshIsNewAgent()
+				agentEditorContainer.ensureServicesPage()
+				agentEditorContainer.ensureLogPage()
+			}
+		}
+		// openDocument marks isNew=false before the view gets documentId; once the model is
+		// bound and documentOpened fires, re-sync so Services/Log show up on an existing
+		// agent opened at first start (same reasoning as ServiceEditor's onDocumentOpened).
+		function onDocumentOpened(openedDocumentId){
+			if (openedDocumentId === agentEditorContainer.documentId){
+				agentEditorContainer.refreshIsNewAgent()
+				agentEditorContainer.ensureServicesPage()
+				agentEditorContainer.ensureLogPage()
+			}
+		}
+		function onDocumentAdded(addedDocumentId){
+			if (addedDocumentId === agentEditorContainer.documentId){
+				agentEditorContainer.refreshIsNewAgent()
+			}
+		}
+	}
+
 	function updateGui(){
-		if (!agentData){
-			return
-		}
-
-		nameInput.text = agentData.m_name
-		descriptionInput.text = agentData.m_description
-		
-		switchVerboseMessage.checked = (agentData.m_tracingLevel > -1);
-		
-		if (agentData.m_tracingLevel > -1){
-			tracingLevelInput.currentIndex = agentData.m_tracingLevel;
-		}
-		else{
-			tracingLevelInput.currentIndex = -1;
+		let idx = multiPageView.getIndexById("General")
+		if (idx >= 0){
+			multiPageView.ensurePageLoaded(idx)
+			let item = multiPageView.getPageByIndex(idx)
+			if (item) item.updateGui()
 		}
 	}
-	
+
 	function updateModel(){
-		if (!agentData){
-			return
-		}
-
-		agentData.m_name = nameInput.text;
-		agentData.m_description = descriptionInput.text;
-		
-		if (switchVerboseMessage.checked){
-			if (tracingLevelInput.currentIndex < 0){
-				agentData.m_tracingLevel = 0;
-			}
-			else{
-				agentData.m_tracingLevel = tracingLevelInput.currentIndex;
-			}
-		}
-		else{
-			agentData.m_tracingLevel = -1;
+		let idx = multiPageView.getIndexById("General")
+		if (idx >= 0){
+			multiPageView.ensurePageLoaded(idx)
+			let item = multiPageView.getPageByIndex(idx)
+			if (item) item.updateModel()
 		}
 	}
 
-	Rectangle {
-		id: background;
-		
-		anchors.fill: parent;
-		
-		color: Style.backgroundColor;
-		
-		Item {
-			id: columnContainer;
-			
-			width: serviceEditorContainer.panelWidth;
-			height: bodyColumn.height + 2 * bodyColumn.anchors.topMargin;
-			
+	MultiPageView {
+		id: multiPageView
+		anchors.fill: parent
+		panelWidth: Style.sizeHintXXS
+
+		function addAgentPages(){
+			multiPageView.clear()
+			multiPageView.addPage("General", qsTr("General"), generalPageComp, "Icons/Settings")
+			agentEditorContainer.ensureServicesPage()
+			agentEditorContainer.ensureLogPage()
+			multiPageView.currentIndex = multiPageView.getIndexById("General")
+		}
+	}
+
+	Component.onCompleted: {
+		multiPageView.addAgentPages()
+	}
+
+	Component {
+		id: generalPageComp
+
+		Flickable {
+			id: generalFlickable
+
+			anchors.fill: parent
+			anchors.leftMargin: Style.marginXL
+			anchors.topMargin: Style.marginXL
+			anchors.rightMargin: Style.marginXL
+			anchors.bottomMargin: Style.marginXL
+
+			contentWidth: bodyColumn.width
+			contentHeight: bodyColumn.height + Style.marginXL
+
+			boundsBehavior: Flickable.StopAtBounds
+			clip: true
+
+			function updateGui(){
+				if (!agentEditorContainer.agentData){
+					return
+				}
+
+				nameInput.text = agentEditorContainer.agentData.m_name
+				descriptionInput.text = agentEditorContainer.agentData.m_description
+
+				switchVerboseMessage.checked = (agentEditorContainer.agentData.m_tracingLevel > -1)
+
+				if (agentEditorContainer.agentData.m_tracingLevel > -1){
+					tracingLevelInput.currentIndex = agentEditorContainer.agentData.m_tracingLevel
+				}
+				else{
+					tracingLevelInput.currentIndex = -1
+				}
+			}
+
+			function updateModel(){
+				if (!agentEditorContainer.agentData){
+					return
+				}
+
+				agentEditorContainer.agentData.m_name = nameInput.text
+				agentEditorContainer.agentData.m_description = descriptionInput.text
+
+				if (switchVerboseMessage.checked){
+					if (tracingLevelInput.currentIndex < 0){
+						agentEditorContainer.agentData.m_tracingLevel = 0
+					}
+					else{
+						agentEditorContainer.agentData.m_tracingLevel = tracingLevelInput.currentIndex
+					}
+				}
+				else{
+					agentEditorContainer.agentData.m_tracingLevel = -1
+				}
+			}
+
 			Column {
-				id: bodyColumn;
-				
-				anchors.top: parent.top;
-				anchors.left: parent.left;
-				anchors.topMargin: serviceEditorContainer.mainMargin;
-				anchors.leftMargin: serviceEditorContainer.mainMargin;
-				
-				width: serviceEditorContainer.panelWidth - 2*anchors.leftMargin;
-				
-				spacing: 10;
-				
+				id: bodyColumn
+
+				width: Math.max(0, Math.min(700, generalFlickable.width))
+
+				spacing: 10
+
 				Text {
-					id: titleName;
-					
-					anchors.left: parent.left;
-					
-					color: Style.textColor;
-					font.family: Style.fontFamily;
-					font.pixelSize: Style.fontSizeM;
-					
-					text: qsTr("Name");
+					anchors.left: parent.left
+
+					color: Style.textColor
+					font.family: Style.fontFamily
+					font.pixelSize: Style.fontSizeM
+
+					text: qsTr("Name")
 				}
-				
+
 				CustomTextField {
-					id: nameInput;
-					
-					width: parent.width;
-					height: Style.itemSizeM;
-					
-					placeHolderText: qsTr("Enter the name");
-					
+					id: nameInput
+
+					width: parent.width
+					height: Style.itemSizeM
+
+					placeHolderText: qsTr("Enter the name")
+
 					onEditingFinished: {
-						serviceEditorContainer.doUpdateModel();
+						agentEditorContainer.doUpdateModel()
 					}
-					
-					KeyNavigation.tab: descriptionInput;
+
+					KeyNavigation.tab: descriptionInput
 				}
-				
+
 				Text {
-					id: descriptionName;
-					
-					anchors.left: parent.left;
-					
-					color: Style.textColor;
-					font.family: Style.fontFamily;
-					font.pixelSize: Style.fontSizeM;
-					
-					text: qsTr("Description");
+					anchors.left: parent.left
+
+					color: Style.textColor
+					font.family: Style.fontFamily
+					font.pixelSize: Style.fontSizeM
+
+					text: qsTr("Description")
 				}
-				
+
 				CustomTextField {
-					id: descriptionInput;
-					
-					width: parent.width;
-					height: Style.itemSizeM;
-					
-					placeHolderText: qsTr("Enter the description");
-					
+					id: descriptionInput
+
+					width: parent.width
+					height: Style.itemSizeM
+
+					placeHolderText: qsTr("Enter the description")
+
 					onEditingFinished: {
-						serviceEditorContainer.doUpdateModel();
+						agentEditorContainer.doUpdateModel()
 					}
-					
-					KeyNavigation.tab: nameInput;
+
+					KeyNavigation.tab: nameInput
 				}
-				
+
 				Text {
-					id: titleVerboseMessage;
-					
-					anchors.left: parent.left;
-					
-					width: parent.width;
-					
-					color: Style.textColor;
-					font.family: Style.fontFamily;
-					font.pixelSize: Style.fontSizeM;
-					
-					text: qsTr("Verbose message (") + (switchVerboseMessage.checked ? qsTr("on") : qsTr("off")) + ")";
+					anchors.left: parent.left
+					width: parent.width
+
+					color: Style.textColor
+					font.family: Style.fontFamily
+					font.pixelSize: Style.fontSizeM
+
+					text: qsTr("Verbose message (") + (switchVerboseMessage.checked ? qsTr("on") : qsTr("off")) + ")"
 				}
-				
+
 				Row {
-					height:  Style.itemSizeM;
-					spacing: Style.marginM;
-					
+					height: Style.itemSizeM
+					spacing: Style.marginM
+
 					SwitchCustom {
 						id: switchVerboseMessage
 						anchors.verticalCenter: parent.verticalCenter
-						
+
 						backgroundColor: "#D4D4D4"
 						onCheckedChanged: {
-							serviceEditorContainer.doUpdateModel();
+							agentEditorContainer.doUpdateModel()
 						}
 					}
-					
+
 					Item {
-						width: Style.marginM;
+						width: Style.marginM
 						height: Style.itemSizeM
 					}
-					
+
 					Text {
-						id: titleTracingLevel;
 						anchors.verticalCenter: parent.verticalCenter
-						
+
 						visible: switchVerboseMessage.checked
-						color: Style.textColor;
-						font.family: Style.fontFamily;
-						font.pixelSize: Style.fontSizeM;
-						
-						text: qsTr("Tracing level");
+						color: Style.textColor
+						font.family: Style.fontFamily
+						font.pixelSize: Style.fontSizeM
+
+						text: qsTr("Tracing level")
 					}
-					
+
 					ComboBox {
 						id: tracingLevelInput
 						anchors.verticalCenter: parent.verticalCenter
-						height: Style.itemSizeM * 0.75;
-						width: Style.itemSizeL;
+						height: Style.itemSizeM * 0.75
+						width: Style.itemSizeL
 						visible: switchVerboseMessage.checked
-						
+
 						model: TreeItemModel {}
-						
+
 						Component.onCompleted: {
-							let index = model.insertNewItem()
-							model.setData("id", "0", index)
-							model.setData("name", "0", index)
-							
-							index = model.insertNewItem()
-							model.setData("id", "1", index)
-							model.setData("name", "1", index)
-							
-							index = model.insertNewItem()
-							model.setData("id", "2", index)
-							model.setData("name", "2", index)
-							
-							index = model.insertNewItem()
-							model.setData("id", "3", index)
-							model.setData("name", "3", index)
-							
-							index = model.insertNewItem()
-							model.setData("id", "4", index)
-							model.setData("name", "4", index)
-							
-							index = model.insertNewItem()
-							model.setData("id", "5", index)
-							model.setData("name", "5", index)
+							for (let i = 0; i <= 5; i++){
+								let index = tracingLevelInput.model.insertNewItem()
+								tracingLevelInput.model.setData("id", "" + i, index)
+								tracingLevelInput.model.setData("name", "" + i, index)
+							}
 						}
 						onCurrentIndexChanged: {
-							serviceEditorContainer.doUpdateModel();
+							agentEditorContainer.doUpdateModel()
 						}
 					}
 				}
-			}//Column bodyColumn
-		}//columnContainer
+			}
+		}
 	}
-}//Container
+
+	// Was AgentCollectionViewBase.qml's "Services" toolbar command (open a fixed-tab
+	// SingleDocumentWorkspaceView showing the selected agent's services) - now this agent's
+	// own page instead of a separate destination reached only from the collection view.
+	Component {
+		id: servicesPageComp
+
+		SingleDocumentWorkspaceView {
+			id: servicesWorkspaceView
+			anchors.fill: parent
+			documentManager: DocumentService {}
+
+			visualStatusProvider: GqlBasedObjectVisualStatusProvider {
+				collectionId: "Services"
+				function getHeaders(){
+					return {"clientid": agentEditorContainer.documentId}
+				}
+			}
+
+			Component.onCompleted: {
+				MainDocumentService.registerDocumentService("Services", documentManager)
+				addInitialItem(serviceCollectionViewComp, "")
+			}
+
+			Component {
+				id: serviceCollectionViewComp
+
+				ServiceCollectionView {
+					Component.onCompleted: {
+						clientId = agentEditorContainer.documentId
+					}
+				}
+			}
+		}
+	}
+
+	// Was AgentCollectionView.qml's second SplitView pane (a MessageCollectionView scoped to
+	// the selected row via clientid) - now this agent's own Log page, matching ServiceEditor's
+	// serviceLogPageComp (no services-name filter here - AgentData carries no service list,
+	// and ServiceEditor's own Log page has no comparable extra filter either).
+	Component {
+		id: agentLogPageComp
+
+		MessageCollectionView {
+			anchors.fill: parent
+			collectionId: "AgentLog"
+
+			function getHeaders(){
+				return {"clientid": agentEditorContainer.documentId}
+			}
+		}
+	}
+}

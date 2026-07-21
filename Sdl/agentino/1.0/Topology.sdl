@@ -36,6 +36,16 @@ type Topology {
 	services: [Service]
 }
 
+input ServiceCoordinateInput {
+	id: ID!
+	x: Double
+	y: Double
+}
+
+input SaveTopologyInput {
+	services: [ServiceCoordinateInput]
+}
+
 type SaveTopologyResponse {
 	successful: Boolean!
 }
@@ -45,6 +55,6 @@ type Query {
 }
 
 type Mutation {
-	SaveTopology (input: Topology): SaveTopologyResponse!
+	SaveTopology (input: SaveTopologyInput): SaveTopologyResponse!
 }
 

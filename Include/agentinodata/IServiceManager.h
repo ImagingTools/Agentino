@@ -5,6 +5,9 @@
 // ACF includes
 #include <istd/IChangeable.h>
 
+// ImtCore includes
+#include <imtbase/IObjectCollection.h>
+
 // Agentino includes
 #include <agentinodata/IServiceInfo.h>
 
@@ -55,9 +58,17 @@ public:
 				bool beQuiet = false) = 0;
 	virtual bool ServiceExists(const QByteArray& agentId, const QByteArray& serviceId) const = 0;
 	virtual IServiceInfo* GetService(const QByteArray& agentId, const QByteArray& serviceId) const = 0;
+
+	/**
+		Per-agent service collection (R1.3: not nested in CAgentInfo).
+		Default returns nullptr; CAgentServiceManagerComp implements.
+	*/
+	virtual imtbase::IObjectCollection* GetServiceCollection(const QByteArray& agentId) const
+	{
+		Q_UNUSED(agentId);
+		return nullptr;
+	}
 };
 
 
 } // namespace agentinodata
-
-

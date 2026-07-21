@@ -10,24 +10,6 @@
     <Description></Description>
     <Keywords></Keywords>
     <ElementsList>
-        <Element Id="AgentinoServerBase" PackageId="AgentinoVoce" ComponentId="ServerBase">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ClientApplication/ApplicationInfo"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="TextFileLog"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="LogPath" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="LogFilePath"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="VersionInfo"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
         <Element Id="AppClientLocalization" PackageId="ImtCoreVoce" ComponentId="AppLocalization">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
@@ -62,7 +44,6 @@
                                 <Value>TextFileLog</Value>
                                 <Value>ClientApplication/ClientMainWindowQml</Value>
                                 <Value>ClientApplication/ObserverQml</Value>
-                                <Value>AgentinoServerBase</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

@@ -90,17 +90,42 @@ sdl::V1_0::agentino::CServiceStatusResponse CServiceControllerComp::OnStopServic
 		return response;
 	}
 
-	response.status = sdl::V1_0::agentino::ServiceStatus::UNDEFINED;
+	response.status = sdl::V1_0::agentino::ServiceStatus::STOPPING;
 
 	if (!arguments.input->serviceId.has_value()){
-		errorMessage = QString("Unable to start service with empty ID");
+		errorMessage = QString("Unable to stop service with empty ID");
 		return response;
 	}
 
 	QByteArray serviceId = *arguments.input->serviceId;
-	m_serviceControllerCompPtr->StopService(serviceId);
-	agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(serviceId);
-	response.status = (sdl::V1_0::agentino::ServiceStatus) state;
+	if (!m_serviceControllerCompPtr->StopService(serviceId)){
+		errorMessage = QString("Unable to stop service '%1'").arg(QString::fromUtf8(serviceId));
+		// Still report current supervisor state (may already be Stopped).
+	}
+
+	// Never C-cast IServiceStatusInfo ↔ SDL ServiceStatus (ordinals can drift).
+	const agentinodata::IServiceStatusInfo::ServiceStatus state =
+				m_serviceControllerCompPtr->GetServiceStatus(serviceId);
+	switch (state){
+	case agentinodata::IServiceStatusInfo::SS_RUNNING:
+		response.status = sdl::V1_0::agentino::ServiceStatus::RUNNING;
+		break;
+	case agentinodata::IServiceStatusInfo::SS_STARTING:
+		response.status = sdl::V1_0::agentino::ServiceStatus::STARTING;
+		break;
+	case agentinodata::IServiceStatusInfo::SS_STOPPING:
+		response.status = sdl::V1_0::agentino::ServiceStatus::STOPPING;
+		break;
+	case agentinodata::IServiceStatusInfo::SS_NOT_RUNNING:
+		response.status = sdl::V1_0::agentino::ServiceStatus::NOT_RUNNING;
+		break;
+	case agentinodata::IServiceStatusInfo::SS_RUNNING_IMPOSSIBLE:
+		response.status = sdl::V1_0::agentino::ServiceStatus::RUNNING_IMPOSSIBLE;
+		break;
+	default:
+		response.status = sdl::V1_0::agentino::ServiceStatus::UNDEFINED;
+		break;
+	}
 
 	return response;
 }
@@ -257,6 +282,169 @@ sdl::V1_0::agentino::CUpdateConnectionUrlResponse CServiceControllerComp::OnUpda
 }
 
 
+sdl::V1_0::agentino::CSetOutputConnectionResponse CServiceControllerComp::OnSetOutputConnection(
+			const sdl::V1_0::agentino::CSetOutputConnectionGqlRequest& setOutputConnectionRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::CSetOutputConnectionResponse response;
+	response.succesful = false;
+
+	if (!m_serviceCollectionCompPtr.IsValid() || !m_connectionCollectionProviderCompPtr.IsValid()){
+		Q_ASSERT_X(false, "Attributes 'ServiceCollection'/'ConnectionCollectionProvider' were not set", "CServiceControllerComp");
+		errorMessage = QString("Service collection or connection collection provider is not available");
+
+		return response;
+	}
+
+	sdl::V1_0::agentino::SetOutputConnectionRequestArguments arguments = setOutputConnectionRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->serviceId.has_value() || !arguments.input->connectionId.has_value()){
+		errorMessage = QString("SetOutputConnection input is invalid");
+
+		return response;
+	}
+
+	const QByteArray serviceId = *arguments.input->serviceId;
+	const QByteArray connectionId = *arguments.input->connectionId;
+
+	imtbase::IObjectCollection::DataPtr serviceDataPtr;
+	if (!m_serviceCollectionCompPtr->GetObjectData(serviceId, serviceDataPtr)){
+		errorMessage = QString("Service '%1' was not found").arg(QString::fromUtf8(serviceId));
+
+		return response;
+	}
+
+	agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+	if (serviceInfoPtr == nullptr){
+		errorMessage = QString("Service '%1' has no service info").arg(QString::fromUtf8(serviceId));
+
+		return response;
+	}
+
+	imtbase::IObjectCollection* dependantConnectionsPtr = serviceInfoPtr->GetDependantServiceConnections();
+	if (dependantConnectionsPtr == nullptr){
+		errorMessage = QString("Service '%1' has no output connections").arg(QString::fromUtf8(serviceId));
+
+		return response;
+	}
+
+	imtbase::IObjectCollection::DataPtr connectionDataPtr;
+	if (!dependantConnectionsPtr->GetObjectData(connectionId, connectionDataPtr)){
+		errorMessage = QString("Output connection '%1' was not found").arg(QString::fromUtf8(connectionId));
+
+		return response;
+	}
+
+	imtservice::CUrlConnectionLinkParam* linkParamPtr =
+				dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
+	if (linkParamPtr == nullptr){
+		errorMessage = QString("Output connection '%1' has an unexpected type").arg(QString::fromUtf8(connectionId));
+
+		return response;
+	}
+
+	QString dependantConnectionId;
+	if (arguments.input->dependantConnectionId.has_value()){
+		dependantConnectionId = *arguments.input->dependantConnectionId;
+	}
+
+	sdl::V1_0::agentino::COutputConnection outputConnectionRepresentation;
+	outputConnectionRepresentation.dependantConnectionId = dependantConnectionId;
+
+	if (arguments.input->connectionParam.has_value()){
+		// Pre-resolved by the server proxy, which can see producers across the whole fleet.
+		outputConnectionRepresentation.connectionParam = *arguments.input->connectionParam;
+	}
+	else if (!dependantConnectionId.isEmpty()){
+		// No pre-resolved param (e.g. a direct call to this agent): fall back to resolving
+		// against this agent's own services only, same as OnAvailableConnections.
+		QList<sdl::V1_0::agentino::CDependantConnectionInfo> candidates;
+		agentinodata::AppendAvailableConnectionsFromServiceCollection(
+					*m_serviceCollectionCompPtr.GetPtr(), connectionId, candidates);
+
+		bool found = false;
+		for (const sdl::V1_0::agentino::CDependantConnectionInfo& candidate : candidates){
+			if (candidate.id.has_value() && QString::fromUtf8(*candidate.id) == dependantConnectionId){
+				outputConnectionRepresentation.connectionParam = candidate.connectionParam;
+				found = true;
+
+				break;
+			}
+		}
+
+		if (!found){
+			errorMessage = QString("Producer connection '%1' is not available").arg(dependantConnectionId);
+
+			return response;
+		}
+	}
+	else{
+		// Clearing the selection.
+		sdl::V1_0::imtbase::CServerConnectionParam clearedParam;
+		clearedParam.host = QStringLiteral("localhost");
+		clearedParam.httpPort = -1;
+		clearedParam.wsPort = -1;
+		outputConnectionRepresentation.connectionParam = clearedParam;
+	}
+
+	if (!agentinodata::GetUrlConnectionLinkFromRepresentation(*linkParamPtr, outputConnectionRepresentation)){
+		errorMessage = QString("Invalid connection parameters");
+
+		return response;
+	}
+
+	dependantConnectionsPtr->SetObjectData(connectionId, *linkParamPtr);
+	m_serviceCollectionCompPtr->SetObjectData(serviceId, *serviceInfoPtr);
+
+	imtservice::IConnectionCollectionSharedPtr connectionCollectionPtr =
+				m_connectionCollectionProviderCompPtr->GetConnectionCollectionByServiceId(serviceId);
+	if (connectionCollectionPtr.IsValid()){
+		connectionCollectionPtr->SetServerConnectionInterface(connectionId, *linkParamPtr);
+	}
+
+	response.succesful = true;
+	response.connectionParam = outputConnectionRepresentation.connectionParam;
+
+	return response;
+}
+
+
+sdl::V1_0::agentino::CAvailableConnectionsPayload CServiceControllerComp::OnAvailableConnections(
+			const sdl::V1_0::agentino::CAvailableConnectionsGqlRequest& availableConnectionsRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& /*errorMessage*/) const
+{
+	sdl::V1_0::agentino::CAvailableConnectionsPayload response;
+	response.outputConnections.Emplace();
+
+	const sdl::V1_0::agentino::AvailableConnectionsRequestArguments arguments =
+				availableConnectionsRequest.GetRequestedArguments();
+	if (!arguments.input.has_value()
+				|| !arguments.input->connectionUsageIds.has_value()
+				|| !m_serviceCollectionCompPtr.IsValid()){
+		return response;
+	}
+
+	QList<sdl::V1_0::agentino::COutputConnectionCandidates> groups;
+	const QByteArrayList usageIds = (*arguments.input->connectionUsageIds).ToList();
+	for (const QByteArray& usageId : usageIds){
+		QList<sdl::V1_0::agentino::CDependantConnectionInfo> candidates;
+		agentinodata::AppendAvailableConnectionsFromServiceCollection(
+					*m_serviceCollectionCompPtr.GetPtr(), usageId, candidates);
+
+		sdl::V1_0::agentino::COutputConnectionCandidates group;
+		group.connectionUsageId = usageId;
+		group.candidates.Emplace();
+		group.candidates->FromList(candidates);
+		groups << group;
+	}
+
+	response.outputConnections->FromList(groups);
+
+	return response;
+}
+
+
 sdl::V1_0::agentino::CPluginInfo CServiceControllerComp::OnLoadPlugin(
 			const sdl::V1_0::agentino::CLoadPluginGqlRequest& loadPluginRequest,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,
@@ -290,11 +478,8 @@ sdl::V1_0::agentino::CPluginInfo CServiceControllerComp::OnLoadPlugin(
 		response = pluginRepresentation;
 		response.servicePath = servicePath;
 
-		// Same as server LoadPlugin proxy: fill Available Connections for output slots.
-		// Agent scope = local ServiceCollection only.
-		if (m_serviceCollectionCompPtr.IsValid()){
-			agentinodata::FillAvailableConnectionsForPluginInfo(response, *m_serviceCollectionCompPtr.GetPtr());
-		}
+		// Candidate lists are not filled here — the editor asks for them lazily via the
+		// AvailableConnections query once the output slots are known.
 	}
 	else{
 		// GetConnectionCollectionByServicePath() has no error-message out-param, so recover

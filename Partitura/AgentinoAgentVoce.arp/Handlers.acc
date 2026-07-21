@@ -10,11 +10,20 @@
     <Description></Description>
     <Keywords></Keywords>
     <ElementsList>
-        <Element Id="AgentGqlRemoteRepresentationController" PackageId="AgentGqlPck" ComponentId="AgentGqlRemoteRepresentationController">
+        <Element Id="AgentGqlRemoteRepresentationController" PackageId="AgentGqlPck" ComponentId="AgentRemoteVisualStatusController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ApiClient" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ApiClient"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TypeIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>Role</Value>
+                                <Value>User</Value>
+                                <Value>Group</Value>
+                            </Values>
+                        </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
@@ -349,7 +358,9 @@
                                 <Value>GetServiceStatus</Value>
                                 <Value>GetServiceSettings</Value>
                                 <Value>UpdateServiceSettings</Value>
+                                <Value>AvailableConnections</Value>
                                 <Value>LoadPlugin</Value>
+                                <Value>SetOutputConnection</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

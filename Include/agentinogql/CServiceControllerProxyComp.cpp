@@ -6,8 +6,11 @@
 
 
 // Qt includes
+#include <QtCore/QDateTime>
 #include <QtCore/QDebug>
+#include <QtCore/QJsonObject>
 #include <QtCore/QString>
+#include <QtCore/QTimer>
 
 // ACF includes
 #include <istd/CChangeGroup.h>
@@ -15,40 +18,99 @@
 // Agentino includes
 #include <agentinodata/agentinodata.h>
 #include <agentinodata/CAgentInfo.h>
+#include <agentinodata/ServiceEndpointId.h>
 #include <agentinodata/CServiceInfo.h>
 #include <agentinodata/CServiceStatusInfo.h>
 
 // ImtCore includes
+#include <imtbase/imtbase.h>
+#include <imtcom/IServerConnectionInterface.h>
 #include <imtgql/CGqlContext.h>
+#include <imtclientgql/IAsyncGqlRequestToken.h>
 
 
 namespace agentinogql
 {
 
 
+// public methods
+
+CServiceControllerProxyComp::CServiceControllerProxyComp()
+{
+}
+
+
 // reimplemented (IServiceCollectionSynchronizer)
 
-bool CServiceControllerProxyComp::SyncServiceInMirror(
+bool CServiceControllerProxyComp::ApplyServiceDataToMirror(
 			const QByteArray& agentId,
 			const QByteArray& serviceId,
+			const sdl::V1_0::agentino::CServiceData& serviceData,
 			QString& errorMessage)
 {
-	// Idempotent: proxy write path and agent push may both call this for the same change.
-	// ServiceExists ? SetService : AddService converges either way.
 	if (!m_serviceManagerCompPtr.IsValid()){
 		errorMessage = "Attribute 'ServiceManager' was not set";
-		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
-
 		return false;
 	}
 
-	// Build a 'GetService' request addressed to the owning agent and fetch the fresh data,
-	// exactly as OnAddService does after forwarding an add.
-	imtgql::CGqlRequest getGqlRequest;
+	istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInfoPtr;
+	serviceInfoPtr.SetPtr(new agentinodata::CIdentifiableServiceInfo);
 
+	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, serviceData, errorMessage)){
+		errorMessage = QString("Unable to get service from representation. Error: %1").arg(errorMessage);
+		return false;
+	}
+
+	serviceInfoPtr->SetObjectUuid(serviceId);
+
+	const QString serviceName = serviceInfoPtr->GetServiceName();
+	const QString serviceDescription = serviceInfoPtr->GetServiceDescription();
+
+	// The agent is the single source of truth for its own service's live status — refresh it
+	// from every GetService response, not just on first insert into the mirror. Without this,
+	// a service that stays Running across an agent disconnect/reconnect cycle never leaves the
+	// UNDEFINED status the disconnect handler set: the agent has no status *change* to push
+	// (OnAgentServiceStatusChanged), since from its own perspective nothing happened.
+	agentinodata::IServiceStatusInfo::ServiceStatus status =
+				agentinodata::IServiceStatusInfo::SS_NOT_RUNNING;
+	if (serviceData.status.has_value()){
+		agentinodata::GetServiceStatusFromRepresentation(*serviceData.status, status);
+	}
+	SetServiceStatus(serviceId, status);
+
+	if (m_serviceManagerCompPtr->ServiceExists(agentId, serviceId)){
+		if (!m_serviceManagerCompPtr->SetService(agentId, serviceId, *serviceInfoPtr, serviceName, serviceDescription, false)){
+			errorMessage = QString("Unable to update service '%1' in the server mirror").arg(qPrintable(serviceId));
+			return false;
+		}
+	}
+	else{
+		if (!m_serviceManagerCompPtr->AddService(agentId, *serviceInfoPtr, serviceId, serviceName, serviceDescription)){
+			errorMessage = QString("Unable to add service '%1' to the server mirror").arg(qPrintable(serviceId));
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
+namespace
+{
+
+
+bool BuildGetServiceRequestForAgent(
+			const QByteArray& agentId,
+			const QByteArray& serviceId,
+			imtgql::CGqlRequest& getGqlRequest,
+			QString& errorMessage)
+{
+	// Machine-to-agent poll: address the agent via clientid only.
+	// Do NOT attach a user JWT — deferred sync often runs without a request context, and a
+	// stale/invalid token yields "Unauthorized" on the agent while empty token is accepted.
 	imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
 	imtgql::IGqlContext::Headers headers;
-	headers.insert("clientid", agentId);
+	headers.insert(QByteArrayLiteral("clientid"), agentId);
 	gqlContextPtr->SetHeaders(headers);
 	getGqlRequest.SetGqlContext(gqlContextPtr);
 
@@ -58,64 +120,103 @@ bool CServiceControllerProxyComp::SyncServiceInMirror(
 
 	if (!sdl::V1_0::agentino::CGetServiceGqlRequest::SetupGqlRequest(getGqlRequest, getArguments)){
 		errorMessage = QString("Unable to build 'GetService' request for '%1'").arg(qPrintable(serviceId));
-		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
-
 		return false;
 	}
-
-	// SetupGqlRequest does not attach selection set; request full ServiceData fields.
-	AppendServiceDataFields(getGqlRequest);
-
-	sdl::V1_0::agentino::CServiceData serviceData = SendModelRequest<sdl::V1_0::agentino::CServiceData>(getGqlRequest, errorMessage);
-	if (!errorMessage.isEmpty()){
-		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
-
-		return false;
-	}
-
-	istd::TDelPtr<agentinodata::CIdentifiableServiceInfo> serviceInfoPtr;
-	serviceInfoPtr.SetPtr(new agentinodata::CIdentifiableServiceInfo);
-
-	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, serviceData, errorMessage)){
-		errorMessage = QString("Unable to get service from representation. Error: %1").arg(errorMessage);
-		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
-
-		return false;
-	}
-
-	serviceInfoPtr->SetObjectUuid(serviceId);
-
-	QString serviceName = serviceInfoPtr->GetServiceName();
-	QString serviceDescription = serviceInfoPtr->GetServiceDescription();
-	const QByteArray servicePath = serviceInfoPtr->GetServicePath();
-
-	if (m_serviceManagerCompPtr->ServiceExists(agentId, serviceId)){
-		// Notify (beQuiet=false) so GUI receives OnServicesCollectionChanged for agent-side edits.
-		// beQuiet=true remains only in OnGetService (cache refresh during a read).
-		if (!m_serviceManagerCompPtr->SetService(agentId, serviceId, *serviceInfoPtr, serviceName, serviceDescription, false)){
-			errorMessage = QString("Unable to update service '%1' in the server mirror").arg(qPrintable(serviceId));
-			SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
-
-			return false;
-		}
-	}
-	else{
-		SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_NOT_RUNNING);
-
-		// AddService / InsertNewObject CopyFrom the IServiceInfo — do NOT PopPtr (that leaked
-		// the heap object after the collection already copied it).
-		if (!m_serviceManagerCompPtr->AddService(agentId, *serviceInfoPtr, serviceId, serviceName, serviceDescription)){
-			errorMessage = QString("Unable to add service '%1' to the server mirror").arg(qPrintable(serviceId));
-			SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
-
-			return false;
-		}
-	}
-
-	// Recreate with a new UUID (same path) must not leave the previous mirror entry behind.
-	RemoveStaleMirrorServicesByPath(agentId, serviceId, servicePath);
 
 	return true;
+}
+
+
+} // namespace
+
+
+bool CServiceControllerProxyComp::StartAsyncServiceSync(
+			const QByteArray& agentId,
+			const QByteArray& serviceId,
+			QString& errorMessage)
+{
+	if (!m_serviceManagerCompPtr.IsValid()){
+		errorMessage = "Attribute 'ServiceManager' was not set";
+		return false;
+	}
+
+	if (m_enrollmentControllerCompPtr.IsValid() && !agentId.isEmpty()){
+		const EnrollmentRecord record = m_enrollmentControllerCompPtr->Get(agentId);
+		if (record.status != EnrollmentStatus::Approved){
+			errorMessage = QStringLiteral("Agent '%1' is not Approved; service mirror sync denied")
+						.arg(QString::fromUtf8(agentId));
+			return false;
+		}
+	}
+
+	if (!HasAsyncApiClient()){
+		errorMessage = QStringLiteral("AsyncApiClient not configured; cannot non-blockingly sync service");
+		return false;
+	}
+
+	imtgql::CGqlRequest getGqlRequest;
+	if (!BuildGetServiceRequestForAgent(agentId, serviceId, getGqlRequest, errorMessage)){
+		return false;
+	}
+	AppendServiceDataFields(getGqlRequest);
+
+	const QByteArray agentIdCopy = agentId;
+	const QByteArray serviceIdCopy = serviceId;
+	imtclientgql::IAsyncGqlRequestTokenPtr token =
+				SendModelRequestAsync<sdl::V1_0::agentino::CServiceData>(
+							getGqlRequest,
+							[this, agentIdCopy, serviceIdCopy](
+										sdl::V1_0::agentino::CServiceData serviceData,
+										QString fetchError) {
+								const bool hasId = serviceData.id.has_value() && !serviceData.id->isEmpty();
+								const bool hasName = serviceData.name.has_value() && !serviceData.name->isEmpty();
+								if (!fetchError.isEmpty()){
+									SendErrorMessage(
+												0,
+												QStringLiteral(
+															"Async GetService for mirror failed (agent '%1' service '%2'): %3")
+															.arg(QString::fromUtf8(agentIdCopy),
+																 QString::fromUtf8(serviceIdCopy),
+																 fetchError),
+												"CServiceControllerProxyComp");
+									// Soft error with a usable body: still apply (seed/list may be thin).
+									if (!hasId && !hasName){
+										return;
+									}
+								}
+								if (!hasId){
+									serviceData.id = serviceIdCopy;
+								}
+								if (!hasName){
+									serviceData.name = QString::fromUtf8(serviceIdCopy);
+								}
+
+								QString applyError;
+								if (!ApplyServiceDataToMirror(agentIdCopy, serviceIdCopy, serviceData, applyError)){
+									SendErrorMessage(
+												0,
+												applyError,
+												"CServiceControllerProxyComp");
+								}
+							});
+
+	if (!token.IsValid()){
+		errorMessage = QStringLiteral("AsyncApiClient failed to dispatch GetService");
+		return false;
+	}
+
+	return true;
+}
+
+
+bool CServiceControllerProxyComp::SyncServiceInMirror(
+			const QByteArray& agentId,
+			const QByteArray& serviceId,
+			QString& errorMessage)
+{
+	// Async only: blocking Wait on the WebSocket / GQL-worker stack deadlocks
+	// (nested query_data is not drained while m_isProcessingMessage is set).
+	return StartAsyncServiceSync(agentId, serviceId, errorMessage);
 }
 
 
@@ -149,7 +250,9 @@ bool CServiceControllerProxyComp::SyncAgentServicesInMirror(
 			QString& errorMessage)
 {
 	if (m_agentsBeingReconciled.contains(agentId)){
-		// Nested call from SendModelRequest local event loop - skip re-entry for this agent.
+		// Nested call from SendModelRequest local event loop: queue a follow-up pass
+		// instead of dropping the reconcile (Architecture P3/P6).
+		QueueReconcile(agentId);
 		return true;
 	}
 
@@ -160,11 +263,29 @@ bool CServiceControllerProxyComp::SyncAgentServicesInMirror(
 		return false;
 	}
 
+	// Live/reconcile path enrollment gate (revoke must stop mirror ingestion immediately).
+	if (m_enrollmentControllerCompPtr.IsValid() && !agentId.isEmpty()){
+		const EnrollmentRecord record = m_enrollmentControllerCompPtr->Get(agentId);
+		if (record.status != EnrollmentStatus::Approved){
+			errorMessage = QStringLiteral("Agent '%1' is not Approved; mirror reconcile denied")
+						.arg(QString::fromUtf8(agentId));
+			return false;
+		}
+	}
+
+	// Reconcile is always non-blocking via TAsyncClientRequestManagerCompWrap
+	// (AsyncApiClient → SubscriptionManager IAsyncGqlClient).
+	return StartAsyncAgentReconcile(agentId, errorMessage);
+}
+
+
+bool CServiceControllerProxyComp::StartAsyncAgentReconcile(
+			const QByteArray& agentId,
+			QString& errorMessage)
+{
 	m_agentsBeingReconciled.insert(agentId);
 
-	// Pull the authoritative service id set from the agent.
 	imtgql::CGqlRequest listGqlRequest;
-
 	imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
 	imtgql::IGqlContext::Headers headers;
 	headers.insert("clientid", agentId);
@@ -173,31 +294,66 @@ bool CServiceControllerProxyComp::SyncAgentServicesInMirror(
 
 	sdl::V1_0::agentino::ServicesListRequestArguments listArguments;
 	listArguments.input.emplace();
-
 	sdl::V1_0::agentino::ServicesListRequestInfo listInfo;
-	// Ids are required for the diff; other fields are optional for reconciliation.
 	listInfo.items.isIdRequested = true;
 
 	if (!sdl::V1_0::agentino::CServicesListGqlRequest::SetupGqlRequest(listGqlRequest, listArguments, listInfo)){
 		m_agentsBeingReconciled.remove(agentId);
 		errorMessage = QString("Unable to build 'ServicesList' request for agent '%1'").arg(qPrintable(agentId));
 		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
+		return false;
+	}
+	AppendServicesListFields(listGqlRequest);
 
+	// Capture agentId; callback runs on SubscriptionManager thread without nested loop.
+	const QByteArray agentIdCopy = agentId;
+	imtclientgql::IAsyncGqlRequestTokenPtr token = SendModelRequestAsync<sdl::V1_0::agentino::CServiceListPayload>(
+				listGqlRequest,
+				[this, agentIdCopy](sdl::V1_0::agentino::CServiceListPayload listPayload, QString listError) {
+					// Soft GraphQL / parse errors may still carry usable items (OptRead).
+					// Only abort when the items field is missing (incomplete body).
+					// Empty array items:[] is a valid "agent has no services" result.
+					const bool hasItemsField = listPayload.items.has_value();
+					if (!listError.isEmpty()){
+						SendErrorMessage(0, listError, "CServiceControllerProxyComp");
+						if (!hasItemsField){
+							m_agentsBeingReconciled.remove(agentIdCopy);
+							// Do NOT touch m_pendingReconcile here — this callback runs on the
+							// SubscriptionManager thread, not this component's thread, and
+							// m_pendingReconcile is only ever safe to read/write via the
+							// QueueReconcile()/OnDeferredReconcile() queued hop (see below).
+							// If a nested reconcile was requested while this one was in flight,
+							// that QueueReconcile() call already scheduled OnDeferredReconcile(),
+							// which will drain it once m_agentsBeingReconciled is clear (just above).
+							return;
+						}
+					}
+					QString applyError;
+					ApplyServicesListReconcile(agentIdCopy, listPayload, applyError);
+				});
+
+	if (!token.IsValid()){
+		m_agentsBeingReconciled.remove(agentId);
+		errorMessage = QStringLiteral("AsyncApiClient failed to dispatch ServicesList");
 		return false;
 	}
 
-	// Critical: SetupGqlRequest ignores requestInfo and attaches no selection set.
-	// Without "items { id ... }", the agent ListObjects path returns empty item objects
-	// (no ids) and the mirror would never gain services (or would wipe on false empty set).
-	AppendServicesListFields(listGqlRequest);
+	errorMessage.clear();
+	return true; // scheduled
+}
 
-	QString listError;
-	sdl::V1_0::agentino::CServiceListPayload listPayload =
-			SendModelRequest<sdl::V1_0::agentino::CServiceListPayload>(listGqlRequest, listError);
-	if (!listError.isEmpty()){
-		// Agent unreachable - do not touch the mirror.
+
+bool CServiceControllerProxyComp::ApplyServicesListReconcile(
+			const QByteArray& agentId,
+			const sdl::V1_0::agentino::CServiceListPayload& listPayload,
+			QString& errorMessage)
+{
+	// Missing items key → incomplete parse / wrong body. Never wipe the mirror.
+	if (!listPayload.items.has_value()){
 		m_agentsBeingReconciled.remove(agentId);
-		errorMessage = listError;
+		errorMessage = QStringLiteral(
+					"ServicesList for agent '%1' returned no items field; mirror left unchanged")
+								.arg(QString::fromUtf8(agentId));
 		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 
 		return false;
@@ -205,12 +361,13 @@ bool CServiceControllerProxyComp::SyncAgentServicesInMirror(
 
 	QByteArrayList agentServiceIds;
 	int rawItemCount = 0;
-	if (listPayload.items.has_value()){
-		rawItemCount = listPayload.items->size();
-		for (const istd::TNullableValue<sdl::V1_0::agentino::CServiceItem>& item : *listPayload.items){
-			if (item.has_value() && item->id.has_value() && !item->id->isEmpty()){
-				agentServiceIds << *item->id;
-			}
+	// Keep list rows so we can seed the mirror before async GetService returns.
+	QList<sdl::V1_0::agentino::CServiceItem> listItems;
+	rawItemCount = listPayload.items->size();
+	for (const istd::TNullableValue<sdl::V1_0::agentino::CServiceItem>& item : *listPayload.items){
+		if (item.has_value() && item->id.has_value() && !item->id->isEmpty()){
+			agentServiceIds << *item->id;
+			listItems << *item;
 		}
 	}
 
@@ -248,7 +405,45 @@ bool CServiceControllerProxyComp::SyncAgentServicesInMirror(
 		}
 	}
 
+	// Seed the mirror immediately from ServicesList rows so Agents.services and Topology
+	// update without waiting for per-service GetService (which can lag or soft-fail).
+	// GetService still runs after this to fill connections / full descriptor.
+	for (const sdl::V1_0::agentino::CServiceItem& item : listItems){
+		const QByteArray serviceId = *item.id;
+		sdl::V1_0::agentino::CServiceData seed;
+		seed.id = serviceId;
+		if (item.name.has_value()){
+			seed.name = *item.name;
+		}
+		else{
+			// AddService/InsertNewObject need a non-empty display name.
+			seed.name = QString::fromUtf8(serviceId);
+		}
+		if (item.description.has_value()){
+			seed.description = *item.description;
+		}
+		if (item.path.has_value()){
+			seed.path = *item.path;
+		}
+		if (item.version.has_value()){
+			seed.version = *item.version;
+		}
+		if (item.status.has_value()){
+			seed.status = *item.status;
+		}
+		if (item.typeId.has_value() && !item.typeId->isEmpty()){
+			seed.serviceTypeId = QString::fromUtf8(*item.typeId);
+		}
+
+		QString seedError;
+		if (!ApplyServiceDataToMirror(agentId, serviceId, seed, seedError)){
+			aggregatedErrors << seedError;
+		}
+	}
+
 	for (const QByteArray& serviceId : agentServiceIds){
+		// Non-blocking GetService per service (SyncServiceInMirror → StartAsyncServiceSync
+		// when AsyncApiClient is set). Never Wait on the completion path of ServicesList.
 		QString syncError;
 		if (!SyncServiceInMirror(agentId, serviceId, syncError)){
 			aggregatedErrors << syncError;
@@ -256,7 +451,18 @@ bool CServiceControllerProxyComp::SyncAgentServicesInMirror(
 		}
 	}
 
+	// Reconcile "scheduled" (list applied + per-service GetService fired). Mirror
+	// already has seed rows; GetService upgrades them when it completes.
 	m_agentsBeingReconciled.remove(agentId);
+
+	// Do NOT touch m_pendingReconcile here — ApplyServicesListReconcile runs on the
+	// SubscriptionManager thread (it is the async ServicesList completion callback), not
+	// this component's thread, and m_pendingReconcile is only ever safe to read/write via
+	// the QueueReconcile()/OnDeferredReconcile() queued hop. Concurrent unsynchronized
+	// access from here corrupted the QSet and crashed OnDeferredReconcile()'s iteration.
+	// If a nested reconcile was requested while this one was in flight, that QueueReconcile()
+	// call already scheduled OnDeferredReconcile(), which will drain it now that
+	// m_agentsBeingReconciled is clear (just above).
 
 	if (!aggregatedErrors.isEmpty()){
 		errorMessage = aggregatedErrors.join("; ");
@@ -269,6 +475,90 @@ bool CServiceControllerProxyComp::SyncAgentServicesInMirror(
 
 	return true;
 }
+
+
+void CServiceControllerProxyComp::QueueReconcile(const QByteArray& agentId) const
+{
+	if (agentId.isEmpty()){
+		return;
+	}
+
+	// Hop to this component's thread. Callers (notify/reconcile) often run on a GQL
+	// worker; never touch QTimer / QObject from that thread.
+	CServiceControllerProxyComp* self = const_cast<CServiceControllerProxyComp*>(this);
+	const bool queued = QMetaObject::invokeMethod(
+				self,
+				[self, agentId]() {
+					self->m_pendingReconcile.insert(agentId);
+					// Second hop so we leave any nested event loop before reconcile.
+					QMetaObject::invokeMethod(
+								self,
+								&CServiceControllerProxyComp::OnDeferredReconcile,
+								Qt::QueuedConnection);
+				},
+				Qt::QueuedConnection);
+
+	if (!queued){
+		SendErrorMessage(
+					0,
+					QStringLiteral("Unable to queue agent reconcile for '%1'")
+								.arg(QString::fromUtf8(agentId)),
+					"CServiceControllerProxyComp");
+	}
+}
+
+
+void CServiceControllerProxyComp::QueueServiceSync(
+			const QByteArray& agentId,
+			const QByteArray& serviceId) const
+{
+	if (agentId.isEmpty() || serviceId.isEmpty()){
+		return;
+	}
+
+	// Hop to this component's thread, then dispatch non-blocking GetService.
+	// Never block here with Sync Wait — that freezes the server and starves agent workers.
+	CServiceControllerProxyComp* self = const_cast<CServiceControllerProxyComp*>(this);
+	const bool queued = QMetaObject::invokeMethod(
+				self,
+				[self, agentId, serviceId]() {
+					QString err;
+					if (!self->StartAsyncServiceSync(agentId, serviceId, err)){
+						self->SendErrorMessage(
+									0,
+									QStringLiteral(
+												"Unable to start async live service sync for agent '%1' service '%2'%3")
+												.arg(QString::fromUtf8(agentId),
+													 QString::fromUtf8(serviceId),
+													 err.isEmpty()
+																 ? QString()
+																 : QStringLiteral(": %1").arg(err)),
+									"CServiceControllerProxyComp");
+					}
+				},
+				Qt::QueuedConnection);
+
+	if (!queued){
+		SendErrorMessage(
+					0,
+					QStringLiteral("Unable to queue live service sync for agent '%1' service '%2'")
+								.arg(QString::fromUtf8(agentId), QString::fromUtf8(serviceId)),
+					"CServiceControllerProxyComp");
+	}
+}
+
+
+void CServiceControllerProxyComp::OnDeferredReconcile()
+{
+	const QList<QByteArray> agents = m_pendingReconcile.values();
+	m_pendingReconcile.clear();
+	for (const QByteArray& agentId : agents){
+		QString err;
+		SyncAgentServicesInMirror(agentId, err);
+	}
+}
+
+
 
 
 // protected methods
@@ -303,25 +593,18 @@ sdl::V1_0::agentino::CServiceData CServiceControllerProxyComp::OnGetService(
 
 	QByteArray agentId = gqlRequest.GetHeader("clientid");
 
-	istd::TDelPtr<agentinodata::CServiceInfo> serviceInfoPtr;
-	serviceInfoPtr.SetCastedOrRemove(m_serviceManagerCompPtr->GetService(agentId, serviceId));
-	if (!serviceInfoPtr.IsValid()){
-		if (errorMessage.isEmpty()){
-			errorMessage = QString("Unable to get service '%1'. Error: Service not exists").arg(qPrintable(serviceId));
-		}
-		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
-		return sdl::V1_0::agentino::CServiceData();
-	}
-
+	// Agent is the authoritative source of truth. When the forward failed (agent offline / no
+	// longer has this service), fall back to the last-known server mirror representation so the
+	// item stays viewable/removable instead of becoming permanently stuck.
 	if (!errorMessage.isEmpty()){
-		// The Agent may no longer have this service (e.g. it was removed there directly and
-		// the mirror was never reconciled) - fall back to the last known mirror representation
-		// so the item stays viewable/removable instead of becoming permanently stuck.
 		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 		errorMessage.clear();
 
-		if (!agentinodata::GetRepresentationFromService(response, *serviceInfoPtr.GetPtr())){
-			errorMessage = QString("Unable to get service '%1'. Error: Service is unavailable on the agent").arg(qPrintable(serviceId));
+		istd::TDelPtr<agentinodata::CServiceInfo> mirrorInfoPtr;
+		mirrorInfoPtr.SetCastedOrRemove(m_serviceManagerCompPtr->GetService(agentId, serviceId));
+		if (!mirrorInfoPtr.IsValid()
+					|| !agentinodata::GetRepresentationFromService(response, *mirrorInfoPtr.GetPtr())){
+			errorMessage = QString("Unable to get service '%1'. Error: unavailable on the agent").arg(qPrintable(serviceId));
 			SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 
 			return sdl::V1_0::agentino::CServiceData();
@@ -332,37 +615,10 @@ sdl::V1_0::agentino::CServiceData CServiceControllerProxyComp::OnGetService(
 		return response;
 	}
 
-	// Syncronise service with agent
-	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, response, errorMessage)){
-		errorMessage = QString("Unable to get service '%1'. Error: %2").arg(qPrintable(serviceId), errorMessage);
-		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
-		return sdl::V1_0::agentino::CServiceData();
-	}
-
-	if (!m_serviceManagerCompPtr->SetService(agentId, serviceId, *serviceInfoPtr, "", "", true)){
-		errorMessage = QString("Unable to set service '%1'. Error: Set service to collection failed").arg(qPrintable(serviceId));
-		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
-		return sdl::V1_0::agentino::CServiceData();
-	}
-
-	if (response.outputConnections){
-		istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::COutputConnection>> outputConnections = *response.outputConnections;
-		for (istd::TNullableValue<sdl::V1_0::agentino::COutputConnection>& outputConnection : *outputConnections){
-			QByteArray id = *outputConnection->id;
-			outputConnection->dependantConnectionList = GetConnectionsModel(id);
-
-			istd::TSharedInterfacePtr<imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr = GetDependantServerConnectionParam(id);
-			if (serverConnectionInterfacePtr.IsValid()){
-				sdl::V1_0::imtbase::CServerConnectionParam urlRepresentation;
-				if (agentinodata::GetRepresentationFromServerConnectionParam(*serverConnectionInterfacePtr.GetPtr(), urlRepresentation)){
-					outputConnection->connectionParam = urlRepresentation;
-				}
-			}
-		}
-
-		response.outputConnections = outputConnections;
-	}
-
+	// The agent answered authoritatively; the server neither reads-requires nor writes its
+	// mirror here. The candidate pick-list is no longer packed into GetService — the editor
+	// asks for it lazily via AvailableConnections. Each output connection already carries its
+	// stored dependantConnectionId + cached connectionParam from the agent's descriptor.
 	return response;
 }
 
@@ -404,40 +660,52 @@ sdl::V1_0::imtbase::CUpdatedNotificationPayload CServiceControllerProxyComp::OnU
 		return sdl::V1_0::imtbase::CUpdatedNotificationPayload();
 	}
 
+	// Best-effort cross-agent URL propagation: if the previous state is already mirrored,
+	// diff its connection URLs against the new input and push changes to dependent consumers.
+	// The agent forward above already succeeded, so a missing mirror row (reactive sync not yet
+	// applied) must NOT fail the update — just skip propagation.
 	istd::TDelPtr<agentinodata::CServiceInfo> serviceInfoPtr;
 	serviceInfoPtr.SetCastedOrRemove(m_serviceManagerCompPtr->GetService(agentId, serviceId));
-	if (!serviceInfoPtr.IsValid()){
-		return sdl::V1_0::imtbase::CUpdatedNotificationPayload();
-	}
+	if (serviceInfoPtr.IsValid()){
+		sdl::V1_0::agentino::CServiceData currentServiceData;
+		if (agentinodata::GetRepresentationFromService(currentServiceData, *serviceInfoPtr.GetPtr())){
+			const QList<ChangedConnectionUrl> changedConnections = GetChangedConnectionUrl(currentServiceData, serviceData);
 
-	// Обновление всех сервисов зависимых от портов текущего
-	sdl::V1_0::agentino::CServiceData currentServiceData;
-	if (agentinodata::GetRepresentationFromService(currentServiceData, *serviceInfoPtr.GetPtr())){
-		QByteArrayList connectionIds = GetChangedConnectionUrl(currentServiceData, serviceData);
+			for (const ChangedConnectionUrl& changed : changedConnections){
+				// Consumers reference this endpoint as "<producerServiceId>|<addressableId>" -
+				// addressableId is either the main connection's own id or one of its extern
+				// entries' uuid (see GetChangedConnectionUrl).
+				const QByteArray endpointId =
+							agentinodata::ServiceEndpointId::Make(serviceId, changed.addressableId);
 
-		for (const QByteArray& connectionId : connectionIds){
-			sdl::V1_0::imtbase::CServerConnectionParam newConnectionParam = GetServerConnectionParam(serviceData, connectionId);
-			QByteArrayList dependentServiceIds = GetServiceIdsByDependantId(connectionId);
-			for (const QByteArray& dependantServiceId : dependentServiceIds){
-				UpdateConnectionForService(dependantServiceId, agentId, connectionId, newConnectionParam);
+				sdl::V1_0::imtbase::CServerConnectionParam newConnectionParam;
+				newConnectionParam.host = changed.host;
+				newConnectionParam.isSecure = changed.isSecure;
+				newConnectionParam.httpPort = changed.httpPort;
+				newConnectionParam.httpPath = changed.httpPath;
+				newConnectionParam.wsPort = changed.wsPort;
+
+				// Each consumer must be told on *its own* agent — the producer's agent
+				// cannot update a service that lives somewhere else. The consumer's agent
+				// addresses the link by the consumer's local slot id, not by our endpoint id.
+				const QVector<ConsumerRef> consumers = FindConsumersOfEndpoint(endpointId);
+				for (const ConsumerRef& consumer : consumers){
+					UpdateConnectionForService(
+								consumer.serviceId,
+								consumer.agentId,
+								consumer.slot,
+								newConnectionParam);
+				}
 			}
 		}
 	}
 
-	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr.GetPtr(), serviceData, errorMessage)){
-		errorMessage = QString("Unable to get service from representation. Error: %1").arg(errorMessage);
-		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
-
-		return sdl::V1_0::imtbase::CUpdatedNotificationPayload();
-	}
-
-	QString serviceName;
-	QString serviceDescription;
-
-	if (!m_serviceManagerCompPtr->SetService(agentId, serviceId, *serviceInfoPtr.PopPtr(), serviceName, serviceDescription)){
-		return sdl::V1_0::imtbase::CUpdatedNotificationPayload();
-	}
-
+	// Architecture: the update is applied on the owning Agent only (single source of truth).
+	// The server does NOT write the current service into its mirror here — that happens
+	// reactively when the Agent pushes NotifyAgentServicesCollectionChanged('updated') ->
+	// HandleAgentServiceCollectionNotify -> SyncServiceInMirror. Only the cross-agent
+	// dependent-connection URL propagation above stays synchronous so consumers on other agents
+	// pick up a changed producer URL immediately.
 	return retVal;
 }
 
@@ -473,20 +741,35 @@ sdl::V1_0::imtbase::CAddedNotificationPayload CServiceControllerProxyComp::OnAdd
 		return sdl::V1_0::imtbase::CAddedNotificationPayload();
 	}
 
-	// Prefer the id returned by the agent when the client did not supply one.
-	if (serviceId.isEmpty() && retVal.id.has_value()){
-		serviceId = *retVal.id;
-	}
+	// Eager mirror write from the mutation payload so Topology / Agents.Services update
+	// immediately. Relying only on Notify+async GetService left the mirror empty when the
+	// notify path lagged or failed — empty Services column and missing topology nodes.
+	// Agent remains SSOT for live data; QueueServiceSync still refreshes from GetService.
+	if (!agentId.isEmpty() && !serviceId.isEmpty() && arguments.input->item.has_value()){
+		sdl::V1_0::agentino::CServiceData serviceData = *arguments.input->item;
+		// Freshly created services are Stopped until Start; never seed UNDEFINED.
+		if (!serviceData.status.has_value()
+					|| serviceData.status->trimmed().isEmpty()
+					|| serviceData.status->compare(QStringLiteral("undefined"), Qt::CaseInsensitive) == 0
+					|| serviceData.status->compare(QStringLiteral("UNDEFINED"), Qt::CaseInsensitive) == 0){
+			serviceData.status = QStringLiteral("notRunning");
+		}
+		if (!serviceData.id.has_value() || serviceData.id->isEmpty()){
+			serviceData.id = serviceId;
+		}
 
-	// Authoritative snapshot from the agent (connections, ports, paths). Do NOT build the
-	// mirror from the AddService input only — that payload is often incomplete and left
-	// CServerConnectionInterfaceParam maps in a state that crashed AutoPersistence serialize.
-	QString syncError;
-	if (!const_cast<CServiceControllerProxyComp*>(this)->SyncServiceInMirror(agentId, serviceId, syncError)){
-		errorMessage = syncError;
-		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
+		QString mirrorError;
+		if (!const_cast<CServiceControllerProxyComp*>(this)->ApplyServiceDataToMirror(
+					agentId, serviceId, serviceData, mirrorError)){
+			SendErrorMessage(
+						0,
+						QStringLiteral("AddService: eager mirror write failed for '%1': %2")
+									.arg(QString::fromUtf8(serviceId), mirrorError),
+						"CServiceControllerProxyComp");
+		}
 
-		return sdl::V1_0::imtbase::CAddedNotificationPayload();
+		// Best-effort full refresh from the agent (connections etc.) without blocking.
+		QueueServiceSync(agentId, serviceId);
 	}
 
 	return retVal;
@@ -505,30 +788,29 @@ sdl::V1_0::agentino::CServiceStatusResponse CServiceControllerProxyComp::OnStart
 		return sdl::V1_0::agentino::CServiceStatusResponse();
 	}
 
-	QByteArray serviceId;
-	if (arguments.input->serviceId){
-		serviceId = *arguments.input->serviceId;
-	}
+	// Start is executed strictly on the owning Agent (single source of truth). The server does
+	// NOT write service status here — the Agent's supervisor emits the real status transitions
+	// (Starting -> Running / Failed), which arrive via OnAgentServiceStatusChanged and are the
+	// only writer of the server status projection. The returned status is a transient ack only.
+	// Async only: return a transient STARTING ack; real status arrives via agent subscription.
+	sdl::V1_0::agentino::CServiceStatusResponse retVal;
+	retVal.status = sdl::V1_0::agentino::ServiceStatus::STARTING;
 
-	// Do NOT hold CChangeGroup across SendModelRequest: that call blocks in a nested
-	// event loop while the agent starts the process, and live OnAgentServiceStatusChanged
-	// pushes (queued to main) also write ServiceStatusCollection. A long-lived change group
-	// here raced those writes and left subsequent GUI commands (e.g. SaveTopology) broken
-	// until the client reconnected.
-	SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_STARTING);
-
-	sdl::V1_0::agentino::CServiceStatusResponse retVal = SendModelRequest<sdl::V1_0::agentino::CServiceStatusResponse>(gqlRequest, errorMessage);
-	if (!errorMessage.isEmpty()){
-		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
-		SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_UNDEFINED);
-
+	imtclientgql::IAsyncGqlRequestTokenPtr token = SendModelRequestAsync<sdl::V1_0::agentino::CServiceStatusResponse>(
+				gqlRequest,
+				[this](sdl::V1_0::agentino::CServiceStatusResponse response, QString err) {
+					Q_UNUSED(response);
+					if (!err.isEmpty()){
+						SendErrorMessage(0, err, "CServiceControllerProxyComp");
+					}
+				});
+	if (!token.IsValid()){
+		errorMessage = QStringLiteral("AsyncApiClient failed to dispatch StartService");
+		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 		return sdl::V1_0::agentino::CServiceStatusResponse();
 	}
 
-	if (retVal.status.has_value()){
-		SetServiceStatus(serviceId, *retVal.status);
-	}
-
+	errorMessage.clear();
 	return retVal;
 }
 
@@ -543,25 +825,29 @@ sdl::V1_0::agentino::CServiceStatusResponse CServiceControllerProxyComp::OnStopS
 		return sdl::V1_0::agentino::CServiceStatusResponse();
 	}
 
-	QByteArray serviceId;
-	if (arguments.input->serviceId){
-		serviceId = *arguments.input->serviceId;
-	}
+	// Stop is executed strictly on the owning Agent (single source of truth). The server does NOT
+	// write service status here — the Agent's supervisor emits the real transitions (Stopping ->
+	// Stopped) via OnAgentServiceStatusChanged, the only writer of the server status projection.
+	// The returned status is a transient ack only.
+	// Async only: return a transient STOPPING ack; real status arrives via agent subscription.
+	sdl::V1_0::agentino::CServiceStatusResponse retVal;
+	retVal.status = sdl::V1_0::agentino::ServiceStatus::STOPPING;
 
-	// Same rationale as OnStartService: never hold CChangeGroup across SendModelRequest.
-	SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_STOPPING);
-
-	sdl::V1_0::agentino::CServiceStatusResponse retVal = SendModelRequest<sdl::V1_0::agentino::CServiceStatusResponse>(gqlRequest, errorMessage);
-	if (!errorMessage.isEmpty()){
-		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
-		SetServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_UNDEFINED);
+	imtclientgql::IAsyncGqlRequestTokenPtr token = SendModelRequestAsync<sdl::V1_0::agentino::CServiceStatusResponse>(
+				gqlRequest,
+				[this](sdl::V1_0::agentino::CServiceStatusResponse response, QString err) {
+					Q_UNUSED(response);
+					if (!err.isEmpty()){
+						SendErrorMessage(0, err, "CServiceControllerProxyComp");
+					}
+				});
+	if (!token.IsValid()){
+		errorMessage = QStringLiteral("AsyncApiClient failed to dispatch StopService");
+		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 		return sdl::V1_0::agentino::CServiceStatusResponse();
 	}
 
-	if (retVal.status.has_value()){
-		SetServiceStatus(serviceId, *retVal.status);
-	}
-
+	errorMessage.clear();
 	return retVal;
 }
 
@@ -592,32 +878,26 @@ sdl::V1_0::imtbase::CRemovedNotificationPayload CServiceControllerProxyComp::OnS
 	QByteArray agentId = gqlRequest.GetHeader("clientid");
 
 	sdl::V1_0::imtbase::CRemovedNotificationPayload retVal = SendModelRequest<sdl::V1_0::imtbase::CRemovedNotificationPayload>(gqlRequest, errorMessage);
-	bool agentForwardFailed = !errorMessage.isEmpty();
-	if (agentForwardFailed){
-		// The Agent may already be missing this service - still purge it from the mirror
-		// below instead of leaving a stuck entry that can neither be opened nor removed.
-		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
-		errorMessage.clear();
+	if (errorMessage.isEmpty()){
+		// Success: the service is removed strictly on the Agent (single source of truth). The
+		// server mirror / statuses are purged reactively when the Agent pushes
+		// NotifyAgentServicesCollectionChanged('removed') -> HandleAgentServiceCollectionNotify.
+		return retVal;
 	}
 
-	if (!m_serviceManagerCompPtr->RemoveServices(agentId, imtbase::ICollectionInfo::Ids(serviceIds.begin(), serviceIds.end()))){
-		errorMessage = QString("Unable to remove service '%1' from agent '%2'").arg(qPrintable(serviceIds.join(';')), qPrintable(agentId));
-		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
-
-		return sdl::V1_0::imtbase::CRemovedNotificationPayload();
-	}
-
-	RemoveServiceStatuses(serviceIds);
-
+	// Fallback only: the Agent forward failed (agent offline / already missing this service), so
+	// no 'removed' push will arrive. Purge the stale mirror entry directly to avoid a stuck item.
+	SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 	errorMessage.clear();
 
-	if (agentForwardFailed){
-		imtsdl::TElementList<QByteArray> removedIds;
-		for (const QByteArray& serviceId: serviceIds){
-			removedIds << serviceId;
-		}
-		retVal.elementIds = removedIds;
+	m_serviceManagerCompPtr->RemoveServices(agentId, imtbase::ICollectionInfo::Ids(serviceIds.begin(), serviceIds.end()));
+	RemoveServiceStatuses(serviceIds);
+
+	imtsdl::TElementList<QByteArray> removedIds;
+	for (const QByteArray& serviceId: serviceIds){
+		removedIds << serviceId;
 	}
+	retVal.elementIds = removedIds;
 
 	return retVal;
 }
@@ -654,29 +934,20 @@ sdl::V1_0::imtbase::CRemoveElementsPayload CServiceControllerProxyComp::OnRemove
 	// Agent's ServiceCollectionController owns the real 'ServiceRepository' collection and
 	// handles this generic command correctly (unlike the server-side local mirror).
 	sdl::V1_0::imtbase::CRemoveElementsPayload retVal = SendModelRequest<sdl::V1_0::imtbase::CRemoveElementsPayload>(gqlRequest, errorMessage);
-	bool agentForwardFailed = !errorMessage.isEmpty();
-	if (agentForwardFailed){
-		// The Agent may already be missing this service (e.g. it was removed there directly,
-		// and the mirror was never reconciled) - still purge it from the mirror below instead
-		// of leaving a stuck entry that can neither be opened nor removed.
-		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
-		errorMessage.clear();
+	if (errorMessage.isEmpty()){
+		// Success: removed strictly on the Agent; the server mirror / statuses are purged
+		// reactively on the Agent's NotifyAgentServicesCollectionChanged('removed') push.
+		return retVal;
 	}
 
-	if (!m_serviceManagerCompPtr->RemoveServices(agentId, imtbase::ICollectionInfo::Ids(serviceIds.begin(), serviceIds.end()))){
-		errorMessage = QString("Unable to remove service '%1' from agent '%2'").arg(qPrintable(serviceIds.join(';')), qPrintable(agentId));
-		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
-
-		return response;
-	}
-
-	RemoveServiceStatuses(serviceIds);
-
+	// Fallback only: the Agent forward failed (agent offline / already missing), so no 'removed'
+	// push will arrive. Purge the stale mirror entry directly to avoid a stuck item.
+	SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 	errorMessage.clear();
 
-	if (agentForwardFailed){
-		retVal.success = true;
-	}
+	m_serviceManagerCompPtr->RemoveServices(agentId, imtbase::ICollectionInfo::Ids(serviceIds.begin(), serviceIds.end()));
+	RemoveServiceStatuses(serviceIds);
+	retVal.success = true;
 
 	return retVal;
 }
@@ -711,6 +982,73 @@ sdl::V1_0::agentino::CUpdateConnectionUrlResponse CServiceControllerProxyComp::O
 }
 
 
+sdl::V1_0::agentino::CSetOutputConnectionResponse CServiceControllerProxyComp::OnSetOutputConnection(
+			const sdl::V1_0::agentino::CSetOutputConnectionGqlRequest& setOutputConnectionRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::CSetOutputConnectionResponse response;
+	response.succesful = false;
+
+	sdl::V1_0::agentino::SetOutputConnectionRequestArguments arguments = setOutputConnectionRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->serviceId.has_value() || !arguments.input->connectionId.has_value()){
+		errorMessage = QString("SetOutputConnection input is invalid");
+
+		return response;
+	}
+
+	QString dependantConnectionId;
+	if (arguments.input->dependantConnectionId.has_value()){
+		dependantConnectionId = *arguments.input->dependantConnectionId;
+	}
+
+	sdl::V1_0::imtbase::CServerConnectionParam resolvedConnectionParam;
+	if (!dependantConnectionId.isEmpty()){
+		// Cross-agent resolution: only the server can see across the whole fleet.
+		istd::TSharedInterfacePtr<imtcom::CServerConnectionInterfaceParam> resolvedPtr =
+					GetDependantServerConnectionParam(dependantConnectionId.toUtf8());
+		if (!resolvedPtr.IsValid()){
+			errorMessage = QString("Producer connection '%1' was not found").arg(dependantConnectionId);
+
+			return response;
+		}
+
+		if (!agentinodata::GetRepresentationFromServerConnectionParam(*resolvedPtr.GetPtr(), resolvedConnectionParam)){
+			errorMessage = QString("Unable to resolve producer connection '%1'").arg(dependantConnectionId);
+
+			return response;
+		}
+	}
+	else{
+		resolvedConnectionParam.host = QStringLiteral("localhost");
+		resolvedConnectionParam.httpPort = -1;
+		resolvedConnectionParam.wsPort = -1;
+	}
+
+	// Forward to the owning agent with the resolved param attached - an agent cannot
+	// see other agents' services, so it must not be asked to resolve this itself.
+	sdl::V1_0::agentino::SetOutputConnectionRequestArguments forwardArguments = arguments;
+	forwardArguments.input->connectionParam = resolvedConnectionParam;
+
+	imtgql::CGqlRequest forwardRequest;
+	imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
+	imtgql::IGqlContext::Headers headers;
+	headers.insert("clientid", gqlRequest.GetHeader("clientid"));
+	gqlContextPtr->SetHeaders(headers);
+	forwardRequest.SetGqlContext(gqlContextPtr);
+
+	if (!sdl::V1_0::agentino::CSetOutputConnectionGqlRequest::SetupGqlRequest(forwardRequest, forwardArguments)){
+		errorMessage = QString("Unable to build the forwarded request");
+
+		return response;
+	}
+
+	response = SendModelRequest<sdl::V1_0::agentino::CSetOutputConnectionResponse>(forwardRequest, errorMessage);
+
+	return response;
+}
+
+
 sdl::V1_0::agentino::CPluginInfo CServiceControllerProxyComp::OnLoadPlugin(
 			const sdl::V1_0::agentino::CLoadPluginGqlRequest& loadPluginRequest,
 			const ::imtgql::CGqlRequest& gqlRequest,
@@ -725,21 +1063,12 @@ sdl::V1_0::agentino::CPluginInfo CServiceControllerProxyComp::OnLoadPlugin(
 
 	sdl::V1_0::agentino::CPluginInfo retVal = SendModelRequest<sdl::V1_0::agentino::CPluginInfo>(gqlRequest, errorMessage);
 	if (!errorMessage.isEmpty()){
-		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
+		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 		return sdl::V1_0::agentino::CPluginInfo();
 	}
 
-	// Update dependant connections elements
-	if (retVal.outputConnections){
-		istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::COutputConnection>> outputConnections = *retVal.outputConnections;
-		for (istd::TNullableValue<sdl::V1_0::agentino::COutputConnection>& outputConnection : *outputConnections){
-			QByteArray id = *outputConnection->id;
-			outputConnection->dependantConnectionList = GetConnectionsModel(id);
-		}
-
-		retVal.outputConnections = outputConnections;
-	}
-
+	// The plugin's output slots are returned as-is; candidate producers for them are
+	// fetched separately via AvailableConnections when the editor needs them.
 	return retVal;
 }
 
@@ -892,6 +1221,26 @@ QJsonObject CServiceControllerProxyComp::CreateInternalResponse(
 				return OnUpdateServiceSettings(req, gqlReq, err);
 			});
 	}
+	if (sdl::V1_0::agentino::CAvailableConnectionsGqlRequest::GetCommandId() == commandId){
+		return CreateResponse<
+			sdl::V1_0::agentino::CAvailableConnectionsGqlRequest,
+			sdl::V1_0::agentino::CAvailableConnectionsPayload>(
+			gqlRequest,
+			errorMessage,
+			[&](const auto& req, const auto& gqlReq, QString& err){
+				return OnAvailableConnections(req, gqlReq, err);
+			});
+	}
+	if (sdl::V1_0::agentino::CSetOutputConnectionGqlRequest::GetCommandId() == commandId){
+		return CreateResponse<
+			sdl::V1_0::agentino::CSetOutputConnectionGqlRequest,
+			sdl::V1_0::agentino::CSetOutputConnectionResponse>(
+			gqlRequest,
+			errorMessage,
+			[&](const auto& req, const auto& gqlReq, QString& err){
+				return OnSetOutputConnection(req, gqlReq, err);
+			});
+	}
 	if (commandId == QByteArrayLiteral("NotifyAgentServicesCollectionChanged")){
 		return HandleAgentServiceCollectionNotify(gqlRequest, errorMessage);
 	}
@@ -962,9 +1311,6 @@ QJsonObject CServiceControllerProxyComp::HandleAgentServiceCollectionNotify(
 	const QByteArray itemId = inputParamPtr->GetParamArgumentValue(QByteArrayLiteral("itemId")).toByteArray();
 	const QString itemIdsJoined = inputParamPtr->GetParamArgumentValue(QByteArrayLiteral("itemIds")).toString();
 
-	qDebug() << "CServiceControllerProxyComp::HandleAgentServiceCollectionNotify"
-			 << agentId << typeOperation << itemId << itemIdsJoined;
-
 	QString syncError;
 	bool ok = false;
 
@@ -1001,7 +1347,13 @@ QJsonObject CServiceControllerProxyComp::HandleAgentServiceCollectionNotify(
 			return response;
 		}
 
-		ok = const_cast<CServiceControllerProxyComp*>(this)->SyncServiceInMirror(agentId, itemId, syncError);
+		// Do NOT call SyncServiceInMirror here. The agent is blocked in a sync
+		// SendRequest waiting for this notify response; SyncServiceInMirror does a
+		// blocking GetService back to the same agent → deadlock / client timeout
+		// ("Live service sync notify failed (inserted / <id>)").
+		// ACK first, then GetService+mirror on a deferred pass.
+		QueueServiceSync(agentId, itemId);
+		ok = true;
 	}
 
 	if (!ok){
@@ -1120,31 +1472,20 @@ bool CServiceControllerProxyComp::SetServiceStatus(const QByteArray& serviceId, 
 }
 
 
-istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CDependantConnectionInfo>> CServiceControllerProxyComp::GetConnectionsModel(
+QList<sdl::V1_0::agentino::CDependantConnectionInfo> CServiceControllerProxyComp::BuildAvailableConnections(
 			const QByteArray& connectionUsageId) const
 {
-	istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CDependantConnectionInfo>> retVal;
-	retVal.Emplace();
-
-	if (!m_agentCollectionCompPtr.IsValid()){
-		return retVal;
+	// Offer every service in the whole fleet that publishes this connection — the one thing
+	// only the server can do, since an agent cannot see its peers. Each entry is addressed
+	// by a ServiceEndpointId, so two producers of the same connection type stay distinct.
+	QList<sdl::V1_0::agentino::CDependantConnectionInfo> available;
+	if (!m_agentCollectionCompPtr.IsValid() || !m_serviceManagerCompPtr.IsValid()){
+		return available;
 	}
 
-	// Server: available connections from every agent's mirrored services.
-	QList<sdl::V1_0::agentino::CDependantConnectionInfo> available;
-	const imtbase::ICollectionInfo::Ids elementIds = m_agentCollectionCompPtr->GetElementIds();
-	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
-		imtbase::IObjectCollection::DataPtr agentDataPtr;
-		if (!m_agentCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
-			continue;
-		}
-
-		agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(agentDataPtr.GetPtr());
-		if (agentInfoPtr == nullptr){
-			continue;
-		}
-
-		imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+	const imtbase::ICollectionInfo::Ids agentIds = m_agentCollectionCompPtr->GetElementIds();
+	for (const imtbase::ICollectionInfo::Id& agentId : agentIds){
+		imtbase::IObjectCollection* serviceCollectionPtr = m_serviceManagerCompPtr->GetServiceCollection(agentId);
 		if (serviceCollectionPtr == nullptr){
 			continue;
 		}
@@ -1155,138 +1496,99 @@ istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CDependantConnect
 					available);
 	}
 
-	retVal->FromList(available);
-	return retVal;
+	return available;
 }
 
 
-bool CServiceControllerProxyComp::GetConnectionObjectData(
-			const imtbase::IObjectCollection::Id& connectionId,
-			imtbase::IObjectCollection::DataPtr& connectionDataPtr) const
+sdl::V1_0::agentino::CAvailableConnectionsPayload CServiceControllerProxyComp::OnAvailableConnections(
+			const sdl::V1_0::agentino::CAvailableConnectionsGqlRequest& availableConnectionsRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& /*errorMessage*/) const
 {
-	if (connectionId.isEmpty()){
-		return false;
+	sdl::V1_0::agentino::CAvailableConnectionsPayload response;
+	response.outputConnections.Emplace();
+
+	const sdl::V1_0::agentino::AvailableConnectionsRequestArguments arguments =
+				availableConnectionsRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->connectionUsageIds.has_value()){
+		return response;
 	}
 
-	if (m_agentCollectionCompPtr.IsValid()){
-		imtbase::ICollectionInfo::Ids elementIds = m_agentCollectionCompPtr->GetElementIds();
-		for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
-			imtbase::IObjectCollection::DataPtr agentDataPtr;
-			if (m_agentCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
-				agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(agentDataPtr.GetPtr());
-				if (agentInfoPtr != nullptr){
-					// Get Services
-					imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-					if (serviceCollectionPtr != nullptr){
-						imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
-						for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
-							imtbase::IObjectCollection::DataPtr serviceDataPtr;
-							if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
-								agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
-								if (serviceInfoPtr != nullptr){
-									// Get Connections
-									imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
-									if (connectionCollectionPtr != nullptr){
-										imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
-										for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-											if (connectionElementId == connectionId){
-												return connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr);
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
+	// One group per requested output slot; the candidate scan runs over the mirror only,
+	// so this is answered entirely on the server without forwarding to any agent.
+	QList<sdl::V1_0::agentino::COutputConnectionCandidates> groups;
+	const QByteArrayList usageIds = (*arguments.input->connectionUsageIds).ToList();
+	for (const QByteArray& usageId : usageIds){
+		sdl::V1_0::agentino::COutputConnectionCandidates group;
+		group.connectionUsageId = usageId;
+		group.candidates.Emplace();
+		group.candidates->FromList(BuildAvailableConnections(usageId));
+		groups << group;
 	}
 
-	return false;
-}
+	response.outputConnections->FromList(groups);
 
-
-void CServiceControllerProxyComp::UpdateUrlFromDependantConnection(sdl::V1_0::agentino::CServiceData& serviceData) const
-{
-	if (serviceData.outputConnections){
-		istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::COutputConnection>> connections = *serviceData.outputConnections;
-
-		for (int i = 0; i < connections->size(); i++){
-			istd::TNullableValue<sdl::V1_0::agentino::COutputConnection> connection = (*connections)[i];
-
-			QByteArray dependantConnectionId;
-			if (connection->dependantConnectionId){
-				dependantConnectionId = (*connection->dependantConnectionId).toUtf8();
-			}
-
-			istd::TSharedInterfacePtr<imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr = GetDependantServerConnectionParam(dependantConnectionId);
-
-			sdl::V1_0::imtbase::CServerConnectionParam serverConnectionRepresentation;
-			if (agentinodata::GetRepresentationFromServerConnectionParam(*serverConnectionInterfacePtr.GetPtr(), serverConnectionRepresentation)){
-				connection->connectionParam = serverConnectionRepresentation;
-				(*connections)[i] = connection;
-			}
-		}
-
-		serviceData.outputConnections = connections;
-	}
+	return response;
 }
 
 
 istd::TSharedInterfacePtr<imtcom::CServerConnectionInterfaceParam> CServiceControllerProxyComp::GetDependantServerConnectionParam(const QByteArray& dependantId) const
 {
-	if (!m_agentCollectionCompPtr.IsValid()){
-		Q_ASSERT_X(false, "Attribute 'AgentCollection' was not set", "CServiceControllerProxyComp");
+	// The endpoint id says which service publishes it and which of its connections it
+	// is, so this is a direct lookup instead of a walk over every agent's services.
+	QByteArray serviceId;
+	QByteArray connectionId;
+	if (!agentinodata::ServiceEndpointId::Parse(dependantId, serviceId, connectionId)){
 		return nullptr;
 	}
 
-	imtbase::ICollectionInfo::Ids agentIds = m_agentCollectionCompPtr->GetElementIds();
-	for (const imtbase::ICollectionInfo::Id& agentId: agentIds){
-		imtbase::IObjectCollection::DataPtr agentDataPtr;
-		if (m_agentCollectionCompPtr->GetObjectData(agentId, agentDataPtr)){
-			agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(agentDataPtr.GetPtr());
-			if (agentInfoPtr == nullptr){
-				continue;
-			}
+	agentinodata::IServiceInfo* serviceInfoPtr = FindMirroredService(serviceId);
+	if (serviceInfoPtr == nullptr){
+		return nullptr;
+	}
 
-			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-			if (serviceCollectionPtr == nullptr){
-				continue;
-			}
+	imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
+	if (connectionCollectionPtr == nullptr){
+		return nullptr;
+	}
 
-			imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
-			for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
-				imtbase::IObjectCollection::DataPtr serviceDataPtr;
-				if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
-					agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
-					if (serviceInfoPtr == nullptr){
-						continue;
-					}
+	// The connection part is either an input-connection element of the producer...
+	imtbase::IObjectCollection::DataPtr connectionDataPtr;
+	if (connectionCollectionPtr->GetObjectData(connectionId, connectionDataPtr)){
+		imtservice::CUrlConnectionParam* connectionParamPtr =
+					dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
+		if (connectionParamPtr == nullptr){
+			return nullptr;
+		}
 
-					imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
-					if (connectionCollectionPtr == nullptr){
-						continue;
-					}
+		istd::TSharedInterfacePtr<imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr;
+		serverConnectionInterfacePtr.MoveCastedPtr(connectionParamPtr->CloneMe());
 
-					imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
-					for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-						imtbase::IObjectCollection::DataPtr connectionParamDataPtr;
-						if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionParamDataPtr)){
-							imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionParamDataPtr.GetPtr());
-							if (connectionParamPtr == nullptr){
-								break;
-							}
+		return serverConnectionInterfacePtr;
+	}
 
-							if (connectionElementId == dependantId){
-								istd::TSharedInterfacePtr<imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr;
-								serverConnectionInterfacePtr.MoveCastedPtr(connectionParamPtr->CloneMe());
+	// ...or the uuid of one of its incoming connections (an alternative published address).
+	const imtbase::ICollectionInfo::Ids inputIds = connectionCollectionPtr->GetElementIds();
+	for (const imtbase::ICollectionInfo::Id& inputId : inputIds){
+		imtbase::IObjectCollection::DataPtr inputDataPtr;
+		if (!connectionCollectionPtr->GetObjectData(inputId, inputDataPtr)){
+			continue;
+		}
 
-								return serverConnectionInterfacePtr;
-							}
-						}
-					}
-				}
+		const imtservice::CUrlConnectionParam* inputParamPtr =
+					dynamic_cast<const imtservice::CUrlConnectionParam*>(inputDataPtr.GetPtr());
+		if (inputParamPtr == nullptr){
+			continue;
+		}
+
+		const imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections =
+					inputParamPtr->GetIncomingConnections();
+		for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incoming : incomingConnections){
+			if (incoming.GetObjectUuid() == connectionId){
+				istd::TSharedInterfacePtr<imtcom::CServerConnectionInterfaceParam> serverConnectionInterfacePtr;
+				serverConnectionInterfacePtr.MoveCastedPtr(incoming.CloneMe());
+
+				return serverConnectionInterfacePtr;
 			}
 		}
 	}
@@ -1295,45 +1597,91 @@ istd::TSharedInterfacePtr<imtcom::CServerConnectionInterfaceParam> CServiceContr
 }
 
 
-sdl::V1_0::imtbase::CServerConnectionParam CServiceControllerProxyComp::GetServerConnectionParam(
-			const sdl::V1_0::agentino::CServiceData& serviceData,
-			const QByteArray& connectionId) const
+agentinodata::IServiceInfo* CServiceControllerProxyComp::FindMirroredService(const QByteArray& serviceId) const
 {
-	if (serviceData.inputConnections){
-		istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CInputConnection>> connections = *serviceData.inputConnections;
+	if (serviceId.isEmpty() || !m_agentCollectionCompPtr.IsValid() || !m_serviceManagerCompPtr.IsValid()){
+		return nullptr;
+	}
 
-		for (const istd::TNullableValue<sdl::V1_0::agentino::CInputConnection>& connection : *connections){
-			if (connectionId == *connection->id){
-				return *connection->connectionParam;
-			}
+	const imtbase::ICollectionInfo::Ids agentIds = m_agentCollectionCompPtr->GetElementIds();
+	for (const imtbase::ICollectionInfo::Id& agentId : agentIds){
+		if (m_serviceManagerCompPtr->ServiceExists(agentId, serviceId)){
+			return m_serviceManagerCompPtr->GetService(agentId, serviceId);
 		}
 	}
 
-	return sdl::V1_0::imtbase::CServerConnectionParam();
+	return nullptr;
 }
 
 
-QByteArrayList CServiceControllerProxyComp::GetChangedConnectionUrl(
+QList<CServiceControllerProxyComp::ChangedConnectionUrl> CServiceControllerProxyComp::GetChangedConnectionUrl(
 			const sdl::V1_0::agentino::CServiceData& serviceData1,
 			const sdl::V1_0::agentino::CServiceData& serviceData2) const
 {
-	QByteArrayList retVal;
+	QList<ChangedConnectionUrl> retVal;
 
-	if (serviceData1.inputConnections && serviceData2.inputConnections){
-		istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CInputConnection>> connections1 = *serviceData1.inputConnections;
-		istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CInputConnection>> connections2 = *serviceData2.inputConnections;
+	if (!serviceData1.inputConnections || !serviceData2.inputConnections){
+		return retVal;
+	}
 
-		for (int i = 0; i < connections1->size(); i++){
-			istd::TNullableValue<sdl::V1_0::agentino::CInputConnection> connection1 = (*connections1)[i];
-			istd::TNullableValue<sdl::V1_0::agentino::CInputConnection> connection2 = (*connections2)[i];
+	auto toChangedConnectionUrl = [](const QByteArray& addressableId, const sdl::V1_0::imtbase::CServerConnectionParam& param){
+		ChangedConnectionUrl changed;
+		changed.addressableId = addressableId;
+		changed.host = param.host.has_value() ? *param.host : QString();
+		changed.isSecure = param.isSecure.has_value() && *param.isSecure;
+		changed.httpPort = param.httpPort.has_value() ? *param.httpPort : -1;
+		changed.httpPath = param.httpPath.has_value() ? *param.httpPath : QString();
+		changed.wsPort = param.wsPort.has_value() ? *param.wsPort : -1;
 
-			sdl::V1_0::imtbase::CServerConnectionParam connectionParam1 = *connection1->connectionParam;
-			sdl::V1_0::imtbase::CServerConnectionParam connectionParam2 = *connection2->connectionParam;
+		return changed;
+	};
 
-			if (*connectionParam1.host != *connectionParam2.host ||
-				*connectionParam1.httpPort != *connectionParam2.httpPort ||
-				*connectionParam1.wsPort != *connectionParam2.wsPort){
-				retVal << *connection1->id;
+	istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CInputConnection>> connections1 = *serviceData1.inputConnections;
+	istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CInputConnection>> connections2 = *serviceData2.inputConnections;
+
+	for (int i = 0; i < connections1->size() && i < connections2->size(); i++){
+		istd::TNullableValue<sdl::V1_0::agentino::CInputConnection> connection1 = (*connections1)[i];
+		istd::TNullableValue<sdl::V1_0::agentino::CInputConnection> connection2 = (*connections2)[i];
+
+		sdl::V1_0::imtbase::CServerConnectionParam connectionParam1 = *connection1->connectionParam;
+		sdl::V1_0::imtbase::CServerConnectionParam connectionParam2 = *connection2->connectionParam;
+
+		if (*connectionParam1.host != *connectionParam2.host ||
+			*connectionParam1.httpPort != *connectionParam2.httpPort ||
+			*connectionParam1.wsPort != *connectionParam2.wsPort){
+			retVal << toChangedConnectionUrl(*connection1->id, connectionParam2);
+		}
+
+		// Extern addresses are separately addressable (ServiceEndpointId of the extern's
+		// own uuid, see AppendAvailableConnectionsFromServiceCollection) - a consumer can be
+		// linked to one specific extern address independently of the main one, so it must be
+		// told when THAT ONE changes, not just when the main address does.
+		if (!connection1->externConnectionList || !connection2->externConnectionList){
+			continue;
+		}
+
+		istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CExternConnectionInfo>> externs1 = *connection1->externConnectionList;
+		istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CExternConnectionInfo>> externs2 = *connection2->externConnectionList;
+
+		for (const istd::TNullableValue<sdl::V1_0::agentino::CExternConnectionInfo>& externNew : *externs2){
+			if (!externNew->id || !externNew->connectionParam){
+				continue;
+			}
+
+			for (const istd::TNullableValue<sdl::V1_0::agentino::CExternConnectionInfo>& externOld : *externs1){
+				if (!externOld->id || *externOld->id != *externNew->id || !externOld->connectionParam){
+					continue;
+				}
+
+				const sdl::V1_0::imtbase::CServerConnectionParam& oldParam = *externOld->connectionParam;
+				const sdl::V1_0::imtbase::CServerConnectionParam& newParam = *externNew->connectionParam;
+				if (*oldParam.host != *newParam.host ||
+					*oldParam.httpPort != *newParam.httpPort ||
+					*oldParam.wsPort != *newParam.wsPort){
+					retVal << toChangedConnectionUrl(*externNew->id, newParam);
+				}
+
+				break;
 			}
 		}
 	}
@@ -1342,51 +1690,58 @@ QByteArrayList CServiceControllerProxyComp::GetChangedConnectionUrl(
 }
 
 
-QByteArrayList CServiceControllerProxyComp::GetServiceIdsByDependantId(const QByteArray& dependantId) const
+QVector<CServiceControllerProxyComp::ConsumerRef> CServiceControllerProxyComp::FindConsumersOfEndpoint(
+			const QByteArray& endpointId) const
 {
-	QByteArrayList retVal;
-	imtbase::ICollectionInfo::Ids agentIds = m_agentCollectionCompPtr->GetElementIds();
-	for (const imtbase::ICollectionInfo::Id& agentId: agentIds){
-		imtbase::IObjectCollection::DataPtr agentDataPtr;
-		if (m_agentCollectionCompPtr->GetObjectData(agentId, agentDataPtr)){
-			agentinodata::CAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::CAgentInfo*>(agentDataPtr.GetPtr());
-			if (agentInfoPtr == nullptr){
+	QVector<ConsumerRef> retVal;
+	if (endpointId.isEmpty() || !m_agentCollectionCompPtr.IsValid() || !m_serviceManagerCompPtr.IsValid()){
+		return retVal;
+	}
+
+	// Consumers are found by scanning: the link lives inside each consumer descriptor,
+	// so there is no index to ask. This runs only when a producer URL actually changed.
+	const imtbase::ICollectionInfo::Ids agentIds = m_agentCollectionCompPtr->GetElementIds();
+	for (const imtbase::ICollectionInfo::Id& agentId : agentIds){
+		imtbase::IObjectCollection* serviceCollectionPtr =
+					m_serviceManagerCompPtr->GetServiceCollection(agentId);
+		if (serviceCollectionPtr == nullptr){
+			continue;
+		}
+
+		const imtbase::ICollectionInfo::Ids serviceIds = serviceCollectionPtr->GetElementIds();
+		for (const imtbase::ICollectionInfo::Id& serviceId : serviceIds){
+			imtbase::IObjectCollection::DataPtr serviceDataPtr;
+			if (!serviceCollectionPtr->GetObjectData(serviceId, serviceDataPtr)){
 				continue;
 			}
 
-			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-			if (serviceCollectionPtr == nullptr){
+			agentinodata::IServiceInfo* serviceInfoPtr =
+						dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+			if (serviceInfoPtr == nullptr){
 				continue;
 			}
 
-			imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
-			for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
-				imtbase::IObjectCollection::DataPtr serviceDataPtr;
-				if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
-					agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
-					if (serviceInfoPtr == nullptr){
-						continue;
-					}
+			imtbase::IObjectCollection* linksPtr = serviceInfoPtr->GetDependantServiceConnections();
+			if (linksPtr == nullptr){
+				continue;
+			}
 
-					imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
-					if (connectionCollectionPtr == nullptr){
-						continue;
-					}
+			const imtbase::ICollectionInfo::Ids linkIds = linksPtr->GetElementIds();
+			for (const imtbase::ICollectionInfo::Id& linkId : linkIds){
+				imtbase::IObjectCollection::DataPtr linkDataPtr;
+				if (!linksPtr->GetObjectData(linkId, linkDataPtr)){
+					continue;
+				}
 
-					imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
-					for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-						imtbase::IObjectCollection::DataPtr connectionParamDataPtr;
-						if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionParamDataPtr)){
-							imtservice::CUrlConnectionLinkParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionParamDataPtr.GetPtr());
-							if (connectionParamPtr == nullptr){
-								break;
-							}
-
-							if (dependantId == connectionParamPtr->GetDependantServiceConnectionId()){
-								retVal << serviceElementId;
-							}
-						}
-					}
+				const imtservice::CUrlConnectionLinkParam* linkPtr =
+							dynamic_cast<const imtservice::CUrlConnectionLinkParam*>(linkDataPtr.GetPtr());
+				if (linkPtr != nullptr && linkPtr->GetDependantServiceConnectionId() == endpointId){
+					ConsumerRef consumer;
+					consumer.agentId = agentId;
+					consumer.serviceId = serviceId;
+					consumer.slot = linkId;
+					retVal << consumer;
+					break;
 				}
 			}
 		}
@@ -1451,7 +1806,10 @@ QByteArrayList CServiceControllerProxyComp::GetMirrorServiceIds(const QByteArray
 		return retVal;
 	}
 
-	imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
+	imtbase::IObjectCollection* serviceCollectionPtr =
+				m_serviceManagerCompPtr.IsValid()
+							? m_serviceManagerCompPtr->GetServiceCollection(agentId)
+							: nullptr;
 	if (serviceCollectionPtr == nullptr){
 		return retVal;
 	}
@@ -1485,56 +1843,8 @@ void CServiceControllerProxyComp::RemoveServiceStatuses(const QByteArrayList& se
 }
 
 
-void CServiceControllerProxyComp::RemoveStaleMirrorServicesByPath(
-			const QByteArray& agentId,
-			const QByteArray& keepServiceId,
-			const QByteArray& servicePath) const
-{
-	if (!m_serviceManagerCompPtr.IsValid() || servicePath.isEmpty() || agentId.isEmpty()){
-		return;
-	}
-
-	const QByteArrayList mirrorIds = GetMirrorServiceIds(agentId);
-	QByteArrayList staleIds;
-	for (const QByteArray& mirrorId : mirrorIds){
-		if (mirrorId == keepServiceId){
-			continue;
-		}
-
-		const agentinodata::IServiceInfo* otherPtr = m_serviceManagerCompPtr->GetService(agentId, mirrorId);
-		if (otherPtr == nullptr){
-			continue;
-		}
-
-		const QByteArray otherPath = otherPtr->GetServicePath();
-		if (otherPath.isEmpty()){
-			continue;
-		}
-
-		if (QString::fromUtf8(otherPath).compare(QString::fromUtf8(servicePath), Qt::CaseInsensitive) == 0){
-			staleIds << mirrorId;
-		}
-	}
-
-	if (staleIds.isEmpty()){
-		return;
-	}
-
-	qDebug() << "CServiceControllerProxyComp::RemoveStaleMirrorServicesByPath"
-			 << "agent=" << agentId
-			 << "keep=" << keepServiceId
-			 << "path=" << servicePath
-			 << "stale=" << staleIds;
-
-	QString removeError;
-	if (!const_cast<CServiceControllerProxyComp*>(this)->RemoveServicesInMirror(agentId, staleIds, removeError)){
-		SendErrorMessage(
-					0,
-					QString("Unable to drop stale mirror services for path '%1': %2")
-								.arg(QString::fromUtf8(servicePath), removeError),
-					"CServiceControllerProxyComp");
-	}
-}
+// RemoveStaleMirrorServicesByPath deleted (R1.2): dual-write drift papering no longer needed.
+// Full agent ServicesList reconcile removes ids absent on the agent.
 
 
 void CServiceControllerProxyComp::AppendServicesListFields(imtgql::CGqlRequest& gqlRequest)

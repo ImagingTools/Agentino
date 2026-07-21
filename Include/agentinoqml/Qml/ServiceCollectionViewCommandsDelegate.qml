@@ -20,6 +20,10 @@ DocumentCollectionViewDelegate {
 	removeDialogTitle: qsTr("Deleting an service");
 	removeMessage: qsTr("Delete the selected service ?");
 	
+	// Shared with onServiceStatusChanged: only known stopped/running allow Start/Stop.
+	// undefined (agent disconnected) must keep both disabled.
+	property var serviceStatusModel: ServiceStatusModel {}
+
 	function updateItemSelection(selectedItems){
 		if (!collectionView){
 			return
@@ -38,8 +42,8 @@ DocumentCollectionViewDelegate {
 		let isEnabled = selectedItems.length > 0;
 		if (isEnabled){
 			let status = elements.getData(ServiceItemTypeMetaInfo.s_status, selectedItems[0]);
-			startEnabled = String(status) === ServiceStatus.s_NotRunning
-			stopEnabled = String(status) === ServiceStatus.s_Running
+			startEnabled = serviceStatusModel.isStartable(status)
+			stopEnabled = serviceStatusModel.isStoppable(status)
 		}
 		
 		commandsController.setCommandIsEnabled("Remove", isEnabled)
@@ -197,21 +201,13 @@ DocumentCollectionViewDelegate {
 				return
 			}
 
-			// RUNNING / NOT_RUNNING / UNDEFINED — hide popup and restore commands.
+			// Terminal status (running / notRunning / undefined) — hide popup and
+			// restore Start/Stop only when the process state is known and actionable.
 			container.finishOperation()
 
 			if (container.commandsController){
-				let value = String(status)
-				let isRunning = value === ServiceStatus.s_Running
-					|| value === "RUNNING"
-					|| value === "SS_RUNNING"
-					|| value === "running"
-				let isStopped = value === ServiceStatus.s_NotRunning
-					|| value === "NOT_RUNNING"
-					|| value === "SS_NOT_RUNNING"
-					|| value === "notRunning"
-				container.commandsController.setCommandIsEnabled("Start", isStopped)
-				container.commandsController.setCommandIsEnabled("Stop", isRunning)
+				container.commandsController.setCommandIsEnabled("Start", container.serviceStatusModel.isStartable(status))
+				container.commandsController.setCommandIsEnabled("Stop", container.serviceStatusModel.isStoppable(status))
 			}
 		}
 

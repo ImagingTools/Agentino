@@ -2,13 +2,8 @@
 #pragma once
 
 
-// ACF includes
-#include <imod/CModelUpdateBridge.h>
-#include <imod/TModelWrap.h>
-
 // ImtCore includes
 #include <imtbase/TIdentifiableWrap.h>
-#include <imtbase/CObjectCollection.h>
 
 // Agentino includes
 #include <agentinodata/IAgentInfo.h>
@@ -18,6 +13,12 @@ namespace agentinodata
 {
 
 
+/**
+	Agent identity/record only (R1.3).
+
+	Service collections are **not** nested here — see CAgentServiceManagerComp
+	(the server-side mirror).
+*/
 class CAgentInfo: virtual public IAgentInfo
 {
 public:
@@ -31,7 +32,6 @@ public:
 	virtual QString GetVersion() const override;
 	virtual QDateTime GetLastConnection() const override;
 	virtual QString GetComputerName() const override;
-	virtual imtbase::IObjectCollection* GetServiceCollection() override;
 
 	// reimplemented (ilog::ITracingConfiguration)
 	virtual int GetTracingLevel() const override;
@@ -50,10 +50,7 @@ protected:
 	QDateTime m_lastConnection;
 	QString m_version;
 	QString m_computerName;
-	imod::TModelWrap<imtbase::CObjectCollection> m_serviceCollection;
-	int m_tracingLevel;
-
-	imod::CModelUpdateBridge m_modelUpdateBridge;
+	int m_tracingLevel = -1;
 };
 
 
@@ -61,6 +58,3 @@ typedef imtbase::TIdentifiableWrap<CAgentInfo> CIdentifiableAgentInfo;
 
 
 } // namespace agentinodata
-
-
-

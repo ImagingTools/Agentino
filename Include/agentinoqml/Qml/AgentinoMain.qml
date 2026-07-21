@@ -10,5 +10,8 @@ ApplicationMain{
     useWebSocketSubscription: true
     canRecoveryPassword: false;
     authorizationServerConnected: true;
+
+    // Composition root (Architecture §6.5) — shells inject adapters/scope here.
+    property var agentinoBackend: AgentinoBackend {}
 }
 

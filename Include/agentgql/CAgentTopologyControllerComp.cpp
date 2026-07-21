@@ -5,6 +5,7 @@
 
 // Qt includes
 #include <QtCore/QPoint>
+#include <QtCore/QtMath>
 
 // ACF includes
 #include <i2d/CPosition2d.h>
@@ -160,27 +161,28 @@ sdl::V1_0::agentino::CSaveTopologyResponse CAgentTopologyControllerComp::OnSaveT
 		return response;
 	}
 
-	m_topologyCollectionCompPtr->ResetData();
+	// Never ResetData() — same race as server topology (OnTopologyChanged → GetTopology mid-write).
 	if (!arguments.input->services.has_value()){
 		errorMessage = QString("Unable to save topology. Error: Input params is invalid");
 		return response;
 	}
 
-	istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CService>> serviceList = *arguments.input->services;
-	for (const istd::TNullableValue<sdl::V1_0::agentino::CService>& service : *serviceList.GetPtr()){
-		if (!service->x.has_value() || !service->y.has_value() || !service->id.has_value()){
+	istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CServiceCoordinateInput>> serviceList = *arguments.input->services;
+	for (const istd::TNullableValue<sdl::V1_0::agentino::CServiceCoordinateInput>& service : *serviceList.GetPtr()){
+		if (!service.has_value()
+					|| !service->x.has_value() || !service->y.has_value()
+					|| !service->id.has_value() || service->id->isEmpty()){
 			errorMessage = QString("Unable to save topology. Error: Service is missing required fields (id, x, y)");
 			SendErrorMessage(0, errorMessage, "CAgentTopologyControllerComp");
 			return response;
 		}
 
-		int x = *service->x;
-		int y = *service->y;
-		QByteArray id = *service->id;
-		QPoint point(x,y);
-
+		const QByteArray id = *service->id;
+		const QPoint point(qRound(*service->x), qRound(*service->y));
 		if (!SetServiceCoordinate(id, point)){
-			response.successful = false;
+			errorMessage = QString("Unable to save topology. Error: Failed to store coordinates for '%1'")
+						.arg(QString::fromUtf8(id));
+			SendErrorMessage(0, errorMessage, "CAgentTopologyControllerComp");
 			return response;
 		}
 	}
@@ -221,6 +223,10 @@ bool CAgentTopologyControllerComp::SetServiceCoordinate(const QByteArray& servic
 		return false;
 	}
 
+	if (serviceId.isEmpty()){
+		return false;
+	}
+
 	i2d::CPosition2d position2d;
 	i2d::CVector2d position;
 
@@ -228,7 +234,12 @@ bool CAgentTopologyControllerComp::SetServiceCoordinate(const QByteArray& servic
 	position.SetY(point.y());
 	position2d.SetPosition(position);
 
-	QByteArray retVal = m_topologyCollectionCompPtr->InsertNewObject("Topology", "", "", &position2d, serviceId);
+	if (m_topologyCollectionCompPtr->GetElementIds().contains(serviceId)){
+		return m_topologyCollectionCompPtr->SetObjectData(serviceId, position2d);
+	}
+
+	const QByteArray retVal = m_topologyCollectionCompPtr->InsertNewObject(
+				"Topology", "", "", &position2d, serviceId);
 	return !retVal.isEmpty();
 }
 

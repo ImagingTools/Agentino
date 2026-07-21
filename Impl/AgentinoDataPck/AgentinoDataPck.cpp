@@ -11,9 +11,9 @@ namespace AgentinoDataPck
 
 
 I_EXPORT_PACKAGE(
-			"ServiceManagerDataPck",
-			"ServiceManager's graphql based components",
-			IM_PROJECT("ServiceManager") IM_COMPANY("ImagingTools") "Service manager");
+			"AgentinoDataPck",
+			"Agentino domain data components",
+			IM_PROJECT("Agentino") IM_COMPANY("ImagingTools") "Agentino");
 
 I_EXPORT_COMPONENT(
 			ServiceInfo,
@@ -37,13 +37,18 @@ I_EXPORT_COMPONENT(
 
 I_EXPORT_COMPONENT(
 			ServiceController,
-			"ServiceManager agent controller",
-			"ServiceManager Agent Service Controller");
+			"Event-sourced service supervisor (IServiceController)",
+			"Agent Service Controller / Supervisor");
 
 I_EXPORT_COMPONENT(
-			AgentCollection,
-			"Agent collection",
-			"Agent Collection");
+			LegacyServiceController,
+			"Legacy poll-based service controller",
+			"Legacy Service Controller");
+
+I_EXPORT_COMPONENT(
+			AgentServiceManager,
+			"ServiceManager role over agent nested service mirrors (R1.4 split)",
+			"Agent Service Manager");
 
 I_EXPORT_COMPONENT(
 			ServiceStatusInfo,
@@ -54,6 +59,16 @@ I_EXPORT_COMPONENT(
 			AgentStatusInfo,
 			"Agent status info",
 			"Agent Status Info");
+
+I_EXPORT_COMPONENT(
+			ProcessHost,
+			"Supervised child process host",
+			"Process Host");
+
+I_EXPORT_COMPONENT(
+			ServiceTypeCatalog,
+			"Service-type plugin catalog (load once per type)",
+			"Service Type Catalog");
 
 
 } // namespace AgentinoDataPck

@@ -16,9 +16,13 @@
 #include <imtclientgql/IGqlSubscriptionManager.h>
 #include <imtclientgql/IGqlClient.h>
 #include <imtbase/IObjectCollection.h>
+#include <imtcom/IConnectionStatusProvider.h>
 
 // Agentino includes
 #include <agentinodata/IServiceStatusInfo.h>
+#include <agentinodata/IAgentStatusInfo.h>
+#include <agentinodata/IServiceManager.h>
+#include <agentinogql/IEnrollmentController.h>
 #include <agentinogql/IServiceCollectionSynchronizer.h>
 
 
@@ -27,11 +31,14 @@ namespace agentinogql
 
 
 /**
-	Server-side subscription hub for connected agents.
+	The single server-side observer of agent changes.
 
-	Registers (and re-registers on agent reconnect) live WebSocket subscriptions:
-	- OnAgentServiceStatusChanged  → ServiceStatusCollection + CN_STATUS_CHANGED (observers)
-	- OnAgentServicesCollectionChanged  → IServiceCollectionSynchronizer (live mirror sync)
+	One component watches everything an agent reports and applies the server's reaction to it —
+	no other component tracks agents:
+	- agent WS connect / disconnect (login status)  → agent status, per-service status reset,
+	  connection-endpoint availability, and (re)registration of live subscriptions;
+	- OnAgentServiceStatusChanged                    → ServiceStatusCollection;
+	- OnAgentServicesCollectionChanged               → mirror sync via IServiceCollectionSynchronizer.
 
 	Status path (both steps are required):
 	1. ApplyServiceStatus writes ServiceStatusCollection (CollectionSubscriber / topology).
@@ -44,7 +51,7 @@ namespace agentinogql
 	(main) to avoid races that freeze workers and leave the server unable to handle
 	subsequent commands (e.g. SaveTopology) until the client reconnects.
 */
-class CSubscriptionControllerComp:
+class CAgentChangeObserverComp:
 			public QObject,
 			public ilog::CLoggerComponentBase,
 			public imod::CMultiModelDispatcherBase,
@@ -58,10 +65,11 @@ public:
 	enum ModelId
 	{
 		MI_AGENT_COLLECTION = 0,
-		MI_AGENT_STATUS_COLLECTION
+		MI_AGENT_STATUS_COLLECTION,
+		MI_LOGIN_STATUS
 	};
 
-	I_BEGIN_COMPONENT(CSubscriptionControllerComp);
+	I_BEGIN_COMPONENT(CAgentChangeObserverComp);
 		I_REGISTER_INTERFACE(imtclientgql::IGqlSubscriptionClient);
 		I_ASSIGN(m_subscriptionManagerCompPtr, "SubscriptionManager", "Subscription agent manager", true, "SubscriptionManager");
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", true, "AgentCollection");
@@ -70,6 +78,12 @@ public:
 		I_ASSIGN_TO(m_agentStatusModelCompPtr, m_agentStatusCollectionCompPtr, false);
 		I_ASSIGN(m_serviceStatusCollectionCompPtr, "ServiceStatusCollection", "Service status collection updated from OnAgentServiceStatusChanged", false, "ServiceStatusCollection");
 		I_ASSIGN(m_serviceSynchronizerCompPtr, "ServiceSynchronizer", "Refreshes the mirror on agent service-collection changes", false, "ServiceSynchronizer");
+		I_ASSIGN(m_enrollmentControllerCompPtr, "EnrollmentController", "Live-path gate: only Approved agents ingest", false, "EnrollmentStore");
+		// Absorbed from CAgentConnectionObserverComp: the same component now also reacts to
+		// agent WS connect/disconnect (single agent-change observer).
+		I_ASSIGN(m_loginStatusProviderCompPtr, "LoginStatusProvider", "Agent WS connection status (connect/disconnect)", false, "LoginStatusProvider");
+		I_ASSIGN_TO(m_loginStatusModelCompPtr, m_loginStatusProviderCompPtr, false);
+		I_ASSIGN(m_serviceManagerCompPtr, "ServiceManager", "Per-agent service collections (reset statuses on disconnect)", false, "ServiceManager");
 	I_END_COMPONENT;
 
 protected:
@@ -121,6 +135,15 @@ private:
 				const QByteArray& serviceId,
 				agentinodata::IServiceStatusInfo::ServiceStatus status);
 
+	/** True when no gate is wired, or enrollment record is Approved. */
+	bool IsAgentIngestionAllowed(const QByteArray& agentId) const;
+	void DropLiveSubscriptionsForAgent(const QByteArray& agentId);
+
+	// Absorbed from CAgentConnectionObserverComp: react to agent WS connect / disconnect.
+	void HandleAgentConnectionChanged(const istd::IChangeable::ChangeSet& changeSet);
+	void SetAgentStatus(const QByteArray& agentId, agentinodata::IAgentStatusInfo::AgentStatus status);
+	void ResetAgentServiceStatuses(const QByteArray& agentId);
+
 	static bool ParseServiceStatus(
 				const QString& statusText,
 				agentinodata::IServiceStatusInfo::ServiceStatus& status);
@@ -134,6 +157,10 @@ private:
 	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);
 	I_REF(imtclientgql::IGqlClient, m_gqlClientCompPtr);
 	I_REF(IServiceCollectionSynchronizer, m_serviceSynchronizerCompPtr);
+	I_REF(IEnrollmentController, m_enrollmentControllerCompPtr);
+	I_REF(imtcom::IConnectionStatusProvider, m_loginStatusProviderCompPtr);
+	I_REF(imod::IModel, m_loginStatusModelCompPtr);
+	I_REF(agentinodata::IServiceManager, m_serviceManagerCompPtr);
 
 	QMap<QByteArray, QByteArray> m_registeredAgents; // <agentId, subscriptionId> for OnAgentServiceStatusChanged
 	QMap<QByteArray, QByteArray> m_registeredServiceCollectionAgents; // <agentId, subscriptionId> for OnAgentServicesCollectionChanged

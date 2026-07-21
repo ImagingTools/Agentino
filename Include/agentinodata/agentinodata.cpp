@@ -13,13 +13,34 @@
 // ImtCore includes
 #include <imtcom/IServerConnectionInterface.h>
 #include <imtservice/IConnectionCollection.h>
+#include <imtservice/IServiceConnectionParam.h>
 
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
+#include <agentinodata/ServiceEndpointId.h>
 
 
 namespace agentinodata
 {
+
+
+namespace
+{
+
+
+/** "ServiceName (host:port)" — what the operator sees in the connection pick-list. */
+QString FormatEndpointName(const QString& serviceName, const QString& host, int httpPort)
+{
+	const QString address = QStringLiteral("%1:%2").arg(host).arg(httpPort);
+	if (serviceName.isEmpty()){
+		return address;
+	}
+
+	return QStringLiteral("%1 (%2)").arg(serviceName, address);
+}
+
+
+} // namespace
 
 
 ProcessStateEnum GetProcceStateRepresentation(QProcess::ProcessState processState)
@@ -551,9 +572,27 @@ bool GetRepresentationFromConnectionCollection(
 			QByteArray serviceTypeId = connectionParamPtr->GetServiceTypeId();
 
 			sdl::V1_0::imtbase::CServerConnectionParam connectionParamRepresentation;
-			const imtcom::CServerConnectionInterfaceParam& defaultConnectionParam = dynamic_cast<const imtcom::CServerConnectionInterfaceParam&>(connectionParamPtr->GetDefaultInterface());
-			if (!GetRepresentationFromServerConnectionParam(defaultConnectionParam, connectionParamRepresentation)){
-				return false;
+			// The element's own *current* interface (kept live by SetServerConnectionInterface,
+			// e.g. via UpdateConnectionUrl/SetOutputConnection), not GetDefaultInterface() - that
+			// is a frozen snapshot taken once when the plugin was first loaded and never updated
+			// afterwards, so reading it here would keep showing stale values after any live change.
+			// GetRepresentationFromServerConnectionParam() takes the concrete
+			// CServerConnectionInterfaceParam, but the collection's own elements are
+			// CUrlConnectionParam (a different concrete class) - copy through the interface here.
+			const imtcom::IServerConnectionInterface* currentConnectionParamPtr = connectionCollection.GetServerConnection(elementId);
+			if (currentConnectionParamPtr != nullptr){
+				connectionParamRepresentation.host = currentConnectionParamPtr->GetHost();
+				connectionParamRepresentation.isSecure = currentConnectionParamPtr->GetConnectionFlags() == imtcom::IServerConnectionInterface::CF_SECURE;
+				connectionParamRepresentation.httpPort = currentConnectionParamPtr->GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
+				connectionParamRepresentation.httpPath = currentConnectionParamPtr->GetPath(imtcom::IServerConnectionInterface::PT_HTTP);
+				connectionParamRepresentation.wsPort = currentConnectionParamPtr->GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
+			}
+			else{
+				const imtcom::CServerConnectionInterfaceParam& defaultConnectionParam =
+							dynamic_cast<const imtcom::CServerConnectionInterfaceParam&>(connectionParamPtr->GetDefaultInterface());
+				if (!GetRepresentationFromServerConnectionParam(defaultConnectionParam, connectionParamRepresentation)){
+					return false;
+				}
 			}
 
 			if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT){
@@ -640,80 +679,56 @@ void AppendAvailableConnectionsFromServiceCollection(
 				continue;
 			}
 
-			sdl::V1_0::agentino::CDependantConnectionInfo dependantConnectionInfo;
+			// One candidate per producer endpoint — the stable address to reference.
+			// The connection id on its own is only the usage/type marker shared by every
+			// service speaking this protocol, so it cannot tell two producers apart:
+			// address the endpoint by "<serviceId>|<connectionId>" (unambiguous across
+			// agents) and name it after the producing service.
+			const QString serviceName = serviceInfoPtr->GetServiceName();
+
 			QString host = connectionParamPtr->GetHost();
 			if (host.isEmpty()){
 				host = QStringLiteral("localhost");
 			}
 			const int httpPort = connectionParamPtr->GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
-			dependantConnectionInfo.id = connectionElementId;
-			dependantConnectionInfo.name = host + QStringLiteral("/") + QString::number(httpPort);
+
+			sdl::V1_0::agentino::CDependantConnectionInfo dependantConnectionInfo;
+			dependantConnectionInfo.id = ServiceEndpointId::Make(serviceElementId, connectionElementId);
+			dependantConnectionInfo.name = FormatEndpointName(serviceName, host, httpPort);
 			dependantConnectionInfo.connectionParam = sdlRepresentation;
 			outList << dependantConnectionInfo;
 
+			// A producer's extern connections are additional, explicitly configured
+			// addresses for this same connection (e.g. exposed through NAT/port-forwarding
+			// for access from outside the producer's network). Offer each as its own
+			// pickable candidate too, addressed by the incoming connection's own uuid so a
+			// consumer can select a specific one instead of always getting the main address.
 			const imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections =
 						connectionParamPtr->GetIncomingConnections();
-			for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-				sdl::V1_0::agentino::CDependantConnectionInfo incomingConnectionInfo;
-				incomingConnectionInfo.id = incomingConnection.GetObjectUuid();
+			for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incoming : incomingConnections){
+				sdl::V1_0::imtbase::CServerConnectionParam externRepresentation;
+				if (!GetRepresentationFromServerConnectionParam(incoming, externRepresentation)){
+					continue;
+				}
 
-				const QString incomingHost = incomingConnection.GetHost();
-				const int incomingHttpPort = incomingConnection.GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
-				incomingConnectionInfo.name = incomingHost + QStringLiteral("/") + QString::number(incomingHttpPort);
+				QString externHost = incoming.GetHost();
+				if (externHost.isEmpty()){
+					externHost = QStringLiteral("localhost");
+				}
+				const int externHttpPort = incoming.GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
 
-				sdl::V1_0::imtbase::CServerConnectionParam connectionParam;
-				connectionParam.host = incomingHost;
-				connectionParam.wsPort = incomingConnection.GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
-				connectionParam.httpPort = incomingHttpPort;
-				incomingConnectionInfo.connectionParam = connectionParam;
-
-				outList << incomingConnectionInfo;
+				sdl::V1_0::agentino::CDependantConnectionInfo externConnectionInfo;
+				externConnectionInfo.id = ServiceEndpointId::Make(serviceElementId, incoming.GetObjectUuid());
+				externConnectionInfo.name = FormatEndpointName(
+							serviceName + QStringLiteral(" [extern]"), externHost, externHttpPort);
+				externConnectionInfo.connectionParam = externRepresentation;
+				outList << externConnectionInfo;
 			}
 		}
 	}
 }
 
 
-void FillAvailableConnectionsForServiceData(
-			sdl::V1_0::agentino::CServiceData& serviceData,
-			imtbase::IObjectCollection& serviceCollection)
-{
-	if (!serviceData.outputConnections.has_value()){
-		return;
-	}
-
-	for (istd::TNullableValue<sdl::V1_0::agentino::COutputConnection>& outputConnection : *serviceData.outputConnections){
-		if (!outputConnection.has_value() || !outputConnection->id.has_value()){
-			continue;
-		}
-
-		QList<sdl::V1_0::agentino::CDependantConnectionInfo> available;
-		AppendAvailableConnectionsFromServiceCollection(serviceCollection, *outputConnection->id, available);
-		outputConnection->dependantConnectionList.Emplace();
-		outputConnection->dependantConnectionList->FromList(available);
-	}
-}
-
-
-void FillAvailableConnectionsForPluginInfo(
-			sdl::V1_0::agentino::CPluginInfo& pluginInfo,
-			imtbase::IObjectCollection& serviceCollection)
-{
-	if (!pluginInfo.outputConnections.has_value()){
-		return;
-	}
-
-	for (istd::TNullableValue<sdl::V1_0::agentino::COutputConnection>& outputConnection : *pluginInfo.outputConnections){
-		if (!outputConnection.has_value() || !outputConnection->id.has_value()){
-			continue;
-		}
-
-		QList<sdl::V1_0::agentino::CDependantConnectionInfo> available;
-		AppendAvailableConnectionsFromServiceCollection(serviceCollection, *outputConnection->id, available);
-		outputConnection->dependantConnectionList.Emplace();
-		outputConnection->dependantConnectionList->FromList(available);
-	}
-}
 
 
 } // namespace agentinodata

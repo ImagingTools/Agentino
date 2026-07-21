@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
-#include "CSubscriptionControllerComp.h"
+#include "CAgentChangeObserverComp.h"
 
 
 // Qt includes
+#include <QtCore/QDateTime>
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
@@ -61,7 +62,7 @@ QString StatusWireString(agentinodata::IServiceStatusInfo::ServiceStatus status)
 
 // reimplemented (imtclientgql::IGqlSubscriptionClient)
 
-void CSubscriptionControllerComp::OnResponseReceived(const QByteArray& subscriptionId, const QByteArray& subscriptionData)
+void CAgentChangeObserverComp::OnResponseReceived(const QByteArray& subscriptionId, const QByteArray& subscriptionData)
 {
 	// WebSocket RequestClientHandler delivers agent pushes on the socket I/O thread.
 	// StartService runs on a GQL worker with a nested event loop; mutating collections
@@ -71,7 +72,7 @@ void CSubscriptionControllerComp::OnResponseReceived(const QByteArray& subscript
 }
 
 
-void CSubscriptionControllerComp::OnSubscriptionStatusChanged(
+void CAgentChangeObserverComp::OnSubscriptionStatusChanged(
 			const QByteArray& /*subscriptionId*/,
 			const SubscriptionStatus& /*status*/,
 			const QString& /*message*/)
@@ -81,7 +82,7 @@ void CSubscriptionControllerComp::OnSubscriptionStatusChanged(
 
 // private methods
 
-void CSubscriptionControllerComp::QueueHandleResponse(
+void CAgentChangeObserverComp::QueueHandleResponse(
 			const QByteArray& subscriptionId,
 			const QByteArray& subscriptionData)
 {
@@ -103,12 +104,12 @@ void CSubscriptionControllerComp::QueueHandleResponse(
 					0,
 					QString("Unable to queue live subscription payload (id=%1)")
 								.arg(QString::fromUtf8(subscriptionId)),
-					"CSubscriptionControllerComp");
+					"CAgentChangeObserverComp");
 	}
 }
 
 
-void CSubscriptionControllerComp::HandleResponseOnOwnerThread(
+void CAgentChangeObserverComp::HandleResponseOnOwnerThread(
 			const QByteArray& subscriptionId,
 			const QByteArray& subscriptionData)
 {
@@ -123,7 +124,7 @@ void CSubscriptionControllerComp::HandleResponseOnOwnerThread(
 	}
 }
 
-QJsonObject CSubscriptionControllerComp::ExtractStatusPayload(const QJsonObject& root)
+QJsonObject CAgentChangeObserverComp::ExtractStatusPayload(const QJsonObject& root)
 {
 	QJsonObject payload = root.value(QStringLiteral("OnAgentServiceStatusChanged")).toObject();
 	if (!payload.isEmpty()){
@@ -148,60 +149,19 @@ QJsonObject CSubscriptionControllerComp::ExtractStatusPayload(const QJsonObject&
 }
 
 
-bool CSubscriptionControllerComp::ParseServiceStatus(
+bool CAgentChangeObserverComp::ParseServiceStatus(
 			const QString& statusText,
 			agentinodata::IServiceStatusInfo::ServiceStatus& status)
 {
-	if (statusText.isEmpty()){
-		return false;
-	}
-
-	// I_DECLARE_ENUM form used by agent EmitChangeSignal / ServiceSubscriberController.
-	if (agentinodata::IServiceStatusInfo::FromString(statusText.toUtf8(), status)){
-		return true;
-	}
-
-	const QString normalized = statusText.trimmed();
-	const QString upper = normalized.toUpper();
-	const QString lower = normalized.toLower();
-
-	// Wire form published by CServiceStatusCollectionSubscriberControllerComp / QML.
-	if (upper == QStringLiteral("RUNNING") || lower == QStringLiteral("running")){
-		status = agentinodata::IServiceStatusInfo::SS_RUNNING;
-
-		return true;
-	}
-	if (upper == QStringLiteral("NOT_RUNNING") || lower == QStringLiteral("notrunning") || normalized == QStringLiteral("notRunning")){
-		status = agentinodata::IServiceStatusInfo::SS_NOT_RUNNING;
-
-		return true;
-	}
-	if (upper == QStringLiteral("STARTING") || lower == QStringLiteral("starting")){
-		status = agentinodata::IServiceStatusInfo::SS_STARTING;
-
-		return true;
-	}
-	if (upper == QStringLiteral("STOPPING") || lower == QStringLiteral("stopping")){
-		status = agentinodata::IServiceStatusInfo::SS_STOPPING;
-
-		return true;
-	}
-	if (upper == QStringLiteral("RUNNING_IMPOSSIBLE") || upper == QStringLiteral("SS_RUNNING_IMPOSSIBLE")){
-		status = agentinodata::IServiceStatusInfo::SS_RUNNING_IMPOSSIBLE;
-
-		return true;
-	}
-	if (upper == QStringLiteral("UNDEFINED") || lower == QStringLiteral("undefined")){
-		status = agentinodata::IServiceStatusInfo::SS_UNDEFINED;
-
-		return true;
-	}
-
-	return false;
+	// Single shared parser: the agent publishes status as I_DECLARE_ENUM names
+	// (EmitChangeSignal), as ProcessStateEnum ids (GetService / ListObjects) and as the
+	// uppercase GQL wire form. Both the live push path here and the reconcile path in
+	// CServiceControllerProxyComp must interpret them identically.
+	return agentinodata::GetServiceStatusFromRepresentation(statusText, status);
 }
 
 
-CSubscriptionControllerComp::ApplyStatusResult CSubscriptionControllerComp::ApplyServiceStatus(
+CAgentChangeObserverComp::ApplyStatusResult CAgentChangeObserverComp::ApplyServiceStatus(
 			const QByteArray& serviceId,
 			agentinodata::IServiceStatusInfo::ServiceStatus status)
 {
@@ -248,10 +208,49 @@ CSubscriptionControllerComp::ApplyStatusResult CSubscriptionControllerComp::Appl
 }
 
 
-void CSubscriptionControllerComp::HandleServiceStatusChanged(
-			const QByteArray& /*subscriptionId*/,
+bool CAgentChangeObserverComp::IsAgentIngestionAllowed(const QByteArray& agentId) const
+{
+	if (agentId.isEmpty()){
+		return false;
+	}
+	// No gate wired → preserve open behavior (tests / stripped shells).
+	if (!m_enrollmentControllerCompPtr.IsValid()){
+		return true;
+	}
+	const EnrollmentRecord record = m_enrollmentControllerCompPtr->Get(agentId);
+	return record.status == EnrollmentStatus::Approved;
+}
+
+
+void CAgentChangeObserverComp::DropLiveSubscriptionsForAgent(const QByteArray& agentId)
+{
+	if (agentId.isEmpty()){
+		return;
+	}
+	UnregisterStatusSubscription(agentId);
+	UnregisterCollectionSubscription(agentId);
+}
+
+
+void CAgentChangeObserverComp::HandleServiceStatusChanged(
+			const QByteArray& subscriptionId,
 			const QByteArray& subscriptionData)
 {
+	// Resolve agentId from live subscription registry (agentId -> subscriptionId).
+	QByteArray agentId;
+	for (auto it = m_registeredAgents.constBegin(); it != m_registeredAgents.constEnd(); ++it){
+		if (it.value() == subscriptionId || subscriptionId.contains(it.key())){
+			agentId = it.key();
+			break;
+		}
+	}
+
+	// Live-path enrollment gate: revoke/reject must stop ingestion immediately (not only on reconnect).
+	if (!agentId.isEmpty() && !IsAgentIngestionAllowed(agentId)){
+		DropLiveSubscriptionsForAgent(agentId);
+		return;
+	}
+
 	const QJsonDocument document = QJsonDocument::fromJson(subscriptionData);
 	const QJsonObject payload = ExtractStatusPayload(document.object());
 	if (payload.isEmpty()){
@@ -259,7 +258,7 @@ void CSubscriptionControllerComp::HandleServiceStatusChanged(
 					0,
 					QString("OnAgentServiceStatusChanged: empty/unrecognized payload: %1")
 								.arg(QString::fromUtf8(subscriptionData)),
-					"CSubscriptionControllerComp");
+					"CAgentChangeObserverComp");
 
 		return;
 	}
@@ -273,7 +272,7 @@ void CSubscriptionControllerComp::HandleServiceStatusChanged(
 					0,
 					QString("OnAgentServiceStatusChanged: missing service id in payload: %1")
 								.arg(QString::fromUtf8(subscriptionData)),
-					"CSubscriptionControllerComp");
+					"CAgentChangeObserverComp");
 
 		return;
 	}
@@ -290,24 +289,21 @@ void CSubscriptionControllerComp::HandleServiceStatusChanged(
 					0,
 					QString("OnAgentServiceStatusChanged: unknown status '%1' for service '%2'")
 								.arg(statusText, QString::fromUtf8(serviceId)),
-					"CSubscriptionControllerComp");
+					"CAgentChangeObserverComp");
 
 		return;
 	}
 
-	// 1) Write ServiceStatusCollection when the value actually changes → CollectionSubscriber
-	//    publishes OnServiceStatusChanged (with dependencyStatus) for the GUI.
-	// 2) If the write was a no-op (proxy already stored the same status) or failed, still
-	//    CChangeNotifier so ServiceStatusSubscriberController (Model=this) publishes
-	//    OnServiceStatusChanged. Dropping this path was the main regression after the
-	//    agent↔server live rewrite: agent STARTING after proxy STARTING never reached the GUI.
+	// The agent is the single source of truth for status; the server only projects
+	// the notification into the GUI-facing ServiceStatusCollection.
+	// ApplyServiceStatus skips identical writes (no collection churn).
 	const ApplyStatusResult applyResult = ApplyServiceStatus(serviceId, serviceStatus);
 	if (applyResult == ApplyStatusResult::Failed){
 		SendErrorMessage(
 					0,
 					QString("OnAgentServiceStatusChanged: unable to apply status '%1' for service '%2' into collection")
 								.arg(StatusWireString(serviceStatus), QString::fromUtf8(serviceId)),
-					"CSubscriptionControllerComp");
+					"CAgentChangeObserverComp");
 	}
 
 	if (applyResult == ApplyStatusResult::Changed){
@@ -327,10 +323,10 @@ void CSubscriptionControllerComp::HandleServiceStatusChanged(
 }
 
 
-void CSubscriptionControllerComp::HandleServiceCollectionChanged(const QByteArray& subscriptionId, const QByteArray& subscriptionData)
+void CAgentChangeObserverComp::HandleServiceCollectionChanged(const QByteArray& subscriptionId, const QByteArray& subscriptionData)
 {
 	if (!m_serviceSynchronizerCompPtr.IsValid()){
-		SendErrorMessage(0, "ServiceSynchronizer is not set; live collection push ignored", "CSubscriptionControllerComp");
+		SendErrorMessage(0, "ServiceSynchronizer is not set; live collection push ignored", "CAgentChangeObserverComp");
 
 		return;
 	}
@@ -346,8 +342,13 @@ void CSubscriptionControllerComp::HandleServiceCollectionChanged(const QByteArra
 	}
 
 	if (agentId.isEmpty()){
-		SendErrorMessage(0, "Live collection push: unknown subscription id", "CSubscriptionControllerComp");
+		SendErrorMessage(0, "Live collection push: unknown subscription id", "CAgentChangeObserverComp");
 
+		return;
+	}
+
+	if (!IsAgentIngestionAllowed(agentId)){
+		DropLiveSubscriptionsForAgent(agentId);
 		return;
 	}
 
@@ -366,7 +367,7 @@ void CSubscriptionControllerComp::HandleServiceCollectionChanged(const QByteArra
 					0,
 					QString("Live collection push from agent '%1': empty/unrecognized payload: %2")
 								.arg(QString::fromUtf8(agentId), QString::fromUtf8(subscriptionData)),
-					"CSubscriptionControllerComp");
+					"CAgentChangeObserverComp");
 
 		return;
 	}
@@ -383,7 +384,7 @@ void CSubscriptionControllerComp::HandleServiceCollectionChanged(const QByteArra
 
 		if (!serviceIds.isEmpty()){
 			if (!m_serviceSynchronizerCompPtr->RemoveServicesInMirror(agentId, serviceIds, errorMessage)){
-				SendErrorMessage(0, errorMessage, "CSubscriptionControllerComp");
+				SendErrorMessage(0, errorMessage, "CAgentChangeObserverComp");
 			}
 		}
 	}
@@ -395,19 +396,19 @@ void CSubscriptionControllerComp::HandleServiceCollectionChanged(const QByteArra
 						0,
 						QString("Live collection push from agent '%1': missing itemId (typeOperation=%2)")
 									.arg(QString::fromUtf8(agentId), typeOperation),
-						"CSubscriptionControllerComp");
+						"CAgentChangeObserverComp");
 
 			return;
 		}
 
 		if (!m_serviceSynchronizerCompPtr->SyncServiceInMirror(agentId, serviceId, errorMessage)){
-			SendErrorMessage(0, errorMessage, "CSubscriptionControllerComp");
+			SendErrorMessage(0, errorMessage, "CAgentChangeObserverComp");
 		}
 	}
 }
 
 
-void CSubscriptionControllerComp::RegisterStatusSubscription(const QByteArray& agentId)
+void CAgentChangeObserverComp::RegisterStatusSubscription(const QByteArray& agentId)
 {
 	if (!m_subscriptionManagerCompPtr.IsValid() || agentId.isEmpty()){
 		return;
@@ -438,12 +439,12 @@ void CSubscriptionControllerComp::RegisterStatusSubscription(const QByteArray& a
 					0,
 					QString("Unable to register OnAgentServiceStatusChanged for agent '%1'")
 								.arg(QString::fromUtf8(agentId)),
-					"CSubscriptionControllerComp");
+					"CAgentChangeObserverComp");
 	}
 }
 
 
-void CSubscriptionControllerComp::RegisterCollectionSubscription(const QByteArray& agentId)
+void CAgentChangeObserverComp::RegisterCollectionSubscription(const QByteArray& agentId)
 {
 	if (!m_subscriptionManagerCompPtr.IsValid() || !m_serviceSynchronizerCompPtr.IsValid() || agentId.isEmpty()){
 		return;
@@ -474,12 +475,12 @@ void CSubscriptionControllerComp::RegisterCollectionSubscription(const QByteArra
 					0,
 					QString("Unable to register OnAgentServicesCollectionChanged for agent '%1'")
 								.arg(QString::fromUtf8(agentId)),
-					"CSubscriptionControllerComp");
+					"CAgentChangeObserverComp");
 	}
 }
 
 
-void CSubscriptionControllerComp::UnregisterStatusSubscription(const QByteArray& agentId)
+void CAgentChangeObserverComp::UnregisterStatusSubscription(const QByteArray& agentId)
 {
 	if (!m_subscriptionManagerCompPtr.IsValid()){
 		return;
@@ -492,7 +493,7 @@ void CSubscriptionControllerComp::UnregisterStatusSubscription(const QByteArray&
 }
 
 
-void CSubscriptionControllerComp::UnregisterCollectionSubscription(const QByteArray& agentId)
+void CAgentChangeObserverComp::UnregisterCollectionSubscription(const QByteArray& agentId)
 {
 	if (!m_subscriptionManagerCompPtr.IsValid()){
 		return;
@@ -505,9 +506,15 @@ void CSubscriptionControllerComp::UnregisterCollectionSubscription(const QByteAr
 }
 
 
-void CSubscriptionControllerComp::EnsureLiveSubscriptionsForAgent(const QByteArray& agentId, bool forceReregister)
+void CAgentChangeObserverComp::EnsureLiveSubscriptionsForAgent(const QByteArray& agentId, bool forceReregister)
 {
 	if (agentId.isEmpty()){
+		return;
+	}
+
+	// Quarantined / revoked / pending: no domain live ingestion.
+	if (!IsAgentIngestionAllowed(agentId)){
+		DropLiveSubscriptionsForAgent(agentId);
 		return;
 	}
 
@@ -541,7 +548,7 @@ void CSubscriptionControllerComp::EnsureLiveSubscriptionsForAgent(const QByteArr
 }
 
 
-void CSubscriptionControllerComp::RefreshSubscriptionsFromAgentCollection(bool forceReregisterExisting)
+void CAgentChangeObserverComp::RefreshSubscriptionsFromAgentCollection(bool forceReregisterExisting)
 {
 	if (!m_subscriptionManagerCompPtr.IsValid() || !m_agentCollectionCompPtr.IsValid()){
 		return;
@@ -573,8 +580,16 @@ void CSubscriptionControllerComp::RefreshSubscriptionsFromAgentCollection(bool f
 
 // reimplemented (imod::CMultiModelDispatcherBase)
 
-void CSubscriptionControllerComp::OnModelChanged(int modelId, const istd::IChangeable::ChangeSet& changeSet)
+void CAgentChangeObserverComp::OnModelChanged(int modelId, const istd::IChangeable::ChangeSet& changeSet)
 {
+	if (modelId == MI_LOGIN_STATUS){
+		// Agent WS connected / disconnected — set agent + service status and endpoint
+		// availability. SetAgentStatus writes AgentStatusCollection, which re-enters
+		// OnModelChanged(MI_AGENT_STATUS_COLLECTION) to (re)register live subscriptions.
+		HandleAgentConnectionChanged(changeSet);
+		return;
+	}
+
 	if (modelId == MI_AGENT_COLLECTION){
 		// Only real membership changes — not mirror/service data churn on the same object.
 		const bool agentMembershipChange =
@@ -617,6 +632,20 @@ void CSubscriptionControllerComp::OnModelChanged(int modelId, const istd::IChang
 			if (statusInfoPtr->GetAgentStatus() == agentinodata::IAgentStatusInfo::AS_CONNECTED){
 				// Agent socket is up again — agent-side publishers were cleared on disconnect.
 				EnsureLiveSubscriptionsForAgent(agentId, true);
+				// Also pull ServicesList into the volatile server mirror (Topology / Agents.services).
+				// Relying only on AgentCollectionController's deferred timer was easy to miss after
+				// reconnect when the agent row already existed.
+				if (m_serviceSynchronizerCompPtr.IsValid() && IsAgentIngestionAllowed(agentId)){
+					QString reconcileError;
+					if (!m_serviceSynchronizerCompPtr->SyncAgentServicesInMirror(agentId, reconcileError)
+								&& !reconcileError.isEmpty()){
+						SendErrorMessage(
+									0,
+									QString("Reconnect reconcile for agent '%1' failed: %2")
+												.arg(QString::fromUtf8(agentId), reconcileError),
+									"CAgentChangeObserverComp");
+					}
+				}
 			}
 			else if (statusInfoPtr->GetAgentStatus() == agentinodata::IAgentStatusInfo::AS_DISCONNECTED){
 				// Keep map entries so SubscriptionManager can re-start them on CS_CONNECTED;
@@ -629,7 +658,7 @@ void CSubscriptionControllerComp::OnModelChanged(int modelId, const istd::IChang
 
 // reimplemented (icomp::CComponentBase)
 
-void CSubscriptionControllerComp::OnComponentCreated()
+void CAgentChangeObserverComp::OnComponentCreated()
 {
 	BaseClass::OnComponentCreated();
 
@@ -641,16 +670,81 @@ void CSubscriptionControllerComp::OnComponentCreated()
 		RegisterModel(m_agentStatusModelCompPtr.GetPtr(), MI_AGENT_STATUS_COLLECTION);
 	}
 
+	// Absorbed connection observer: watch agent WS connect/disconnect directly.
+	if (m_loginStatusModelCompPtr.IsValid()){
+		RegisterModel(m_loginStatusModelCompPtr.GetPtr(), MI_LOGIN_STATUS);
+	}
+
 	// Agents already present in the mirror (DB load / already connected).
 	RefreshSubscriptionsFromAgentCollection(false);
 }
 
 
-void CSubscriptionControllerComp::OnComponentDestroyed()
+void CAgentChangeObserverComp::OnComponentDestroyed()
 {
 	UnregisterAllModels();
 
 	BaseClass::OnComponentDestroyed();
+}
+
+
+// Absorbed from CAgentConnectionObserverComp
+
+void CAgentChangeObserverComp::HandleAgentConnectionChanged(const istd::IChangeable::ChangeSet& changeSet)
+{
+	const QByteArray agentId = changeSet.GetChangeInfo("ClientId").toByteArray();
+	if (agentId.isEmpty()){
+		return;
+	}
+
+	if (changeSet.Contains(imtcom::IConnectionStatusProvider::CS_CONNECTED)){
+		SetAgentStatus(agentId, agentinodata::IAgentStatusInfo::AS_CONNECTED);
+	}
+	else{
+		ResetAgentServiceStatuses(agentId);
+		SetAgentStatus(agentId, agentinodata::IAgentStatusInfo::AS_DISCONNECTED);
+	}
+}
+
+
+void CAgentChangeObserverComp::SetAgentStatus(const QByteArray& agentId, agentinodata::IAgentStatusInfo::AgentStatus status)
+{
+	if (!m_agentStatusCollectionCompPtr.IsValid()){
+		return;
+	}
+
+	istd::TDelPtr<agentinodata::CAgentStatusInfo> statusInfoPtr;
+	statusInfoPtr.SetPtr(new agentinodata::CAgentStatusInfo(agentId, status));
+
+	if (m_agentStatusCollectionCompPtr->GetElementIds().contains(agentId)){
+		m_agentStatusCollectionCompPtr->SetObjectData(agentId, *statusInfoPtr.PopPtr());
+	}
+	else{
+		m_agentStatusCollectionCompPtr->InsertNewObject("AgentStatusInfo", "", "", statusInfoPtr.PopPtr(), agentId);
+	}
+}
+
+
+void CAgentChangeObserverComp::ResetAgentServiceStatuses(const QByteArray& agentId)
+{
+	if (!m_serviceManagerCompPtr.IsValid() || !m_agentCollectionCompPtr.IsValid()){
+		return;
+	}
+
+	imtbase::IObjectCollection::DataPtr agentDataPtr;
+	if (!m_agentCollectionCompPtr->GetObjectData(agentId, agentDataPtr)){
+		return;
+	}
+
+	imtbase::IObjectCollection* serviceCollectionPtr = m_serviceManagerCompPtr->GetServiceCollection(agentId);
+	if (serviceCollectionPtr == nullptr){
+		return;
+	}
+
+	const imtbase::ICollectionInfo::Ids ids = serviceCollectionPtr->GetElementIds();
+	for (const imtbase::ICollectionInfo::Id& serviceId : ids){
+		ApplyServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_UNDEFINED);
+	}
 }
 
 

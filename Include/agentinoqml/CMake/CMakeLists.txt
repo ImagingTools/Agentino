@@ -33,6 +33,9 @@ list(APPEND webdirs ${buildwebdir}/src/agentinoServicesSdl)
 list(APPEND webdirs ${AUX_INCLUDE_DIR}/agentinosdl/SDL/1.0/QML/agentinoTopologySdl)
 list(APPEND webdirs ${buildwebdir}/src/agentinoTopologySdl)
 
+list(APPEND webdirs ${AUX_INCLUDE_DIR}/agentinosdl/SDL/1.0/QML/agentinoEnrollmentSdl)
+list(APPEND webdirs ${buildwebdir}/src/agentinoEnrollmentSdl)
+
 # copy Translations from to
 list(APPEND webdirs ${PROJECT_SOURCE_DIR}/../../../Impl/AgentinoLoc/Translations)
 list(APPEND webdirs ${buildwebdir}/Resources/Translations)
@@ -46,9 +49,33 @@ set(QML_IMPORT_PATH ${QML_IMPORT_DIRS}
 	FORCE
 )
 
+option(USE_NEW_WEB "Use new web compilation (jq_compile_web)" OFF)
+
 if(DEFINED WEB_COMPILE AND WEB_COMPILE)
 	add_compile_definitions(WEB_COMPILE)
 	set(resname "agentino")
-	jqml_compile_web2("${webdirs}" "${buildwebdir}" "${resname}" "${sdldependency}")
+	if(USE_NEW_WEB)
+		set(inputjs "${PROJECT_SOURCE_DIR}/../agentino.json")
+		set(appicon "../Icons/AgentinoIcon.svg")
+		set(dataroot "/Agentino/Views/")
+		set(startqml "${PROJECT_SOURCE_DIR}/../Qml/AgentinoWeb.qml")
+
+		jq_compile_web(
+			"${webdirs}"
+			"${buildwebdir}"
+			"${resname}"
+			"${inputjs}"
+			"${appicon}"
+			"${dataroot}"
+			"${startqml}"
+		)
+	else()
+		jqml_compile_web2(
+			"${webdirs}"
+			"${buildwebdir}"
+			"${resname}"
+			"${sdldependency}"
+		)
+	endif()
 endif()
 

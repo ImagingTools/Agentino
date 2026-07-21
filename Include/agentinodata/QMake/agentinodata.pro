@@ -12,4 +12,6 @@ DDL_OUTPUT_DIR = $$OUT_PWD/$$AUXINCLUDEPATH/GeneratedFiles/$$TARGET/Ddl
 
 include($(IMTCOREDIR)/Config/QMake/DdlCodeCreator.pri)
 
+LIBS += -L../../../Lib/$$COMPILER_DIR
+
 

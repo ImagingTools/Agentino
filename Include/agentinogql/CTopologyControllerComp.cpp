@@ -4,9 +4,11 @@
 
 //Qt includes
 #include <QtCore/QPoint>
+#include <QtCore/QtMath>
 
 // ACF includes
 #include <i2d/CPosition2d.h>
+#include <istd/CChangeGroup.h>
 
 // ImtCore includes
 #include <imtservice/CUrlConnectionParam.h>
@@ -23,6 +25,10 @@
 namespace agentinogql
 {
 
+
+// Layout (x/y) is a view concern stored only in TopologyCollection on the server/GUI
+// side — it is never pushed to agents or included in the agent↔server domain event stream
+// (Architecture Audit §4.9 / Step 7).
 
 // reimplemented (sdl::V1_0::agentino::CTopologyGqlHandlerCompBase)
 
@@ -46,8 +52,13 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 				
 				bool agentOnline = IsAgentOnline(elementId);
 				
-				imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-				Q_ASSERT (serviceCollectionPtr != nullptr);
+				imtbase::IObjectCollection* serviceCollectionPtr =
+							m_serviceManagerCompPtr.IsValid()
+										? m_serviceManagerCompPtr->GetServiceCollection(elementId)
+										: nullptr;
+				if (serviceCollectionPtr == nullptr){
+					continue;
+				}
 				
 				imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
 				for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
@@ -178,27 +189,40 @@ sdl::V1_0::agentino::CSaveTopologyResponse CTopologyControllerComp::OnSaveTopolo
 		return response;
 	}
 
-	m_topologyCollectionCompPtr->ResetData();
+	// Never ResetData() here: TopologySubscriber publishes OnTopologyChanged on every
+	// collection change, the client reloads GetTopology mid-write and snaps nodes back
+	// to (0,0) / previous coords while the collection is empty.
 	if (!arguments.input->services.has_value()){
 		errorMessage = QString("Unable to save topology. Error: Input params is invalid");
 		return response;
 	}
 
-	istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CService>> serviceList = *arguments.input->services;
-	for (const istd::TNullableValue<sdl::V1_0::agentino::CService>& service : *serviceList.GetPtr()){
-		int x = *service->x;
-		int y = *service->y;
-		QByteArray id = *service->id;
-		QPoint point(x,y);
+	istd::CChangeGroup changeGroup(m_topologyCollectionCompPtr.GetPtr());
 
+	istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CServiceCoordinateInput>> serviceList = *arguments.input->services;
+	for (const istd::TNullableValue<sdl::V1_0::agentino::CServiceCoordinateInput>& service : *serviceList.GetPtr()){
+		if (!service.has_value()
+					|| !service->id.has_value() || service->id->isEmpty()
+					|| !service->x.has_value()
+					|| !service->y.has_value()){
+			errorMessage = QString("Unable to save topology. Error: Service is missing required fields (id, x, y)");
+			SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+			return response;
+		}
+
+		const QByteArray id = *service->id;
+		// SDL x/y are Double; store as rounded ints for QPoint / CVector2d layout grid.
+		const QPoint point(qRound(*service->x), qRound(*service->y));
 		if (!SetServiceCoordinate(id, point)){
-			response.successful = false;
+			errorMessage = QString("Unable to save topology. Error: Failed to store coordinates for '%1'")
+						.arg(QString::fromUtf8(id));
+			SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
 			return response;
 		}
 	}
-	
+
 	response.successful = true;
-	
+
 	return response;
 }
 
@@ -232,15 +256,25 @@ bool CTopologyControllerComp::SetServiceCoordinate(const QByteArray& serviceId, 
 		Q_ASSERT_X(false, "Attribute 'TopologyCollection' was not set", "CTopologyControllerComp");
 		return false;
 	}
-	
+
+	if (serviceId.isEmpty()){
+		return false;
+	}
+
 	i2d::CPosition2d position2d;
 	i2d::CVector2d position;
-	
+
 	position.SetX(point.x());
 	position.SetY(point.y());
 	position2d.SetPosition(position);
-	
-	QByteArray retVal = m_topologyCollectionCompPtr->InsertNewObject("Topology", "", "", &position2d, serviceId);
+
+	// Upsert: InsertNewObject fails (or renames) when the id already exists.
+	if (m_topologyCollectionCompPtr->GetElementIds().contains(serviceId)){
+		return m_topologyCollectionCompPtr->SetObjectData(serviceId, position2d);
+	}
+
+	const QByteArray retVal = m_topologyCollectionCompPtr->InsertNewObject(
+				"Topology", "", "", &position2d, serviceId);
 	return !retVal.isEmpty();
 }
 

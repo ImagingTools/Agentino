@@ -14,7 +14,7 @@
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="FixedItemQmlPath" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="qrc:/qml/AgentsSingleDocWorkspaceView.qml"/>
+                        <Data IsEnabled="true" Value="qrc:/qml/AgentCollectionView.qml"/>
                     </AttributeInfo>
                     <AttributeInfo Id="IconPath" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="Icons/Product"/>
@@ -35,6 +35,7 @@
                                 <Value>AddAgent</Value>
                                 <Value>RemoveAgent</Value>
                                 <Value>ChangeAgent</Value>
+                                <Value>ApproveAgents</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -56,10 +57,22 @@
                     <AttributeInfo Id="ApiClient" Type="Reference" ExportId="ApiClient">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="AsyncApiClient" Type="Reference" ExportId="AsyncApiClient">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="EnrollmentGate" Type="Reference" ExportId="EnrollmentGate">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="EnrollmentController" Type="Reference" ExportId="EnrollmentController">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="ServiceCompositeInfo">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="ServiceManager">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="ServiceStatusCollection">
@@ -165,7 +178,19 @@
                                 <AttributeInfo Id="ApiClient" Type="Reference" ExportId="ApiClient">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="AsyncApiClient" Type="Reference" ExportId="AsyncApiClient">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="EnrollmentGate" Type="Reference" ExportId="EnrollmentGate">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="EnrollmentController" Type="Reference" ExportId="EnrollmentController">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="ServiceManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="ServiceStatusCollection">
@@ -237,7 +262,7 @@
                                             <Value>ServicesRemoteRepresentationController</Value>
                                             <Value>TopologyPage</Value>
                                             <Value>AgentsPage</Value>
-                                            <Value>ServerServiceCollectionController</Value>
+                                            <Value>MirroredServiceCollectionController</Value>
                                             <Value>RemoteLogCollectionController</Value>
                                         </Values>
                                     </Data>
@@ -277,10 +302,13 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="ServerServiceCollectionController" PackageId="AgentinoGqlPck" ComponentId="ServerServiceCollectionController">
+                    <Element Id="MirroredServiceCollectionController" PackageId="AgentinoGqlPck" ComponentId="MirroredServiceCollectionController">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="ServiceManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="CollectionId" Type="Id" ExportId="">
@@ -347,16 +375,19 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <!-- GQL service proxy for this factory world only (Start/Stop/GetService, …).
-                         Live agent reconnect sync uses ServerBase/ServiceControllerProxy instead —
-                         AgentinoHandlers is factorizable and must not export components. -->
                     <Element Id="ServiceControllerProxy" PackageId="AgentinoGqlPck" ComponentId="ServiceControllerProxy">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="EnrollmentController" Type="Reference" ExportId="EnrollmentController">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="ApiClient" Type="Reference" ExportId="ApiClient">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="AsyncApiClient" Type="Reference" ExportId="AsyncApiClient">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
@@ -372,14 +403,16 @@
                                             <Value>LoadPlugin</Value>
                                             <Value>GetServiceSettings</Value>
                                             <Value>UpdateServiceSettings</Value>
+                                            <Value>AvailableConnections</Value>
                                             <Value>NotifyAgentServicesCollectionChanged</Value>
+                                            <Value>SetOutputConnection</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="AgentRepository">
+                                <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="ServiceManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="ServiceStatusCollection">
@@ -454,6 +487,7 @@
                                             <Value>ServiceLogList</Value>
                                             <Value>AgentLogList</Value>
                                             <Value>GetServiceLog</Value>
+                                            <Value>GetObjectVisualStatus</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -479,6 +513,9 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="ServiceCompositeInfo">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="ServiceManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="TopologyCollection">

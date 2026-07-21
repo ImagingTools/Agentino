@@ -789,8 +789,6 @@
                                 <AttributeInfo Id="CommandId" Type="Id" ExportId="">
                                     <Data IsEnabled="true" Value="Edit"/>
                                 </AttributeInfo>
-                                <!-- Agent has no FillProduct features; requiring ChangeService
-                                     filtered New/Edit/Remove out of GetCommands for non-admin users. -->
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>

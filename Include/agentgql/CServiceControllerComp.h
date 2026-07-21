@@ -49,6 +49,12 @@ protected:
 				const sdl::V1_0::agentino::CUpdateConnectionUrlGqlRequest& updateConnectionUrlRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
+	// Standalone pick of a producer for one Output Connection slot - applies immediately,
+	// independent of the rest of ServiceData (see SetOutputConnectionInput in Services.sdl).
+	virtual sdl::V1_0::agentino::CSetOutputConnectionResponse OnSetOutputConnection(
+				const sdl::V1_0::agentino::CSetOutputConnectionGqlRequest& setOutputConnectionRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
 	virtual sdl::V1_0::agentino::CPluginInfo OnLoadPlugin(
 				const sdl::V1_0::agentino::CLoadPluginGqlRequest& loadPluginRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
@@ -59,6 +65,12 @@ protected:
 				QString& errorMessage) const override;
 	virtual sdl::V1_0::agentino::CServiceSettingsPayload OnUpdateServiceSettings(
 				const sdl::V1_0::agentino::CUpdateServiceSettingsGqlRequest& updateServiceSettingsRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	// Candidate producers, resolved over this agent's own services only. An agent cannot
+	// see its peers, so cross-agent picks are answered by the server proxy instead.
+	virtual sdl::V1_0::agentino::CAvailableConnectionsPayload OnAvailableConnections(
+				const sdl::V1_0::agentino::CAvailableConnectionsGqlRequest& availableConnectionsRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
 

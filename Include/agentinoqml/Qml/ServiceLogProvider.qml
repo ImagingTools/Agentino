@@ -4,64 +4,71 @@ import com.imtcore.imtqml 1.0
 import imtcontrols 1.0
 import imtguigql 1.0
 
-QtObject {
-    id: root;
+/**
+	L3 adapter for ServiceLogViewModel — GQL GetServiceLog.
+	Scope via dataScope (QG1); getHeaders() kept as thin adapter for legacy callers.
+*/
+ServiceLogViewModel {
+	id: root
 
-    property TreeItemModel serviceLogModel: null;
+	// Legacy alias used by existing ServiceEditor bindings
+	property alias serviceLogModel: root.logModel
 
-    function updateServiceLog(serviceId){
-        serviceLogGqlModel.updateModel(serviceId);
-    }
+	function updateServiceLog(serviceId) {
+		root.loading = true
+		root.errorMessage = ""
+		serviceLogGqlModel.updateModel(serviceId)
+	}
 
-    function getHeaders(){
-        return {};
-    }
+	function getHeaders() {
+		if (root.dataScope === null)
+			return {}
+		let headers = {}
+		if (root.dataScope.agentId && root.dataScope.agentId.length > 0)
+			headers.clientid = root.dataScope.agentId
+		if (root.dataScope.serviceId && root.dataScope.serviceId.length > 0)
+			headers.serviceid = root.dataScope.serviceId
+		return headers
+	}
 
-    property GqlModel serviceLogGqlModel : GqlModel {
-        function updateModel(serviceId){
-            var query = Gql.GqlRequest("query", "GetServiceLog");
+	onRefresh: updateServiceLog(serviceId)
 
-            var inputParams = Gql.GqlObject("input");
-            inputParams.InsertField("id", serviceId);
+	property GqlModel serviceLogGqlModel: GqlModel {
+		function updateModel(serviceId) {
+			var query = Gql.GqlRequest("query", "GetServiceLog")
 
-            let additionInputParams = root.getHeaders();
-            if (Object.keys(additionInputParams).length > 0){
-                let additionParams = Gql.GqlObject("addition");
-                for (let key in additionInputParams){
-                    additionParams.InsertField(key, additionInputParams[key]);
-                }
-                inputParams.InsertFieldObject(additionParams);
-            }
-            query.AddParam(inputParams);
+			var inputParams = Gql.GqlObject("input")
+			inputParams.InsertField("id", serviceId)
 
-            var gqlData = query.GetQuery();
+			let additionInputParams = root.getHeaders()
+			if (Object.keys(additionInputParams).length > 0) {
+				let additionParams = Gql.GqlObject("addition")
+				for (let key in additionInputParams) {
+					additionParams.InsertField(key, additionInputParams[key])
+				}
+				inputParams.InsertFieldObject(additionParams)
+			}
+			query.AddParam(inputParams)
 
-            this.setGqlQuery(gqlData);
-        }
+			var gqlData = query.GetQuery()
+			this.setGqlQuery(gqlData)
+		}
 
-        onStateChanged: {
-            console.log("State:", this.state, root.serviceLogGqlModel);
-
-            if (this.state === "Ready"){
-                var dataModelLocal;
-
-                if (root.serviceLogGqlModel.containsKey("errors")){
-                    dataModelLocal = root.applicationInfoQuery.getData("errors");
-
-                    return;
-                }
-
-                if (root.serviceLogGqlModel.containsKey("data")){
-                    dataModelLocal = root.serviceLogGqlModel.getData("data");
-
-                    if (dataModelLocal.containsKey("GetServiceLog")){
-                        dataModelLocal = dataModelLocal.getData("GetServiceLog");
-
-                        root.serviceLogModel = dataModelLocal;
-                    }
-                }
-            }
-        }
-    }//GetSettings
+		onStateChanged: {
+			if (this.state === "Ready") {
+				root.loading = false
+				if (root.serviceLogGqlModel.containsKey("errors")) {
+					root.errorMessage = "GetServiceLog failed"
+					return
+				}
+				if (root.serviceLogGqlModel.containsKey("data")) {
+					var dataModelLocal = root.serviceLogGqlModel.getData("data")
+					if (dataModelLocal.containsKey("GetServiceLog")) {
+						dataModelLocal = dataModelLocal.getData("GetServiceLog")
+						root.setLogModel(dataModelLocal)
+					}
+				}
+			}
+		}
+	}
 }
-

@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6418" Description="ACF"/>
-            <Version Id="1" Number="2408" Description="ACF-Solutions"/>
+            <Version Id="0" Number="6500" Description="ACF"/>
+            <Version Id="1" Number="2438" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -177,6 +177,37 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="EnrollmentGqlController" PackageId="AgentinoGqlPck" ComponentId="EnrollmentGqlController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>PendingAgentsList</Value>
+                                <Value>EnrollmentAgentsList</Value>
+                                <Value>ApproveAgent</Value>
+                                <Value>RejectAgent</Value>
+                                <Value>RevokeAgent</Value>
+                                <Value>SuspendAgent</Value>
+                                <Value>ResetRejectedAgent</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="EnrollmentController" Type="Reference" ExportId="EnrollmentController">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceSynchronizer" Type="Reference" ExportId="ServiceSynchronizer">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="ApplicationController" PackageId="AgentinoVoce" ComponentId="RootDataController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
@@ -198,6 +229,7 @@
                                 <Value>AgentinoRemoteDocumentRevisionController</Value>
                                 <Value>AgentinoRemoteVisualStatusController</Value>
                                 <Value>AgentinoGqlRemoteRepresentationController</Value>
+                                <Value>EnrollmentGqlController</Value>
                                 <Value>Pages</Value>
                             </Values>
                         </Data>
@@ -256,10 +288,22 @@
                     <AttributeInfo Id="ApiClient" Type="Reference" ExportId="ApiClient">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="AsyncApiClient" Type="Reference" ExportId="AsyncApiClient">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="EnrollmentController" Type="Reference" ExportId="EnrollmentController">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="EnrollmentGate" Type="Reference" ExportId="EnrollmentGate">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="ServiceCompositeInfo">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="ServiceManager">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="ServiceStatusCollection">
