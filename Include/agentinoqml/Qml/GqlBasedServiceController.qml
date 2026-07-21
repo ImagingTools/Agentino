@@ -6,6 +6,10 @@ import imtguigql 1.0
 
 ServiceController {
 	id: root
+
+	// Injected once (QG1); replaces smeared getHeaders() trees.
+	property var dataScope: null
+	property var serviceStatusModel: ServiceStatusModel {}
 	
 	function startService(serviceId){
 		beginStartService(serviceId)
@@ -25,36 +29,35 @@ ServiceController {
 	property ServiceInput stopServiceInput: ServiceInput {}
 
 	function normalizeServiceStatus(status){
-		switch (status){
-			case "RUNNING":
-			case "SS_RUNNING":
-			case ServiceStatus.s_Running: return ServiceStatus.s_Running
-			case "NOT_RUNNING":
-			case "SS_NOT_RUNNING":
-			case ServiceStatus.s_NotRunning: return ServiceStatus.s_NotRunning
-			case "STARTING":
-			case "SS_STARTING":
-			case ServiceStatus.s_Starting: return ServiceStatus.s_Starting
-			case "STOPPING":
-			case "SS_STOPPING":
-			case ServiceStatus.s_Stopping: return ServiceStatus.s_Stopping
-			case "UNDEFINED":
-			case "SS_UNDEFINED":
-			case "RUNNING_IMPOSSIBLE":
-			case "SS_RUNNING_IMPOSSIBLE":
-			case ServiceStatus.s_Undefined: return ServiceStatus.s_Undefined
-		}
+		// Map through single ServiceStatusModel then back to SDL enum tokens.
+		// unknown/failed/crashed stay s_Undefined so Start/Stop stay disabled.
+		let n = serviceStatusModel.normalize(status)
+		if (n === serviceStatusModel.running) return ServiceStatus.s_Running
+		if (n === serviceStatusModel.starting) return ServiceStatus.s_Starting
+		if (n === serviceStatusModel.stopping) return ServiceStatus.s_Stopping
+		if (n === serviceStatusModel.stopped) return ServiceStatus.s_NotRunning
+		if (n === serviceStatusModel.unknown
+					|| n === serviceStatusModel.failed
+					|| n === serviceStatusModel.crashed)
+			return ServiceStatus.s_Undefined
 		return status
 	}
 	
 	function getHeaders(){
-		return {}
+		if (dataScope === null)
+			return {}
+		let headers = {}
+		if (dataScope.agentId && dataScope.agentId.length > 0)
+			headers.clientid = dataScope.agentId
+		if (dataScope.serviceId && dataScope.serviceId.length > 0)
+			headers.serviceid = dataScope.serviceId
+		return headers
 	}
 	
 	property GqlSdlRequestSender startServiceRequestSender : GqlSdlRequestSender {
 		property string serviceId: ""
 		requestType: 1
-		gqlCommandId: AgentinoServicesSdlCommandIds.s_startService
+		gqlCommandId: "StartService"
 		
 		sdlObjectComp: Component {
 			ServiceStatusResponse {
@@ -73,7 +76,7 @@ ServiceController {
 	property GqlSdlRequestSender stopServiceRequestSender : GqlSdlRequestSender {
 		property string serviceId: ""
 		requestType: 1
-		gqlCommandId: AgentinoServicesSdlCommandIds.s_stopService
+		gqlCommandId: "StopService"
 		
 		sdlObjectComp: Component {
 			ServiceStatusResponse {

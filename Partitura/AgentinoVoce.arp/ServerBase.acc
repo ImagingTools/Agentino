@@ -2,15 +2,15 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6435" Description="ACF"/>
-            <Version Id="1" Number="2410" Description="ACF-Solutions"/>
+            <Version Id="0" Number="6500" Description="ACF"/>
+            <Version Id="1" Number="2438" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
     <Keywords></Keywords>
     <ElementsList>
-        <Element Id="AgentConnectionObserver" PackageId="AgentinoGqlPck" ComponentId="AgentConnectionObserver">
+        <Element Id="AgentChangeObserver" PackageId="AgentinoGqlPck" ComponentId="AgentChangeObserver">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="">
@@ -19,29 +19,20 @@
                     <AttributeInfo Id="AgentStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/AgentStatusCollection"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="LoginStatusProvider" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="WebSocketServerFramework"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="AgentSubscriptionController" PackageId="AgentinoGqlPck" ComponentId="SubscriptionController">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/AgentCollection"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="AgentStatusCollection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/AgentStatusCollection"/>
+                    <AttributeInfo Id="EnrollmentController" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="EnrollmentManager"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="LoginStatusProvider" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="WebSocketServerFramework"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="Model" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/AgentCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/AgentServiceManager"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
@@ -79,11 +70,20 @@
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="AsyncApiClient" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="WebSocketServerFramework"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="AuthenticationManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="AuthenticationManager"/>
                     </AttributeInfo>
                     <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="DatabaseEngine"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="EnrollmentController" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="EnrollmentManager"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="EnrollmentGate" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="EnrollmentManager"/>
                     </AttributeInfo>
                     <AttributeInfo Id="FeatureContainer" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="FeatureContainer"/>
@@ -106,8 +106,14 @@
                     <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceCompositeInfo"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/AgentServiceManager"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceSynchronizer" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServiceControllerProxy"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
@@ -191,6 +197,24 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="EnrollmentManager" PackageId="AgentinoVoce" ComponentId="EnrollmentManager">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RuntimeStatus" Type="Reference" ExportId="RuntimeStatus">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
@@ -312,6 +336,9 @@
                     <AttributeInfo Id="ApiClient" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketServerFramework"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="AsyncApiClient" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="WebSocketServerFramework"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
@@ -325,15 +352,20 @@
                                 <Value>LoadPlugin</Value>
                                 <Value>GetServiceSettings</Value>
                                 <Value>UpdateServiceSettings</Value>
+                                <Value>AvailableConnections</Value>
                                 <Value>NotifyAgentServicesCollectionChanged</Value>
+                                <Value>SetOutputConnection</Value>
                             </Values>
                         </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="EnrollmentController" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="EnrollmentManager"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/AgentCollection"/>
+                        <Data IsEnabled="true" Value="Repositories/AgentServiceManager"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
@@ -358,7 +390,7 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Model" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="AgentSubscriptionController"/>
+                        <Data IsEnabled="true" Value="AgentChangeObserver"/>
                     </AttributeInfo>
                     <AttributeInfo Id="RequestManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketServerFramework"/>
@@ -800,13 +832,16 @@
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="HttpServerFramework"/>
     </ExportedInterfaces>
     <ExportedComponents>
+        <Component ExportedId="AgentChangeObserver" ComponentId="AgentChangeObserver"/>
         <Component ExportedId="AgentCollection" ComponentId="Repositories/AgentCollection"/>
-        <Component ExportedId="AgentConnectionObserver" ComponentId="AgentConnectionObserver"/>
+        <Component ExportedId="AgentServiceManager" ComponentId="Repositories/AgentServiceManager"/>
         <Component ExportedId="AgentinoLocalization" ComponentId="AgentinoLocalization"/>
         <Component ExportedId="AutoPersistence" ComponentId="Repositories/AutoPersistence"/>
         <Component ExportedId="DatabaseEngine" ComponentId="DatabaseEngine"/>
+        <Component ExportedId="EnrollmentFileAutoPersistence" ComponentId="EnrollmentManager/EnrollmentFileAutoPersistence"/>
         <Component ExportedId="HttpServerFramework" ComponentId="HttpServerFramework"/>
         <Component ExportedId="ServerSettings" ComponentId="ServerSettings"/>
+        <Component ExportedId="ServiceManager" ComponentId="Repositories/AgentServiceManager"/>
         <Component ExportedId="WebSocketServerFramework" ComponentId="WebSocketServerFramework"/>
     </ExportedComponents>
 </Acf>

@@ -45,6 +45,9 @@
                     <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="ServiceManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="AgentStatusCollection" Type="Reference" ExportId="AgentStatusCollection">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>

@@ -7,6 +7,7 @@
 
 // Agentino includes
 #include <agentinodata/CServiceCompositeInfoComp.h>
+#include <agentinodata/IServiceManager.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Topology_fwd.h>
 
 
@@ -21,6 +22,7 @@ public:
 
 	I_BEGIN_COMPONENT(CTopologyControllerComp);
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", true, "AgentCollection");
+		I_ASSIGN(m_serviceManagerCompPtr, "ServiceManager", "Per-agent service collections (R1.3)", false, "ServiceManager");
 		I_ASSIGN(m_topologyCollectionCompPtr, "TopologyCollection", "Topology collection", true, "TopologyCollection");
 		I_ASSIGN(m_serviceCompositeInfoCompPtr, "ServiceCompositeInfo", "Service composite info", true, "ServiceCompositeInfo");
 		I_ASSIGN(m_agentStatusCollectionCompPtr, "AgentStatusCollection", "Agent status collection used to mark services of offline agents", false, "AgentStatusCollection");
@@ -43,10 +45,11 @@ private:
 
 protected:
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
+	I_REF(agentinodata::IServiceManager, m_serviceManagerCompPtr);
 	I_REF(imtbase::IObjectCollection, m_topologyCollectionCompPtr);
 	I_REF(agentinodata::IServiceCompositeInfo, m_serviceCompositeInfoCompPtr);
 	I_REF(imtbase::IObjectCollection, m_agentStatusCollectionCompPtr);
 };
 
 
-} // namespace agentinodata
+} // namespace agentinogql

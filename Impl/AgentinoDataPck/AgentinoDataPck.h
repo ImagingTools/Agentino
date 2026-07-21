@@ -12,9 +12,12 @@
 #include <agentinodata/CAgentServiceCompositeInfoComp.h>
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/CServiceControllerComp.h>
-#include <agentinodata/CAgentCollectionComp.h>
+#include <agentinodata/CAgentServiceManagerComp.h>
 #include <agentinodata/CServiceStatusInfo.h>
 #include <agentinodata/CAgentStatusInfo.h>
+#include <agentinodata/CProcessHostComp.h>
+#include <agentinodata/CServiceSupervisorComp.h>
+#include <agentinodata/CServiceTypeCatalogComp.h>
 
 
 /**
@@ -36,8 +39,10 @@ typedef icomp::TMakeComponentWrap<
 					agentinodata::IAgentInfo,
 					iser::ISerializable,
 					istd::IChangeable> AgentInfo;
-typedef icomp::TModelCompWrap<agentinodata::CServiceControllerComp> ServiceController;
-typedef icomp::TModelCompWrap<agentinodata::CAgentCollectionComp> AgentCollection;
+// ServiceController is the event-sourced supervisor (Architecture Audit §4.6 cutover).
+typedef icomp::TModelCompWrap<agentinodata::CServiceSupervisorComp> ServiceController;
+typedef icomp::TModelCompWrap<agentinodata::CServiceControllerComp> LegacyServiceController;
+typedef icomp::TModelCompWrap<agentinodata::CAgentServiceManagerComp> AgentServiceManager;
 typedef icomp::TMakeComponentWrap<
 					agentinodata::CServiceStatusInfo,
 					agentinodata::IServiceStatusInfo,
@@ -48,6 +53,8 @@ typedef icomp::TMakeComponentWrap<
 					agentinodata::IAgentStatusInfo,
 					iser::ISerializable,
 					istd::IChangeable> AgentStatusInfo;
+typedef icomp::TModelCompWrap<agentinodata::CProcessHostComp> ProcessHost;
+typedef icomp::TModelCompWrap<agentinodata::CServiceTypeCatalogComp> ServiceTypeCatalog;
 
 
 } // namespace AgentinoDataPck

@@ -75,8 +75,25 @@ protected:
 	virtual void OnComponentDestroyed() override;
 
 private:
-	bool CheckInputPortsUpdated(agentinodata::IServiceInfo& serviceInfo, const imtservice::IConnectionCollection& connectionCollection) const;
+	/**
+		True when the edited descriptor's wiring differs from what the running plugin
+		instance currently uses: host/ports of any input connection or dependant link,
+		or the tracing level. Only then is a stop → apply → start cycle worth it —
+		renames, description or autostart edits must not restart a running service.
+	*/
+	bool IsConnectionUpdateRequired(
+				agentinodata::IServiceInfo& serviceInfo,
+				const imtservice::IConnectionCollection& connectionCollection) const;
+
 	bool UpdateConnectionCollectionFromService(agentinodata::IServiceInfo& serviceInfo, imtservice::IConnectionCollection& connectionCollection) const;
+
+	/**
+		Seed the service descriptor's input/dependant connection collections from the
+		connection list declared by the service's plugin. Existing entries are kept.
+	*/
+	void PopulateConnectionsFromPlugin(
+				agentinodata::IServiceInfo& serviceInfo,
+				const imtservice::IConnectionCollection& connectionCollection) const;
 
 	// Checks whether another service in the collection already uses the given path.
 	bool IsServicePathInUse(const QByteArray& servicePath, const QByteArray& excludeObjectId) const;

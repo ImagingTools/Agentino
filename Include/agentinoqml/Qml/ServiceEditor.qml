@@ -14,7 +14,7 @@ DocumentViewBase {
 	id: serviceEditorContainer
 	
 	anchors.fill: parent
-	contentColor: Style.backgroundColor2
+	contentColor: Style.baseColor
 	
 	property ServiceData serviceData: model
 
@@ -35,12 +35,25 @@ DocumentViewBase {
 	property string pluginServicePath: ""
 
 	function getHeaders(){
+		// Prefer typed DataScope when set; fall back to editor properties (QG1 transition).
+		if (dataScope !== null && (dataScope.agentId.length > 0 || dataScope.serviceId.length > 0)) {
+			let scoped = {}
+			if (dataScope.agentId.length > 0)
+				scoped["clientid"] = dataScope.agentId
+			if (dataScope.serviceId.length > 0)
+				scoped["serviceid"] = dataScope.serviceId
+			return scoped
+		}
 		let headers = {}
 		if (serviceEditorContainer.clientId !== ""){
 			headers["clientid"] = serviceEditorContainer.clientId
+			if (dataScope !== null)
+				dataScope.agentId = serviceEditorContainer.clientId
 		}
 		if (serviceEditorContainer.serviceData){
 			headers["serviceid"] = serviceEditorContainer.serviceData.m_id
+			if (dataScope !== null)
+				dataScope.serviceId = serviceEditorContainer.serviceData.m_id
 		}
 		return headers
 	}
@@ -104,6 +117,82 @@ DocumentViewBase {
 	signal loadSettings()
 	signal saveSettings(string content)
 
+	// Candidate producers are fetched on demand (they are a fleet-wide scan), never packed
+	// into GetService. The editor asks once the output slots are known; the L3 adapter
+	// answers with setAvailableConnections().
+	signal requestAvailableConnections(var connectionUsageIds)
+
+	// Picking a producer for one Output Connection applies immediately via its own
+	// mutation (SetOutputConnection) - it is deliberately NOT part of serviceData /
+	// doUpdateModel(), so choosing a connection never requires saving the whole service
+	// record. dependantConnectionId === "" clears the selection. The L3 adapter answers
+	// with outputConnectionApplied() once the agent confirms (or rejects) the change.
+	signal setOutputConnection(string connectionId, string dependantConnectionId)
+	signal outputConnectionApplied(string connectionId, bool successful, var connectionParam)
+
+	// usage id -> list of candidate endpoints for that output slot.
+	property var availableConnectionsByUsage: ({})
+	property bool availableConnectionsLoading: false
+	signal availableConnectionsUpdated()
+
+	function requestAvailableConnectionsForOutputs(){
+		if (!serviceEditorContainer.serviceData || !serviceEditorContainer.serviceData.hasOutputConnections()){
+			return
+		}
+
+		let outputs = serviceEditorContainer.serviceData.m_outputConnections
+		let usageIds = []
+		for (let i = 0; i < outputs.count; i++){
+			let entry = outputs.get(i)
+			let outputConnection = entry ? entry.item : null
+			if (outputConnection && outputConnection.m_id){
+				usageIds.push("" + outputConnection.m_id)
+			}
+		}
+
+		if (usageIds.length === 0){
+			return
+		}
+
+		serviceEditorContainer.availableConnectionsLoading = true
+		serviceEditorContainer.requestAvailableConnections(usageIds)
+	}
+
+	function setAvailableConnections(payload){
+		serviceEditorContainer.availableConnectionsLoading = false
+
+		let byUsage = ({})
+		if (payload && payload.hasOutputConnections && payload.hasOutputConnections()){
+			let groups = payload.m_outputConnections
+			for (let i = 0; i < groups.count; i++){
+				let entry = groups.get(i)
+				let group = entry ? entry.item : null
+				if (!group || !group.m_connectionUsageId){
+					continue
+				}
+				// Copy: the payload belongs to the request sender and does not outlive it.
+				if (group.hasCandidates && group.hasCandidates()){
+					byUsage["" + group.m_connectionUsageId] = group.m_candidates.copyMe()
+				}
+			}
+		}
+
+		// Reassign wholesale so the delegates' bindings re-evaluate.
+		serviceEditorContainer.availableConnectionsByUsage = byUsage
+		serviceEditorContainer.availableConnectionsUpdated()
+	}
+
+	function getAvailableConnectionsFor(connectionUsageId){
+		if (!connectionUsageId){
+			return null
+		}
+		let map = serviceEditorContainer.availableConnectionsByUsage
+		if (!map){
+			return null
+		}
+		return map["" + connectionUsageId] || null
+	}
+
 	Connections {
 		target: serviceEditorContainer
 		function onPluginLoadedChanged() {
@@ -131,15 +220,36 @@ DocumentViewBase {
 			Math.max(0, element.width - 2 * element.contentMargin - element.nameMargin - Style.sizeHintBXS))
 	}
 
-	// Normalize status strings from every source into agentino.ServiceStatus values
-	// ("running", "notRunning", ...). Sources differ:
+	// Normalize status strings into agentino.ServiceStatus tokens
+	// (ServiceStatus.s_Running === "running", s_NotRunning === "notRunning", ...).
+	// Sources differ:
 	//   - GetService / ProcessState: "running" / "notRunning"
 	//   - GraphQL ServiceStatus enum / Start-Stop: "RUNNING" / "NOT_RUNNING"
-	//   - I_DECLARE_ENUM ToString on subscriptions: "SS_RUNNING" / "RUNNING"
+	//   - I_DECLARE_ENUM ToString on subscriptions: "SS_RUNNING"
 	//   - Display labels: "Running" / "Not running"
+	// Must return ServiceStatus.s_* values — statusPopup compares against those.
+	property var serviceStatusModel: ServiceStatusModel {}
+	property var dataScope: DataScope { agentId: ""; serviceId: "" }
+
 	function normalizeServiceStatus(status){
+		if (serviceStatusModel !== null) {
+			// unknown/failed/crashed → s_Undefined (Start/Stop disabled when agent offline).
+			let n = serviceStatusModel.normalize(status)
+			if (n === serviceStatusModel.running) return ServiceStatus.s_Running
+			if (n === serviceStatusModel.starting) return ServiceStatus.s_Starting
+			if (n === serviceStatusModel.stopping) return ServiceStatus.s_Stopping
+			if (n === serviceStatusModel.stopped) return ServiceStatus.s_NotRunning
+			if (n === serviceStatusModel.unknown
+						|| n === serviceStatusModel.failed
+						|| n === serviceStatusModel.crashed)
+				return ServiceStatus.s_Undefined
+		}
+		return _legacyNormalizeServiceStatus(status)
+	}
+
+	function _legacyNormalizeServiceStatus(status){
 		if (status === undefined || status === null || status === "")
-			return ""
+			return ServiceStatus.s_NotRunning
 		let value = String(status)
 		switch (value){
 			case ServiceStatus.s_Running:
@@ -152,6 +262,7 @@ DocumentViewBase {
 			case "SS_NOT_RUNNING":
 			case "NotRunning":
 			case "Not running":
+			case "notRunning":
 				return ServiceStatus.s_NotRunning
 			case ServiceStatus.s_Starting:
 			case "STARTING":
@@ -168,9 +279,10 @@ DocumentViewBase {
 			case "SS_UNDEFINED":
 			case "RUNNING_IMPOSSIBLE":
 			case "Undefined":
+			case "undefined":
 				return ServiceStatus.s_Undefined
 		}
-		return value
+		return ServiceStatus.s_NotRunning
 	}
 
 	function setServiceStatus(status){
@@ -909,6 +1021,26 @@ DocumentViewBase {
 			id: outputPageRoot
 			anchors.fill: parent
 
+			// The pick-list is a fleet-wide scan, so it is fetched when this page is
+			// actually opened — never packed into every read of the service.
+			Component.onCompleted: {
+				serviceEditorContainer.requestAvailableConnectionsForOutputs()
+			}
+
+			Connections {
+				target: serviceEditorContainer
+				// Plugin (re)loaded: the set of output slots may have changed.
+				function onPluginLoadedChanged(){
+					if (serviceEditorContainer.pluginLoaded){
+						serviceEditorContainer.requestAvailableConnectionsForOutputs()
+					}
+				}
+				// Candidates arrived: rebind delegates. Must not re-fetch (would loop).
+				function onAvailableConnectionsUpdated(){
+					outputPageRoot.updateGui()
+				}
+			}
+
 			function updateGui(){
 				if (!serviceEditorContainer.serviceData){
 					return
@@ -1079,6 +1211,14 @@ DocumentViewBase {
 						}
 					}
 
+					BaseText {
+						visible: serviceEditorContainer.pluginLoaded && outputListView.count === 0
+						text: qsTr("No output connections")
+						font.pixelSize: Style.fontSizeXL
+						horizontalAlignment: Text.AlignHCenter
+						width: parent.width
+					}
+
 					GroupHeaderView {
 						title: qsTr("Output Connections")
 						width: parent.width
@@ -1116,10 +1256,74 @@ DocumentViewBase {
 							property var connectionParam: model && model.item ? model.item.m_connectionParam : null
 							property var modelData: model ? model.item : null
 
+							// Candidates for this slot, fetched lazily by the editor. Re-evaluated
+							// whenever availableConnectionsByUsage is reassigned after a fetch.
+							property var availableConnections: serviceEditorContainer.getAvailableConnectionsFor(
+										model && model.item ? model.item.m_id : "")
+
+							// Reactive resync: undo/redo mutates model.item in place (createFromJson)
+							// without necessarily routing through this row's updateGui() — this binding
+							// re-checks the correct row whenever the stored link itself changes, so the
+							// checkbox never depends on an imperative refresh reaching this delegate.
+							property string currentDependantConnectionId: (model && model.item
+										&& model.item.m_dependantConnectionId !== undefined
+										&& model.item.m_dependantConnectionId !== null)
+										? "" + model.item.m_dependantConnectionId : ""
+							onCurrentDependantConnectionIdChanged: outputDelegate.syncAvailableConnectionsCheck()
+
+							// Picking a connection applies immediately (SetOutputConnection), independent
+							// of doUpdateModel()/the rest of the service record.
+							property bool applying: false
+							property string applyError: ""
+							// The id this row asked to apply — echoed back onto model.item once the
+							// agent confirms, since the response itself only carries connectionParam.
+							property string pendingDependantConnectionId: ""
+
 							// When ListView creates/recreates the row (model reassigned after undo/redo),
 							// sync Available Connections from the current model without deferred calls.
 							Component.onCompleted: {
 								outputDelegate.updateGui()
+							}
+
+							Connections {
+								target: serviceEditorContainer
+								function onOutputConnectionApplied(connectionId, successful, connectionParam){
+									if (!model.item || ("" + model.item.m_id) !== connectionId){
+										return
+									}
+
+									outputDelegate.applying = false
+
+									// This mutates serviceData to reflect a server-confirmed fact, not a
+									// pending user edit — SetOutputConnection already applied it remotely,
+									// so it must not re-arm Save/Undo (which would offer to "save" something
+									// already saved, and let Undo revert local display out of sync with the
+									// agent). Same guard onPluginLoaded uses for the same reason.
+									let documentManager = serviceEditorContainer.documentManager
+									if (documentManager){
+										documentManager.setBlockUndoManager(serviceEditorContainer.documentId, true)
+									}
+
+									if (successful){
+										outputDelegate.applyError = ""
+										model.item.m_dependantConnectionId = outputDelegate.pendingDependantConnectionId
+										if (model.item.m_connectionParam && connectionParam){
+											model.item.m_connectionParam.m_host = connectionParam.m_host
+											model.item.m_connectionParam.m_httpPort = connectionParam.m_httpPort
+											model.item.m_connectionParam.m_wsPort = connectionParam.m_wsPort
+										}
+									}
+									else{
+										outputDelegate.applyError = qsTr("Failed to apply connection")
+									}
+
+									// Reflects the (possibly unchanged, on failure) confirmed state.
+									outputDelegate.syncAvailableConnectionsCheck()
+
+									if (documentManager){
+										documentManager.setBlockUndoManager(serviceEditorContainer.documentId, false)
+									}
+								}
 							}
 
 							TextInputElementView {
@@ -1144,7 +1348,11 @@ DocumentViewBase {
 								id: outTable
 								controlWidth: serviceEditorContainer.getEditorControlWidth(outTable)
 								name: qsTr("Available Connections")
-								description: table && table.elementsCount == 0 ? qsTr("No available connections") : qsTr("Select one of the available connections")
+								// Tell an empty list apart from a failed match: a service type nobody
+								// has added yet used to look exactly like "still loading". A candidate
+								// does NOT need to be running (Start/Stop status is irrelevant here) —
+								// it only needs to have been added on some agent.
+								description: outputDelegate.getAvailableConnectionsDescription()
 								onTableChanged: {
 									if (!model.item){
 										return
@@ -1158,20 +1366,37 @@ DocumentViewBase {
 										table.setColumnContentById("httpPort", outHttpCell)
 										table.setColumnContentById("wsPort", outWsCell)
 
-										// Bind once when table appears; updateGui rebinds after undo/redo.
-										outputDelegate.bindAvailableConnectionsTable()
-										outputDelegate.syncAvailableConnectionsCheck()
+										// Route through updateGui() (not the two calls directly) so the
+										// blocking-guard covers table.elements= too — see updateGui() below.
+										outputDelegate.updateGui()
 									}
 								}
 
 								Connections {
 									target: outTable.table
 									function onCheckedItemsChanged(){
-										// While restoring checks from model, do not write model from table.
+										// While restoring checks from model (or from a just-confirmed
+										// response), do not re-fire from the table's own check/uncheck.
 										if (serviceEditorContainer.internal__ && serviceEditorContainer.internal__.blockingUpdateModel){
 											return
 										}
-										serviceEditorContainer.doUpdateModel()
+										if (!model.item){
+											return
+										}
+
+										let indexes = outTable.table.getCheckedItems()
+										let dependantConnectionId = ""
+										if (indexes.length > 0){
+											let connectionInfo = outputDelegate.getCandidate(indexes[0])
+											if (connectionInfo && connectionInfo.m_id !== undefined && connectionInfo.m_id !== null){
+												dependantConnectionId = "" + connectionInfo.m_id
+											}
+										}
+
+										outputDelegate.pendingDependantConnectionId = dependantConnectionId
+										outputDelegate.applying = true
+										outputDelegate.applyError = ""
+										serviceEditorContainer.setOutputConnection("" + model.item.m_id, dependantConnectionId)
 									}
 								}
 
@@ -1179,8 +1404,7 @@ DocumentViewBase {
 									id: outHostCell
 									TableCellTextDelegate{
 										function getValue(){
-											if (!outputDelegate.modelData) return ""
-											let connectionItem = outputDelegate.modelData.m_dependantConnectionList.get(rowIndex).item.m_connectionParam
+											let connectionItem = outputDelegate.getCandidateParam(rowIndex)
 											return connectionItem ? connectionItem.m_host : ""
 										}
 									}
@@ -1190,8 +1414,7 @@ DocumentViewBase {
 									id: outHttpCell
 									TableCellTextDelegate{
 										function getValue(){
-											if (!outputDelegate.modelData) return ""
-											let connectionItem = outputDelegate.modelData.m_dependantConnectionList.get(rowIndex).item.m_connectionParam
+											let connectionItem = outputDelegate.getCandidateParam(rowIndex)
 											return connectionItem ? connectionItem.m_httpPort : ""
 										}
 									}
@@ -1201,24 +1424,64 @@ DocumentViewBase {
 									id: outWsCell
 									TableCellTextDelegate{
 										function getValue(){
-											if (!outputDelegate.modelData) return ""
-											let connectionItem = outputDelegate.modelData.m_dependantConnectionList.get(rowIndex).item.m_connectionParam
+											let connectionItem = outputDelegate.getCandidateParam(rowIndex)
 											return connectionItem ? connectionItem.m_wsPort : ""
 										}
 									}
 								}
 							}
 
-							// After undo/redo createFromJson rebuilds nested lists. Table.elements must
-							// point at the new m_dependantConnectionList; TableBase.onElementsChanged
-							// clears checkmarks, so selection is restored from m_dependantConnectionId.
+							// One candidate row, or null when the list is not loaded / index is stale.
+							function getCandidate(rowIndex){
+								let candidates = outputDelegate.availableConnections
+								if (!candidates || rowIndex < 0 || rowIndex >= candidates.count){
+									return null
+								}
+								let entry = candidates.get(rowIndex)
+								return entry ? entry.item : null
+							}
+
+							function getCandidateParam(rowIndex){
+								let candidate = outputDelegate.getCandidate(rowIndex)
+								return candidate ? candidate.m_connectionParam : null
+							}
+
+							function getAvailableConnectionsDescription(){
+								if (outputDelegate.applying){
+									return qsTr("Applying...")
+								}
+								if (outputDelegate.applyError !== ""){
+									return outputDelegate.applyError
+								}
+								if (serviceEditorContainer.availableConnectionsLoading){
+									return qsTr("Looking for services providing this connection...")
+								}
+								if (outTable.table && outTable.table.elementsCount > 0){
+									return qsTr("Select one of the available connections")
+								}
+								let connectionName = outputDelegate.modelData ? outputDelegate.modelData.m_connectionName : ""
+								let serviceTypeId = outputDelegate.modelData ? outputDelegate.modelData.m_serviceTypeId : ""
+								return qsTr("No service provides the connection '%1' yet. Add a service of type '%2' on any agent — it does not need to be running to appear here.")
+									.arg(connectionName)
+									.arg(serviceTypeId)
+							}
+
+							// Table.elements must point at the freshly fetched candidate list;
+							// TableBase.onElementsChanged clears checkmarks, so the selection is
+							// restored afterwards from the stored m_dependantConnectionId.
+							// Guarded (save/restore, not unconditional true/false) because
+							// TableBase.onElementsChanged() fires checkedItemsChanged() synchronously,
+							// which would otherwise mark the document dirty as soon as the editor opens
+							// or the table (re)appears, before the user has touched anything.
 							function bindAvailableConnectionsTable(){
-								if (!outTable.table || !model.item){
+								if (!outTable.table){
 									return
 								}
-								if (model.item.m_dependantConnectionList){
-									outTable.table.elements = model.item.m_dependantConnectionList
-								}
+								let wasBlocking = serviceEditorContainer.internal__
+											? serviceEditorContainer.internal__.blockingUpdateModel : false
+								serviceEditorContainer.setBlockingUpdateModel(true)
+								outTable.table.elements = outputDelegate.availableConnections
+								serviceEditorContainer.setBlockingUpdateModel(wasBlocking)
 							}
 
 							function syncAvailableConnectionsCheck(){
@@ -1226,6 +1489,12 @@ DocumentViewBase {
 									return
 								}
 
+								// Save/restore rather than unconditional true/false: this can run
+								// nested inside an outer guarded refresh (e.g. doUpdateGui()'s own
+								// blockingUpdateModel=true) — clearing to false unconditionally would
+								// re-open that outer guard before it is done.
+								let wasBlocking = serviceEditorContainer.internal__
+											? serviceEditorContainer.internal__.blockingUpdateModel : false
 								serviceEditorContainer.setBlockingUpdateModel(true)
 
 								let dependantId = ""
@@ -1235,11 +1504,10 @@ DocumentViewBase {
 
 								outTable.table.uncheckAll()
 
-								if (dependantId !== "" && model.item.m_dependantConnectionList){
-									let connectionList = model.item.m_dependantConnectionList
-									for (let i = 0; i < connectionList.count; i++){
-										let entry = connectionList.get(i)
-										let connectionInfo = entry ? entry.item : null
+								let candidates = outputDelegate.availableConnections
+								if (dependantId !== "" && candidates){
+									for (let i = 0; i < candidates.count; i++){
+										let connectionInfo = outputDelegate.getCandidate(i)
 										if (!connectionInfo){
 											continue
 										}
@@ -1251,7 +1519,7 @@ DocumentViewBase {
 									}
 								}
 
-								serviceEditorContainer.setBlockingUpdateModel(false)
+								serviceEditorContainer.setBlockingUpdateModel(wasBlocking)
 							}
 
 							function updateGui(){
@@ -1259,34 +1527,10 @@ DocumentViewBase {
 								syncAvailableConnectionsCheck()
 							}
 
+							// The producer pick applies immediately via SetOutputConnection (see
+							// onCheckedItemsChanged above) - nothing to contribute to the bundled
+							// doUpdateModel()/UpdateService save.
 							function updateModel(){
-								if (!outTable.table || !model.item){
-									return
-								}
-								let indexes = outTable.table.getCheckedItems()
-								if (indexes.length > 0){
-									let index = indexes[0]
-									let connectionList = model.item.m_dependantConnectionList
-									let entry = connectionList ? connectionList.get(index) : null
-									let connectionInfo = entry ? entry.item : null
-									if (!connectionInfo || !connectionInfo.m_connectionParam){
-										return
-									}
-									model.item.m_dependantConnectionId = connectionInfo.m_id
-									if (model.item.m_connectionParam){
-										model.item.m_connectionParam.m_host = connectionInfo.m_connectionParam.m_host
-										model.item.m_connectionParam.m_httpPort = connectionInfo.m_connectionParam.m_httpPort
-										model.item.m_connectionParam.m_wsPort = connectionInfo.m_connectionParam.m_wsPort
-									}
-								}
-								else{
-									model.item.m_dependantConnectionId = ""
-									if (model.item.m_connectionParam){
-										model.item.m_connectionParam.m_host = "localhost"
-										model.item.m_connectionParam.m_httpPort = -1
-										model.item.m_connectionParam.m_wsPort = -1
-									}
-								}
 							}
 						}
 					}
@@ -1708,7 +1952,7 @@ DocumentViewBase {
 			filterRightMargin: statusPopup.width + Style.marginXL
 			collectionId: "ServiceLog"
 			gqlGetListCommandId: "GetServiceLog"
-			subscriptionCommandId: "OnServiceLogChanged"
+			subscriptionCommandId: "OnServiceLogCollectionChanged"
 
 			function getHeaders(){
 				return serviceEditorContainer.getHeaders()

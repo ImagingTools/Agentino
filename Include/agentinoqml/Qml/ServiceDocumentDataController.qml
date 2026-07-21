@@ -7,9 +7,10 @@ import agentinoServicesSdl 1.0
 GqlRequestDocumentDataController {
 	id: requestDocumentDataController
 	
-	gqlGetCommandId: AgentinoServicesSdlCommandIds.s_getService;
-	gqlUpdateCommandId: AgentinoServicesSdlCommandIds.s_updateService;
-	gqlAddCommandId: AgentinoServicesSdlCommandIds.s_addService;
+	// Wire names (match AgentinoServicesSdlCommandIds) as string literals for JQML.
+	gqlGetCommandId: "GetService";
+	gqlUpdateCommandId: "UpdateService";
+	gqlAddCommandId: "AddService";
 	
 	subscriptionCommandId: "OnServicesCollectionChanged";
 	
@@ -19,7 +20,19 @@ GqlRequestDocumentDataController {
 	documentName: serviceData ? serviceData.m_name: "";
 	documentDescription: serviceData ? serviceData.m_description: "";
 	
+	// Prefer DataScope when parent injects one (QG1).
+	property var dataScope: null
+
 	function getHeaders(){
+		if (dataScope !== null) {
+			let scoped = {}
+			if (dataScope.agentId)
+				scoped["clientid"] = dataScope.agentId
+			if (dataScope.serviceId)
+				scoped["serviceid"] = dataScope.serviceId
+			if (Object.keys(scoped).length > 0)
+				return scoped
+		}
 		return {}
 	}
 	

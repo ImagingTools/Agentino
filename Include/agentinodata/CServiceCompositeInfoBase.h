@@ -34,9 +34,13 @@ protected:
 	static QByteArray FindServiceIdByUrl(imtbase::IObjectCollection& serviceCollection, const QUrl& url);
 
 	/**
-		Find ID of the service inside of the given service collection
-		owning the input connection with the given connection ID.
-		\return ID of the found service or an empty ID, if no service matches.
+		Find ID of the service inside of the given service collection publishing the
+		endpoint \a dependantServiceConnectionId (see ServiceEndpointId).
+
+		The endpoint id carries the producing service id, so this is a string split
+		plus one lookup — no scan over the collection.
+		\return ID of the found service, or an empty ID when the endpoint is malformed
+				or its service is not in \a serviceCollection.
 	*/
 	static QByteArray FindServiceIdByDependantConnectionId(
 				imtbase::IObjectCollection& serviceCollection,

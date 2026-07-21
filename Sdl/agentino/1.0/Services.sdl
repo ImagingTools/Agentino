@@ -33,6 +33,8 @@ type ServiceItem {
 
 type ServiceListPayload{
 	items: [ServiceItem]!
+	# ListObjects returns pagesCount/totalCount; required for web fromObject() (see AgentListPayload).
+	notification: NotificationItem
 }
 
 type ExternConnectionInfo {
@@ -56,6 +58,21 @@ type DependantConnectionInfo {
 	connectionParam: ServerConnectionParam
 }
 
+# Candidate producers for one output connection, keyed by that connection's usage id
+# (the id shared between a consumer's output link and a compatible producer's input).
+type OutputConnectionCandidates {
+	connectionUsageId: ID!
+	candidates: [DependantConnectionInfo]
+}
+
+input AvailableConnectionsInput {
+	connectionUsageIds: [ID]
+}
+
+type AvailableConnectionsPayload {
+	outputConnections: [OutputConnectionCandidates]!
+}
+
 type OutputConnection {
 	id: ID
 	connectionName: String
@@ -63,7 +80,6 @@ type OutputConnection {
 	serviceName: String
 	serviceTypeId: String
 	dependantConnectionId: String
-	dependantConnectionList: [DependantConnectionInfo]
 	connectionParam: ServerConnectionParam
 }
 
@@ -99,6 +115,23 @@ input ConnectionUrlInput {
 
 type UpdateConnectionUrlResponse {
 	succesful: Boolean
+}
+
+# Standalone, immediate-apply pick of a producer for one Output Connection slot -
+# independent of the rest of ServiceData, so choosing a connection does not require
+# saving the whole service record. connectionParam is resolved by the server (which can
+# see across the whole fleet) and forwarded to the owning agent; clients only ever send
+# dependantConnectionId (empty clears the selection).
+input SetOutputConnectionInput {
+	serviceId: ID!
+	connectionId: ID!
+	dependantConnectionId: String
+	connectionParam: ServerConnectionParam
+}
+
+type SetOutputConnectionResponse {
+	succesful: Boolean
+	connectionParam: ServerConnectionParam
 }
 
 enum ServiceStatus {
@@ -145,6 +178,7 @@ type Query {
 	GetService (input: InputId): ServiceData!
 	GetServiceStatus (input: InputId): ServiceStatusResponse!
 	GetServiceSettings (input: ServiceInput): ServiceSettingsPayload!
+	AvailableConnections (input: AvailableConnectionsInput): AvailableConnectionsPayload!
 }
 
 type Mutation {
@@ -158,6 +192,7 @@ type Mutation {
 	ServicesRemove (input: RemoveElementsInput): RemovedNotificationPayload!
 	UpdateConnectionUrl (input: ConnectionUrlInput): UpdateConnectionUrlResponse!
 	UpdateServiceSettings (input: ServiceSettingsInput): ServiceSettingsPayload!
+	SetOutputConnection (input: SetOutputConnectionInput): SetOutputConnectionResponse!
 }
 
 collectionSchema {

@@ -10,7 +10,7 @@
     <Description></Description>
     <Keywords></Keywords>
     <ElementsList>
-        <Element Id="AgentCollection" PackageId="AgentinoDataPck" ComponentId="AgentCollection">
+        <Element Id="AgentCollection" PackageId="ImtCorePck" ComponentId="ObjectCollection">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ObjectFactories" Type="Factory[]" ExportId="">
@@ -26,6 +26,18 @@
                                 <Value>AgentInfo</Value>
                             </Values>
                         </Data>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="AgentServiceManager" PackageId="AgentinoDataPck" ComponentId="AgentServiceManager">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -100,6 +112,9 @@
                 <AttributeInfoMap>
                     <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="AgentCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentServiceManager"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
@@ -208,6 +223,8 @@
     <ExportedInterfaces/>
     <ExportedComponents>
         <Component ExportedId="AgentCollection" ComponentId="AgentCollection"/>
+        <Component ExportedId="AgentServiceManager" ComponentId="AgentServiceManager"/>
+        <Component ExportedId="ServiceManager" ComponentId="AgentServiceManager"/>
         <Component ExportedId="AgentStatusCollection" ComponentId="AgentStatusCollection"/>
         <Component ExportedId="AutoPersistence" ComponentId="FileAutoPersistence/AutoPersistence"/>
         <Component ExportedId="RoleRepository" ComponentId="UserLocalRepositories/RoleRepository"/>

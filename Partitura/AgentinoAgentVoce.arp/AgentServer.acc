@@ -130,6 +130,9 @@
                     <AttributeInfo Id="ServiceController" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServiceController"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="WebSocketClient" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketClient"/>
                     </AttributeInfo>
@@ -304,19 +307,52 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="ProcessHost" PackageId="AgentinoDataPck" ComponentId="ProcessHost">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="ServiceTypeCatalog" PackageId="AgentinoDataPck" ComponentId="ServiceTypeCatalog">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="ServiceController" PackageId="AgentinoDataPck" ComponentId="ServiceController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ProcessHost" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ProcessHost"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ServiceCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceTypeCatalog" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServiceTypeCatalog"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="StopTimeoutMs" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="10000"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="StableSeconds" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="15"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RuntimeStatePath" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="ServiceRuntimePids.json"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServiceManagerSubscriptionClient" PackageId="AgentGqlPck" ComponentId="AgentinoSubscriptionClient">
+        <Element Id="AgentRegistrationClient" PackageId="AgentGqlPck" ComponentId="AgentRegistrationClient">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
@@ -330,6 +366,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/ServerConnectionInterface"/>
                     </AttributeInfo>
                     <AttributeInfo Id="WebLoginStatus" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketClient"/>
@@ -388,6 +427,7 @@
                                 <Value>AgentSubscribers/LocalServiceCollectionSubscriberController</Value>
                                 <Value>AgentSubscribers/RemoteServiceCollectionSubscriberController</Value>
                                 <Value>AgentSubscribers/LocalServiceStatusSubscriberController</Value>
+                                <Value>AgentSubscribers/LocalTopologySubscriberController</Value>
                                 <Value>AgentSubscribers/AgentConnectionSubscriberController</Value>
                                 <Value>AgentSubscribers/ServiceLogSubscriberController</Value>
                                 <Value>AgentSubscribers/AgentLogCollectionSubscriberController</Value>
@@ -665,7 +705,7 @@
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="ClientId" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="1111"/>
+                                    <Data IsEnabled="true" Value=""/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="ClientIdParam">
                                     <Data IsEnabled="false"/>
@@ -692,10 +732,10 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServerLoginParam" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="su"/>
+                                    <Data IsEnabled="false" Value=""/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServerPasswordParam" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="1"/>
+                                    <Data IsEnabled="false" Value=""/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServerRequestHandler" Type="Reference" ExportId="">
                                     <Data IsEnabled="true" Value="WebSocketServlet"/>
@@ -774,7 +814,9 @@
         <Component ExportedId="ServerSettings" ComponentId="ServerSettings"/>
         <Component ExportedId="ServiceCollection" ComponentId="Repositories/ServiceCollection"/>
         <Component ExportedId="ServiceController" ComponentId="ServiceController"/>
-        <Component ExportedId="ServiceManagerSubscriptionClient" ComponentId="ServiceManagerSubscriptionClient"/>
+        <Component ExportedId="ProcessHost" ComponentId="ProcessHost"/>
+        <Component ExportedId="ServiceTypeCatalog" ComponentId="ServiceTypeCatalog"/>
+        <Component ExportedId="AgentRegistrationClient" ComponentId="AgentRegistrationClient"/>
         <Component ExportedId="WebSocketServerFramework" ComponentId="WebSocketServerFramework"/>
     </ExportedComponents>
 </Acf>

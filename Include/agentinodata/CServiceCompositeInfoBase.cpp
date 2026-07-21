@@ -9,6 +9,7 @@
 // Agentino includes
 #include <agentinodata/IServiceInfo.h>
 #include <agentinodata/IServiceStatusInfo.h>
+#include <agentinodata/ServiceEndpointId.h>
 
 
 namespace agentinodata
@@ -77,42 +78,18 @@ QByteArray CServiceCompositeInfoBase::FindServiceIdByDependantConnectionId(
 			imtbase::IObjectCollection& serviceCollection,
 			const QByteArray& dependantServiceConnectionId)
 {
-	imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollection.GetElementIds();
-	for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
-		imtbase::IObjectCollection::DataPtr serviceDataPtr;
-		if (serviceCollection.GetObjectData(serviceElementId, serviceDataPtr)){
-			IServiceInfo* serviceInfoPtr = dynamic_cast<IServiceInfo*>(serviceDataPtr.GetPtr());
-			if (serviceInfoPtr == nullptr){
-				continue;
-			}
-			// Get Connections
-			imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
-			if (connectionCollectionPtr == nullptr){
-				continue;
-			}
-			imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
-			for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-				if (connectionElementId == dependantServiceConnectionId){
-					return serviceElementId;
-				}
-
-				imtbase::IObjectCollection::DataPtr connectionDataPtr;
-				if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
-					imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
-					if (connectionParamPtr != nullptr){
-						imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections = connectionParamPtr->GetIncomingConnections();
-						for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-							if (incomingConnection.GetObjectUuid() == dependantServiceConnectionId){
-								return serviceElementId;
-							}
-						}
-					}
-				}
-			}
-		}
+	const QByteArray serviceId = ServiceEndpointId::ServiceOf(dependantServiceConnectionId);
+	if (serviceId.isEmpty()){
+		return QByteArray();
 	}
 
-	return QByteArray();
+	// The endpoint names its producer, but that producer may belong to another agent —
+	// only report it when this collection is the one that actually holds it.
+	if (!serviceCollection.GetElementIds().contains(serviceId)){
+		return QByteArray();
+	}
+
+	return serviceId;
 }
 
 
@@ -129,7 +106,10 @@ IServiceCompositeInfo::StateOfRequiredServices CServiceCompositeInfoBase::Calcul
 			if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
 				imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
 				if (connectionLinkParamPtr != nullptr){
-					QByteArray dependantServiceId = GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
+					// The endpoint id names its producer directly, and service status is
+					// keyed fleet-wide by service id — no lookup of the owning agent needed.
+					const QByteArray dependantServiceId =
+								ServiceEndpointId::ServiceOf(connectionLinkParamPtr->GetDependantServiceConnectionId());
 					IServiceStatusInfo::ServiceStatus dependantServiceStatus = GetServiceStatus(dependantServiceId);
 					if (dependantServiceStatus == IServiceStatusInfo::SS_UNDEFINED){
 						return SORS_UNDEFINED;
@@ -172,7 +152,8 @@ void CServiceCompositeInfoBase::CollectDependencyServices(
 					if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
 						imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
 						if (connectionLinkParamPtr != nullptr){
-							QByteArray dependantServiceId = GetServiceId(connectionLinkParamPtr->GetDependantServiceConnectionId());
+							const QByteArray dependantServiceId =
+										ServiceEndpointId::ServiceOf(connectionLinkParamPtr->GetDependantServiceConnectionId());
 							if (dependantServiceId == serviceId){
 								result << serviceElementId;
 							}

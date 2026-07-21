@@ -9,13 +9,19 @@
 #include <iser/IObject.h>
 #include <ilog/ITracingConfiguration.h>
 
+// ImtCore includes
+#include <imtbase/IObjectCollection.h>
+
 
 namespace agentinodata
 {
 
 
 /**
-	Interface for describing an agent info.
+	Describes a single agent record.
+
+	Identity and descriptive attributes only — an agent's services are **not** part
+	of this record. Use IServiceManager::GetServiceCollection(agentId) for those.
 	\ingroup Agent
 */
 class IAgentInfo: virtual public iser::IObject, virtual public ilog::ITracingConfiguration
@@ -35,11 +41,6 @@ public:
 		Get computer name.
 	*/
 	virtual QString GetComputerName() const = 0;
-
-	/**
-		Get service collection.
-	*/
-	virtual imtbase::IObjectCollection* GetServiceCollection() = 0;
 };
 
 

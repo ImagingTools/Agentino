@@ -30,9 +30,9 @@ I_EXPORT_COMPONENT(
 			"GraphQl Service Controller");
 
 I_EXPORT_COMPONENT(
-			AgentinoSubscriptionClient,
-			"Service manager subscription client for agent",
-			"GraphQl Service  Subscription Client");
+			AgentRegistrationClient,
+			"Announces this agent to the central server on every (re)connect",
+			"Agent Registration Client");
 
 I_EXPORT_COMPONENT(
 			ServiceLogController,

@@ -11,11 +11,14 @@ import agentinoServicesSdl 1.0
 
 ServiceEditor {
 	id: serviceEditor
-	
+
 	// clientId is declared on ServiceEditor; set by collection/topology views.
-	// documentManager is declared on DocumentViewBase — do not redeclare it here
-	// (shadowing breaks isNewService / status refresh that read the base property).
 	property string serviceId: serviceEditor.serviceData ? serviceEditor.serviceData.m_id : ""
+
+	// L3 transport isolated from presentation (QG2).
+	property var transport: ServiceEditorTransport {
+		headersProvider: serviceEditor
+	}
 
 	onLoadPlugin: {
 		serviceEditor.pluginLoaded = false
@@ -24,9 +27,7 @@ ServiceEditor {
 		if (!serviceEditor.serviceData){
 			return
 		}
-
-		loadPluginInput.m_servicePath = serviceEditor.serviceData.m_path
-		loadPluginRequestSender.send(loadPluginInput)
+		transport.loadPlugin(serviceEditor.serviceData.m_path)
 	}
 
 	onServiceDataChanged: {
@@ -43,7 +44,7 @@ ServiceEditor {
 			serviceEditor.pluginLoadFailed = false
 		}
 	}
-	
+
 	property string loadedSettingsServiceId: ""
 	property bool settingsRequested: false
 	onServiceIdChanged: {
@@ -57,59 +58,76 @@ ServiceEditor {
 		if (serviceEditor.serviceId === "" || serviceEditor.settingsPath === ""){
 			return
 		}
-		
-		updateServiceSettingsInput.m_serviceId = "" + serviceEditor.serviceId
-		updateServiceSettingsInput.m_content = "" + content
-		updateServiceSettingsRequestSender.send(updateServiceSettingsInput)
-	}
-	
-	ServiceInput {
-		id: getServiceSettingsInput
-	}
-	
-	ServiceSettingsInput {
-		id: updateServiceSettingsInput
-	}
-	
-	GqlSdlRequestSender {
-		id: getServiceSettingsRequestSender
-		gqlCommandId: AgentinoServicesSdlCommandIds.s_getServiceSettings
-		
-		sdlObjectComp: Component {
-			ServiceSettingsPayload {
-				onFinished: {
-					serviceEditor.setSettings(m_content, m_exists, m_path)
-				}
-			}
-		}
-		
-		function getHeaders(){
-			return serviceEditor.getHeaders()
-		}
+		transport.saveSettings(serviceEditor.serviceId, content)
 	}
 
-	GqlSdlRequestSender {
-		id: updateServiceSettingsRequestSender
-		requestType: 1
-		gqlCommandId: AgentinoServicesSdlCommandIds.s_updateServiceSettings
-		
-		sdlObjectComp: Component {
-			ServiceSettingsPayload {
-				onFinished: {
-					serviceEditor.setSettings(m_content, m_exists, m_path)
-					ModalDialogManager.showWarningDialog(qsTr("Service settings saved"))
+	onRequestAvailableConnections: transport.loadAvailableConnections(connectionUsageIds)
+
+	onSetOutputConnection: {
+		transport.setOutputConnection(serviceEditor.serviceId, connectionId, dependantConnectionId)
+	}
+
+	Connections {
+		target: serviceEditor.transport
+
+		function onPluginLoadFailed(){
+			serviceEditor.pluginLoadingFailed()
+		}
+
+		function onAvailableConnectionsLoaded(payload){
+			serviceEditor.setAvailableConnections(payload)
+		}
+
+		function onOutputConnectionSet(connectionId, successful, connectionParam){
+			serviceEditor.outputConnectionApplied(connectionId, successful, connectionParam)
+		}
+
+		function onPluginLoaded(pluginInfo) {
+			if (!serviceEditor.serviceData){
+				return
+			}
+			let documentManager = serviceEditor.documentManager
+			if (!documentManager){
+				return
+			}
+			documentManager.setBlockUndoManager(serviceEditor.serviceId, true)
+			let info = pluginInfo
+			if (info && info.hasInputConnections && info.hasInputConnections()){
+				serviceEditor.serviceData.m_inputConnections = info.m_inputConnections.copyMe()
+				serviceEditor.serviceData.m_inputConnections.owner = serviceEditor.serviceData
+			}
+			if (info && info.hasOutputConnections && info.hasOutputConnections()){
+				serviceEditor.serviceData.m_outputConnections = info.m_outputConnections.copyMe()
+				serviceEditor.serviceData.m_outputConnections.owner = serviceEditor.serviceData
+			}
+			documentManager.setBlockUndoManager(serviceEditor.serviceId, false)
+			serviceEditor.setPluginLoaded(serviceEditor.serviceData.m_path)
+			serviceEditor.pluginLoading = false
+			serviceEditor.updateGui()
+		}
+		function onCollectionChangedForService(serviceId) {
+			if (!serviceEditor.serviceData){
+				return
+			}
+			if (serviceId === serviceEditor.serviceData.m_id){
+				let ok = true
+				if (serviceEditor.serviceData.hasInputConnections()){
+					ok = serviceEditor.serviceData.m_inputConnections.count === 0
+				}
+				if (ok){
+					serviceEditor.pluginLoaded = false
+					serviceEditor.pluginLoading = false
+					serviceEditor.pluginLoadFailed = false
+					serviceDocumentDataController.documentId = serviceId
+					serviceDocumentDataController.updateDocumentModel()
 				}
 			}
-		}
-		
-		function getHeaders(){
-			return serviceEditor.getHeaders()
 		}
 	}
 
 	commandsDelegateComp: Component {ViewCommandsDelegateBase {
 			view: serviceEditor;
-			
+
 			onCommandActivated: {
 				let serviceId = serviceEditor.serviceId
 
@@ -122,40 +140,41 @@ ServiceEditor {
 			}
 		}
 	}
-	
+
 	commandsControllerComp: Component {GqlBasedCommandsController {
 			typeId: "Service";
 			function getHeaders(){
 				return serviceEditor.getHeaders();
 			}
-			
+
 			onCommandsReceived: {
 				serviceEditor.commandsReceived = true
 			}
 		}
 	}
-	
+
 	property bool commandsReceived: false
-	
+
+	property var serviceStatusModel: ServiceStatusModel {}
+
 	property bool updateCommands: commandsReceived && serviceData !== null
 	onUpdateCommandsChanged: {
 		if (updateCommands && commandsController){
 			let status = serviceEditor.serviceStatus !== ""
 				? serviceEditor.serviceStatus
 				: serviceEditor.normalizeServiceStatus(serviceData.m_status)
-			commandsController.setCommandIsEnabled("Start", status === ServiceStatus.s_NotRunning)
-			commandsController.setCommandIsEnabled("Stop", status === ServiceStatus.s_Running)
+			// undefined (agent offline) is not startable/stoppable.
+			commandsController.setCommandIsEnabled("Start", serviceStatusModel.isStartable(status))
+			commandsController.setCommandIsEnabled("Stop", serviceStatusModel.isStoppable(status))
 		}
 	}
-	
-	// getHeaders is provided by ServiceEditor base (clientid + serviceid)
-	
+
 	ServiceDocumentDataController {
 		id: serviceDocumentDataController
 		function getHeaders(){
 			return serviceEditor.getHeaders();
 		}
-		
+
 		onModelChanged: {
 			let documentManager = serviceEditor.documentManager
 			if (documentManager){
@@ -166,8 +185,8 @@ ServiceEditor {
 				serviceEditor.setServiceStatus(documentModel.m_status)
 				serviceEditor.refreshIsNewService()
 				if (serviceEditor.commandsController){
-					serviceEditor.commandsController.setCommandIsEnabled("Start", serviceEditor.serviceStatus === ServiceStatus.s_NotRunning)
-					serviceEditor.commandsController.setCommandIsEnabled("Stop", serviceEditor.serviceStatus === ServiceStatus.s_Running)
+					serviceEditor.commandsController.setCommandIsEnabled("Start", serviceStatusModel.isStartable(serviceEditor.serviceStatus))
+					serviceEditor.commandsController.setCommandIsEnabled("Stop", serviceStatusModel.isStoppable(serviceEditor.serviceStatus))
 				}
 				serviceEditor.serviceIsDirty = false
 				serviceEditor.doUpdateGui()
@@ -177,7 +196,7 @@ ServiceEditor {
 			}
 		}
 	}
-	
+
 	Connections {
 		target: serviceEditor.documentManager
 		function onDocumentIsDirtyChanged(documentId, isDirty) {
@@ -185,50 +204,18 @@ ServiceEditor {
 				serviceEditor.serviceIsDirty = isDirty
 			}
 		}
-		
+
 		function onDocumentSaved(savedDocumentId) {
 			if (savedDocumentId !== serviceEditor.documentId){
 				return
 			}
-			
+
 			serviceEditor.serviceIsDirty = false
 			serviceDocumentDataController.documentId = savedDocumentId
 			serviceDocumentDataController.updateDocumentModel()
 		}
 	}
-	
-	SubscriptionClient {
-		id: subscriptionClient;
-		gqlCommandId: "OnServicesCollectionChanged"
-		function getHeaders(){
-			return serviceEditor.getHeaders();
-		}
-		
-		onMessageReceived: {
-			if (!serviceEditor.serviceData){
-				return
-			}
 
-			if (data.containsKey("serviceid")){
-				let serviceId = data.getData("serviceid")
-				if (serviceId === serviceEditor.serviceData.m_id){
-					let ok = true
-					if (serviceEditor.serviceData.hasInputConnections()){
-						ok = serviceEditor.serviceData.m_inputConnections.count === 0
-					}
-
-					if (ok){
-						serviceEditor.pluginLoaded = false
-						serviceEditor.pluginLoading = false
-						serviceEditor.pluginLoadFailed = false
-						serviceDocumentDataController.documentId = serviceId
-						serviceDocumentDataController.updateDocumentModel()
-					}
-				}
-			}
-		}
-	}
-	
 	GqlBasedServiceController {
 		id: serviceController
 		onBeginStartService: {
@@ -238,7 +225,7 @@ ServiceEditor {
 				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
 			}
 		}
-		
+
 		onBeginStopService: {
 			serviceEditor.setOperationInProgress(true, qsTr("Stopping service..."))
 			if (serviceEditor.commandsController){
@@ -246,7 +233,7 @@ ServiceEditor {
 				serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
 			}
 		}
-		
+
 		onServiceStatusChanged: {
 			if (serviceId === serviceEditor.serviceId){
 				serviceEditor.setServiceStatus(status)
@@ -262,85 +249,25 @@ ServiceEditor {
 				}
 
 				if (serviceEditor.commandsController){
-					serviceEditor.commandsController.setCommandIsEnabled("Start", normalized === ServiceStatus.s_NotRunning)
-					serviceEditor.commandsController.setCommandIsEnabled("Stop", normalized === ServiceStatus.s_Running)
+					// isStartable/isStoppable treat undefined as neither (agent offline).
+					serviceEditor.commandsController.setCommandIsEnabled("Start", serviceStatusModel.isStartable(normalized))
+					serviceEditor.commandsController.setCommandIsEnabled("Stop", serviceStatusModel.isStoppable(normalized))
 				}
 			}
 		}
-		
+
 		onStartServiceFailed: {
 			if (serviceId === serviceEditor.serviceId){
 				serviceEditor.setOperationInProgress(false, "")
 			}
 		}
-		
+
 		onStopServiceFailed: {
 			if (serviceId === serviceEditor.serviceId){
 				serviceEditor.setOperationInProgress(false, "")
 			}
 		}
-		
-		function getHeaders(){
-			return serviceEditor.getHeaders()
-		}
-	}
-	
-	LoadPluginInput {
-		id: loadPluginInput
-	}
-	
-	GqlSdlRequestSender {
-		id: loadPluginRequestSender
-		gqlCommandId: AgentinoServicesSdlCommandIds.s_loadPlugin
-		requestType: 1
-		onFinished: {
-			if (status === -1) {
-				serviceEditor.pluginLoadingFailed()
-			}
-		}
-		sdlObjectComp: Component {
-			PluginInfo {
-				onFinished: {
-					if (!serviceEditor.serviceData){
-						return
-					}
-					let documentManager = serviceEditor.documentManager
-					if (!documentManager){
-						return
-					}
-					
-					documentManager.setBlockUndoManager(serviceEditor.serviceId, true)
 
-					if (hasInputConnections()){
-						serviceEditor.serviceData.m_inputConnections = m_inputConnections.copyMe()
-						// copyMe() doesn't set .owner, which BaseClass/BaseModel's change-bubbling
-						// relies on to forward nested modelChanged signals up to serviceData
-						// (compare ServiceData.qml's emplaceInputConnections(), which sets it
-						// right after creating the field the normal way). Without this, editing
-						// anything inside the reloaded Connections page stops marking the
-						// document dirty / registering undo steps.
-						serviceEditor.serviceData.m_inputConnections.owner = serviceEditor.serviceData
-					}
-
-					if (hasOutputConnections()){
-						serviceEditor.serviceData.m_outputConnections = m_outputConnections.copyMe()
-						serviceEditor.serviceData.m_outputConnections.owner = serviceEditor.serviceData
-					}
-
-					documentManager.setBlockUndoManager(serviceEditor.serviceId, false)
-
-					// doUpdateGui() no-ops while ViewBase's internal blockingUpdateGui/
-					// blockingUpdateModel flag is set (e.g. right after the model was just
-					// touched above), which is why the Connections page previously stayed
-					// empty until the editor was reopened. Call updateGui() directly instead -
-					// same fix already applied for the post-save case in onServiceDataChanged.
-					serviceEditor.setPluginLoaded(serviceEditor.serviceData.m_path)
-					serviceEditor.pluginLoading = false
-					serviceEditor.updateGui()
-				}
-			}
-		}
-		
 		function getHeaders(){
 			return serviceEditor.getHeaders()
 		}

@@ -12,13 +12,23 @@ import agentino 1.0
 
 RemoteCollectionView {
 	id: root;
-	
+
+	// ViewBase's default contentColor (backgroundColor2) showed through the commands panel
+	// area above the table - baseColor matches the rest of the Agents/Services UI.
+	contentColor: Style.baseColor;
+
 	property string clientId;
 	property string clientName;
 	property string serviceId;
 	property string serviceName;
 	property bool serviceOperationInProgress: false
 	property string serviceOperationText: ""
+
+	// QG1: typed scope; getHeaders() is a thin transport adapter for ImtCore widgets.
+	property var dataScope: DataScope {
+		agentId: root.clientId
+		serviceId: root.serviceId
+	}
 	
 	filterMenuVisible: false;
 
@@ -49,6 +59,8 @@ RemoteCollectionView {
 	}
 
 	onClientIdChanged: {
+		if (root.dataScope)
+			root.dataScope.agentId = root.clientId
 		if (clientId == ""){
 			return
 		}
@@ -57,6 +69,11 @@ RemoteCollectionView {
 			documentManager.registerDocumentView("Service", serviceEditorComp);
 			documentManager.registerDocumentDataController("Service", serviceDataControllerComp);
 		}
+	}
+
+	onServiceIdChanged: {
+		if (root.dataScope)
+			root.dataScope.serviceId = root.serviceId
 	}
 	
 	onHeadersChanged: {
@@ -95,9 +112,16 @@ RemoteCollectionView {
 	}
 	
 	function getHeaders(){
+		// Adapter only: maps DataScope → GQL headers (not for use in pure L1 views).
 		let headers = {}
-		headers["clientid"] = root.clientId;
-		headers["serviceid"] = root.serviceId;
+		if (root.dataScope && root.dataScope.agentId)
+			headers["clientid"] = root.dataScope.agentId
+		else if (root.clientId !== "")
+			headers["clientid"] = root.clientId
+		if (root.dataScope && root.dataScope.serviceId)
+			headers["serviceid"] = root.dataScope.serviceId
+		else if (root.serviceId !== "")
+			headers["serviceid"] = root.serviceId
 		return headers
 	}
 
@@ -241,7 +265,12 @@ RemoteCollectionView {
 		id: subscriptionClient;
 		gqlCommandId: "OnServiceStatusChanged";
 		onMessageReceived: {
+			// Refresh rows (status → undefined when agent disconnects) then re-apply
+			// Start/Stop enablement for the current selection.
 			root.doUpdateGui();
+			if (root.commandsDelegate && root.commandsDelegate.updateItemSelection){
+				root.commandsDelegate.updateItemSelection(root.table.getSelectedIndexes());
+			}
 		}
 	}
 }

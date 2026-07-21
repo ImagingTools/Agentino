@@ -110,12 +110,32 @@
                     <AttributeInfo Id="RequestManager" Type="Reference" ExportId="WebSocketServer">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
-                    <!-- Agent has no ServiceStatusCollection: live status is ServiceController.
-                         Publish-only path (OnServiceStatusChanged for local GUI). -->
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="LocalTopologySubscriberController" PackageId="ImtServerGqlPck" ComponentId="ModelChangeNotifier">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>OnTopologyChanged</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Model" Type="Reference" ExportId="TopologyCollection">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RequestManager" Type="Reference" ExportId="WebSocketServer">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
@@ -187,8 +207,6 @@
                     <AttributeInfo Id="RequestManager" Type="Reference" ExportId="WebSocketClient">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
-                    <!-- Agent has no ServiceStatusCollection: live status is ServiceController.
-                         Publish-only path (OnAgentServiceStatusChanged → central server). -->
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -204,6 +222,7 @@
         <Component ExportedId="AgentServicesRemoteSubscriberProxy" ComponentId="AgentServicesRemoteSubscriberProxy"/>
         <Component ExportedId="LocalServiceCollectionSubscriberController" ComponentId="LocalServiceCollectionSubscriberController"/>
         <Component ExportedId="LocalServiceStatusSubscriberController" ComponentId="LocalServiceStatusSubscriberController"/>
+        <Component ExportedId="LocalTopologySubscriberController" ComponentId="LocalTopologySubscriberController"/>
         <Component ExportedId="RemoteServiceCollectionSubscriberController" ComponentId="RemoteServiceCollectionSubscriberController"/>
         <Component ExportedId="ServiceLogSubscriberController" ComponentId="ServiceLogSubscriberController"/>
         <Component ExportedId="ServiceStatusSubscriberController" ComponentId="ServiceStatusSubscriberController"/>

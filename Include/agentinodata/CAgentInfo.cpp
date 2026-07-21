@@ -4,12 +4,14 @@
 
 // ACF includes
 #include <istd/CChangeNotifier.h>
+#include <istd/TSingleFactory.h>
 #include <iser/IArchive.h>
 #include <iser/CArchiveTag.h>
 #include <iser/CPrimitiveTypesSerializer.h>
-#include <istd/TSingleFactory.h>
+#include <imod/TModelWrap.h>
 
 // ImtCore includes
+#include <imtbase/CObjectCollection.h>
 #include <imtcore/Version.h>
 
 // Agentino includes
@@ -23,13 +25,8 @@ namespace agentinodata
 // public methods
 
 CAgentInfo::CAgentInfo():
-	m_tracingLevel(-1),
-	m_modelUpdateBridge(this, imod::CModelUpdateBridge::UF_SOURCE)
+	m_tracingLevel(-1)
 {
-	typedef istd::TSingleFactory<istd::IChangeable, agentinodata::CIdentifiableServiceInfo> FactoryServiceImpl;
-	m_serviceCollection.RegisterFactory<FactoryServiceImpl>("ServiceInfo");
-
-	m_serviceCollection.AttachObserver(&m_modelUpdateBridge);
 }
 
 
@@ -78,12 +75,6 @@ QString CAgentInfo::GetComputerName() const
 }
 
 
-imtbase::IObjectCollection* CAgentInfo::GetServiceCollection()
-{
-	return &m_serviceCollection;
-}
-
-
 // reimplemented (ilog::ITracingConfiguration)
 
 int CAgentInfo::GetTracingLevel() const
@@ -124,9 +115,17 @@ bool CAgentInfo::Serialize(iser::IArchive &archive)
 	retVal = retVal && archive.Process(m_computerName);
 	retVal = retVal && archive.EndTag(computerNameTag);
 
+	// R1.3: services are not stored on the agent record. On load, absorb legacy
+	// nested Services from AgentCollection.xml into a temporary collection and discard.
 	iser::CArchiveTag servicesTag("Services", "Services", iser::CArchiveTag::TT_GROUP);
 	retVal = retVal && archive.BeginTag(servicesTag);
-	retVal = retVal && m_serviceCollection.Serialize(archive);
+	if (!archive.IsStoring()) {
+		imod::TModelWrap<imtbase::CObjectCollection> legacyServices;
+		typedef istd::TSingleFactory<istd::IChangeable, agentinodata::CIdentifiableServiceInfo> FactoryServiceImpl;
+		legacyServices.RegisterFactory<FactoryServiceImpl>("ServiceInfo");
+		retVal = retVal && legacyServices.Serialize(archive);
+		// Discard — ServiceManager rebuilds from the agent live reconcile.
+	}
 	retVal = retVal && archive.EndTag(servicesTag);
 
 	iser::CArchiveTag versionTag("Version", "Version", iser::CArchiveTag::TT_LEAF);
@@ -162,9 +161,6 @@ bool CAgentInfo::CopyFrom(const IChangeable &object, CompatibilityMode /*mode*/)
 		m_version = sourcePtr->m_version;
 		m_tracingLevel = sourcePtr->m_tracingLevel;
 
-		m_serviceCollection.ResetData();
-		m_serviceCollection.CopyFrom(sourcePtr->m_serviceCollection);
-
 		return true;
 	}
 
@@ -188,7 +184,6 @@ bool CAgentInfo::ResetData(CompatibilityMode /*mode*/)
 	istd::CChangeNotifier changeNotifier(this);
 
 	m_lastConnection = QDateTime();
-	m_serviceCollection.ResetData();
 	m_computerName.clear();
 	m_tracingLevel = -1;
 
@@ -197,5 +192,3 @@ bool CAgentInfo::ResetData(CompatibilityMode /*mode*/)
 
 
 } // namespace agentinodata
-
-

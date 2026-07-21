@@ -250,6 +250,9 @@ istd::TSharedInterfacePtr<imtbase::IObjectCollection> CMessageCollectionControll
 
 					return messageCollectionPtr;
 				}
+
+				errorMessage = QString("Plugin directory '%1' loaded but no plugin named '%2' was found for service '%3' — GetServiceLog will return empty")
+							.arg(pluginPath, fileInfo.baseName() + "Log", QString::fromUtf8(serviceName));
 			}
 		}
 	}

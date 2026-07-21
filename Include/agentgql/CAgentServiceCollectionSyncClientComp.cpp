@@ -232,9 +232,8 @@ void CAgentServiceCollectionSyncClientComp::NotifyServer(
 	}
 	gqlRequestPtr->AddParam(QByteArrayLiteral("input"), input);
 
-	imtgql::CGqlFieldObject resultFields;
-	resultFields.InsertField(QByteArrayLiteral("success"));
-	gqlRequestPtr->AddField(QByteArrayLiteral("data"), resultFields);
+	// Handler returns { success: true } at the command root (not nested under "data").
+	gqlRequestPtr->AddSimpleField(QByteArrayLiteral("success"));
 
 	// Ensure server can resolve agent id from headers (MT_QUERY path copies headers into HTTP request).
 	if (m_clientIdCompPtr.IsValid()){
@@ -251,9 +250,14 @@ void CAgentServiceCollectionSyncClientComp::NotifyServer(
 	imtclientgql::IGqlClient::GqlRequestPtr requestPtr(gqlRequestPtr);
 	imtclientgql::IGqlClient::GqlResponsePtr responsePtr = m_gqlClientCompPtr->SendRequest(requestPtr);
 	if (!responsePtr.IsValid()){
+		// Typical cause (fixed on server): notify handler used to call blocking GetService
+		// back to this agent while we Wait() on this SendRequest → mutual timeout.
 		SendErrorMessage(
 					0,
-					QString("Live service sync notify failed (%1 / %2)").arg(typeOperation, QString::fromUtf8(itemId)),
+					QString("Live service sync notify failed (%1 / %2) — no response from server "
+								"(timeout or transport error; check server log for "
+								"NotifyAgentServicesCollectionChanged / deferred sync)")
+								.arg(typeOperation, QString::fromUtf8(itemId)),
 					"CAgentServiceCollectionSyncClientComp");
 	}
 }

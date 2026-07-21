@@ -15,10 +15,16 @@ namespace agentinodata
 {
 
 
+class IServiceManager;
+
+
 class CUrlConnectionLinkParamRepresentationController: public imtserverapp::IRepresentationController
 {
 protected:
-	virtual QUrl GetDependantConnectionUrl(imtbase::IObjectCollection& objectCollection, const QByteArray& dependantId) const;
+	virtual QUrl GetDependantConnectionUrl(
+				imtbase::IObjectCollection& agentCollection,
+				IServiceManager* serviceManager,
+				const QByteArray& dependantId) const;
 public:
 	// reimplemented (imtserverapp::IRepresentationController)
 	virtual QByteArray GetModelId() const override;
@@ -34,5 +40,3 @@ public:
 
 
 } // namespace agentinodata
-
-
