@@ -58,7 +58,9 @@ void CAgentConnectionSubscriberControllerComp::OnUpdate(const istd::IChangeable:
 		status = "Connected";
 	}
 
-	if (changeSet.Contains(0) || changeSet.Contains(imtcom::IConnectionStatusProvider::CS_CONNECTED)){
+	if (changeSet.Contains(0) ||
+			changeSet.Contains(imtcom::IConnectionStatusProvider::CS_CONNECTED) ||
+			changeSet.Contains(imtcom::IConnectionStatusProvider::CS_DISCONNECTED)){
 		QString data = QString("{\"status\": \"%1\"}").arg(qPrintable(status));
 
 		PublishData("OnAgentConnectionChanged", data.toUtf8());

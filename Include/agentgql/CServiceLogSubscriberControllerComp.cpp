@@ -2,6 +2,9 @@
 #include <agentgql/CServiceLogSubscriberControllerComp.h>
 
 
+// Qt includes
+#include <QtCore/QMutexLocker>
+
 // Agentino includes
 #include <agentinodata/IServiceController.h>
 #include <agentinodata/CServiceInfo.h>
@@ -47,6 +50,9 @@ void CServiceLogSubscriberControllerComp::OnUpdate(const istd::IChangeable::Chan
 	}
 
 	imtbase::ICollectionInfo::Ids serviceIds = m_serviceCollectionCompPtr->GetElementIds();
+
+	QMutexLocker pluginMapLocker(&m_pluginMapMutex);
+
 	QList<QByteArray> keys = m_pluginMap.keys();
 	for (const QByteArray& serviceId: keys){
 		if (!serviceIds.contains(serviceId)){
@@ -102,7 +108,7 @@ void CServiceLogSubscriberControllerComp::OnUpdate(const istd::IChangeable::Chan
 					istd::TUniqueInterfacePtr<imtbase::IObjectCollection> messageCollection = messageCollectionFactoryPtr->CreateInstance();
 					if (messageCollection.IsValid()){
 						MessageStatusInfo& messageStatusInfo = m_servicesMessageInfo[serviceId];
-						messageStatusInfo.messageCollectionPtr.FromUnique(messageCollection);
+						messageStatusInfo.messageCollectionPtr.FromUnique(std::move(messageCollection));
 						messageStatusInfo.messageCount = 0;
 					}
 				}
@@ -122,7 +128,7 @@ void CServiceLogSubscriberControllerComp::TimerUpdate()
 			if (m_servicesMessageInfo[serviceId].messageCount != messageCount){
 				QString data = QString("{\"serviceid\": \"%1\"}").arg(qPrintable(serviceId));
 
-				PublishData("OnServiceLogChanged", data.toUtf8());
+				PublishData("OnServiceLogCollectionChanged", data.toUtf8());
 
 				m_servicesMessageInfo[serviceId].messageCount = messageCount;
 			}

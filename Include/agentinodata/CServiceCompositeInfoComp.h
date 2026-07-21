@@ -9,7 +9,8 @@
 #include <imtbase/IObjectCollection.h>
 
 // Agentino includes
-#include <agentinodata/IServiceCompositeInfo.h>
+#include <agentinodata/CServiceCompositeInfoBase.h>
+#include <agentinodata/IServiceManager.h>
 
 
 namespace agentinodata
@@ -18,7 +19,7 @@ namespace agentinodata
 
 class CServiceCompositeInfoComp:
 			public ilog::CLoggerComponentBase,
-			virtual public agentinodata::IServiceCompositeInfo
+			public CServiceCompositeInfoBase
 {
 public:
 	typedef ilog::CLoggerComponentBase BaseClass;
@@ -26,6 +27,7 @@ public:
 	I_BEGIN_COMPONENT(CServiceCompositeInfoComp);
 		I_REGISTER_INTERFACE(agentinodata::IServiceCompositeInfo)
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", true, "AgentCollection");
+		I_ASSIGN(m_serviceManagerCompPtr, "ServiceManager", "Per-agent service collections (R1.3)", false, "ServiceManager");
 		I_ASSIGN(m_serviceStatusCollectionCompPtr, "ServiceStatusCollection", "Service status collection", true, "ServiceStatusCollection");
 	I_END_COMPONENT;
 
@@ -40,6 +42,7 @@ public:
 
 protected:
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
+	I_REF(IServiceManager, m_serviceManagerCompPtr);
 	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);
 };
 

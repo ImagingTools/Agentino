@@ -2849,6 +2849,26 @@
         <source>Url</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings file: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings file does not exist yet: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No settings file is configured for this service</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ServiceValidator</name>
@@ -3266,6 +3286,13 @@
     <message>
         <location line="+28"/>
         <source>Service depends on</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ServiceEditorWrap</name>
+    <message>
+        <source>Service settings saved</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

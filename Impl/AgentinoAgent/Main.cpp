@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
-// Qt includes
-#include <QtCore/QDir>
-#include <QtCore/QCoreApplication>
-
-// ACF includes
-#include <ibase/IApplication.h>
-
 // ImtCore includes
+#include <imtlic/Init.h>
 #include <GeneratedFiles/AgentinoAgent/CAgentinoAgent.h>
+
+// Same product feature tree as AgentinoServer so Topology GetCommands permission
+// checks can resolve ChangeService / ViewServices / …
+#include "../AgentinoServer/AgentinoFeatures.h"
 
 
 int main(int argc, char *argv[])
@@ -30,18 +28,8 @@ int main(int argc, char *argv[])
 	Q_INIT_RESOURCE(imtauthguiTheme);
 	Q_INIT_RESOURCE(imtguiTheme);
 	Q_INIT_RESOURCE(imtdb);
+	Q_INIT_RESOURCE(imtauthdb);
 	Q_INIT_RESOURCE(imtbase);
 
-
-
-	CAgentinoAgent instance;
-
-	ibase::IApplication* applicationPtr = instance.GetInterface<ibase::IApplication>();
-	if (applicationPtr != nullptr){
-		return applicationPtr->Execute(argc, argv);
-	}
-
-	return -1;
+	return ProductFeatureRun<CAgentinoAgent, DefaultImtCoreQmlInitializer, agentino::FillProduct>(argc, argv);
 }
-
-

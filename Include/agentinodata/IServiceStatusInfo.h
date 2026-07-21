@@ -30,7 +30,7 @@ public:
 		SS_RUNNING_IMPOSSIBLE
 	};
 
-	I_DECLARE_ENUM(ServiceStatus, SS_UNDEFINED, SS_STARTING, SS_STOPPING, SS_RUNNING, SS_NOT_RUNNING);
+	I_DECLARE_ENUM(ServiceStatus, SS_UNDEFINED, SS_STARTING, SS_STOPPING, SS_RUNNING, SS_NOT_RUNNING, SS_RUNNING_IMPOSSIBLE);
 
 	/**
 		Get ID of the service.
@@ -45,6 +45,19 @@ public:
 
 
 ProcessStateEnum GetProcceStateRepresentation(IServiceStatusInfo::ServiceStatus processState);
+
+/**
+	Inverse of GetProcceStateRepresentation: parse a wire status back into the enum.
+
+	Accepts the ProcessStateEnum ids emitted by the agent ("running", "notRunning",
+	"starting", "stopping", "undefined"), the uppercase wire form used by the GQL
+	subscription payloads ("RUNNING", "NOT_RUNNING", ...) and the I_DECLARE_ENUM
+	names ("SS_RUNNING", ...). Returns false when nothing matches, leaving
+	\a processState untouched.
+*/
+bool GetServiceStatusFromRepresentation(
+			const QString& representation,
+			IServiceStatusInfo::ServiceStatus& processState);
 
 
 } // namespace agentinodata

@@ -125,7 +125,7 @@
                                     <Data IsEnabled="true" Value="ServerSettings"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
+                                    <Data IsEnabled="false">
                                         <Values>
                                             <Value>ViewServerPage</Value>
                                         </Values>
@@ -165,7 +165,7 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="PermissionChecker" Type="Reference" ExportId="">
-                                    <Data IsEnabled="true" Value="PermissionsChecker"/>
+                                    <Data IsEnabled="false" Value="PermissionsChecker"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="RepresentationController" Type="Reference" ExportId="">
                                     <Data IsEnabled="true" Value="ServerSettingsRepresentation"/>

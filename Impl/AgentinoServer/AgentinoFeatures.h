@@ -148,6 +148,15 @@ static void FillProduct(imtlic::IProductInfo& productInfo){
 
 	agentManagementFeatureInfo->InsertSubFeature(viewAgentsFeatureInfo.PopPtr());
 
+	istd::TDelPtr<imtlic::CFeatureInfo> approveAgentsFeatureInfo;
+	approveAgentsFeatureInfo.SetPtr(new imtlic::CFeatureInfo);
+	approveAgentsFeatureInfo->SetFeatureId("ApproveAgents");
+	approveAgentsFeatureInfo->SetFeatureName(QT_TRANSLATE_NOOP("Feature", "Approve Agents"));
+	approveAgentsFeatureInfo->SetOptional(false);
+	approveAgentsFeatureInfo->SetIsPermission(true);
+
+	agentManagementFeatureInfo->InsertSubFeature(approveAgentsFeatureInfo.PopPtr());
+
 	agentinoManagementFeatureInfo->InsertSubFeature(agentManagementFeatureInfo.PopPtr());
 
 	istd::TDelPtr<imtlic::CFeatureInfo> topologyManagementFeatureInfo;

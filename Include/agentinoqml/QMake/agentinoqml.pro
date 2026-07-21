@@ -3,6 +3,8 @@ TARGET = agentinoqml
 include($(ACFDIR)/Config/QMake/GeneralConfig.pri)
 include($(IMTCOREDIR)/Config/QMake/QmlControls.pri)
 
+INCLUDEPATH += $$AUXINCLUDEPATH/GeneratedFiles
+
 buildwebdir = $$PWD/../../../Bin/web
 
 imtcoredir = $(IMTCOREDIR)

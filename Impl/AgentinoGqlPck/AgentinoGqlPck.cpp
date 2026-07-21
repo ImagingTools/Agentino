@@ -5,6 +5,10 @@
 // ACF includes
 #include <icomp/export.h>
 
+// ImtCore includes
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtCollection.h>
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/DocumentRevision.h>
+
 
 namespace AgentinoGqlPck
 {
@@ -26,14 +30,9 @@ I_EXPORT_COMPONENT(
 			"GraphQl Agent Collection Controller");
 
 I_EXPORT_COMPONENT(
-			SubscriptionController,
-			"Subscription controller for a client",
-			"GraphQl Subscription Service Controller");
-
-I_EXPORT_COMPONENT(
-			GqlRepresentationAgentData,
-			"GrapgQL representation agent data information",
-			"GrapgQL Representation Agent Data");
+			AgentChangeObserver,
+			"The single server-side observer of agent changes (status, collection, connection)",
+			"Agent Change Observer");
 
 I_EXPORT_COMPONENT(
 			ServiceControllerProxy,
@@ -41,9 +40,15 @@ I_EXPORT_COMPONENT(
 			"Service Controller Proxy");
 
 I_EXPORT_COMPONENT(
+<<<<<<< HEAD
 			TerminalControllerProxy,
 			"Remote terminal controller proxy",
 			"Remote Terminal Controller Proxy");
+=======
+			FileSystemControllerProxy,
+			"File system controller proxy forwarding browse requests to an agent by clientid",
+			"File System Controller Proxy Folder Browser");
+>>>>>>> origin/main
 
 I_EXPORT_COMPONENT(
 			TopologyController,
@@ -56,19 +61,14 @@ I_EXPORT_COMPONENT(
 			"Service Collection Subscriber Controller");
 
 I_EXPORT_COMPONENT(
-			ServerServiceCollectionController,
-			"Service collection subscriber controller",
-			"Service Collection Subscriber Controller");
+			MirroredServiceCollectionController,
+			"Read surface over the server-side mirror of an agent's services",
+			"Mirrored Service Collection Controller");
 
 I_EXPORT_COMPONENT(
 			ServiceStatusCollectionSubscriberController,
 			"Service status collection subscriber controller",
 			"Service Status Collection Subscriber Controller");
-
-I_EXPORT_COMPONENT(
-			AgentConnectionObserver,
-			"Agent connection observer",
-			"Agent Connection Observer");
 
 I_EXPORT_COMPONENT(
 			AgentsSubscriberProxyController,
@@ -89,6 +89,21 @@ I_EXPORT_COMPONENT(
 			AgentinoRemoteDocumentRevisionController,
 			"Agentino remote document revision controller",
 			"Agentino Remote Document Revision Controller");
+
+I_EXPORT_COMPONENT(
+			EnrollmentStore,
+			"Durable agent enrollment store, gate and controller",
+			"Agent Enrollment Store");
+
+I_EXPORT_COMPONENT(
+			EnrollmentGqlController,
+			"GraphQL enrollment admin (approve/reject/revoke/list)",
+			"Enrollment GraphQL Controller");
+
+I_EXPORT_COMPONENT(
+			AgentEnrollmentRecord,
+			"One agent's enrollment record (EnrollmentStore's RecordCollection item)",
+			"Agent Enrollment Record");
 
 
 } // namespace AgentinoGqlPck

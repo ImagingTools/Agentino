@@ -3,12 +3,16 @@ TARGET = AgentinoServer
 include($(ACFDIR)/Config/QMake/ApplicationConfig.pri)
 include($(AGENTINODIR)/Config/QMake/Agentino.pri)
 
+
+copyToDestDir($$PWD/../../../Build/Migrations, $$PWD/../../../Bin/$$COMPILER_DIR/Migrations)
+copyToDestDir($$PWD/../../../Build/LogMigrations, $$PWD/../../../Bin/$$COMPILER_DIR/LogMigrations)
+
 # Set OS-specific build options:
 win32-msvc*{
 	QMAKE_CXXFLAGS += /wd4264
 
 	# copying all Qt DLLs to destination directory
-	greaterThan(QT_MAJOR_VERSION, 4): QMAKE_POST_LINK = set path=$(QTDIR)\bin;%path% && $(QTDIR)\bin\windeployqt --qmldir=$(IMTCOREDIR)\Qml $$DESTDIR\AgentinoServer.exe
+	greaterThan(QT_MAJOR_VERSION, 4): QMAKE_POST_LINK += set path=$(QTDIR)\bin;%path% && $(QTDIR)\bin\windeployqt --qmldir=$(IMTCOREDIR)\Qml $$DESTDIR\AgentinoServer.exe
 }
 
 # Set configuration of custom builds:
@@ -19,14 +23,14 @@ ARXC_OUTDIR = $$OUT_PWD/$$AUXINCLUDEPATH/GeneratedFiles/$$TARGET
 
 # Conversion of resource templates:
 win*{
-# File transformation
-# ACF_CONVERT_FILES = $$PWD/../VC/AgentinoServer.rc.xtracf
-ACF_CONVERT_OUTDIR = $$AUXINCLUDEPATH/GeneratedFiles/$$TARGET
-	ACF_CONVERT_REGISTRY =  $$PWD/../VC/FileSubstitCopyApp.acc
-	ACF_CONVERT_CONFIG = $$PWD/../../../Config/BaseOnly.awc
+	# File transformation
+	# ACF_CONVERT_FILES = $$PWD/../VC/AgentinoServer.rc.xtracf
+	ACF_CONVERT_OUTDIR = $$AUXINCLUDEPATH/GeneratedFiles/$$TARGET
+		ACF_CONVERT_REGISTRY =  $$PWD/../VC/FileSubstitCopyApp.acc
+		ACF_CONVERT_CONFIG = $$PWD/../../../Config/BaseOnly.awc
 
-# RC_FILE = $$OUT_PWD/$$AUXINCLUDEPATH/GeneratedFiles/$$TARGET/AgentinoServer.rc
-RC_INCLUDEPATH = $$_PRO_FILE_PWD_
+	# RC_FILE = $$OUT_PWD/$$AUXINCLUDEPATH/GeneratedFiles/$$TARGET/AgentinoServer.rc
+	RC_INCLUDEPATH = $$_PRO_FILE_PWD_
 }
 
 include($(ACFDIR)/Config/QMake/AcfQt.pri)

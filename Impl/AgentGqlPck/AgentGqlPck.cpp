@@ -5,6 +5,10 @@
 // ACF includes
 #include <icomp/export.h>
 
+// ImtCore includes
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtCollection.h>
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/DocumentRevision.h>
+
 
 namespace AgentGqlPck
 {
@@ -26,6 +30,7 @@ I_EXPORT_COMPONENT(
 			"GraphQl Service Controller");
 
 I_EXPORT_COMPONENT(
+<<<<<<< HEAD
 			TerminalController,
 			"Remote terminal controller",
 			"GraphQl Remote Terminal Controller");
@@ -34,6 +39,11 @@ I_EXPORT_COMPONENT(
 			AgentinoSubscriptionClient,
 			"Service manager subscription client for agent",
 			"GraphQl Service  Subscription Client");
+=======
+			AgentRegistrationClient,
+			"Announces this agent to the central server on every (re)connect",
+			"Agent Registration Client");
+>>>>>>> origin/main
 
 I_EXPORT_COMPONENT(
 			ServiceLogController,
@@ -76,6 +86,11 @@ I_EXPORT_COMPONENT(
 			"Agent Services Remote Subscriber Controller");
 
 I_EXPORT_COMPONENT(
+			AgentTopologyController,
+			"Agent local topology controller",
+			"Agent Local Topology Controller");
+
+I_EXPORT_COMPONENT(
 			AgentRemoteVisualStatusController,
 			"Agent remote visual status controller",
 			"Agent Remote Visual Status Controller");
@@ -84,6 +99,11 @@ I_EXPORT_COMPONENT(
 			AgentRemoteDocumentRevisionController,
 			"Agent remote document revision controller",
 			"Agent Remote Document Revision Controller");
+
+I_EXPORT_COMPONENT(
+			AgentServiceCollectionSyncClient,
+			"Pushes local service-collection changes to the central server over WebSocket",
+			"Agent Service Collection Sync Client");
 
 
 } // namespace AgentGqlPck

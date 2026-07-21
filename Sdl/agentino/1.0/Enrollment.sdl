@@ -1,0 +1,75 @@
+schema {
+	query: Query
+	mutation: Mutation
+	namespace: agentino
+	version: 1.0
+}
+
+enum EnrollmentStatus {
+	Unknown
+	Pending
+	Approved
+	Suspended
+	Revoked
+	Rejected
+}
+
+type EnrollmentAgentItem {
+	agentId: ID!
+	status: EnrollmentStatus!
+	claimedName: String
+	computerName: String
+	advertisedEndpoint: String
+	agentVersion: String
+	os: String
+	firstSeenAt: String
+	lastSeenAt: String
+	approvedAt: String
+	decisionNote: String
+}
+
+type EnrollmentAgentListPayload {
+	items: [EnrollmentAgentItem]!
+}
+
+input EnrollmentAgentListInput {
+	status: EnrollmentStatus
+}
+
+input ApproveAgentInput {
+	agentId: ID!
+	name: String
+	note: String
+}
+
+input EnrollmentDecisionInput {
+	agentId: ID!
+	note: String
+}
+
+input SuspendAgentInput {
+	agentId: ID!
+	suspend: Boolean!
+}
+
+input AgentIdInput {
+	agentId: ID!
+}
+
+type EnrollmentMutationPayload {
+	successful: Boolean!
+	agentId: ID!
+}
+
+type Query {
+	PendingAgentsList: EnrollmentAgentListPayload!
+	EnrollmentAgentsList (input: EnrollmentAgentListInput): EnrollmentAgentListPayload!
+}
+
+type Mutation {
+	ApproveAgent (input: ApproveAgentInput): EnrollmentMutationPayload!
+	RejectAgent (input: EnrollmentDecisionInput): EnrollmentMutationPayload!
+	RevokeAgent (input: EnrollmentDecisionInput): EnrollmentMutationPayload!
+	SuspendAgent (input: SuspendAgentInput): EnrollmentMutationPayload!
+	ResetRejectedAgent (input: AgentIdInput): EnrollmentMutationPayload!
+}

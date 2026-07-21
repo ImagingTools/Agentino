@@ -13,7 +13,7 @@
 // Agentino includes
 #include <agentinodata/CServiceInfo.h>
 #include <agentinodata/IServiceController.h>
-#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services_fwd.h>
 
 
 IMT_DECLARE_PLUGIN_INTERFACE(ServiceSettings, imtservice::IConnectionCollectionPlugin);
@@ -27,7 +27,7 @@ namespace agentgql
  
 
 class CServiceCollectionControllerComp:
-			public sdl::agentino::Services::CServiceCollectionControllerCompBase,
+			public sdl::V1_0::agentino::CServiceCollectionControllerCompBase,
 			virtual public imtservice::IConnectionCollectionProvider
 {
 public:
@@ -40,30 +40,30 @@ public:
 	I_END_COMPONENT;
 
 protected:
-	// reimplemented (sdl::imtbase::ImtCollection::CGraphQlHandlerCompBase)
-	virtual sdl::imtbase::ImtCollection::CVisualStatus OnGetObjectVisualStatus(
-		const sdl::imtbase::ImtCollection::CGetObjectVisualStatusGqlRequest& getObjectVisualStatusRequest,
+	// reimplemented (sdl::V1_0::imtbase::CImtCollectionGqlHandlerCompBase)
+	virtual sdl::V1_0::imtbase::CVisualStatus OnGetObjectVisualStatus(
+		const sdl::V1_0::imtbase::CGetObjectVisualStatusGqlRequest& getObjectVisualStatusRequest,
 		const ::imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage) const override;
 	
-	// reimplemented (sdl::agentino::Services::CServiceCollectionControllerCompBase)
+	// reimplemented (sdl::V1_0::agentino::CServiceCollectionControllerCompBase)
 	virtual bool CreateRepresentationFromObject(
 				const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
-				const sdl::agentino::Services::CServicesListGqlRequest& servicesListRequest,
-				sdl::agentino::Services::CServiceItem::V1_0& representationObject,
+				const sdl::V1_0::agentino::CServicesListGqlRequest& servicesListRequest,
+				sdl::V1_0::agentino::CServiceItem& representationObject,
 				QString& errorMessage) const override;
 	virtual bool CreateRepresentationFromObject(
 				const istd::IChangeable& data,
-				const sdl::agentino::Services::CGetServiceGqlRequest& getServiceRequest,
-				sdl::agentino::Services::CServiceData::V1_0& serviceData,
+				const sdl::V1_0::agentino::CGetServiceGqlRequest& getServiceRequest,
+				sdl::V1_0::agentino::CServiceData& serviceData,
 				QString& errorMessage) const override;
 	virtual istd::IChangeableUniquePtr CreateObjectFromRepresentation(
-				const sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation,
+				const sdl::V1_0::agentino::CServiceData& serviceDataRepresentation,
 				QByteArray& newObjectId,
 				QString& errorMessage) const override;
 	virtual bool UpdateObjectFromRepresentationRequest(
 				const ::imtgql::CGqlRequest& rawGqlRequest,
-				const sdl::agentino::Services::CUpdateServiceGqlRequest& updateServiceRequest,
+				const sdl::V1_0::agentino::CUpdateServiceGqlRequest& updateServiceRequest,
 				istd::IChangeable& object,
 				QString& errorMessage) const override;
 
@@ -75,8 +75,28 @@ protected:
 	virtual void OnComponentDestroyed() override;
 
 private:
-	bool CheckInputPortsUpdated(agentinodata::IServiceInfo& serviceInfo, const imtservice::IConnectionCollection& connectionCollection) const;
+	/**
+		True when the edited descriptor's wiring differs from what the running plugin
+		instance currently uses: host/ports of any input connection or dependant link,
+		or the tracing level. Only then is a stop → apply → start cycle worth it —
+		renames, description or autostart edits must not restart a running service.
+	*/
+	bool IsConnectionUpdateRequired(
+				agentinodata::IServiceInfo& serviceInfo,
+				const imtservice::IConnectionCollection& connectionCollection) const;
+
 	bool UpdateConnectionCollectionFromService(agentinodata::IServiceInfo& serviceInfo, imtservice::IConnectionCollection& connectionCollection) const;
+
+	/**
+		Seed the service descriptor's input/dependant connection collections from the
+		connection list declared by the service's plugin. Existing entries are kept.
+	*/
+	void PopulateConnectionsFromPlugin(
+				agentinodata::IServiceInfo& serviceInfo,
+				const imtservice::IConnectionCollection& connectionCollection) const;
+
+	// Checks whether another service in the collection already uses the given path.
+	bool IsServicePathInUse(const QByteArray& servicePath, const QByteArray& excludeObjectId) const;
 	
 protected:
 	I_FACT(agentinodata::IServiceInfo, m_serviceInfoFactCompPtr);

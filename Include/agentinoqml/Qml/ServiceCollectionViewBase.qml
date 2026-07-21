@@ -12,11 +12,23 @@ import agentino 1.0
 
 RemoteCollectionView {
 	id: root;
-	
+
+	// ViewBase's default contentColor (backgroundColor2) showed through the commands panel
+	// area above the table - baseColor matches the rest of the Agents/Services UI.
+	contentColor: Style.baseColor;
+
 	property string clientId;
 	property string clientName;
 	property string serviceId;
 	property string serviceName;
+	property bool serviceOperationInProgress: false
+	property string serviceOperationText: ""
+
+	// QG1: typed scope; getHeaders() is a thin transport adapter for ImtCore widgets.
+	property var dataScope: DataScope {
+		agentId: root.clientId
+		serviceId: root.serviceId
+	}
 	
 	filterMenuVisible: false;
 
@@ -26,6 +38,11 @@ RemoteCollectionView {
 	hasPagination: false
 	
 	property var documentManager: MainDocumentService.getDocumentService(root.collectionId);
+	
+	function setServiceOperation(inProgress, description){
+		serviceOperationInProgress = inProgress
+		serviceOperationText = description
+	}
 	
 	Component.onDestruction: {
 		let documentManagerPtr = MainDocumentService.getDocumentService("Agents")
@@ -42,7 +59,8 @@ RemoteCollectionView {
 	}
 
 	onClientIdChanged: {
-		console.log("onClientIdChanged", clientId)
+		if (root.dataScope)
+			root.dataScope.agentId = root.clientId
 		if (clientId == ""){
 			return
 		}
@@ -51,6 +69,11 @@ RemoteCollectionView {
 			documentManager.registerDocumentView("Service", serviceEditorComp);
 			documentManager.registerDocumentDataController("Service", serviceDataControllerComp);
 		}
+	}
+
+	onServiceIdChanged: {
+		if (root.dataScope)
+			root.dataScope.serviceId = root.serviceId
 	}
 	
 	onHeadersChanged: {
@@ -89,9 +112,16 @@ RemoteCollectionView {
 	}
 	
 	function getHeaders(){
+		// Adapter only: maps DataScope → GQL headers (not for use in pure L1 views).
 		let headers = {}
-		headers["clientid"] = root.clientId;
-		headers["serviceid"] = root.serviceId;
+		if (root.dataScope && root.dataScope.agentId)
+			headers["clientid"] = root.dataScope.agentId
+		else if (root.clientId !== "")
+			headers["clientid"] = root.clientId
+		if (root.dataScope && root.dataScope.serviceId)
+			headers["serviceid"] = root.dataScope.serviceId
+		else if (root.serviceId !== "")
+			headers["serviceid"] = root.serviceId
 		return headers
 	}
 
@@ -195,11 +225,52 @@ RemoteCollectionView {
 		}
 	}
 	
+	Rectangle {
+		id: serviceOperationIndicator
+		anchors.top: parent.top
+		anchors.right: parent.right
+		anchors.topMargin: Style.marginXL
+		anchors.rightMargin: Style.marginXL
+		width: serviceOperationRow.width + 2 * Style.marginL
+		height: 36
+		radius: height / 2
+		color: Style.backgroundColor
+		border.color: Style.lightBlueColor
+		border.width: 1
+		visible: root.serviceOperationInProgress
+		z: 100
+		
+		Row {
+			id: serviceOperationRow
+			anchors.centerIn: parent
+			spacing: Style.spacingS
+			
+			Loading {
+				anchors.verticalCenter: parent.verticalCenter
+				width: 18
+				height: 18
+				indicatorSize: 14
+				background.color: "transparent"
+			}
+			
+			BaseText {
+				anchors.verticalCenter: parent.verticalCenter
+				text: root.serviceOperationText
+				font.pixelSize: Style.fontSizeM
+			}
+		}
+	}
+	
 	SubscriptionClient {
 		id: subscriptionClient;
 		gqlCommandId: "OnServiceStatusChanged";
 		onMessageReceived: {
+			// Refresh rows (status → undefined when agent disconnects) then re-apply
+			// Start/Stop enablement for the current selection.
 			root.doUpdateGui();
+			if (root.commandsDelegate && root.commandsDelegate.updateItemSelection){
+				root.commandsDelegate.updateItemSelection(root.table.getSelectedIndexes());
+			}
 		}
 	}
 }

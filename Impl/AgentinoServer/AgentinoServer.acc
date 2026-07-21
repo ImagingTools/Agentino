@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5398" Description="ACF"/>
-            <Version Id="1" Number="2250" Description="ACF-Solutions"/>
+            <Version Id="0" Number="6500" Description="ACF"/>
+            <Version Id="1" Number="2438" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -35,7 +35,8 @@
                                 <Value>Server/AgentinoLocalization</Value>
                                 <Value>Server/HttpServerFramework</Value>
                                 <Value>Server/WebSocketServerFramework</Value>
-                                <Value>Server/AgentConnectionObserver</Value>
+                                <Value>Server/AgentChangeObserver</Value>
+                                <Value>Server/EnrollmentFileAutoPersistence</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

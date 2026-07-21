@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Acf>
+    <AcfHeader>
+        <VersionInfos>
+            <Version Id="0" Number="6500" Description="ACF"/>
+            <Version Id="1" Number="2438" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395264" Description="Qt Framework"/>
+        </VersionInfos>
+    </AcfHeader>
+    <PositionMap>
+        <Element ComponentName="AgentEnrollmentRecord" X="200" Y="275" Note=""/>
+        <Element ComponentName="EnrollmentFileAutoPersistence" X="625" Y="100" Note=""/>
+        <Element ComponentName="EnrollmentRecordCollection" X="625" Y="275" Note=""/>
+        <Element ComponentName="EnrollmentStore" X="1025" Y="275" Note=""/>
+    </PositionMap>
+    <EmbeddedRegistries/>
+</Acf>

@@ -11,6 +11,7 @@
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/CServiceInfo.h>
+#include <agentinodata/IServiceManager.h>
 
 
 namespace agentinodata
@@ -20,56 +21,56 @@ namespace agentinodata
 // protected methods
 
 QUrl CUrlConnectionLinkParamRepresentationController::GetDependantConnectionUrl(
-			imtbase::IObjectCollection& objectCollection,
+			imtbase::IObjectCollection& agentCollection,
+			IServiceManager* serviceManager,
 			const QByteArray& dependantId) const
 {
-	imtbase::ICollectionInfo::Ids agentIds = objectCollection.GetElementIds();
-	for (const imtbase::ICollectionInfo::Id& agentId: agentIds){
-		imtbase::IObjectCollection::DataPtr agentDataPtr;
-		if (objectCollection.GetObjectData(agentId, agentDataPtr)){
-			CAgentInfo* agentInfoPtr = dynamic_cast<CAgentInfo*>(agentDataPtr.GetPtr());
-			if (agentInfoPtr == nullptr){
+	if (serviceManager == nullptr) {
+		return QUrl();
+	}
+
+	const imtbase::ICollectionInfo::Ids agentIds = agentCollection.GetElementIds();
+	for (const imtbase::ICollectionInfo::Id& agentId : agentIds) {
+		imtbase::IObjectCollection* serviceCollectionPtr = serviceManager->GetServiceCollection(agentId);
+		if (serviceCollectionPtr == nullptr) {
+			continue;
+		}
+
+		const imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
+		for (const imtbase::ICollectionInfo::Id& serviceElementId : serviceElementIds) {
+			imtbase::IObjectCollection::DataPtr serviceDataPtr;
+			if (!serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)) {
+				continue;
+			}
+			IServiceInfo* serviceInfoPtr = dynamic_cast<IServiceInfo*>(serviceDataPtr.GetPtr());
+			if (serviceInfoPtr == nullptr) {
 				continue;
 			}
 
-			imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-			if (serviceCollectionPtr == nullptr){
+			imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
+			if (connectionCollectionPtr == nullptr) {
 				continue;
 			}
 
-			imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
-			for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
-				imtbase::IObjectCollection::DataPtr serviceDataPtr;
-				if (serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
-					IServiceInfo* serviceInfoPtr = dynamic_cast<IServiceInfo*>(serviceDataPtr.GetPtr());
-					if (serviceInfoPtr == nullptr){
-						continue;
-					}
+			const imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
+			for (const imtbase::ICollectionInfo::Id& connectionElementId : connectionElementIds) {
+				imtbase::IObjectCollection::DataPtr connectionParamDataPtr;
+				if (!connectionCollectionPtr->GetObjectData(connectionElementId, connectionParamDataPtr)) {
+					continue;
+				}
+				imtservice::CUrlConnectionParam* connectionParamPtr =
+							dynamic_cast<imtservice::CUrlConnectionParam*>(connectionParamDataPtr.GetPtr());
+				if (connectionParamPtr == nullptr) {
+					continue;
+				}
 
-					imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
-					if (connectionCollectionPtr == nullptr){
-						continue;
-					}
-
-					imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
-					for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
-						imtbase::IObjectCollection::DataPtr connectionParamDataPtr;
-						if (connectionCollectionPtr->GetObjectData(connectionElementId, connectionParamDataPtr)){
-							imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionParamDataPtr.GetPtr());
-							if (connectionParamPtr == nullptr){
-								break;
-							}
-
-							// if (connectionElementId == dependantId){
-							// 	return connectionParamPtr->GetUrl();
-							// }
-
-							imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections = connectionParamPtr->GetIncomingConnections();
-							for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-								if (incomingConnection.GetObjectUuid() == dependantId){
-									// return incomingConnection.url;
-								}
-							}
+				imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections =
+							connectionParamPtr->GetIncomingConnections();
+				for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections) {
+					if (incomingConnection.GetObjectUuid() == dependantId) {
+						QUrl url;
+						if (incomingConnection.GetUrl(imtcom::IServerConnectionInterface::PT_HTTP, url)) {
+							return url;
 						}
 					}
 				}
@@ -121,10 +122,15 @@ bool CUrlConnectionLinkParamRepresentationController::GetRepresentationFromDataM
 
 	if (paramsPtr != nullptr){
 		iprm::TParamsPtr<imtbase::IObjectCollection> agentCollectionPtr(paramsPtr, "AgentCollection");
+		iprm::TParamsPtr<IServiceManager> serviceManagerPtr(paramsPtr, "ServiceManager");
 		if (agentCollectionPtr.IsValid()){
-			// QUrl url = GetDependantConnectionUrl(*const_cast<imtbase::IObjectCollection*>(agentCollectionPtr.GetPtr()), dependantServiceConnectionId);
-
-			// representation.insert(QStringLiteral("Url"), url.toString());
+			QUrl url = GetDependantConnectionUrl(
+						*const_cast<imtbase::IObjectCollection*>(agentCollectionPtr.GetPtr()),
+						const_cast<IServiceManager*>(serviceManagerPtr.GetPtr()),
+						dependantServiceConnectionId);
+			if (url.isValid()){
+				representation.insert(QStringLiteral("Url"), url.toString());
+			}
 		}
 	}
 

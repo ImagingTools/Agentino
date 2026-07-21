@@ -10,11 +10,11 @@
 #include <imtcom/CServerConnectionInterfaceParam.h>
 #include <imtservice/CUrlConnectionLinkParam.h>
 #include <imtservice/IConnectionCollection.h>
-#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtBaseTypes.h>
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtBaseTypes_fwd.h>
 
 // Agentino includes
 #include <agentinodata/CServiceInfo.h>
-#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services_fwd.h>
 
 
 namespace agentinodata
@@ -30,28 +30,40 @@ struct ProcessStateEnum
 ProcessStateEnum GetProcceStateRepresentation(QProcess::ProcessState processState);
 
 
-bool GetServiceFromRepresentation(agentinodata::CServiceInfo& serviceInfo, const sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation, QString& errorMessage);
-bool GetRepresentationFromService(sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation, const agentinodata::CServiceInfo& serviceInfo, const iprm::IParamsSet* paramsPtr = nullptr);
+bool GetServiceFromRepresentation(agentinodata::CServiceInfo& serviceInfo, const sdl::V1_0::agentino::CServiceData& serviceDataRepresentation, QString& errorMessage);
+bool GetRepresentationFromService(sdl::V1_0::agentino::CServiceData& serviceDataRepresentation, const agentinodata::CServiceInfo& serviceInfo, const iprm::IParamsSet* paramsPtr = nullptr);
 
-bool GetUrlConnectionFromRepresentation(imtservice::CUrlConnectionParam& connectionInfo, const sdl::agentino::Services::CInputConnection::V1_0& connectionRepresentation);
-bool GetRepresentationFromUrlConnection(sdl::agentino::Services::CInputConnection::V1_0& connectionRepresentation, imtservice::CUrlConnectionParam& connectionInfo, const iprm::IParamsSet* paramsPtr = nullptr);
+bool GetUrlConnectionFromRepresentation(imtservice::CUrlConnectionParam& connectionInfo, const sdl::V1_0::agentino::CInputConnection& connectionRepresentation);
+bool GetRepresentationFromUrlConnection(sdl::V1_0::agentino::CInputConnection& connectionRepresentation, imtservice::CUrlConnectionParam& connectionInfo, const iprm::IParamsSet* paramsPtr = nullptr);
 
-bool GetUrlConnectionLinkFromRepresentation(imtservice::CUrlConnectionLinkParam& connectionInfo, const sdl::agentino::Services::COutputConnection::V1_0& connectionRepresentation);
+bool GetUrlConnectionLinkFromRepresentation(imtservice::CUrlConnectionLinkParam& connectionInfo, const sdl::V1_0::agentino::COutputConnection& connectionRepresentation);
 bool GetRepresentationFromUrlConnectionLink(
-	sdl::agentino::Services::COutputConnection::V1_0& connectionRepresentation,
+	sdl::V1_0::agentino::COutputConnection& connectionRepresentation,
 	imtservice::CUrlConnectionLinkParam& connectionInfo,
 	const iprm::IParamsSet* paramsPtr = nullptr);
 
 bool GetServerConnectionParamFromRepresentation(
 			imtcom::CServerConnectionInterfaceParam& serverConnectionParam,
-			const sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0& serverConnectionRepresentation);
+			const sdl::V1_0::imtbase::CServerConnectionParam& serverConnectionRepresentation);
 bool GetRepresentationFromServerConnectionParam(
 			const imtcom::CServerConnectionInterfaceParam& serverConnectionParam,
-			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0& serverConnectionRepresentation);
+			sdl::V1_0::imtbase::CServerConnectionParam& serverConnectionRepresentation);
 
 bool GetRepresentationFromConnectionCollection(
 			imtservice::IConnectionCollection& connectionCollection,
-			sdl::agentino::Services::CPluginInfo::V1_0& connectionCollectionRepresentation);
+			sdl::V1_0::agentino::CPluginInfo& connectionCollectionRepresentation);
+
+/**
+	Append the candidate producers for one output slot (\a connectionUsageId) from the
+	services in \a serviceCollection: every service whose input connection id matches,
+	as one stable endpoint each (see agentinodata::ServiceEndpointId). Used by the
+	AvailableConnections query — on the agent over its local services, on the server
+	over each agent's mirror.
+*/
+void AppendAvailableConnectionsFromServiceCollection(
+			imtbase::IObjectCollection& serviceCollection,
+			const QByteArray& connectionUsageId,
+			QList<sdl::V1_0::agentino::CDependantConnectionInfo>& outList);
 
 
 } // namespace agentinodata

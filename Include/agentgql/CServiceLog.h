@@ -2,6 +2,9 @@
 #pragma once
 
 
+// Qt includes
+#include <QtCore/QMutex>
+
 // ImtCore includes
 #include <imtbase/PluginInterface.h>
 #include <imtbase/TPluginManager.h>
@@ -37,6 +40,11 @@ protected:
 
 	typedef QMap<QByteArray, istd::TDelPtr<PluginManager>> PluginMap;
 	mutable PluginMap m_pluginMap;
+
+	// Guards 'm_pluginMap': GraphQL requests are dispatched across a worker-thread pool
+	// (see imtrest::CWorkerManagerComp, default ThreadsLimit=5), so concurrent 'GetServiceLog'
+	// requests can call into the same component instance from different threads at once.
+	mutable QMutex m_pluginMapMutex;
 };
 
 

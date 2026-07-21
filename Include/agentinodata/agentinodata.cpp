@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentinodata/agentinodata.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtBaseTypes.h>
 
 
 // Qt includes
@@ -11,13 +13,34 @@
 // ImtCore includes
 #include <imtcom/IServerConnectionInterface.h>
 #include <imtservice/IConnectionCollection.h>
+#include <imtservice/IServiceConnectionParam.h>
 
 // Agentino includes
 #include <agentinodata/CAgentInfo.h>
+#include <agentinodata/ServiceEndpointId.h>
 
 
 namespace agentinodata
 {
+
+
+namespace
+{
+
+
+/** "ServiceName (host:port)" — what the operator sees in the connection pick-list. */
+QString FormatEndpointName(const QString& serviceName, const QString& host, int httpPort)
+{
+	const QString address = QStringLiteral("%1:%2").arg(host).arg(httpPort);
+	if (serviceName.isEmpty()){
+		return address;
+	}
+
+	return QStringLiteral("%1 (%2)").arg(serviceName, address);
+}
+
+
+} // namespace
 
 
 ProcessStateEnum GetProcceStateRepresentation(QProcess::ProcessState processState)
@@ -50,7 +73,7 @@ ProcessStateEnum GetProcceStateRepresentation(QProcess::ProcessState processStat
 
 bool GetServiceFromRepresentation(
 			agentinodata::CServiceInfo& serviceInfo,
-			const sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation,
+			const sdl::V1_0::agentino::CServiceData& serviceDataRepresentation,
 			QString& errorMessage)
 {
 	if (serviceDataRepresentation.name){
@@ -64,16 +87,10 @@ bool GetServiceFromRepresentation(
 	}
 
 	if (serviceDataRepresentation.path){
-		QString path = *serviceDataRepresentation.path;
-
-		QFileInfo fileInfo(path);
-		if (!fileInfo.exists()){
-			errorMessage = QString("Service path '%1' not exists").arg(qPrintable(path));
-
-			return false;
-		}
-
-		serviceInfo.SetServicePath(path.toUtf8());
+		// Do not require the path to exist on this host: the server mirror stores agent-local
+		// paths that are only valid on the agent machine. Existence is checked when the agent
+		// starts the service, not when building/mirroring the representation.
+		serviceInfo.SetServicePath((*serviceDataRepresentation.path).toUtf8());
 	}
 
 	if (serviceDataRepresentation.startScript){
@@ -111,14 +128,19 @@ bool GetServiceFromRepresentation(
 		serviceInfo.SetServiceVersion(version);
 	}
 
+	if (serviceDataRepresentation.settingsPath){
+		QString settingsPath = *serviceDataRepresentation.settingsPath;
+		serviceInfo.SetServiceSettingsPath(settingsPath.toUtf8());
+	}
+
 	if (serviceDataRepresentation.inputConnections){
-		istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::CInputConnection::V1_0>> connections = *serviceDataRepresentation.inputConnections;
+		istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CInputConnection>> connections = *serviceDataRepresentation.inputConnections;
 
 		imtbase::IObjectCollection* incomingConnectionCollectionPtr = serviceInfo.GetInputConnections();
 		if (incomingConnectionCollectionPtr != nullptr){
 			incomingConnectionCollectionPtr->ResetData();
 
-			for (const istd::TSharedNullable<sdl::agentino::Services::CInputConnection::V1_0>& connection : *connections){
+			for (const istd::TNullableValue<sdl::V1_0::agentino::CInputConnection>& connection : *connections){
 				QByteArray id;
 				if (connection->id){
 					id = *connection->id;
@@ -150,13 +172,13 @@ bool GetServiceFromRepresentation(
 	}
 
 	if (serviceDataRepresentation.outputConnections){
-		istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::COutputConnection::V1_0>> connections = *serviceDataRepresentation.outputConnections;
+		istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::COutputConnection>> connections = *serviceDataRepresentation.outputConnections;
 
 		imtbase::IObjectCollection* dependantConnectionCollectionPtr = serviceInfo.GetDependantServiceConnections();
 		if (dependantConnectionCollectionPtr != nullptr){
 			dependantConnectionCollectionPtr->ResetData();
 
-			for (const istd::TSharedNullable<sdl::agentino::Services::COutputConnection::V1_0>& connection : *connections){
+			for (const istd::TNullableValue<sdl::V1_0::agentino::COutputConnection>& connection : *connections){
 				QByteArray id;
 				if (connection->id){
 					id = *connection->id;
@@ -192,7 +214,7 @@ bool GetServiceFromRepresentation(
 
 
 bool GetRepresentationFromService(
-	sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation,
+	sdl::V1_0::agentino::CServiceData& serviceDataRepresentation,
 	const CServiceInfo& serviceInfo,
 	const iprm::IParamsSet* paramsPtr)
 {
@@ -229,7 +251,10 @@ bool GetRepresentationFromService(
 	QString serviceVersion = serviceInfo.GetServiceVersion();
 	serviceDataRepresentation.version = serviceVersion;
 
-	QList<sdl::agentino::Services::CInputConnection::V1_0> inputConnectionList;
+	QString settingsPath = QString::fromUtf8(serviceInfo.GetServiceSettingsPath());
+	serviceDataRepresentation.settingsPath = settingsPath;
+
+	QList<sdl::V1_0::agentino::CInputConnection> inputConnectionList;
 
 	imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
 	if (connectionCollectionPtr != nullptr){
@@ -239,7 +264,7 @@ bool GetRepresentationFromService(
 			if (connectionCollectionPtr->GetObjectData(elementId, connectionDataPtr)){
 				imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
 				if (connectionParamPtr != nullptr){
-					sdl::agentino::Services::CInputConnection::V1_0 representaion;
+					sdl::V1_0::agentino::CInputConnection representaion;
 					if (!GetRepresentationFromUrlConnection(representaion, *connectionParamPtr, paramsPtr)){
 						return false;
 					}
@@ -260,7 +285,7 @@ bool GetRepresentationFromService(
 	serviceDataRepresentation.inputConnections.Emplace();
 	serviceDataRepresentation.inputConnections->FromList(inputConnectionList);
 
-	QList<sdl::agentino::Services::COutputConnection::V1_0> outputConnectionList;
+	QList<sdl::V1_0::agentino::COutputConnection> outputConnectionList;
 
 	imtbase::IObjectCollection* dependantServiceCollectionPtr = serviceInfoPtr->GetDependantServiceConnections();
 	if (dependantServiceCollectionPtr != nullptr){
@@ -270,7 +295,7 @@ bool GetRepresentationFromService(
 			if (dependantServiceCollectionPtr->GetObjectData(elementId, connectionDataPtr)){
 				imtservice::CUrlConnectionLinkParam* connectionLinkParamPtr = dynamic_cast<imtservice::CUrlConnectionLinkParam*>(connectionDataPtr.GetPtr());
 				if (connectionLinkParamPtr != nullptr){
-					sdl::agentino::Services::COutputConnection::V1_0 representationModel;
+					sdl::V1_0::agentino::COutputConnection representationModel;
 					if (!GetRepresentationFromUrlConnectionLink(representationModel, *connectionLinkParamPtr, paramsPtr)){
 						return false;
 					}
@@ -297,7 +322,7 @@ bool GetRepresentationFromService(
 
 bool GetUrlConnectionFromRepresentation(
 	imtservice::CUrlConnectionParam& connectionInfo,
-	const sdl::agentino::Services::CInputConnection::V1_0& connectionRepresentation)
+	const sdl::V1_0::agentino::CInputConnection& connectionRepresentation)
 {
 	connectionInfo.SetConnectionType(imtservice::IServiceConnectionInfo::CT_INPUT);
 
@@ -307,17 +332,22 @@ bool GetUrlConnectionFromRepresentation(
 	}
 
 	if (connectionRepresentation.connectionParam){
-		sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 urlRepresentation = *connectionRepresentation.connectionParam;
+		sdl::V1_0::imtbase::CServerConnectionParam urlRepresentation = *connectionRepresentation.connectionParam;
 
 		if (!GetServerConnectionParamFromRepresentation(connectionInfo, urlRepresentation)){
 			return false;
 		}
+
+		// CServiceConnectionInfo serializes both the base maps and m_defaultConnection.
+		// FillDefault from the same base so GetDefaultInterface() and persistence stay consistent
+		// (mirror path previously left m_defaultConnection empty → brittle AutoPersistence).
+		connectionInfo.SetDefaultServiceInterface(connectionInfo);
 	}
 
 	if (connectionRepresentation.externConnectionList){
-		istd::TSharedNullable<imtsdl::TElementList<sdl::agentino::Services::CExternConnectionInfo::V1_0>> externConnectionList = *connectionRepresentation.externConnectionList;
+		istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CExternConnectionInfo>> externConnectionList = *connectionRepresentation.externConnectionList;
 
-		for (const istd::TSharedNullable<sdl::agentino::Services::CExternConnectionInfo::V1_0>& externPort : *externConnectionList){
+		for (const istd::TNullableValue<sdl::V1_0::agentino::CExternConnectionInfo>& externPort : *externConnectionList){
 			imtservice::IServiceConnectionParam::IncomingConnectionParam incomingConnection;
 
 			if (externPort->id){
@@ -354,28 +384,28 @@ bool GetUrlConnectionFromRepresentation(
 
 
 bool GetRepresentationFromUrlConnection(
-	sdl::agentino::Services::CInputConnection::V1_0& connectionRepresentation,
+	sdl::V1_0::agentino::CInputConnection& connectionRepresentation,
 	imtservice::CUrlConnectionParam& connectionInfo,
 	const iprm::IParamsSet* /*paramsPtr*/)
 {
 	QByteArray serviceTypeId = connectionInfo.GetServiceTypeId();
 	connectionRepresentation.serviceTypeId = serviceTypeId;
 
-	sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParamRepresentation;
+	sdl::V1_0::imtbase::CServerConnectionParam connectionParamRepresentation;
 	if (!GetRepresentationFromServerConnectionParam(connectionInfo, connectionParamRepresentation)){
 		return false;
 	}
 
 	connectionRepresentation.connectionParam = connectionParamRepresentation;
 
-	QList<sdl::agentino::Services::CExternConnectionInfo::V1_0> externConnectionList;
+	QList<sdl::V1_0::agentino::CExternConnectionInfo> externConnectionList;
 
 	imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections = connectionInfo.GetIncomingConnections();
 	for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections){
-		sdl::agentino::Services::CExternConnectionInfo::V1_0 externConnectionInfo;
+		sdl::V1_0::agentino::CExternConnectionInfo externConnectionInfo;
 		externConnectionInfo.id = incomingConnection.GetObjectUuid();
 
-		sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParam;
+		sdl::V1_0::imtbase::CServerConnectionParam connectionParam;
 		connectionParam.host = incomingConnection.GetHost();
 		connectionParam.wsPort = incomingConnection.GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
 		connectionParam.httpPort = incomingConnection.GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
@@ -395,7 +425,7 @@ bool GetRepresentationFromUrlConnection(
 
 bool GetUrlConnectionLinkFromRepresentation(
 	imtservice::CUrlConnectionLinkParam& connectionInfo,
-	const sdl::agentino::Services::COutputConnection::V1_0& connectionRepresentation)
+	const sdl::V1_0::agentino::COutputConnection& connectionRepresentation)
 {
 	connectionInfo.SetConnectionType(imtservice::IServiceConnectionInfo::CT_OUTPUT);
 
@@ -413,6 +443,9 @@ bool GetUrlConnectionLinkFromRepresentation(
 		if (!GetServerConnectionParamFromRepresentation(connectionInfo, *connectionRepresentation.connectionParam)){
 			return false;
 		}
+
+		// Same as input connections: keep m_defaultConnection aligned with base maps.
+		connectionInfo.SetDefaultServiceInterface(connectionInfo);
 	}
 
 	return true;
@@ -420,7 +453,7 @@ bool GetUrlConnectionLinkFromRepresentation(
 
 
 bool GetRepresentationFromUrlConnectionLink(
-	sdl::agentino::Services::COutputConnection::V1_0& connectionRepresentation,
+	sdl::V1_0::agentino::COutputConnection& connectionRepresentation,
 	imtservice::CUrlConnectionLinkParam& connectionInfo,
 	const iprm::IParamsSet* /*paramsPtr*/)
 {
@@ -430,7 +463,7 @@ bool GetRepresentationFromUrlConnectionLink(
 	connectionRepresentation.dependantConnectionId = dependantServiceConnectionId;
 	connectionRepresentation.serviceTypeId = serviceTypeId;
 
-	sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParamRepresentation;
+	sdl::V1_0::imtbase::CServerConnectionParam connectionParamRepresentation;
 	if (!GetRepresentationFromServerConnectionParam(connectionInfo, connectionParamRepresentation)){
 		return false;
 	}
@@ -443,21 +476,34 @@ bool GetRepresentationFromUrlConnectionLink(
 
 bool GetServerConnectionParamFromRepresentation(
 			imtcom::CServerConnectionInterfaceParam& serverConnectionParam,
-			const sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0& sdlRepresentation)
+			const sdl::V1_0::imtbase::CServerConnectionParam& sdlRepresentation)
 {
+	// Always register both service protocols so SetPort/SetPath never hit the
+	// unregistered-protocol path and AutoPersistence never sees a half-built map.
+	serverConnectionParam.RegisterProtocol(imtcom::IServerConnectionInterface::PT_HTTP);
+	serverConnectionParam.RegisterProtocol(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
+
 	if (sdlRepresentation.host){
 		QString host = *sdlRepresentation.host;
 		serverConnectionParam.SetHost(host);
 	}
 
 	if (sdlRepresentation.httpPort){
-		int httpPort = *sdlRepresentation.httpPort;
-		serverConnectionParam.SetPort(imtcom::IServerConnectionInterface::PT_HTTP, httpPort);
+		serverConnectionParam.SetPort(
+					imtcom::IServerConnectionInterface::PT_HTTP,
+					*sdlRepresentation.httpPort);
 	}
 
 	if (sdlRepresentation.wsPort){
-		int wsPort = *sdlRepresentation.wsPort;
-		serverConnectionParam.SetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET, wsPort);
+		serverConnectionParam.SetPort(
+					imtcom::IServerConnectionInterface::PT_WEBSOCKET,
+					*sdlRepresentation.wsPort);
+	}
+
+	if (sdlRepresentation.httpPath){
+		serverConnectionParam.SetPath(
+					imtcom::IServerConnectionInterface::PT_HTTP,
+					*sdlRepresentation.httpPath);
 	}
 
 	if (sdlRepresentation.isSecure){
@@ -473,7 +519,7 @@ bool GetServerConnectionParamFromRepresentation(
 
 bool GetRepresentationFromServerConnectionParam(
 			const imtcom::CServerConnectionInterfaceParam& serverConnectionParam,
-			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0& sdlRepresentation)
+			sdl::V1_0::imtbase::CServerConnectionParam& sdlRepresentation)
 {
 	const QString host = serverConnectionParam.GetHost();
 	sdlRepresentation.host = host;
@@ -505,13 +551,13 @@ bool GetRepresentationFromServerConnectionParam(
 
 bool GetRepresentationFromConnectionCollection(
 			imtservice::IConnectionCollection& connectionCollection,
-			sdl::agentino::Services::CPluginInfo::V1_0& connectionCollectionRepresentation)
+			sdl::V1_0::agentino::CPluginInfo& connectionCollectionRepresentation)
 {
 	const imtbase::ICollectionInfo* collectionInfo = static_cast<const imtbase::ICollectionInfo*>(connectionCollection.GetServerConnectionList());
 	const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
 	if (objectCollection != nullptr){
-		QList<sdl::agentino::Services::CInputConnection::V1_0> inputConnectionList;
-		QList<sdl::agentino::Services::COutputConnection::V1_0> outputConnectionList;
+		QList<sdl::V1_0::agentino::CInputConnection> inputConnectionList;
+		QList<sdl::V1_0::agentino::COutputConnection> outputConnectionList;
 
 		imtbase::ICollectionInfo::Ids elementIds = collectionInfo->GetElementIds();
 		for (const QByteArray& elementId: elementIds){
@@ -525,14 +571,32 @@ bool GetRepresentationFromConnectionCollection(
 
 			QByteArray serviceTypeId = connectionParamPtr->GetServiceTypeId();
 
-			sdl::imtbase::ImtBaseTypes::CServerConnectionParam::V1_0 connectionParamRepresentation;
-			const imtcom::CServerConnectionInterfaceParam& defaultConnectionParam = dynamic_cast<const imtcom::CServerConnectionInterfaceParam&>(connectionParamPtr->GetDefaultInterface());
-			if (!GetRepresentationFromServerConnectionParam(defaultConnectionParam, connectionParamRepresentation)){
-				return false;
+			sdl::V1_0::imtbase::CServerConnectionParam connectionParamRepresentation;
+			// The element's own *current* interface (kept live by SetServerConnectionInterface,
+			// e.g. via UpdateConnectionUrl/SetOutputConnection), not GetDefaultInterface() - that
+			// is a frozen snapshot taken once when the plugin was first loaded and never updated
+			// afterwards, so reading it here would keep showing stale values after any live change.
+			// GetRepresentationFromServerConnectionParam() takes the concrete
+			// CServerConnectionInterfaceParam, but the collection's own elements are
+			// CUrlConnectionParam (a different concrete class) - copy through the interface here.
+			const imtcom::IServerConnectionInterface* currentConnectionParamPtr = connectionCollection.GetServerConnection(elementId);
+			if (currentConnectionParamPtr != nullptr){
+				connectionParamRepresentation.host = currentConnectionParamPtr->GetHost();
+				connectionParamRepresentation.isSecure = currentConnectionParamPtr->GetConnectionFlags() == imtcom::IServerConnectionInterface::CF_SECURE;
+				connectionParamRepresentation.httpPort = currentConnectionParamPtr->GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
+				connectionParamRepresentation.httpPath = currentConnectionParamPtr->GetPath(imtcom::IServerConnectionInterface::PT_HTTP);
+				connectionParamRepresentation.wsPort = currentConnectionParamPtr->GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
+			}
+			else{
+				const imtcom::CServerConnectionInterfaceParam& defaultConnectionParam =
+							dynamic_cast<const imtcom::CServerConnectionInterfaceParam&>(connectionParamPtr->GetDefaultInterface());
+				if (!GetRepresentationFromServerConnectionParam(defaultConnectionParam, connectionParamRepresentation)){
+					return false;
+				}
 			}
 
 			if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT){
-				sdl::agentino::Services::CInputConnection::V1_0 inputConnection;
+				sdl::V1_0::agentino::CInputConnection inputConnection;
 				inputConnection.id = elementId;
 				inputConnection.serviceTypeId = serviceTypeId;
 				inputConnection.connectionName = connectionName;
@@ -541,7 +605,7 @@ bool GetRepresentationFromConnectionCollection(
 				inputConnectionList << inputConnection;
 			}
 			else{
-				sdl::agentino::Services::COutputConnection::V1_0 outputConnection;
+				sdl::V1_0::agentino::COutputConnection outputConnection;
 				outputConnection.id = elementId;
 				outputConnection.serviceTypeId = serviceTypeId;
 				outputConnection.connectionName = connectionName;
@@ -561,6 +625,110 @@ bool GetRepresentationFromConnectionCollection(
 
 	return false;
 }
+
+
+void AppendAvailableConnectionsFromServiceCollection(
+			imtbase::IObjectCollection& serviceCollection,
+			const QByteArray& connectionUsageId,
+			QList<sdl::V1_0::agentino::CDependantConnectionInfo>& outList)
+{
+	if (connectionUsageId.isEmpty()){
+		return;
+	}
+
+	const imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollection.GetElementIds();
+	for (const imtbase::ICollectionInfo::Id& serviceElementId: serviceElementIds){
+		imtbase::IObjectCollection::DataPtr serviceDataPtr;
+		if (!serviceCollection.GetObjectData(serviceElementId, serviceDataPtr)){
+			continue;
+		}
+
+		agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+		if (serviceInfoPtr == nullptr){
+			continue;
+		}
+
+		imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
+		if (connectionCollectionPtr == nullptr){
+			continue;
+		}
+
+		const imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
+		for (const imtbase::ICollectionInfo::Id& connectionElementId: connectionElementIds){
+			imtbase::IObjectCollection::DataPtr connectionDataPtr;
+			if (!connectionCollectionPtr->GetObjectData(connectionElementId, connectionDataPtr)){
+				continue;
+			}
+
+			imtservice::CUrlConnectionParam* connectionParamPtr =
+						dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
+			if (connectionParamPtr == nullptr){
+				continue;
+			}
+
+			if (connectionParamPtr->GetConnectionType() != imtservice::IServiceConnectionInfo::CT_INPUT){
+				continue;
+			}
+
+			if (connectionElementId != connectionUsageId){
+				continue;
+			}
+
+			sdl::V1_0::imtbase::CServerConnectionParam sdlRepresentation;
+			if (!GetRepresentationFromServerConnectionParam(*connectionParamPtr, sdlRepresentation)){
+				continue;
+			}
+
+			// One candidate per producer endpoint — the stable address to reference.
+			// The connection id on its own is only the usage/type marker shared by every
+			// service speaking this protocol, so it cannot tell two producers apart:
+			// address the endpoint by "<serviceId>|<connectionId>" (unambiguous across
+			// agents) and name it after the producing service.
+			const QString serviceName = serviceInfoPtr->GetServiceName();
+
+			QString host = connectionParamPtr->GetHost();
+			if (host.isEmpty()){
+				host = QStringLiteral("localhost");
+			}
+			const int httpPort = connectionParamPtr->GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
+
+			sdl::V1_0::agentino::CDependantConnectionInfo dependantConnectionInfo;
+			dependantConnectionInfo.id = ServiceEndpointId::Make(serviceElementId, connectionElementId);
+			dependantConnectionInfo.name = FormatEndpointName(serviceName, host, httpPort);
+			dependantConnectionInfo.connectionParam = sdlRepresentation;
+			outList << dependantConnectionInfo;
+
+			// A producer's extern connections are additional, explicitly configured
+			// addresses for this same connection (e.g. exposed through NAT/port-forwarding
+			// for access from outside the producer's network). Offer each as its own
+			// pickable candidate too, addressed by the incoming connection's own uuid so a
+			// consumer can select a specific one instead of always getting the main address.
+			const imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections =
+						connectionParamPtr->GetIncomingConnections();
+			for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incoming : incomingConnections){
+				sdl::V1_0::imtbase::CServerConnectionParam externRepresentation;
+				if (!GetRepresentationFromServerConnectionParam(incoming, externRepresentation)){
+					continue;
+				}
+
+				QString externHost = incoming.GetHost();
+				if (externHost.isEmpty()){
+					externHost = QStringLiteral("localhost");
+				}
+				const int externHttpPort = incoming.GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
+
+				sdl::V1_0::agentino::CDependantConnectionInfo externConnectionInfo;
+				externConnectionInfo.id = ServiceEndpointId::Make(serviceElementId, incoming.GetObjectUuid());
+				externConnectionInfo.name = FormatEndpointName(
+							serviceName + QStringLiteral(" [extern]"), externHost, externHttpPort);
+				externConnectionInfo.connectionParam = externRepresentation;
+				outList << externConnectionInfo;
+			}
+		}
+	}
+}
+
+
 
 
 } // namespace agentinodata

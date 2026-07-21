@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentgql/CServiceCollectionControllerComp.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtCollection.h>
 
 
 // Windows includes
@@ -23,73 +25,54 @@
 // Agentino includes
 #include <agentinodata/agentinodata.h>
 #include <agentinodata/CServiceInfo.h>
-#include <agentinodata/IAgentInfo.h>
 
 
 namespace agentgql
 {
 
 
-// reimplemented (sdl::imtbase::ImtCollection::CGraphQlHandlerCompBase)
+// reimplemented (sdl::V1_0::imtbase::CImtCollectionGqlHandlerCompBase)
 
-sdl::imtbase::ImtCollection::CVisualStatus CServiceCollectionControllerComp::OnGetObjectVisualStatus(
-	const sdl::imtbase::ImtCollection::CGetObjectVisualStatusGqlRequest& getObjectVisualStatusRequest,
+sdl::V1_0::imtbase::CVisualStatus CServiceCollectionControllerComp::OnGetObjectVisualStatus(
+	const sdl::V1_0::imtbase::CGetObjectVisualStatusGqlRequest& getObjectVisualStatusRequest,
 	const ::imtgql::CGqlRequest& gqlRequest,
 	QString& errorMessage) const
 {
-	sdl::imtbase::ImtCollection::CVisualStatus retVal = BaseClass::OnGetObjectVisualStatus(getObjectVisualStatusRequest, gqlRequest, errorMessage);
-	if (!retVal.Version_1_0){
-		I_CRITICAL();
-		
-		return retVal;
+	sdl::V1_0::imtbase::CVisualStatus retVal = BaseClass::OnGetObjectVisualStatus(getObjectVisualStatusRequest, gqlRequest, errorMessage);
+	if (!errorMessage.isEmpty()){
+		return sdl::V1_0::imtbase::CVisualStatus();
 	}
 	
-	sdl::imtbase::ImtCollection::CVisualStatus::V1_0& response = *retVal.Version_1_0;
-	
-	if (response.objectId){
-		imtbase::IObjectCollection::Ids elementIds = m_objectCollectionCompPtr->GetElementIds();
-		for (const imtbase::IObjectCollection::Id& elementId : elementIds){
-			imtbase::IObjectCollection::DataPtr agentDataPtr;
-			if (m_objectCollectionCompPtr->GetObjectData(elementId, agentDataPtr)){
-				agentinodata::IAgentInfo* agentInfoPtr = dynamic_cast<agentinodata::IAgentInfo*>(agentDataPtr.GetPtr());
-				if (agentInfoPtr != nullptr){
-					QString agentName = m_objectCollectionCompPtr->GetElementInfo(elementId, imtbase::ICollectionInfo::EIT_NAME).toString();
-					
-					imtbase::IObjectCollection* serviceCollectionPtr = agentInfoPtr->GetServiceCollection();
-					if (serviceCollectionPtr != nullptr){
-						imtbase::IObjectCollection::DataPtr serviceDataPtr;
-						if (serviceCollectionPtr->GetObjectData(*response.objectId, serviceDataPtr)){
-							const agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<const agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
-							if (serviceInfoPtr != nullptr){
-								QString serviceName = serviceInfoPtr->GetServiceName();
-								QString description = serviceInfoPtr->GetServiceDescription();
-								
-								response.text = serviceName + "@" + agentName;
-								response.description = description;
-								
-								break;
-							}
-						}
-					}
-				}
+	sdl::V1_0::imtbase::CVisualStatus& response = retVal;
+
+	// This controller is bound to the agent's own service collection, so the requested
+	// object id addresses a service directly — label it with its name/description.
+	if (response.objectId && m_objectCollectionCompPtr.IsValid()){
+		imtbase::IObjectCollection::DataPtr serviceDataPtr;
+		if (m_objectCollectionCompPtr->GetObjectData(*response.objectId, serviceDataPtr)){
+			const agentinodata::IServiceInfo* serviceInfoPtr =
+						dynamic_cast<const agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+			if (serviceInfoPtr != nullptr){
+				response.text = serviceInfoPtr->GetServiceName();
+				response.description = serviceInfoPtr->GetServiceDescription();
 			}
 		}
 	}
-	
+
 	return retVal;
 }
 
 
-// reimplemented (sdl::agentino::Services::CServiceCollectionControllerCompBase)
+// reimplemented (sdl::V1_0::agentino::CServiceCollectionControllerCompBase)
 
 bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 	const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
-	const sdl::agentino::Services::CServicesListGqlRequest& servicesListRequest,
-	sdl::agentino::Services::CServiceItem::V1_0& representationObject,
+	const sdl::V1_0::agentino::CServicesListGqlRequest& servicesListRequest,
+	sdl::V1_0::agentino::CServiceItem& representationObject,
 	QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
-		Q_ASSERT_X(false, "Attribute 'ObjectCollection' was not set", "CDeviceCollectionControllerComp");
+		Q_ASSERT_X(false, "Attribute 'ObjectCollection' was not set", "CServiceCollectionControllerComp");
 		return false;
 	}
 	
@@ -107,7 +90,7 @@ bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 		return false;
 	}
 	
-	sdl::agentino::Services::ServicesListRequestInfo requestInfo = servicesListRequest.GetRequestInfo();
+	sdl::V1_0::agentino::ServicesListRequestInfo requestInfo = servicesListRequest.GetRequestInfo();
 	if (requestInfo.items.isIdRequested){
 		representationObject.id = objectId;
 	}
@@ -125,6 +108,11 @@ bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 	if (requestInfo.items.isDescriptionRequested){
 		QString description = serviceInfoPtr->GetServiceDescription();
 		representationObject.description = description;
+	}
+
+	if (requestInfo.items.isPathRequested){
+		// Required for server mirror seed (Topology / Agents.services) after ServicesList.
+		representationObject.path = QString::fromUtf8(serviceInfoPtr->GetServicePath());
 	}
 	
 	if (requestInfo.items.isStatusRequested){
@@ -146,35 +134,31 @@ bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 
 bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 	const istd::IChangeable& data,
-	const sdl::agentino::Services::CGetServiceGqlRequest& getServiceRequest,
-	sdl::agentino::Services::CServiceData::V1_0& serviceData,
+	const sdl::V1_0::agentino::CGetServiceGqlRequest& getServiceRequest,
+	sdl::V1_0::agentino::CServiceData& serviceData,
 	QString& errorMessage) const
 {
-	sdl::agentino::Services::GetServiceRequestArguments arguments = getServiceRequest.GetRequestedArguments();
-	if (!arguments.input.Version_1_0.has_value()){
-		Q_ASSERT(false);
-		return false;
-	}
-	
-	if (!arguments.input.Version_1_0->id.has_value()){
-		Q_ASSERT(false);
+	sdl::V1_0::agentino::GetServiceRequestArguments arguments = getServiceRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->id.has_value()){
+		errorMessage = QStringLiteral("GetService: missing input id");
+		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 		return false;
 	}
 	
 	const agentinodata::CServiceInfo* serviceInfoPtr = dynamic_cast<const agentinodata::CServiceInfo*>(&data);
 	if (serviceInfoPtr == nullptr){
 		errorMessage = QString("Unable to create representation for the agent object. Error: Object is invalid");
-		SendErrorMessage(0, errorMessage, "CAgentCollectionControllerComp");
+		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 		return false; 
 	}
 	
 	if (!agentinodata::GetRepresentationFromService(serviceData, *serviceInfoPtr)){
 		errorMessage = QString("Unable to create representation for the agent object. Error: Representation failed");
-		SendErrorMessage(0, errorMessage, "CAgentCollectionControllerComp");
+		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 		return false; 
 	}
 	
-	QByteArray objectId = *arguments.input.Version_1_0->id;
+	QByteArray objectId = *arguments.input->id;
 	
 	if (m_serviceControllerCompPtr.IsValid()){
 		agentinodata::IServiceStatusInfo::ServiceStatus state =  m_serviceControllerCompPtr->GetServiceStatus(objectId);
@@ -183,13 +167,16 @@ bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 	}
 	
 	serviceData.id = objectId;
-	
+
+	// The candidate pick-list is no longer stuffed into every GetService — the editor
+	// fetches it on demand via the AvailableConnections query. GetService stays cheap.
+
 	return true;
 }
 
 
 istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRepresentation(
-	const sdl::agentino::Services::CServiceData::V1_0& serviceDataRepresentation,
+	const sdl::V1_0::agentino::CServiceData& serviceDataRepresentation,
 	QByteArray& newObjectId,
 	QString& errorMessage) const
 {
@@ -210,7 +197,7 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 	}
 
 	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoImplPtr, serviceDataRepresentation, errorMessage)){
-		errorMessage = QString("Unable to create service from representation. Error: Representation invalid");
+		errorMessage = QString("Unable to create service from representation. Error: %1").arg(errorMessage);
 		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 
 		return nullptr;
@@ -232,72 +219,24 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 		return nullptr;
 	}
 
+	if (IsServicePathInUse(servicePath, QByteArray())){
+		errorMessage = QString("Unable to create service from representation. Error: A service with path '%1' already exists").arg(qPrintable(servicePath));
+		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
+		return nullptr;
+	}
+
 	imtservice::IConnectionCollectionSharedPtr connectionCollectionPtr = GetConnectionCollectionByServicePath(servicePath);
 	if (connectionCollectionPtr.IsValid()){
 		serviceInfoImplPtr->SetTracingLevel(connectionCollectionPtr->GetTracingLevel());
 		serviceInfoImplPtr->SetServiceVersion(connectionCollectionPtr->GetServiceVersion());
 		serviceInfoImplPtr->SetServiceTypeId(connectionCollectionPtr->GetServiceTypeId().toUtf8());
 
-		imtbase::IObjectCollection* incomingConnectionCollectionPtr = serviceInfoImplPtr->GetInputConnections();
-		imtbase::IObjectCollection* dependantConnectionCollectionPtr = serviceInfoImplPtr->GetDependantServiceConnections();
-
-		const imtbase::ICollectionInfo* collectionInfo = static_cast<const imtbase::ICollectionInfo*>(connectionCollectionPtr->GetServerConnectionList());
-		const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
-		if (objectCollection != nullptr){
-			imtbase::ICollectionInfo::Ids ids = collectionInfo->GetElementIds();
-			for (const QByteArray& id: ids){
-				const imtservice::IServiceConnectionInfo* connectionParamPtr = connectionCollectionPtr->GetConnectionMetaInfo(id);
-				if (connectionParamPtr == nullptr){
-					continue;
-				}
-
-				imtservice::IServiceConnectionInfo::ConnectionType connectionType = connectionParamPtr->GetConnectionType();
-				istd::TDelPtr<imtservice::CServiceConnectionInfo> urlConnectionParamPtr;
-				if (connectionType == imtservice::IServiceConnectionInfo::CT_INPUT){
-					urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam);
-				}
-				else{
-					urlConnectionParamPtr.SetPtr(new imtservice::CUrlConnectionLinkParam);
-				}
-
-				urlConnectionParamPtr->SetConnectionType(connectionType);
-
-				QByteArray serviceTypeId = connectionParamPtr->GetServiceTypeId();
-				urlConnectionParamPtr->SetServiceTypeId(serviceTypeId);
-
-				const imtcom::IServerConnectionInterface& connectionInterface = connectionParamPtr->GetDefaultInterface();
-				urlConnectionParamPtr->SetDefaultServiceInterface(connectionInterface);
-
-				QString defaultHost = connectionInterface.GetHost();
-				urlConnectionParamPtr->SetHost(defaultHost);
-
-				int defaultHttpPort = connectionInterface.GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
-				urlConnectionParamPtr->SetPort(imtcom::IServerConnectionInterface::PT_HTTP, defaultHttpPort);
-
-				int defaultWsPort = connectionInterface.GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
-				urlConnectionParamPtr->SetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET, defaultWsPort);
-
-				QString connectionName = objectCollection->GetElementInfo(id, imtbase::IObjectCollection::EIT_NAME).toString();
-				QString connectionDescription = collectionInfo->GetElementInfo(id, imtbase::IObjectCollection::EIT_DESCRIPTION).toString();
-
-				if (connectionType == imtservice::IServiceConnectionInfo::CT_INPUT){
-					imtbase::ICollectionInfo::Ids elementIds = incomingConnectionCollectionPtr->GetElementIds();
-					if (!elementIds.contains(id)){
-						incomingConnectionCollectionPtr->InsertNewObject(QByteArrayLiteral("ConnectionInfo"), connectionName, connectionDescription, urlConnectionParamPtr.PopPtr(), id);
-					}
-				}
-				else{
-					imtbase::ICollectionInfo::Ids elementIds = dependantConnectionCollectionPtr->GetElementIds();
-					if (!elementIds.contains(id)){
-						dependantConnectionCollectionPtr->InsertNewObject(QByteArrayLiteral("ConnectionLink"), connectionName, connectionDescription, urlConnectionParamPtr.PopPtr(), id);
-					}
-				}
-			}
-		}
+		PopulateConnectionsFromPlugin(*serviceInfoImplPtr, *connectionCollectionPtr);
 	}
 
 	istd::IChangeableUniquePtr retVal;
-	retVal.MoveCastedPtr<agentinodata::IServiceInfo>(serviceInstancePtr);
+	retVal.MoveCastedPtr<agentinodata::IServiceInfo>(std::move(serviceInstancePtr));
 
 	return retVal;
 }
@@ -305,7 +244,7 @@ istd::IChangeableUniquePtr CServiceCollectionControllerComp::CreateObjectFromRep
 
 bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 			const ::imtgql::CGqlRequest& /*rawGqlRequest*/,
-			const sdl::agentino::Services::CUpdateServiceGqlRequest& updateServiceRequest,
+			const sdl::V1_0::agentino::CUpdateServiceGqlRequest& updateServiceRequest,
 			istd::IChangeable& object,
 			QString& errorMessage) const
 {
@@ -315,20 +254,20 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 		return false;
 	}
 	
-	sdl::agentino::Services::UpdateServiceRequestArguments arguments = updateServiceRequest.GetRequestedArguments();
-	if (!arguments.input.Version_1_0){
+	sdl::V1_0::agentino::UpdateServiceRequestArguments arguments = updateServiceRequest.GetRequestedArguments();
+	if (!arguments.input){
 		I_CRITICAL();
 
 		return false;
 	}
 	
-	if (!arguments.input.Version_1_0->id.has_value()){
+	if (!arguments.input->id.has_value()){
 		I_CRITICAL();
 
 		return false;
 	}
 	
-	if (!arguments.input.Version_1_0->item.has_value()){
+	if (!arguments.input->item.has_value()){
 		I_CRITICAL();
 
 		return false;
@@ -341,8 +280,8 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 		return false;
 	}
 	
-	QByteArray objectId = *arguments.input.Version_1_0->id;
-	sdl::agentino::Services::CServiceData::V1_0 serviceData = *arguments.input.Version_1_0->item;
+	QByteArray objectId = *arguments.input->id;
+	sdl::V1_0::agentino::CServiceData serviceData = *arguments.input->item;
 	
 	if (!agentinodata::GetServiceFromRepresentation(*serviceInfoPtr, serviceData, errorMessage)){
 		errorMessage = QString("Unable to update service from representation. Error: %1").arg(errorMessage);
@@ -350,35 +289,46 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 
 		return false;
 	}
-	
+
+	if (IsServicePathInUse(serviceInfoPtr->GetServicePath(), objectId)){
+		errorMessage = QString("Unable to update service from representation. Error: A service with path '%1' already exists").arg(qPrintable(serviceInfoPtr->GetServicePath()));
+		SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
+
+		return false;
+	}
+
 	QByteArray serviceTypeName = serviceInfoPtr->GetServiceTypeId().toUtf8();
-	
+
 	imtservice::IConnectionCollectionSharedPtr connectionCollectionPtr = GetConnectionCollectionByServiceId(objectId);
 	if (connectionCollectionPtr.IsValid()){
-		QString serviceVersion = connectionCollectionPtr->GetServiceVersion();
-		serviceInfoPtr->SetServiceVersion(serviceVersion);
-		
+		serviceInfoPtr->SetServiceVersion(connectionCollectionPtr->GetServiceVersion());
+
+		// Only touch the running instance when the wiring it uses actually changed.
+		// Renaming a service or toggling autostart must not interrupt it.
+		if (!IsConnectionUpdateRequired(*serviceInfoPtr, *connectionCollectionPtr)){
+			return true;
+		}
+
 		bool wasRunning = false;
 		agentinodata::IServiceStatusInfo::ServiceStatus serviceStatus = m_serviceControllerCompPtr->GetServiceStatus(objectId);
 		if (serviceStatus == agentinodata::IServiceStatusInfo::SS_RUNNING){
 			wasRunning = true;
-			
-			bool wasStopped = m_serviceControllerCompPtr->StopService(objectId);
-			if (!wasStopped){
+
+			if (!m_serviceControllerCompPtr->StopService(objectId)){
 				errorMessage = QString("Service '%1' cannot be stopped").arg(qPrintable(serviceTypeName));
 				SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
 
 				return false;
 			}
 		}
-		
-		if (!UpdateConnectionCollectionFromService(*serviceInfoPtr, *connectionCollectionPtr)){
+
+		const bool connectionsApplied = UpdateConnectionCollectionFromService(*serviceInfoPtr, *connectionCollectionPtr);
+		if (!connectionsApplied){
 			errorMessage = QString("Unable to update connection from the service '%1'").arg(qPrintable(serviceTypeName));
 			SendErrorMessage(0, errorMessage, "CServiceCollectionControllerComp");
-
-			return false;
+			// Fall through: we stopped the service, so we must still try to bring it back.
 		}
-		
+
 		if (wasRunning){
 			if (!m_serviceControllerCompPtr->StartService(objectId)){
 				errorMessage = QString("Service '%1' cannot be started").arg(qPrintable(serviceTypeName));
@@ -387,8 +337,10 @@ bool CServiceCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 				return false;
 			}
 		}
+
+		return connectionsApplied;
 	}
-	
+
 	return true;
 }
 
@@ -409,12 +361,15 @@ imtservice::IConnectionCollectionSharedPtr CServiceCollectionControllerComp::Get
 		return m_pluginMap[key].connectionCollectionPtr;
 	}
 
-	PluginInfo& pluginInfo = m_pluginMap[key];
+	// Build the entry locally and cache it only on success: a service whose plugin
+	// directory appears later (files still being deployed) must be retried on the
+	// next call, not poisoned by a cached failure.
+	PluginInfo pluginInfo;
 	pluginInfo.pluginManagerPtr.SetPtr(new PluginManager(
 											IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings),
 											IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettings),
 											nullptr));
-	
+
 	if (!pluginInfo.pluginManagerPtr.IsValid() || !pluginInfo.pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceSettings")){
 		SendErrorMessage(0,
 						 QStringLiteral("Unable to load a plugin for '%1'").arg(servicePath),
@@ -431,7 +386,7 @@ imtservice::IConnectionCollectionSharedPtr CServiceCollectionControllerComp::Get
 		if (plugin->GetPluginName() != fi.baseName() + "Settings"){
 			continue;
 		}
-		
+
 		connectionCollectionFactoryPtr = plugin->GetConnectionCollectionFactory();
 		if (connectionCollectionFactoryPtr != nullptr){
 			break;
@@ -455,9 +410,13 @@ imtservice::IConnectionCollectionSharedPtr CServiceCollectionControllerComp::Get
 		return nullptr;
 	}
 
-	pluginInfo.connectionCollectionPtr.FromUnique(connectionCollectionPtr);
+	pluginInfo.connectionCollectionPtr.FromUnique(std::move(connectionCollectionPtr));
 
-	return pluginInfo.connectionCollectionPtr;
+	PluginInfo& cachedInfo = m_pluginMap[key];
+	cachedInfo.pluginManagerPtr.SetPtr(pluginInfo.pluginManagerPtr.PopPtr());
+	cachedInfo.connectionCollectionPtr = pluginInfo.connectionCollectionPtr;
+
+	return cachedInfo.connectionCollectionPtr;
 }
 
 
@@ -501,28 +460,25 @@ void CServiceCollectionControllerComp::OnComponentDestroyed()
 
 // private methods
 
-bool CServiceCollectionControllerComp::CheckInputPortsUpdated(
-	agentinodata::IServiceInfo& serviceInfo,
-	const imtservice::IConnectionCollection& connectionCollection) const
+bool CServiceCollectionControllerComp::IsServicePathInUse(const QByteArray& servicePath, const QByteArray& excludeObjectId) const
 {
-	imtbase::IObjectCollection* connectionCollectionPtr = serviceInfo.GetInputConnections();
-	if (connectionCollectionPtr != nullptr){
-		imtbase::ICollectionInfo::Ids elementIds = connectionCollectionPtr->GetElementIds();
-		imtbase::IObjectCollection::DataPtr connectionDataPtr;
-		for (const imtbase::ICollectionInfo::Id& elementId: std::as_const(elementIds)){
-			if (connectionCollectionPtr->GetObjectData(elementId, connectionDataPtr)){
-				imtservice::CUrlConnectionParam* connectionParamPtr = dynamic_cast<imtservice::CUrlConnectionParam*>(connectionDataPtr.GetPtr());
-				if (connectionParamPtr != nullptr){
-					int httpPort = connectionParamPtr->GetPort(imtcom::CServerConnectionInterfaceParam::PT_HTTP);
-					int websocketPort = connectionParamPtr->GetPort(imtcom::CServerConnectionInterfaceParam::PT_WEBSOCKET);
-					const imtcom::IServerConnectionInterface* collectionParamPtr = connectionCollection.GetServerConnection(elementId);
-					
-					if (collectionParamPtr != nullptr && collectionParamPtr->GetPort(imtcom::CServerConnectionInterfaceParam::PT_HTTP) != httpPort
-						&& collectionParamPtr->GetPort(imtcom::CServerConnectionInterfaceParam::PT_WEBSOCKET) != websocketPort){
-						return true;
-					}
-				}
-			}
+	if (!m_objectCollectionCompPtr.IsValid()){
+		return false;
+	}
+
+	imtbase::ICollectionInfo::Ids elementIds = m_objectCollectionCompPtr->GetElementIds();
+	for (const imtbase::ICollectionInfo::Id& elementId: elementIds){
+		if (elementId == excludeObjectId){
+			continue;
+		}
+
+		const agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<const agentinodata::IServiceInfo*>(m_objectCollectionCompPtr->GetObjectPtr(elementId));
+		if (serviceInfoPtr == nullptr){
+			continue;
+		}
+
+		if (QString(serviceInfoPtr->GetServicePath()).compare(QString(servicePath), Qt::CaseInsensitive) == 0){
+			return true;
 		}
 	}
 
@@ -530,8 +486,153 @@ bool CServiceCollectionControllerComp::CheckInputPortsUpdated(
 }
 
 
+namespace
+{
+
+
+/**
+	True when \a serviceParam (host + HTTP/WS ports from the edited descriptor) differs
+	from what the plugin's connection collection currently holds for the same id.
+	An id the plugin does not track cannot be applied to it, so it never forces a restart.
+*/
+bool IsConnectionInterfaceChanged(
+			const imtservice::IConnectionCollection& connectionCollection,
+			const QByteArray& connectionId,
+			const imtcom::IServerConnectionInterface& serviceParam)
+{
+	const imtcom::IServerConnectionInterface* currentParamPtr =
+				connectionCollection.GetServerConnection(connectionId);
+	if (currentParamPtr == nullptr){
+		return false;
+	}
+
+	if (currentParamPtr->GetHost() != serviceParam.GetHost()){
+		return true;
+	}
+
+	return currentParamPtr->GetPort(imtcom::IServerConnectionInterface::PT_HTTP)
+					!= serviceParam.GetPort(imtcom::IServerConnectionInterface::PT_HTTP)
+				|| currentParamPtr->GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET)
+					!= serviceParam.GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
+}
+
+
+/** Any element of \a connections (inputs or dependant links) whose interface changed? */
+bool HasChangedConnection(
+			imtbase::IObjectCollection* connections,
+			const imtservice::IConnectionCollection& connectionCollection)
+{
+	if (connections == nullptr){
+		return false;
+	}
+
+	const imtbase::ICollectionInfo::Ids elementIds = connections->GetElementIds();
+	for (const imtbase::ICollectionInfo::Id& elementId : elementIds){
+		imtbase::IObjectCollection::DataPtr connectionDataPtr;
+		if (!connections->GetObjectData(elementId, connectionDataPtr)){
+			continue;
+		}
+
+		// Both CUrlConnectionParam and CUrlConnectionLinkParam are connection interfaces.
+		const imtcom::IServerConnectionInterface* serviceParamPtr =
+					dynamic_cast<const imtcom::IServerConnectionInterface*>(connectionDataPtr.GetPtr());
+		if (serviceParamPtr != nullptr
+					&& IsConnectionInterfaceChanged(connectionCollection, elementId, *serviceParamPtr)){
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+} // namespace
+
+
+bool CServiceCollectionControllerComp::IsConnectionUpdateRequired(
+			agentinodata::IServiceInfo& serviceInfo,
+			const imtservice::IConnectionCollection& connectionCollection) const
+{
+	if (serviceInfo.GetTracingLevel() != connectionCollection.GetTracingLevel()){
+		return true;
+	}
+
+	return HasChangedConnection(serviceInfo.GetInputConnections(), connectionCollection)
+				|| HasChangedConnection(serviceInfo.GetDependantServiceConnections(), connectionCollection);
+}
+
+
+void CServiceCollectionControllerComp::PopulateConnectionsFromPlugin(
+			agentinodata::IServiceInfo& serviceInfo,
+			const imtservice::IConnectionCollection& connectionCollection) const
+{
+	imtbase::IObjectCollection* inputConnectionsPtr = serviceInfo.GetInputConnections();
+	imtbase::IObjectCollection* dependantConnectionsPtr = serviceInfo.GetDependantServiceConnections();
+	if (inputConnectionsPtr == nullptr || dependantConnectionsPtr == nullptr){
+		return;
+	}
+
+	const imtbase::ICollectionInfo* connectionListPtr =
+				dynamic_cast<const imtbase::ICollectionInfo*>(connectionCollection.GetServerConnectionList());
+	if (connectionListPtr == nullptr){
+		return;
+	}
+
+	const imtbase::ICollectionInfo::Ids connectionIds = connectionListPtr->GetElementIds();
+	for (const QByteArray& connectionId : connectionIds){
+		const imtservice::IServiceConnectionInfo* metaInfoPtr =
+					connectionCollection.GetConnectionMetaInfo(connectionId);
+		if (metaInfoPtr == nullptr){
+			continue;
+		}
+
+		const imtservice::IServiceConnectionInfo::ConnectionType connectionType = metaInfoPtr->GetConnectionType();
+		const bool isInput = (connectionType == imtservice::IServiceConnectionInfo::CT_INPUT);
+		imtbase::IObjectCollection* targetCollectionPtr = isInput ? inputConnectionsPtr : dependantConnectionsPtr;
+		if (targetCollectionPtr->GetElementIds().contains(connectionId)){
+			continue;
+		}
+
+		istd::TDelPtr<imtservice::CServiceConnectionInfo> connectionParamPtr;
+		if (isInput){
+			connectionParamPtr.SetPtr(new imtservice::CUrlConnectionParam);
+		}
+		else{
+			connectionParamPtr.SetPtr(new imtservice::CUrlConnectionLinkParam);
+		}
+
+		connectionParamPtr->SetConnectionType(connectionType);
+		connectionParamPtr->SetServiceTypeId(metaInfoPtr->GetServiceTypeId());
+
+		const imtcom::IServerConnectionInterface& defaultInterface = metaInfoPtr->GetDefaultInterface();
+		connectionParamPtr->SetDefaultServiceInterface(defaultInterface);
+		connectionParamPtr->SetHost(defaultInterface.GetHost());
+		connectionParamPtr->SetPort(
+					imtcom::IServerConnectionInterface::PT_HTTP,
+					defaultInterface.GetPort(imtcom::IServerConnectionInterface::PT_HTTP));
+		connectionParamPtr->SetPort(
+					imtcom::IServerConnectionInterface::PT_WEBSOCKET,
+					defaultInterface.GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET));
+
+		const QString connectionName =
+					connectionListPtr->GetElementInfo(connectionId, imtbase::ICollectionInfo::EIT_NAME).toString();
+		const QString connectionDescription =
+					connectionListPtr->GetElementInfo(connectionId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString();
+
+		targetCollectionPtr->InsertNewObject(
+					isInput ? QByteArrayLiteral("ConnectionInfo") : QByteArrayLiteral("ConnectionLink"),
+					connectionName,
+					connectionDescription,
+					connectionParamPtr.PopPtr(),
+					connectionId);
+	}
+}
+
+
 bool CServiceCollectionControllerComp::UpdateConnectionCollectionFromService(agentinodata::IServiceInfo& serviceInfo, imtservice::IConnectionCollection& connectionCollection) const
 {
+	bool retVal = true;
+
 	imtbase::IObjectCollection* inputCollectionPtr = serviceInfo.GetInputConnections();
 	if (inputCollectionPtr != nullptr){
 		imtbase::ICollectionInfo::Ids elementIds = inputCollectionPtr->GetElementIds();
@@ -551,7 +652,13 @@ bool CServiceCollectionControllerComp::UpdateConnectionCollectionFromService(age
 						serverConnectionParam.SetPort(protocolType, connectionParamPtr->GetPort(protocolType));
 					}
 
-					connectionCollection.SetServerConnectionInterface(elementId, serverConnectionParam);
+					if (!connectionCollection.SetServerConnectionInterface(elementId, serverConnectionParam)){
+						SendErrorMessage(0,
+									QString("Input connection '%1' is not tracked by the service's settings plugin — its URL was not applied")
+												.arg(QString::fromUtf8(elementId)),
+									"CServiceCollectionControllerComp");
+						retVal = false;
+					}
 				}
 			}
 		}
@@ -576,7 +683,13 @@ bool CServiceCollectionControllerComp::UpdateConnectionCollectionFromService(age
 						serverConnectionParam.SetPort(protocolType, connectionLinkParamPtr->GetPort(protocolType));
 					}
 
-					connectionCollection.SetServerConnectionInterface(elementId, serverConnectionParam);
+					if (!connectionCollection.SetServerConnectionInterface(elementId, serverConnectionParam)){
+						SendErrorMessage(0,
+									QString("Output connection '%1' is not tracked by the service's settings plugin — its URL was not applied")
+												.arg(QString::fromUtf8(elementId)),
+									"CServiceCollectionControllerComp");
+						retVal = false;
+					}
 				}
 			}
 		}
@@ -584,7 +697,7 @@ bool CServiceCollectionControllerComp::UpdateConnectionCollectionFromService(age
 
 	connectionCollection.SetTracingLevel(serviceInfo.GetTracingLevel());
 
-	return true;
+	return retVal;
 }
 
 

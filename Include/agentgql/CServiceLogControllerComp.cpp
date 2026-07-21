@@ -11,6 +11,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
+#include <QtCore/QMutexLocker>
 
 // Agentino includes
 #include <agentinodata/CServiceInfo.h>
@@ -52,6 +53,8 @@ QJsonObject CServiceLogControllerComp::CreateInternalResponse(
 
 	QFileInfo fileInfo(servicePath);
 	QString pluginPath = fileInfo.path() + "/Plugins";
+
+	QMutexLocker pluginMapLocker(&m_pluginMapMutex);
 
 	if (!m_pluginMap.contains(serviceName)){
 		istd::TDelPtr<PluginManager>& pluginManagerPtr = m_pluginMap[serviceName];

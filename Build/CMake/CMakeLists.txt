@@ -47,7 +47,7 @@ add_subdirectory("${INCLUDE_DIR}/agentinodata/CMake" "${AUX_INCLUDE_DIR}/agentin
 add_dependencies(agentinodata agentinosdl)
 
 add_subdirectory("${INCLUDE_DIR}/agentinogql/CMake" "${AUX_INCLUDE_DIR}/agentinogql")
-add_dependencies(agentinogql agentinosdl)
+add_dependencies(agentinogql agentinosdl agentinodata)
 
 add_subdirectory("${INCLUDE_DIR}/agentgql/CMake" "${AUX_INCLUDE_DIR}/agentgql")
 add_dependencies(agentgql agentinosdl)

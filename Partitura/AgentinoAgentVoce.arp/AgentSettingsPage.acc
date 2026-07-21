@@ -69,7 +69,7 @@
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="EditCommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
+                                    <Data IsEnabled="false">
                                         <Values>
                                             <Value>ViewServices</Value>
                                             <Value>EditService</Value>
@@ -80,14 +80,14 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="NewCommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
+                                    <Data IsEnabled="false">
                                         <Values>
                                             <Value>EditService</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
                                 <AttributeInfo Id="RemoveCommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
+                                    <Data IsEnabled="false">
                                         <Values>
                                             <Value>EditService</Value>
                                         </Values>
@@ -145,7 +145,7 @@
                                     <Data IsEnabled="true" Value="Services"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="PermissionChecker" Type="Reference" ExportId="">
-                                    <Data IsEnabled="true" Value="CheckPermissionOr"/>
+                                    <Data IsEnabled="false" Value="CheckPermissionOr"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>
@@ -302,7 +302,7 @@
                                     <Data IsEnabled="true" Value="StartService"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
+                                    <Data IsEnabled="false">
                                         <Values>
                                             <Value>StartService</Value>
                                         </Values>
@@ -342,7 +342,7 @@
                                     <Data IsEnabled="true" Value="StopService"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
+                                    <Data IsEnabled="false">
                                         <Values>
                                             <Value>StopService</Value>
                                         </Values>
@@ -400,7 +400,7 @@
                                     <Data IsEnabled="true" Value="Close"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
+                                    <Data IsEnabled="false">
                                         <Values>
                                             <Value>ViewLicenses</Value>
                                         </Values>
@@ -490,7 +490,7 @@
                                     <Data IsEnabled="true" Value="Service"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="PermissionChecker" Type="Reference" ExportId="">
-                                    <Data IsEnabled="true" Value="CheckPermissionOr"/>
+                                    <Data IsEnabled="false" Value="CheckPermissionOr"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>
@@ -535,7 +535,7 @@
                                     <Data IsEnabled="true" Value="Redo"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
+                                    <Data IsEnabled="false">
                                         <Values>
                                             <Value>EditLicense</Value>
                                             <Value>ChangeLicense</Value>
@@ -580,7 +580,7 @@
                                     <Data IsEnabled="true" Value="Save"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
+                                    <Data IsEnabled="false">
                                         <Values>
                                             <Value>EditLicense</Value>
                                             <Value>ChangeLicense</Value>
@@ -667,7 +667,7 @@
                                     <Data IsEnabled="true" Value="Undo"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
+                                    <Data IsEnabled="false">
                                         <Values>
                                             <Value>EditLicense</Value>
                                             <Value>ChangeLicense</Value>

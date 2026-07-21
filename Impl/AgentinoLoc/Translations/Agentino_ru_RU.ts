@@ -1328,6 +1328,26 @@
         <source>Url</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings file: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Settings file does not exist yet: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No settings file is configured for this service</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ServiceValidator</name>
@@ -1377,6 +1397,7 @@
     </message>
 </context>
 <context>
+<<<<<<< HEAD
     <name>AgentCollectionViewBase</name>
     <message>
         <location filename="../../../Include/agentinoqml/Qml/AgentCollectionViewBase.qml" line="+34"/>
@@ -1410,6 +1431,12 @@
         <location line="+17"/>
         <source>Send</source>
         <translation>Отправить</translation>
+=======
+    <name>ServiceEditorWrap</name>
+    <message>
+        <source>Service settings saved</source>
+        <translation type="unfinished"></translation>
+>>>>>>> origin/main
     </message>
 </context>
 </TS>

@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentgql/CMessageCollectionControllerComp.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/ServiceLog.h>
+#include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtCollection.h>
 
 
 // Qt includes
 #include <QtCore/QJsonObject>
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
+#include <QtCore/QMutexLocker>
 
 // ACF includes
 #include <ilog/CMessage.h>
@@ -19,16 +22,16 @@ namespace agentgql
 {
 
 
-// reimplemented (sdl::agentino::ServiceLog::CServiceLogCollectionControllerCompBase)
+// reimplemented (sdl::V1_0::agentino::CServiceLogCollectionControllerCompBase)
 
 bool CMessageCollectionControllerComp::CreateRepresentationFromObject(
 			const ::imtbase::IObjectCollectionIterator& objectCollectionIterator,
-			const sdl::agentino::ServiceLog::CGetServiceLogGqlRequest& getServiceLogRequest,
-			sdl::imtbase::ImtCollection::CMessageItem::V1_0& representationObject,
+			const sdl::V1_0::agentino::CGetServiceLogGqlRequest& getServiceLogRequest,
+			sdl::V1_0::imtbase::CMessageItem& representationObject,
 			QString& errorMessage) const
 {
 	QByteArray objectId = objectCollectionIterator.GetObjectId();
-	sdl::agentino::ServiceLog::GetServiceLogRequestInfo requestInfo = getServiceLogRequest.GetRequestInfo();
+	sdl::V1_0::agentino::GetServiceLogRequestInfo requestInfo = getServiceLogRequest.GetRequestInfo();
 
 	const ilog::CMessage* messagePtr = nullptr;
 	imtbase::IObjectCollection::DataPtr dataPtr;
@@ -48,7 +51,7 @@ bool CMessageCollectionControllerComp::CreateRepresentationFromObject(
 		serviceId = headers["serviceid"];
 	}
 
-	istd::TUniqueInterfacePtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(serviceId, errorMessage);
+	istd::TSharedInterfacePtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(serviceId, errorMessage);
 	if (!messageCollectionPtr.IsValid()){
 		SendErrorMessage(0, errorMessage, "CObjectCollectionControllerCompBase");
 
@@ -93,7 +96,7 @@ QJsonObject CMessageCollectionControllerComp::ListObjects(
 {
 	QByteArray serviceid = gqlRequest.GetHeader("serviceid");
 
-	istd::TUniqueInterfacePtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(serviceid, errorMessage);
+	istd::TSharedInterfacePtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(serviceid, errorMessage);
 	if (!messageCollectionPtr.IsValid()){
 		SendErrorMessage(0, errorMessage, "CMessageCollectionControllerComp");
 
@@ -130,9 +133,9 @@ QJsonObject CMessageCollectionControllerComp::ListObjects(
 		messageCollectionPtr->CreateObjectCollectionIterator(QByteArray(), offset, count, &filterParams);
 	if (iterator.IsValid()){
 
-		int elementsCount = iterator->GetElementsCount();
+		elementsCount = iterator->GetElementsCount();
 
-		int pagesCount = std::ceil(elementsCount / (double)count);
+		pagesCount = std::ceil(elementsCount / (double)count);
 		if (pagesCount <= 0){
 			pagesCount = 1;
 		}
@@ -167,17 +170,34 @@ QJsonObject CMessageCollectionControllerComp::ListObjects(
 
 void CMessageCollectionControllerComp::OnComponentDestroyed()
 {
-	m_pluginMap.clear();
+	{
+		QMutexLocker pluginMapLocker(&m_pluginMapMutex);
+
+		m_messageCollectionMap.clear();
+		m_pluginMap.clear();
+	}
 
 	BaseClass::OnComponentDestroyed();
 }
 
 
-istd::TUniqueInterfacePtr<imtbase::IObjectCollection> CMessageCollectionControllerComp::GetMessageCollection(const QByteArray& serviceId, QString& errorMessage) const
+istd::TSharedInterfacePtr<imtbase::IObjectCollection> CMessageCollectionControllerComp::GetMessageCollection(const QByteArray& serviceId, QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
 		errorMessage = QString("Internal error").toUtf8();
 		return nullptr;
+	}
+
+	QMutexLocker pluginMapLocker(&m_pluginMapMutex);
+
+	// Reuse the collection already opened for this service instead of asking the plug-in's
+	// factory to create a new instance (e.g. re-opening a SQLite connection) on every call -
+	// this method is called once per row (from CreateRepresentationFromObject()) in addition
+	// to once from ListObjects(), so recreating the collection here previously reopened the
+	// underlying storage for every single log line.
+	MessageCollectionMap::const_iterator cachedIt = m_messageCollectionMap.constFind(serviceId);
+	if (cachedIt != m_messageCollectionMap.constEnd() && cachedIt.value().IsValid()){
+		return cachedIt.value();
 	}
 
 	imtbase::IObjectCollection::DataPtr dataPtr;
@@ -219,8 +239,20 @@ istd::TUniqueInterfacePtr<imtbase::IObjectCollection> CMessageCollectionControll
 					}
 				}
 				if (messageCollectionFactoryPtr != nullptr){
-					return messageCollectionFactoryPtr->CreateInstance();
+					istd::TUniqueInterfacePtr<imtbase::IObjectCollection> messageCollection = messageCollectionFactoryPtr->CreateInstance();
+
+					istd::TSharedInterfacePtr<imtbase::IObjectCollection> messageCollectionPtr;
+					messageCollectionPtr.FromUnique(std::move(messageCollection));
+
+					if (messageCollectionPtr.IsValid()){
+						m_messageCollectionMap[serviceId] = messageCollectionPtr;
+					}
+
+					return messageCollectionPtr;
 				}
+
+				errorMessage = QString("Plugin directory '%1' loaded but no plugin named '%2' was found for service '%3' — GetServiceLog will return empty")
+							.arg(pluginPath, fileInfo.baseName() + "Log", QString::fromUtf8(serviceName));
 			}
 		}
 	}
