@@ -322,17 +322,13 @@
                                 <AttributeInfo Id="CenterAlignmentCommands" Type="Reference[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
-<<<<<<< HEAD
-                                            <Value>Services</Value>
-                                            <Value>Terminal</Value>
-=======
                                             <Value>Approve</Value>
                                             <Value>Reject</Value>
                                             <Value>Suspend</Value>
                                             <Value>Resume</Value>
                                             <Value>Revoke</Value>
                                             <Value>Reset</Value>
->>>>>>> origin/main
+                                            <Value>Terminal</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>

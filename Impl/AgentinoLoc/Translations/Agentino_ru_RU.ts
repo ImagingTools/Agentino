@@ -1397,10 +1397,15 @@
     </message>
 </context>
 <context>
-<<<<<<< HEAD
+    <name>ServiceEditorWrap</name>
+    <message>
+        <source>Service settings saved</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AgentCollectionViewBase</name>
     <message>
-        <location filename="../../../Include/agentinoqml/Qml/AgentCollectionViewBase.qml" line="+34"/>
         <source>Terminal</source>
         <translation>Терминал</translation>
     </message>
@@ -1408,35 +1413,24 @@
 <context>
     <name>TerminalView</name>
     <message>
-        <location filename="../../../Include/agentinoqml/Qml/TerminalView.qml" line="+74"/>
         <source>Open</source>
         <translation>Открыть</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Clear</source>
         <translation>Очистить</translation>
     </message>
     <message>
-        <location line="+30"/>
         <source>Type a command and press Enter</source>
         <translation>Введите команду и нажмите Enter</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Send</source>
         <translation>Отправить</translation>
-=======
-    <name>ServiceEditorWrap</name>
-    <message>
-        <source>Service settings saved</source>
-        <translation type="unfinished"></translation>
->>>>>>> origin/main
     </message>
 </context>
 </TS>

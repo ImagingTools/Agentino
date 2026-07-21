@@ -30,20 +30,14 @@ I_EXPORT_COMPONENT(
 			"GraphQl Service Controller");
 
 I_EXPORT_COMPONENT(
-<<<<<<< HEAD
 			TerminalController,
 			"Remote terminal controller",
 			"GraphQl Remote Terminal Controller");
 
 I_EXPORT_COMPONENT(
-			AgentinoSubscriptionClient,
-			"Service manager subscription client for agent",
-			"GraphQl Service  Subscription Client");
-=======
 			AgentRegistrationClient,
 			"Announces this agent to the central server on every (re)connect",
 			"Agent Registration Client");
->>>>>>> origin/main
 
 I_EXPORT_COMPONENT(
 			ServiceLogController,

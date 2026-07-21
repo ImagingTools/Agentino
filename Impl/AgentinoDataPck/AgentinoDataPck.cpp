@@ -41,16 +41,11 @@ I_EXPORT_COMPONENT(
 			"Agent Service Controller / Supervisor");
 
 I_EXPORT_COMPONENT(
-<<<<<<< HEAD
 			TerminalController,
 			"Remote terminal controller",
 			"Remote Terminal Session Controller");
 
 I_EXPORT_COMPONENT(
-			AgentCollection,
-			"Agent collection",
-			"Agent Collection");
-=======
 			LegacyServiceController,
 			"Legacy poll-based service controller",
 			"Legacy Service Controller");
@@ -59,7 +54,6 @@ I_EXPORT_COMPONENT(
 			AgentServiceManager,
 			"ServiceManager role over agent nested service mirrors (R1.4 split)",
 			"Agent Service Manager");
->>>>>>> origin/main
 
 I_EXPORT_COMPONENT(
 			ServiceStatusInfo,
