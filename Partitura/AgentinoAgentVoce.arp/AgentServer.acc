@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6435" Description="ACF"/>
-            <Version Id="1" Number="2410" Description="ACF-Solutions"/>
+            <Version Id="0" Number="6500" Description="ACF"/>
+            <Version Id="1" Number="2438" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -61,6 +61,9 @@
                     <AttributeInfo Id="ServiceRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TerminalSessionManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="TerminalController/TerminalSessionManager"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
                     </AttributeInfo>
@@ -87,6 +90,30 @@
                     </AttributeInfo>
                     <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="AgentRegistrationClient" PackageId="AgentGqlPck" ComponentId="AgentRegistrationClient">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/ClientId2"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="GqlClient" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="WebSocketClient"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/ServerConnectionInterface"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="WebLoginStatus" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="WebSocketClient"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -129,6 +156,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceController" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServiceController"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TerminalSessionManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="TerminalController/TerminalSessionManager"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
@@ -238,6 +268,15 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="ProcessHost" PackageId="AgentinoDataPck" ComponentId="ProcessHost">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="Repositories" PackageId="" ComponentId="Repositories">
             <Data IsEnabled="true" Flags="1">
                 <AttributeInfoMap>
@@ -307,11 +346,29 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ProcessHost" PackageId="AgentinoDataPck" ComponentId="ProcessHost">
+        <Element Id="ServiceController" PackageId="AgentinoDataPck" ComponentId="ServiceController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ProcessHost" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ProcessHost"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RuntimeStatePath" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="ServiceRuntimePids.json"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceTypeCatalog" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServiceTypeCatalog"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="StableSeconds" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="15"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="StopTimeoutMs" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="10000"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -325,53 +382,11 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServiceController" PackageId="AgentinoDataPck" ComponentId="ServiceController">
+        <Element Id="TerminalController" PackageId="AgentinoAgentVoce" ComponentId="TerminalController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ProcessHost" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ProcessHost"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ServiceCollection" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ServiceTypeCatalog" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServiceTypeCatalog"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="StopTimeoutMs" Type="Integer" ExportId="">
-                        <Data IsEnabled="true" Value="10000"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="StableSeconds" Type="Integer" ExportId="">
-                        <Data IsEnabled="true" Value="15"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="RuntimeStatePath" Type="String" ExportId="">
-                        <Data IsEnabled="true" Value="ServiceRuntimePids.json"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="AgentRegistrationClient" PackageId="AgentGqlPck" ComponentId="AgentRegistrationClient">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings/ClientId2"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="GqlClient" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="WebSocketClient"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings/ServerConnectionInterface"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="WebLoginStatus" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="WebSocketClient"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -394,6 +409,7 @@
                                 <Value>AgentSubscribers/ServiceLogSubscriberController</Value>
                                 <Value>AgentSubscribers/AgentLogCollectionSubscriberController</Value>
                                 <Value>AgentSubscribers/AgentServicesRemoteSubscriberProxy</Value>
+                                <Value>AgentSubscribers/TerminalOutputPublisher</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -432,6 +448,7 @@
                                 <Value>AgentSubscribers/ServiceLogSubscriberController</Value>
                                 <Value>AgentSubscribers/AgentLogCollectionSubscriberController</Value>
                                 <Value>AgentSubscribers/AgentServicesRemoteSubscriberProxy</Value>
+                                <Value>AgentSubscribers/TerminalOutputPublisher</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -731,12 +748,6 @@
                                 <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="ServerConnectionInterface">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
-                                <AttributeInfo Id="ServerLoginParam" Type="Id" ExportId="">
-                                    <Data IsEnabled="false" Value=""/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="ServerPasswordParam" Type="Id" ExportId="">
-                                    <Data IsEnabled="false" Value=""/>
-                                </AttributeInfo>
                                 <AttributeInfo Id="ServerRequestHandler" Type="Reference" ExportId="">
                                     <Data IsEnabled="true" Value="WebSocketServlet"/>
                                 </AttributeInfo>
@@ -806,17 +817,18 @@
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="HttpServerFramework"/>
     </ExportedInterfaces>
     <ExportedComponents>
+        <Component ExportedId="AgentRegistrationClient" ComponentId="AgentRegistrationClient"/>
         <Component ExportedId="AgentServiceCollectionSyncClient" ComponentId="AgentServiceCollectionSyncClient"/>
         <Component ExportedId="AutoPersistence" ComponentId="ServerSettings/AutoPersistence"/>
         <Component ExportedId="FileAutoPersistence" ComponentId="Repositories/FileAutoPersistence"/>
         <Component ExportedId="HttpServerFramework" ComponentId="HttpServerFramework"/>
         <Component ExportedId="Preferences" ComponentId="ServerSettings/Preferences"/>
+        <Component ExportedId="ProcessHost" ComponentId="ProcessHost"/>
         <Component ExportedId="ServerSettings" ComponentId="ServerSettings"/>
         <Component ExportedId="ServiceCollection" ComponentId="Repositories/ServiceCollection"/>
         <Component ExportedId="ServiceController" ComponentId="ServiceController"/>
-        <Component ExportedId="ProcessHost" ComponentId="ProcessHost"/>
         <Component ExportedId="ServiceTypeCatalog" ComponentId="ServiceTypeCatalog"/>
-        <Component ExportedId="AgentRegistrationClient" ComponentId="AgentRegistrationClient"/>
+        <Component ExportedId="TerminalSessionManager" ComponentId="TerminalController/TerminalSessionManager"/>
         <Component ExportedId="WebSocketServerFramework" ComponentId="WebSocketServerFramework"/>
     </ExportedComponents>
 </Acf>

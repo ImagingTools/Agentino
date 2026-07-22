@@ -463,6 +463,7 @@
                                 <Value>Subscribers/TopologySubscriber</Value>
                                 <Value>ServiceStatusSubscriberController</Value>
                                 <Value>Subscribers/LogSubscriberProxyController</Value>
+                                <Value>Subscribers/TerminalOutputSubscriberProxy</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -673,6 +674,28 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
+                    <Element Id="TerminalOutputSubscriberProxy" PackageId="AgentinoGqlPck" ComponentId="TerminalOutputSubscriberProxy">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>OnTerminalOutputChanged</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="SubscriptionManager" Type="Reference" ExportId="SubscriptionManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
                     <Element Id="RolesSubscriberController" PackageId="ImtServerGqlPck" ComponentId="ModelChangeNotifier">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
@@ -819,6 +842,7 @@
                     <Component ExportedId="RolesSubscriberController" ComponentId="RolesSubscriberController"/>
                     <Component ExportedId="ServiceCollectionSubscriberController" ComponentId="ServiceCollectionSubscriberController"/>
                     <Component ExportedId="ServiceStatusCollectionSubscriberController" ComponentId="ServiceStatusCollectionSubscriberController"/>
+                    <Component ExportedId="TerminalOutputSubscriberProxy" ComponentId="TerminalOutputSubscriberProxy"/>
                     <Component ExportedId="TopologySubscriber" ComponentId="TopologySubscriber"/>
                     <Component ExportedId="UserGroupsSubscriberController" ComponentId="UserGroupsSubscriberController"/>
                     <Component ExportedId="UsersSubscriberController" ComponentId="UsersSubscriberController"/>

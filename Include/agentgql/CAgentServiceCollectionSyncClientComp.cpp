@@ -247,17 +247,23 @@ void CAgentServiceCollectionSyncClientComp::NotifyServer(
 		}
 	}
 
+	// itemId for "removed" is always empty (the plural ids travel via itemIds instead) - use
+	// whichever one is actually populated so the log names the real service(s).
+	const QString displayId = itemIds.isEmpty() ? QString::fromUtf8(itemId) : QString::fromUtf8(itemIds.join(';'));
+
+	// Fire-and-forget: the server mirror is refreshed via the deferred GetService/reconcile
+	// path regardless of whether this notify's ACK ever comes back (and the periodic reconcile
+	// catches anything this misses), so there is nothing useful to do with the response here -
+	// waiting for it just held this component's thread hostage for up to SendRequest()'s 30s
+	// budget on every service change, which is what showed up as spurious "no response from
+	// server" timeouts under normal load. SendRequestNoWait() only reports whether the message
+	// was handed to the socket, not whether the server acted on it.
 	imtclientgql::IGqlClient::GqlRequestPtr requestPtr(gqlRequestPtr);
-	imtclientgql::IGqlClient::GqlResponsePtr responsePtr = m_gqlClientCompPtr->SendRequest(requestPtr);
-	if (!responsePtr.IsValid()){
-		// Typical cause (fixed on server): notify handler used to call blocking GetService
-		// back to this agent while we Wait() on this SendRequest → mutual timeout.
+	if (!m_gqlClientCompPtr->SendRequestNoWait(requestPtr)){
 		SendErrorMessage(
 					0,
-					QString("Live service sync notify failed (%1 / %2) — no response from server "
-								"(timeout or transport error; check server log for "
-								"NotifyAgentServicesCollectionChanged / deferred sync)")
-								.arg(typeOperation, QString::fromUtf8(itemId)),
+					QString("Live service sync notify (%1 / %2) could not be sent to the server")
+								.arg(typeOperation, displayId),
 					"CAgentServiceCollectionSyncClientComp");
 	}
 }

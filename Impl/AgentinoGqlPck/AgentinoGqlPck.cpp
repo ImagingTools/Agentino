@@ -40,6 +40,11 @@ I_EXPORT_COMPONENT(
 			"Service Controller Proxy");
 
 I_EXPORT_COMPONENT(
+			TerminalControllerProxy,
+			"Remote terminal controller proxy",
+			"Remote Terminal Controller Proxy");
+
+I_EXPORT_COMPONENT(
 			FileSystemControllerProxy,
 			"File system controller proxy forwarding browse requests to an agent by clientid",
 			"File System Controller Proxy Folder Browser");

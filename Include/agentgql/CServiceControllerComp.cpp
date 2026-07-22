@@ -492,7 +492,13 @@ sdl::V1_0::agentino::CPluginInfo CServiceControllerComp::OnLoadPlugin(
 			errorMessage = QString("Unable to load plugin. Error: Service path '%1' does not exist").arg(servicePath);
 		}
 		else{
-			errorMessage = QString("Unable to load plugin. Error: No connection settings plugin found next to '%1'").arg(servicePath);
+			// Same derivation as CServiceCollectionControllerComp::GetConnectionCollectionByServicePath()
+			// (pluginPath / expected plugin name) - repeated here only to explain to the user
+			// where we actually looked, since that method has no error out-param.
+			const QString pluginPath = fileInfo.dir().absoluteFilePath(QStringLiteral("Plugins"));
+			errorMessage = QString("Unable to load plugin. Error: No connection settings plugin found next to '%1'. "
+									"Searched '%2' for a plugin named '%3Settings'.")
+						.arg(servicePath, pluginPath, fileInfo.baseName());
 		}
 
 		return response;

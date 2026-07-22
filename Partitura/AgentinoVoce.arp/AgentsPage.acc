@@ -335,7 +335,6 @@
                                     <Data IsEnabled="true">
                                         <Values>
                                             <Value>StandardCollectionCommands/Edit</Value>
-                                            <Value>StandardCollectionCommands/Remove</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>

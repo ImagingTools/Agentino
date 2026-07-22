@@ -30,6 +30,11 @@ I_EXPORT_COMPONENT(
 			"GraphQl Service Controller");
 
 I_EXPORT_COMPONENT(
+			TerminalController,
+			"Remote terminal controller",
+			"GraphQl Remote Terminal Controller");
+
+I_EXPORT_COMPONENT(
 			AgentRegistrationClient,
 			"Announces this agent to the central server on every (re)connect",
 			"Agent Registration Client");

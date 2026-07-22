@@ -14,9 +14,18 @@ RemoteCollectionView {
 	// shadow any outer id "root" from the dialog creation context.
 	id: agentsView;
 
+	// Match Services / AgentEditor surfaces (ViewBase default is backgroundColor2).
+	contentColor: Style.baseColor
+
 	visibleMetaInfo: false;
+	// Column sort is not useful for the Agents grid (status/enrollment are live server fields).
+	hasSort: false
 
 	collectionId: "Agents";
+
+	AgentinoCollectionTableStyle {
+		id: collectionTableStyle
+	}
 
 	// "status" is computed live server-side (connection state + enrollment state), never
 	// stored, so the generic ComplexFilter/collectionFilter machinery this view's
@@ -202,10 +211,13 @@ RemoteCollectionView {
 
 		agentsView.filterMenu.decorator = agentStatusFilterComp;
 		agentsView.refreshStatusCounts();
+		collectionTableStyle.apply(agentsView.table)
 	}
 
 	onHeadersChanged: {
 		if (agentsView.table.headers.getItemsCount() > 0){
+			// Re-apply after CollectionViewBase may reset border defaults on headers.
+			collectionTableStyle.apply(agentsView.table)
 			let orderIndex = agentsView.table.getHeaderIndex("status");
 			if (orderIndex >= 0){
 				agentsView.table.setColumnContentComponent(orderIndex, stateColumnContentComp);
@@ -213,8 +225,9 @@ RemoteCollectionView {
 		}
 	}
 
-	// Double-click opens the same Agent editor as the "Edit" toolbar command - Services and
-	// Log now live inside it as MultiPageView pages instead of a separate destination.
+	// Double-click opens the same Agent editor as the "Edit" toolbar command - Services,
+	// Log and Terminal now live inside it as MultiPageView pages instead of separate
+	// destinations reachable only from this collection view.
 	function onEdit(){
 		if (agentsView.commandsDelegate){
 			agentsView.commandsDelegate.commandHandle("Edit");

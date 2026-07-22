@@ -101,6 +101,13 @@ bool CAgentServiceManagerComp::AddService(
 				&serviceInfo,
 				serviceId);
 	if (objectId.isEmpty()) {
+		// InsertNewObject now atomically rejects a colliding id (duplicate guard in
+		// CObjectCollectionBase). When a concurrent AddService for the same service already
+		// created the row, converge by updating it in place rather than failing - otherwise
+		// this reconcile's data for the service would be silently lost.
+		if (serviceCollectionPtr->GetElementIds().contains(serviceId)) {
+			return SetService(agentId, serviceId, serviceInfo, serviceName, serviceDescription, false);
+		}
 		return false;
 	}
 	ChangeSet changeSet(CF_SERVICE_ADDED);

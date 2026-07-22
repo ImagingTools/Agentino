@@ -51,6 +51,19 @@ bool CServiceSupervisorComp::Start(const QByteArray& serviceId, QString& errorMe
 	}
 	errorMessage.clear();
 
+	// Reject an unconfigured service (no executable / start script) before touching the
+	// FSM at all - otherwise it flickers Stopped -> Starting -> Failed ("Running impossible")
+	// for something that was never valid to start. BuildSpawnRequest() is a pure read of
+	// the service descriptor, so probing it here is cheap and has no side effects.
+	{
+		IProcessHost::SpawnRequest probeRequest;
+		QString configError;
+		if (!BuildSpawnRequest(serviceId, probeRequest, configError)) {
+			errorMessage = configError;
+			return false;
+		}
+	}
+
 	ServiceRuntimeState& state = EnsureState(serviceId);
 
 	// Stuck Starting/Running without a process: recover by spawning.

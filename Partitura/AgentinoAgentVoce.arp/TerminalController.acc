@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Acf>
+    <AcfHeader>
+        <VersionInfos>
+            <Version Id="0" Number="6500" Description="ACF"/>
+            <Version Id="1" Number="2438" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395264" Description="Qt Framework"/>
+        </VersionInfos>
+    </AcfHeader>
+    <Description>All agent-side remote terminal logic: the session manager that owns the shell processes. Instantiated as a direct AgentServer sibling (not nested inside Handlers.acc) so its state (open shells, buffered output) survives across the many separate GraphQL requests one terminal session spans - Handlers.acc's own request-handler tree is recreated per request and cannot hold this state, the same reason ServiceController/ProcessHost live at this level instead of inside Handlers.acc.</Description>
+    <Keywords>Terminal Remote Shell Agent Company='ImagingTools' Project='Agentino'</Keywords>
+    <ElementsList>
+        <Element Id="TerminalSessionManager" PackageId="AgentinoDataPck" ComponentId="TerminalSessionManager">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+    </ElementsList>
+    <EmbeddedRegistriesList/>
+    <ExportedInterfaces>
+        <Interface InterfaceId="agentinodata::ITerminalController" ComponentId="TerminalSessionManager"/>
+    </ExportedInterfaces>
+    <ExportedComponents>
+        <Component ExportedId="TerminalSessionManager" ComponentId="TerminalSessionManager"/>
+    </ExportedComponents>
+</Acf>

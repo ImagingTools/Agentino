@@ -307,19 +307,114 @@ void CAgentChangeObserverComp::HandleServiceStatusChanged(
 	}
 
 	if (applyResult == ApplyStatusResult::Changed){
-		// CollectionSubscriber already fans out OnServiceStatusChanged.
+		// ServiceStatusCollection just changed - MI_SERVICE_STATUS_COLLECTION
+		// (OnServiceStatusCollectionChanged, registered on m_serviceStatusModelCompPtr)
+		// observes that write directly and relays it to GUI clients. Do NOT also emit
+		// here: that used to be the only relay, and returning early exactly on this
+		// branch (the case that matters!) is what silently swallowed every real status
+		// transition - see the removed "CollectionSubscriber already fans out" comment
+		// that described a subscriber wiring which never actually existed.
 		return;
 	}
 
+	// Unchanged (or Failed to write): no collection write happened, so nothing will
+	// trigger OnServiceStatusCollectionChanged. Relay the agent's report directly so an
+	// identical-status heartbeat / a failed mirror write still reaches the GUI.
+	EmitServiceStatusNotification(serviceId, serviceStatus);
+}
+
+
+void CAgentChangeObserverComp::EmitServiceStatusNotification(
+			const QByteArray& serviceId,
+			agentinodata::IServiceStatusInfo::ServiceStatus status)
+{
 	istd::IChangeable::ChangeSet changeSet(istd::IChangeable::CF_ANY);
 	agentinodata::IServiceController::NotifierStatusInfo notifierInfo;
 	notifierInfo.serviceId = serviceId;
-	notifierInfo.serviceStatus = serviceStatus;
+	notifierInfo.serviceStatus = status;
 	changeSet.SetChangeInfo(
 				agentinodata::IServiceController::CN_STATUS_CHANGED,
 				QVariant::fromValue(notifierInfo));
 	changeSet.SetChangeInfo(QByteArrayLiteral("serviceid"), serviceId);
 	istd::CChangeNotifier notifier(this, &changeSet);
+}
+
+
+void CAgentChangeObserverComp::OnServiceStatusCollectionChanged(const istd::IChangeable::ChangeSet& changeSet)
+{
+	Q_UNUSED(changeSet);
+
+	// Do NOT try to extract "the one" changed service id from changeSet: a batched
+	// reconcile (CServiceControllerProxyComp::ApplyServicesListReconcile) wraps its whole
+	// per-service status-write loop in a single istd::CChangeGroup on this same collection.
+	// imod::CModelBase folds every nested SetObjectData's changeSet into one cumulated
+	// changeSet at the end of the group (NotifyAfterChange: m_cumulatedChangeIds +=
+	// changeSet) - and the extra change-info is a map keyed by a fixed id
+	// (CN_OBJECT_DATA_CHANGED), so only the LAST service written during the batch survives
+	// the merge. Extracting a single id here silently dropped every other service in the
+	// same reconcile burst. Relaying every tracked service's current status instead is cheap
+	// (a handful of services per agent) and idempotent on the client.
+	RelayAllServiceStatuses();
+}
+
+
+void CAgentChangeObserverComp::RelayAllServiceStatuses()
+{
+	if (!m_serviceStatusCollectionCompPtr.IsValid()){
+		return;
+	}
+
+	const imtbase::ICollectionInfo::Ids ids = m_serviceStatusCollectionCompPtr->GetElementIds();
+	for (const QByteArray& serviceId : ids){
+		imtbase::IObjectCollection::DataPtr dataPtr;
+		if (!m_serviceStatusCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
+			continue;
+		}
+
+		agentinodata::CServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::CServiceStatusInfo*>(dataPtr.GetPtr());
+		if (serviceStatusInfoPtr == nullptr){
+			continue;
+		}
+
+		EmitServiceStatusNotification(serviceId, serviceStatusInfoPtr->GetServiceStatus());
+	}
+}
+
+
+void CAgentChangeObserverComp::ScheduleReconnectStatusRebroadcast(const QByteArray& agentId)
+{
+	if (agentId.isEmpty()){
+		return;
+	}
+
+	// QTimer must be created/started on this component's own thread; the reconnect event that
+	// gets us here can arrive on the WebSocket I/O thread. Hop first (same pattern as
+	// QueueHandleResponse), then touch the timer.
+	if (QThread::currentThread() != thread()){
+		const QByteArray agentIdCopy = agentId;
+		QMetaObject::invokeMethod(
+					this,
+					[this, agentIdCopy]() {
+						ScheduleReconnectStatusRebroadcast(agentIdCopy);
+					},
+					Qt::QueuedConnection);
+		return;
+	}
+
+	// Reuse one timer per agent so a burst of reconnect events collapses into a single
+	// authoritative rebroadcast. The delay lets the async reconcile (ServicesList +
+	// per-service GetService) populate real statuses first; when it fires we re-emit them
+	// all unconditionally, so any relay lost to the cross-thread race is recovered.
+	QTimer* timer = m_reconnectRebroadcastTimers.value(agentId, nullptr);
+	if (timer == nullptr){
+		timer = new QTimer(this);
+		timer->setSingleShot(true);
+		connect(timer, &QTimer::timeout, this, [this]() {
+			RelayAllServiceStatuses();
+		});
+		m_reconnectRebroadcastTimers.insert(agentId, timer);
+	}
+	timer->start(3000);
 }
 
 
@@ -611,6 +706,11 @@ void CAgentChangeObserverComp::OnModelChanged(int modelId, const istd::IChangeab
 		return;
 	}
 
+	if (modelId == MI_SERVICE_STATUS_COLLECTION){
+		OnServiceStatusCollectionChanged(changeSet);
+		return;
+	}
+
 	if (modelId == MI_AGENT_STATUS_COLLECTION){
 		// Agent went online/offline — re-open live subscriptions while the WS is up.
 		if (!m_agentStatusCollectionCompPtr.IsValid()){
@@ -645,6 +745,10 @@ void CAgentChangeObserverComp::OnModelChanged(int modelId, const istd::IChangeab
 												.arg(QString::fromUtf8(agentId), reconcileError),
 									"CAgentChangeObserverComp");
 					}
+					// The reconcile above is asynchronous and its per-change status relays can be
+					// lost to the shared-collection cross-thread race. Arm an authoritative
+					// rebroadcast so every open editor converges on the real status after reconnect.
+					ScheduleReconnectStatusRebroadcast(agentId);
 				}
 			}
 			else if (statusInfoPtr->GetAgentStatus() == agentinodata::IAgentStatusInfo::AS_DISCONNECTED){
@@ -675,6 +779,13 @@ void CAgentChangeObserverComp::OnComponentCreated()
 		RegisterModel(m_loginStatusModelCompPtr.GetPtr(), MI_LOGIN_STATUS);
 	}
 
+	// Catch-all relay: whichever component wrote ServiceStatusCollection (live push,
+	// disconnect reset, reconnect reconcile, Start/Stop proxy), this makes sure GUI
+	// subscribers always hear about it - see the ModelId enum / class doc comment.
+	if (m_serviceStatusModelCompPtr.IsValid()){
+		RegisterModel(m_serviceStatusModelCompPtr.GetPtr(), MI_SERVICE_STATUS_COLLECTION);
+	}
+
 	// Agents already present in the mirror (DB load / already connected).
 	RefreshSubscriptionsFromAgentCollection(false);
 }
@@ -683,6 +794,15 @@ void CAgentChangeObserverComp::OnComponentCreated()
 void CAgentChangeObserverComp::OnComponentDestroyed()
 {
 	UnregisterAllModels();
+
+	const QList<QTimer*> timers = m_reconnectRebroadcastTimers.values();
+	for (QTimer* timer : timers){
+		if (timer != nullptr){
+			timer->stop();
+			delete timer;
+		}
+	}
+	m_reconnectRebroadcastTimers.clear();
 
 	BaseClass::OnComponentDestroyed();
 }

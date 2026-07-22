@@ -260,6 +260,7 @@
                                 <Value>AgentGqlRemoteRepresentationController</Value>
                                 <Value>AgentPages</Value>
                                 <Value>ServiceController</Value>
+                                <Value>TerminalController</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -374,6 +375,33 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceController" Type="Reference" ExportId="ServiceController">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="TerminalController" PackageId="AgentGqlPck" ComponentId="TerminalController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>ListShellTypes</Value>
+                                <Value>GetTerminalOutput</Value>
+                                <Value>OpenTerminalSession</Value>
+                                <Value>SendTerminalInput</Value>
+                                <Value>InterruptTerminalSession</Value>
+                                <Value>CloseTerminalSession</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TerminalSessionManager" Type="Reference" ExportId="TerminalSessionManager">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">

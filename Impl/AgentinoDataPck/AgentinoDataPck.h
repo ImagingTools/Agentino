@@ -12,6 +12,7 @@
 #include <agentinodata/CAgentServiceCompositeInfoComp.h>
 #include <agentinodata/CAgentInfo.h>
 #include <agentinodata/CServiceControllerComp.h>
+#include <agentinodata/CTerminalSessionManagerComp.h>
 #include <agentinodata/CAgentServiceManagerComp.h>
 #include <agentinodata/CServiceStatusInfo.h>
 #include <agentinodata/CAgentStatusInfo.h>
@@ -42,6 +43,7 @@ typedef icomp::TMakeComponentWrap<
 // ServiceController is the event-sourced supervisor (Architecture Audit §4.6 cutover).
 typedef icomp::TModelCompWrap<agentinodata::CServiceSupervisorComp> ServiceController;
 typedef icomp::TModelCompWrap<agentinodata::CServiceControllerComp> LegacyServiceController;
+typedef icomp::TModelCompWrap<agentinodata::CTerminalSessionManagerComp> TerminalSessionManager;
 typedef icomp::TModelCompWrap<agentinodata::CAgentServiceManagerComp> AgentServiceManager;
 typedef icomp::TMakeComponentWrap<
 					agentinodata::CServiceStatusInfo,
@@ -58,5 +60,4 @@ typedef icomp::TModelCompWrap<agentinodata::CServiceTypeCatalogComp> ServiceType
 
 
 } // namespace AgentinoDataPck
-
 

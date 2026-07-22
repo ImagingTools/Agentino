@@ -24,13 +24,20 @@ RemoteCollectionView {
 	property bool serviceOperationInProgress: false
 	property string serviceOperationText: ""
 
+	AgentinoCollectionTableStyle {
+		id: collectionTableStyle
+	}
+
 	// QG1: typed scope; getHeaders() is a thin transport adapter for ImtCore widgets.
 	property var dataScope: DataScope {
 		agentId: root.clientId
 		serviceId: root.serviceId
 	}
 	
-	filterMenuVisible: false;
+	// No column sort / collection filter UI for the per-agent Services grid.
+	hasSort: false
+	hasFilter: false
+	filterMenuVisible: false
 
 	collectionId: "Services";
 	additionalFieldIds: ["description","status","statusName", "dependencyStatus", "dependantStatusInfo"]
@@ -76,8 +83,14 @@ RemoteCollectionView {
 			root.dataScope.serviceId = root.serviceId
 	}
 	
+	Component.onCompleted: {
+		collectionTableStyle.apply(root.table)
+	}
+
 	onHeadersChanged: {
 		if (root.table.headers.getItemsCount() > 0){
+			// Re-apply after CollectionViewBase may reset border defaults on headers.
+			collectionTableStyle.apply(root.table)
 			let orderIndex = root.table.getHeaderIndex("statusName");
 			root.table.setColumnContentComponent(orderIndex, stateColumnContentComp);
 			let nameIndex = root.table.getHeaderIndex("name");

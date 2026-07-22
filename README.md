@@ -16,6 +16,7 @@ Agentino implements an agent-based architecture where a central server manages m
 - **🔗 Dependency Management** - Track and manage service dependencies and execution order
 - **🎨 Modern UI** - Qt Quick/QML-based graphical interface with responsive design
 - **🔌 GraphQL API** - Flexible query and subscription interface for integration with other systems
+- **💻 Remote Terminal** - Open an interactive shell (cmd/PowerShell on Windows, bash/sh on Linux) on a managed agent directly from the AgentinoServer UI to run commands and view output remotely (see [Remote Terminal](#remote-terminal))
 
 ## Architecture
 
@@ -332,6 +333,48 @@ mutation {
   }
 }
 ```
+
+### Remote Terminal
+
+The AgentinoServer UI can open an interactive shell on the machine running a
+selected agent, letting an operator run commands and watch the output remotely.
+
+How to use:
+
+1. In the **Agents** view, open an agent (double click, or the **Edit** toolbar
+   command).
+2. Select the **Terminal** page of the agent editor. The page is offered only for
+   an already enrolled agent, and only to operators holding the `RemoteTerminal`
+   permission.
+3. Choose a shell type. Only shells the agent actually reports as available are
+   listed:
+   - **Windows**: `cmd.exe` or `powershell.exe`
+   - **Linux/macOS**: `/bin/bash` (falling back to `/bin/sh`)
+4. Click **Open**, type commands into the input field, and press **Enter** (or
+   **Send**). Standard output and standard error are streamed back into the
+   read-only output area. Use **Clear** to wipe the local view and **Close** to
+   terminate the session.
+
+The session belongs to the agent whose editor it was opened in, and is closed
+again when that editor page goes away.
+
+How it works: the shell process runs on the agent via `QProcess`
+(`agentinodata::CTerminalSessionManagerComp`, wired standalone in
+`TerminalController.acc` so its session state survives across the many separate
+requests one session spans), is exposed over the agent's local GraphQL endpoint
+by a thin per-request resolver (`agentgql::CTerminalControllerComp`), and the
+server proxies each request to the agent named by the `clientid` request header
+(`agentinogql::CTerminalControllerProxyComp`, wired in
+`RemoteTerminalController.acc`). Command input is delivered to the process
+**via stdin**; output is retrieved by the UI by polling the `GetTerminalOutput`
+query with an incremental cursor.
+
+> ⚠️ **Security**: the remote terminal is full remote command execution on the
+> agent host. It is gated behind the existing authorization layer, runs with the
+> agent service's own privileges (never elevated), and bounds concurrent
+> sessions, output buffer size, and idle time. Review the
+> [SECURITY.md](SECURITY.md) "Remote Terminal" section before enabling it in
+> production.
 
 ## Development
 

@@ -30,6 +30,11 @@ protected:
 	virtual void OnUpdate(const istd::IChangeable::ChangeSet& changeSet) override;
 	
 private:
+	// Build and publish the OnServiceStatusChanged payload (status + dependencyStatus) for a
+	// single service. Called for every service on any status-collection change so a coalesced
+	// batch notification cannot drop all-but-one of them.
+	void PublishServiceStatus(const QByteArray& serviceId);
+
 	QString GetDependencyStatus(agentinodata::IServiceCompositeInfo::StateOfRequiredServices status) const;
 
 private:

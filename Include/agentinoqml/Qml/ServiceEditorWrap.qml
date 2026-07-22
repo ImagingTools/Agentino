@@ -125,6 +125,10 @@ ServiceEditor {
 		}
 	}
 
+	// Set when the user chose "save and start" while the editor was dirty; consumed by
+	// the onDocumentSaved handler below once the save round-trip actually completes.
+	property bool startAfterSave: false
+
 	commandsDelegateComp: Component {ViewCommandsDelegateBase {
 			view: serviceEditor;
 
@@ -132,9 +136,29 @@ ServiceEditor {
 				let serviceId = serviceEditor.serviceId
 
 				if (commandId == "Start"){
-					serviceController.startService(serviceId)
+					if (serviceEditor.serviceIsDirty){
+						ModalDialogManager.showConfirmationDialog(
+									qsTr("Unsaved changes"),
+									qsTr("This service has unsaved changes. Save and start it?"),
+									function(result){
+										if (result === Enums.yes){
+											serviceEditor.startAfterSave = true
+											serviceEditor.documentManager.saveDocument(serviceEditor.documentId)
+										}
+										// No / Cancel: leave the service as-is, do not start.
+									})
+					}
+					else{
+						if (serviceEditor.commandsController){
+							serviceEditor.commandsController.setCommandIsEnabled("Start", false)
+						}
+						serviceController.startService(serviceId)
+					}
 				}
 				else if (commandId == "Stop"){
+					if (serviceEditor.commandsController){
+						serviceEditor.commandsController.setCommandIsEnabled("Stop", false)
+					}
 					serviceController.stopService(serviceId)
 				}
 			}
@@ -157,6 +181,12 @@ ServiceEditor {
 
 	property var serviceStatusModel: ServiceStatusModel {}
 
+	// Start is meaningless (and currently just round-trips into "Running impossible") until
+	// something is actually configured to run - gate the button on it in addition to status.
+	property bool isConfigured: serviceData
+				&& ((serviceData.m_path !== undefined && serviceData.m_path !== "")
+					|| (serviceData.m_startScript !== undefined && serviceData.m_startScript !== ""))
+
 	property bool updateCommands: commandsReceived && serviceData !== null
 	onUpdateCommandsChanged: {
 		if (updateCommands && commandsController){
@@ -164,8 +194,8 @@ ServiceEditor {
 				? serviceEditor.serviceStatus
 				: serviceEditor.normalizeServiceStatus(serviceData.m_status)
 			// undefined (agent offline) is not startable/stoppable.
-			commandsController.setCommandIsEnabled("Start", serviceStatusModel.isStartable(status))
-			commandsController.setCommandIsEnabled("Stop", serviceStatusModel.isStoppable(status))
+			commandsController.setCommandIsEnabled("Start", serviceEditor.serviceStatusModel.isStartable(status) && serviceEditor.isConfigured)
+			commandsController.setCommandIsEnabled("Stop", serviceEditor.serviceStatusModel.isStoppable(status))
 		}
 	}
 
@@ -185,8 +215,8 @@ ServiceEditor {
 				serviceEditor.setServiceStatus(documentModel.m_status)
 				serviceEditor.refreshIsNewService()
 				if (serviceEditor.commandsController){
-					serviceEditor.commandsController.setCommandIsEnabled("Start", serviceStatusModel.isStartable(serviceEditor.serviceStatus))
-					serviceEditor.commandsController.setCommandIsEnabled("Stop", serviceStatusModel.isStoppable(serviceEditor.serviceStatus))
+					serviceEditor.commandsController.setCommandIsEnabled("Start", serviceEditor.serviceStatusModel.isStartable(serviceEditor.serviceStatus) && serviceEditor.isConfigured)
+					serviceEditor.commandsController.setCommandIsEnabled("Stop", serviceEditor.serviceStatusModel.isStoppable(serviceEditor.serviceStatus))
 				}
 				serviceEditor.serviceIsDirty = false
 				serviceEditor.doUpdateGui()
@@ -213,6 +243,11 @@ ServiceEditor {
 			serviceEditor.serviceIsDirty = false
 			serviceDocumentDataController.documentId = savedDocumentId
 			serviceDocumentDataController.updateDocumentModel()
+
+			if (serviceEditor.startAfterSave){
+				serviceEditor.startAfterSave = false
+				serviceController.startService(serviceEditor.serviceId)
+			}
 		}
 	}
 
@@ -250,8 +285,8 @@ ServiceEditor {
 
 				if (serviceEditor.commandsController){
 					// isStartable/isStoppable treat undefined as neither (agent offline).
-					serviceEditor.commandsController.setCommandIsEnabled("Start", serviceStatusModel.isStartable(normalized))
-					serviceEditor.commandsController.setCommandIsEnabled("Stop", serviceStatusModel.isStoppable(normalized))
+					serviceEditor.commandsController.setCommandIsEnabled("Start", serviceEditor.serviceStatusModel.isStartable(normalized) && serviceEditor.isConfigured)
+					serviceEditor.commandsController.setCommandIsEnabled("Stop", serviceEditor.serviceStatusModel.isStoppable(normalized))
 				}
 			}
 		}

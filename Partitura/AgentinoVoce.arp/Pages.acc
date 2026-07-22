@@ -17,7 +17,7 @@
                         <Data IsEnabled="true" Value="qrc:/qml/AgentCollectionView.qml"/>
                     </AttributeInfo>
                     <AttributeInfo Id="IconPath" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="Icons/Product"/>
+                        <Data IsEnabled="true" Value="Icons/Agents"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
@@ -205,11 +205,6 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="CheckPermissionOr" PackageId="ImtAuthPck" ComponentId="CheckPermissionOr">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap/>
-                        </Data>
-                    </Element>
                     <Element Id="FileSystemBrowsePermissions" PackageId="ImtServerAppPck" ComponentId="SingleCommandPermissionsProvider">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
@@ -258,6 +253,7 @@
                                     <Data IsEnabled="true">
                                         <Values>
                                             <Value>ServiceControllerProxy</Value>
+                                            <Value>TerminalControllerProxy</Value>
                                             <Value>FileSystemControllerProxy</Value>
                                             <Value>ServicesRemoteRepresentationController</Value>
                                             <Value>TopologyPage</Value>
@@ -416,6 +412,21 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="ServiceStatusCollection">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="TerminalControllerProxy" PackageId="AgentinoVoce" ComponentId="RemoteTerminalController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="ApiClient" Type="Reference" ExportId="ApiClient">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">

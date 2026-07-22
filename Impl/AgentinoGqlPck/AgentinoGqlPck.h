@@ -11,6 +11,7 @@
 #include <agentgql/TDocumentRevisionControllerCompWrap.h>
 #include <agentinogql/CServiceSubscriberControllerComp.h>
 #include <agentinogql/CServiceControllerProxyComp.h>
+#include <agentinogql/CTerminalControllerProxyComp.h>
 #include <agentinogql/CFileSystemControllerProxyComp.h>
 #include <agentinogql/CAgentCollectionControllerComp.h>
 #include <agentinogql/CAgentChangeObserverComp.h>
@@ -19,6 +20,7 @@
 #include <agentinogql/CMirroredServiceCollectionControllerComp.h>
 #include <agentinogql/CServiceStatusCollectionSubscriberControllerComp.h>
 #include <agentinogql/CAgentsSubscriberProxyControllerComp.h>
+#include <agentinogql/CTerminalOutputSubscriberProxyComp.h>
 #include <agentinogql/CAgentinoGqlRemoteRepresentationControllerComp.h>
 #include <agentinogql/CEnrollmentStoreComp.h>
 #include <agentinogql/CEnrollmentGqlControllerComp.h>
@@ -34,6 +36,7 @@ namespace AgentinoGqlPck
 
 typedef agentinogql::CServiceSubscriberControllerComp ServiceSubscriberController;
 typedef agentinogql::CServiceControllerProxyComp ServiceControllerProxy;
+typedef agentinogql::CTerminalControllerProxyComp TerminalControllerProxy;
 typedef agentinogql::CFileSystemControllerProxyComp FileSystemControllerProxy;
 typedef agentinogql::CAgentCollectionControllerComp AgentCollectionController;
 typedef icomp::TModelCompWrap<agentinogql::CAgentChangeObserverComp> AgentChangeObserver;
@@ -42,6 +45,7 @@ typedef agentinogql::CServiceCollectionSubscriberControllerComp ServiceCollectio
 typedef agentinogql::CMirroredServiceCollectionControllerComp MirroredServiceCollectionController;
 typedef agentinogql::CServiceStatusCollectionSubscriberControllerComp ServiceStatusCollectionSubscriberController;
 typedef agentinogql::CAgentsSubscriberProxyControllerComp AgentsSubscriberProxyController;
+typedef agentinogql::CTerminalOutputSubscriberProxyComp TerminalOutputSubscriberProxy;
 typedef agentinogql::CAgentinoGqlRemoteRepresentationControllerComp AgentinoGqlRemoteRepresentationController;
 typedef agentgql::TVisualStatusControllerCompWrap<AgentinoGqlRemoteRepresentationController> AgentinoRemoteVisualStatusController;
 typedef agentgql::TDocumentRevisionControllerCompWrap<AgentinoGqlRemoteRepresentationController> AgentinoRemoteDocumentRevisionController;
@@ -55,5 +59,4 @@ typedef icomp::TMakeComponentWrap<
 
 
 } // namespace AgentinoGqlPck
-
 

@@ -62,7 +62,6 @@ DocumentCollectionViewDelegate {
             let isApproved = isEnabled && container.isSelectedAgentApproved();
             let commandsController = container.collectionView.commandsController;
             if(commandsController){
-                commandsController.setCommandIsEnabled("Remove", isEnabled);
                 commandsController.setCommandIsEnabled("Edit", isApproved);
 
                 let decisionBusy = container.enrollmentViewModel && container.enrollmentViewModel.loading;

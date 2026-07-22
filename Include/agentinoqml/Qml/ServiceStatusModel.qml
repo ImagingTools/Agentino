@@ -19,8 +19,11 @@ QtObject {
 	readonly property string unknown: "Unknown"
 
 	function normalize(status) {
+		// Missing status is not "Stopped" - it means we don't actually know (e.g. agent
+		// disconnected, or the status hasn't loaded yet). Treating it as Stopped was why
+		// Start stayed clickable for a service whose agent is offline.
 		if (status === undefined || status === null || status === "")
-			return root.stopped
+			return root.unknown
 		// Collapse camelCase / snake_case / enum forms: notRunning, NOT_RUNNING, SS_NOT_RUNNING
 		var s = ("" + status).toUpperCase().replace(/_/g, "")
 		if (s === "RUNNING" || s === "SSRUNNING" || s === "SRUNNING")
@@ -42,7 +45,10 @@ QtObject {
 				|| status === root.crashed || status === root.failed || status === root.stopped
 				|| status === root.unknown)
 			return status
-		return root.stopped
+		// Unrecognized wire value - same reasoning as the empty-status case above: an
+		// unknown status must never be presented (or treated by isStartable/isStoppable)
+		// as if the service were known to be Stopped.
+		return root.unknown
 	}
 
 	function isRunning(status) {
@@ -53,9 +59,13 @@ QtObject {
 		return normalize(status) === root.stopped
 	}
 
-	// True only when Start is meaningful (known stopped process, agent reachable).
+	// True when Start is meaningful: a known stopped process, or a failed/crashed one the
+	// backend FSM already allows retrying (CServiceFsm::Apply accepts Event::Start from
+	// both Failed and Crashed) - otherwise "Running impossible" disables Start forever,
+	// even after the user fixes whatever made it fail (e.g. a bad executable path).
 	function isStartable(status) {
-		return normalize(status) === root.stopped
+		var n = normalize(status)
+		return n === root.stopped || n === root.failed || n === root.crashed
 	}
 
 	// True only when Stop is meaningful (known running process).

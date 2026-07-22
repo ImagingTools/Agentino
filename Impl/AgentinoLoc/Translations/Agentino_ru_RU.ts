@@ -1403,4 +1403,34 @@
         <translation type="unfinished"></translation>
     </message>
 </context>
+<context>
+    <name>AgentCollectionViewBase</name>
+    <message>
+        <source>Terminal</source>
+        <translation>Терминал</translation>
+    </message>
+</context>
+<context>
+    <name>TerminalView</name>
+    <message>
+        <source>Open</source>
+        <translation>Открыть</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>Закрыть</translation>
+    </message>
+    <message>
+        <source>Clear</source>
+        <translation>Очистить</translation>
+    </message>
+    <message>
+        <source>Type a command and press Enter</source>
+        <translation>Введите команду и нажмите Enter</translation>
+    </message>
+    <message>
+        <source>Send</source>
+        <translation>Отправить</translation>
+    </message>
+</context>
 </TS>
