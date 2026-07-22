@@ -18,29 +18,34 @@ void CServiceStatusCollectionSubscriberControllerComp::OnUpdate(const istd::ICha
 		return;
 	}
 
-	QSet<int> changeIds = changeSet.GetIds();
-
-	QByteArray serviceId;
-	if (changeIds.contains(imtbase::ICollectionInfo::CF_ADDED)){
-		serviceId = changeSet.GetChangeInfo(imtbase::IObjectCollection::CN_ELEMENT_INSERTED).toByteArray();
-	}
-	else if (changeIds.contains(imtbase::ICollectionInfo::CF_ELEMENT_STATE)){
-		serviceId = changeSet.GetChangeInfo(imtbase::IObjectCollection::CN_ELEMENT_STATE).toByteArray();
-	}
-	else if (changeIds.contains(imtbase::ICollectionInfo::CF_REMOVED)){
-		QVariant changeInfo = changeSet.GetChangeInfo(imtbase::ICollectionInfo::CN_ELEMENTS_REMOVED);
-		if (changeInfo.isValid()){
-			imtbase::ICollectionInfo::MultiElementNotifierInfo info = changeInfo.value<imtbase::ICollectionInfo::MultiElementNotifierInfo>();
-			if (!info.elementIds.isEmpty()){
-				serviceId = info.elementIds[0];
-			}
-		}
-	}
-	else if (changeIds.contains(imtbase::IObjectCollection::CF_OBJECT_DATA_CHANGED)){
-		serviceId = changeSet.GetChangeInfo(imtbase::IObjectCollection::CN_OBJECT_DATA_CHANGED).toByteArray();
+	const QSet<int> changeIds = changeSet.GetIds();
+	const bool relevant =
+				changeIds.contains(imtbase::ICollectionInfo::CF_ADDED)
+				|| changeIds.contains(imtbase::ICollectionInfo::CF_ELEMENT_STATE)
+				|| changeIds.contains(imtbase::ICollectionInfo::CF_REMOVED)
+				|| changeIds.contains(imtbase::IObjectCollection::CF_OBJECT_DATA_CHANGED);
+	if (!relevant){
+		return;
 	}
 
-	if (serviceId.isEmpty()){
+	// Do NOT extract a single serviceId from the changeSet: a batched status write (the
+	// reconnect reconcile wraps all its per-service writes in one istd::CChangeGroup)
+	// coalesces into a single changeSet whose CN_OBJECT_DATA_CHANGED key names only the LAST
+	// service of the batch. Publishing that one id dropped every other service - reproduced
+	// live: after an agent reconnect only one of two open services' status reached the GUI,
+	// and the WS channel carried messages for a single serviceid only. Publish every current
+	// service's status instead so a coalesced batch cannot lose any; the client filters by
+	// serviceid, so the extra messages are harmless.
+	const imtbase::ICollectionInfo::Ids ids = m_objectCollectionCompPtr->GetElementIds();
+	for (const QByteArray& serviceId : ids){
+		PublishServiceStatus(serviceId);
+	}
+}
+
+
+void CServiceStatusCollectionSubscriberControllerComp::PublishServiceStatus(const QByteArray& serviceId)
+{
+	if (serviceId.isEmpty() || !m_serviceCompositeInfoCompPtr.IsValid()){
 		return;
 	}
 

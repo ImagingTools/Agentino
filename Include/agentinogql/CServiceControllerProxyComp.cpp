@@ -428,21 +428,6 @@ bool CServiceControllerProxyComp::ApplyServicesListReconcile(
 		}
 	}
 
-	// Temporary diagnostic: shows exactly what the agent's ServicesList response contained
-	// and what the reconcile decided to do with it - confirms whether a service that never
-	// gets its status corrected on reconnect is (a) missing from the agent's own response,
-	// (b) present but wrongly classified as stale/removed, or (c) present and processed
-	// normally (in which case the drop happens further down/elsewhere). Remove once closed.
-	SendInfoMessage(
-				0,
-				QString("ApplyServicesListReconcile for agent '%1': rawItemCount=%2 agentServiceIds=[%3] mirrorIds=[%4] staleIds=[%5]")
-							.arg(QString::fromUtf8(agentId))
-							.arg(rawItemCount)
-							.arg(QString::fromUtf8(agentServiceIds.join(", ")))
-							.arg(QString::fromUtf8(mirrorIds.join(", ")))
-							.arg(QString::fromUtf8(staleIds.join(", "))),
-				"CServiceControllerProxyComp");
-
 	// Batch CF_SERVICE_* / status notifications into one GUI poke.
 	istd::CChangeGroup serviceChangeGroup(m_serviceManagerCompPtr.GetPtr());
 	istd::CChangeGroup statusChangeGroup(m_serviceStatusCollectionCompPtr.GetPtr());
