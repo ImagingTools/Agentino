@@ -17,7 +17,7 @@
                         <Data IsEnabled="true" Value="qrc:/qml/AgentCollectionView.qml"/>
                     </AttributeInfo>
                     <AttributeInfo Id="IconPath" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="Icons/Product"/>
+                        <Data IsEnabled="true" Value="Icons/Agents"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
@@ -203,11 +203,6 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>
-                        </Data>
-                    </Element>
-                    <Element Id="CheckPermissionOr" PackageId="ImtAuthPck" ComponentId="CheckPermissionOr">
-                        <Data IsEnabled="true" Flags="0">
-                            <AttributeInfoMap/>
                         </Data>
                     </Element>
                     <Element Id="FileSystemBrowsePermissions" PackageId="ImtServerAppPck" ComponentId="SingleCommandPermissionsProvider">
@@ -425,22 +420,11 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="TerminalControllerProxy" PackageId="AgentinoGqlPck" ComponentId="TerminalControllerProxy">
+                    <Element Id="TerminalControllerProxy" PackageId="AgentinoVoce" ComponentId="RemoteTerminalController">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="ApiClient" Type="Reference" ExportId="ApiClient">
                                     <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
-                                    <Data IsEnabled="true">
-                                        <Values>
-                                            <Value>ListShellTypes</Value>
-                                            <Value>GetTerminalOutput</Value>
-                                            <Value>OpenTerminalSession</Value>
-                                            <Value>SendTerminalInput</Value>
-                                            <Value>CloseTerminalSession</Value>
-                                        </Values>
-                                    </Data>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                                     <Data IsEnabled="false"/>

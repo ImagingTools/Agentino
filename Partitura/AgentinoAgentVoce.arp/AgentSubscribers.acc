@@ -213,6 +213,28 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="TerminalOutputPublisher" PackageId="AgentGqlPck" ComponentId="TerminalOutputPublisher">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>OnTerminalOutputChanged</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RequestManager" Type="Reference" ExportId="WebSocketClient">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TerminalController" Type="Reference" ExportId="TerminalSessionManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
     </ElementsList>
     <EmbeddedRegistriesList/>
     <ExportedInterfaces/>
@@ -226,5 +248,6 @@
         <Component ExportedId="RemoteServiceCollectionSubscriberController" ComponentId="RemoteServiceCollectionSubscriberController"/>
         <Component ExportedId="ServiceLogSubscriberController" ComponentId="ServiceLogSubscriberController"/>
         <Component ExportedId="ServiceStatusSubscriberController" ComponentId="ServiceStatusSubscriberController"/>
+        <Component ExportedId="TerminalOutputPublisher" ComponentId="TerminalOutputPublisher"/>
     </ExportedComponents>
 </Acf>

@@ -1,6 +1,7 @@
 schema {
 	query: Query
 	mutation: Mutation
+	subscription: Subscription
 	namespace: agentino
 	version: 1.0
 }
@@ -55,6 +56,16 @@ type CloseTerminalSessionResponse {
 	closed: Boolean!
 }
 
+# Best-effort interrupt (Ctrl+C / SIGINT) of the shell's foreground work without
+# destroying the session. Cursor/TUI programs may ignore it.
+input InterruptTerminalSessionInput {
+	sessionId: ID!
+}
+
+type InterruptTerminalSessionResponse {
+	accepted: Boolean!
+}
+
 input TerminalOutputInput {
 	sessionId: ID!
 	fromSequence: Integer
@@ -66,12 +77,15 @@ type TerminalOutputChunk {
 	data: String!
 }
 
+# 'running' is false both for a shell that has exited and for a session the agent does
+# not know (any more) - in either case the client must stop polling and show exitCode.
+# There is deliberately no 'finished' field: the generated QObject wrapper inherits
+# imtbase::CItemModelBase, which already declares a 'finished' signal.
 type TerminalOutputResponse {
 	sessionId: ID!
 	chunks: [TerminalOutputChunk]!
 	nextSequence: Integer!
 	running: Boolean!
-	finished: Boolean!
 	exitCode: Integer
 }
 
@@ -83,5 +97,17 @@ type Query {
 type Mutation {
 	OpenTerminalSession (input: OpenTerminalSessionInput): OpenTerminalSessionResponse!
 	SendTerminalInput (input: SendTerminalInputInput): SendTerminalInputResponse!
+	InterruptTerminalSession (input: InterruptTerminalSessionInput): InterruptTerminalSessionResponse!
 	CloseTerminalSession (input: CloseTerminalSessionInput): CloseTerminalSessionResponse!
+}
+
+# Pushed by the agent whenever a session produces new output. GetTerminalOutput stays
+# for a single catch-up fetch right after OpenSession (close the race between opening
+# the session and establishing this subscription); afterwards the client relies on push.
+input TerminalOutputSubscriptionInput {
+	sessionId: ID!
+}
+
+type Subscription {
+	OnTerminalOutputChanged (input: TerminalOutputSubscriptionInput): TerminalOutputResponse!
 }

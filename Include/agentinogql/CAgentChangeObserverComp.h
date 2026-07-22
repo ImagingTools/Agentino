@@ -66,7 +66,8 @@ public:
 	{
 		MI_AGENT_COLLECTION = 0,
 		MI_AGENT_STATUS_COLLECTION,
-		MI_LOGIN_STATUS
+		MI_LOGIN_STATUS,
+		MI_SERVICE_STATUS_COLLECTION
 	};
 
 	I_BEGIN_COMPONENT(CAgentChangeObserverComp);
@@ -77,6 +78,13 @@ public:
 		I_ASSIGN(m_agentStatusCollectionCompPtr, "AgentStatusCollection", "Agent online/offline status (re-register live WS subs on connect)", false, "AgentStatusCollection");
 		I_ASSIGN_TO(m_agentStatusModelCompPtr, m_agentStatusCollectionCompPtr, false);
 		I_ASSIGN(m_serviceStatusCollectionCompPtr, "ServiceStatusCollection", "Service status collection updated from OnAgentServiceStatusChanged", false, "ServiceStatusCollection");
+		// Same target as m_serviceStatusCollectionCompPtr, exposed as imod::IModel too: any write
+		// to the collection - regardless of which component made it (live push, disconnect reset,
+		// reconnect reconcile, Start/Stop proxy) - must reach GUI subscribers. Relying on every
+		// writer to remember to notify AgentChangeObserver explicitly is exactly how those paths
+		// went stale before; observing the collection itself is the one chokepoint that can't be
+		// missed.
+		I_ASSIGN_TO(m_serviceStatusModelCompPtr, m_serviceStatusCollectionCompPtr, false);
 		I_ASSIGN(m_serviceSynchronizerCompPtr, "ServiceSynchronizer", "Refreshes the mirror on agent service-collection changes", false, "ServiceSynchronizer");
 		I_ASSIGN(m_enrollmentControllerCompPtr, "EnrollmentController", "Live-path gate: only Approved agents ingest", false, "EnrollmentStore");
 		// Absorbed from CAgentConnectionObserverComp: the same component now also reacts to
@@ -144,6 +152,16 @@ private:
 	void SetAgentStatus(const QByteArray& agentId, agentinodata::IAgentStatusInfo::AgentStatus status);
 	void ResetAgentServiceStatuses(const QByteArray& agentId);
 
+	// Single place that builds and emits the CN_STATUS_CHANGED notification
+	// ServiceStatusSubscriberController listens for (→ OnServiceStatusChanged to GUI clients).
+	void EmitServiceStatusNotification(
+				const QByteArray& serviceId,
+				agentinodata::IServiceStatusInfo::ServiceStatus status);
+
+	// MI_SERVICE_STATUS_COLLECTION handler: any ServiceStatusCollection write (from whichever
+	// component made it) re-reads the current status for the changed service and relays it.
+	void OnServiceStatusCollectionChanged(const istd::IChangeable::ChangeSet& changeSet);
+
 	static bool ParseServiceStatus(
 				const QString& statusText,
 				agentinodata::IServiceStatusInfo::ServiceStatus& status);
@@ -155,6 +173,7 @@ private:
 	I_REF(imtbase::IObjectCollection, m_agentStatusCollectionCompPtr);
 	I_REF(imod::IModel, m_agentStatusModelCompPtr);
 	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);
+	I_REF(imod::IModel, m_serviceStatusModelCompPtr);
 	I_REF(imtclientgql::IGqlClient, m_gqlClientCompPtr);
 	I_REF(IServiceCollectionSynchronizer, m_serviceSynchronizerCompPtr);
 	I_REF(IEnrollmentController, m_enrollmentControllerCompPtr);

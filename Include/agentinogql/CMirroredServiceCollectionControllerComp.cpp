@@ -47,6 +47,29 @@ QString FormatEndpoint(const imtcom::IServerConnectionInterface& connection)
 
 
 /**
+	Join non-empty unique lines for a meta-info field, or return \a emptyPlaceholder
+	when nothing useful would be shown (avoids blank "Extern Paths:" rows).
+*/
+QString FormatMetaInfoLines(const QStringList& values, const QString& emptyPlaceholder)
+{
+	QStringList cleaned;
+	cleaned.reserve(values.size());
+	for (const QString& value : values){
+		const QString trimmed = value.trimmed();
+		if (!trimmed.isEmpty() && !cleaned.contains(trimmed)){
+			cleaned << trimmed;
+		}
+	}
+
+	if (cleaned.isEmpty()){
+		return emptyPlaceholder;
+	}
+
+	return cleaned.join(QLatin1Char('\n'));
+}
+
+
+/**
 	First input connection of \a serviceInfo, or an invalid pointer when it publishes none.
 	Returns the owning DataPtr (not a bare pointer into it) — the caller must keep it alive
 	for as long as it dereferences the returned connection (see GetConsumersOfConnection).
@@ -179,24 +202,31 @@ sdl::V1_0::imtbase::CGetElementMetaInfoPayload CMirroredServiceCollectionControl
 		incomingParameter.id = QByteArrayLiteral("IncomingConnections");
 		incomingParameter.typeId = incomingParameter.id;
 		incomingParameter.name = Translate(gqlRequest, QT_TR_NOOP("Incoming Connections"));
-		incomingParameter.data = publishedEndpoints.join('\n');
+		incomingParameter.data = FormatMetaInfoLines(
+					publishedEndpoints,
+					Translate(gqlRequest, QT_TR_NOOP("No Incoming Connections")));
 		infoParams << incomingParameter;
 
 		sdl::V1_0::imtbase::CParameter externPathsParameter;
 		externPathsParameter.id = QByteArrayLiteral("ExternPaths");
 		externPathsParameter.typeId = externPathsParameter.id;
 		externPathsParameter.name = Translate(gqlRequest, QT_TR_NOOP("Extern Paths"));
-		externPathsParameter.data = externPaths.join('\n');
+		// Empty join used to ship "" and look broken in MetaInfo; show an explicit empty state.
+		externPathsParameter.data = FormatMetaInfoLines(
+					externPaths,
+					Translate(gqlRequest, QT_TR_NOOP("No Extern Paths")));
 		infoParams << externPathsParameter;
 
-		if (!consumers.isEmpty()){
-			sdl::V1_0::imtbase::CParameter consumersParameter;
-			consumersParameter.id = QByteArrayLiteral("DependantConnections");
-			consumersParameter.typeId = consumersParameter.id;
-			consumersParameter.name = Translate(gqlRequest, QT_TR_NOOP("Dependant services on port"));
-			consumersParameter.data = consumers.join('\n');
-			infoParams << consumersParameter;
-		}
+		// Always list the field so the Info panel layout stays stable when nothing depends
+		// on this service's ports yet.
+		sdl::V1_0::imtbase::CParameter consumersParameter;
+		consumersParameter.id = QByteArrayLiteral("DependantConnections");
+		consumersParameter.typeId = consumersParameter.id;
+		consumersParameter.name = Translate(gqlRequest, QT_TR_NOOP("Dependant services on port"));
+		consumersParameter.data = FormatMetaInfoLines(
+					consumers,
+					Translate(gqlRequest, QT_TR_NOOP("No Dependant Services")));
+		infoParams << consumersParameter;
 	}
 
 	// What this service consumes — resolved across all agents.
@@ -212,10 +242,13 @@ sdl::V1_0::imtbase::CGetElementMetaInfoPayload CMirroredServiceCollectionControl
 		}
 
 		sdl::V1_0::imtbase::CParameter dependsParameter;
-		dependsParameter.id = QByteArrayLiteral("IncomingConnections");
+		dependsParameter.id = QByteArrayLiteral("ServiceDependencies");
 		dependsParameter.typeId = dependsParameter.id;
 		dependsParameter.name = Translate(gqlRequest, QT_TR_NOOP("Service depends on"));
-		dependsParameter.data = dependencies.join('\n');
+		// Prefer a distinct id from IncomingConnections so MetaInfo can keep both rows.
+		dependsParameter.data = FormatMetaInfoLines(
+					dependencies,
+					Translate(gqlRequest, QT_TR_NOOP("No Service Dependencies")));
 		infoParams << dependsParameter;
 	}
 
@@ -226,11 +259,18 @@ sdl::V1_0::imtbase::CGetElementMetaInfoPayload CMirroredServiceCollectionControl
 				m_serviceCompositeInfoCompPtr->GetStateOfRequiredServices(serviceId);
 	if (serviceStatus == agentinodata::IServiceStatusInfo::SS_RUNNING
 				&& requiredState != agentinodata::IServiceCompositeInfo::SORS_RUNNING){
+		const QStringList statusInfo = GetDependantStatusInfo(serviceId);
 		sdl::V1_0::imtbase::CParameter informationParameter;
 		informationParameter.id = QByteArrayLiteral("Information");
 		informationParameter.typeId = informationParameter.id;
 		informationParameter.name = Translate(gqlRequest, QT_TR_NOOP("Information"));
-		informationParameter.data = GetDependantStatusInfo(serviceId).join("; ");
+		// Prefer a single "; "-joined line for multiple reasons (legacy format).
+		const QString statusText = FormatMetaInfoLines(
+					statusInfo,
+					Translate(gqlRequest, QT_TR_NOOP("No Additional Information")));
+		informationParameter.data = statusText.contains(QLatin1Char('\n'))
+					? statusText.split(QLatin1Char('\n')).join(QStringLiteral("; "))
+					: statusText;
 		infoParams << informationParameter;
 	}
 

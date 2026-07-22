@@ -2,14 +2,9 @@
 #pragma once
 
 
-// Qt includes
-#include <QtCore/QJsonObject>
-
 // ImtCore includes
 #include <imtclientgql/TClientRequestManagerCompWrap.h>
-
-// Agentino includes
-#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Terminal.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Terminal_fwd.h>
 
 
 namespace agentinogql
@@ -19,55 +14,60 @@ namespace agentinogql
 /**
 	Server side proxy for the remote terminal feature.
 
-	Runs inside the AgentinoServer process and simply forwards every terminal request to
-	the agent selected through the 'clientid' request header, returning the agent response
-	unchanged. The actual shell process always runs on the agent machine.
+	Runs inside the AgentinoServer process and forwards every terminal request to the
+	agent identified by the request header \c clientid (same routing channel as
+	\ref CServiceControllerProxyComp and \ref CFileSystemControllerProxyComp), returning
+	the agent response unchanged. The actual shell process always runs on the agent
+	machine.
 
 	\ingroup Terminal
 */
 class CTerminalControllerProxyComp:
 			public imtclientgql::TClientRequestManagerCompWrap<
-										sdl::agentino::Terminal::CGraphQlHandlerCompBase>
+										sdl::V1_0::agentino::CTerminalGqlHandlerCompBase>
 {
 public:
 	typedef imtclientgql::TClientRequestManagerCompWrap<
-				sdl::agentino::Terminal::CGraphQlHandlerCompBase> BaseClass;
+				sdl::V1_0::agentino::CTerminalGqlHandlerCompBase> BaseClass;
 
 	I_BEGIN_COMPONENT(CTerminalControllerProxyComp);
 	I_END_COMPONENT;
 
 protected:
-	// reimplemented (sdl::agentino::Terminal::CGraphQlHandlerCompBase)
-	virtual sdl::agentino::Terminal::CShellTypeListPayload OnListShellTypes(
-				const sdl::agentino::Terminal::CListShellTypesGqlRequest& listShellTypesRequest,
+	// reimplemented (sdl::V1_0::agentino::CTerminalGqlHandlerCompBase)
+	virtual sdl::V1_0::agentino::CShellTypeListPayload OnListShellTypes(
+				const sdl::V1_0::agentino::CListShellTypesGqlRequest& listShellTypesRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-	virtual sdl::agentino::Terminal::CTerminalOutputResponse OnGetTerminalOutput(
-				const sdl::agentino::Terminal::CGetTerminalOutputGqlRequest& getTerminalOutputRequest,
+	virtual sdl::V1_0::agentino::CTerminalOutputResponse OnGetTerminalOutput(
+				const sdl::V1_0::agentino::CGetTerminalOutputGqlRequest& getTerminalOutputRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-	virtual sdl::agentino::Terminal::COpenTerminalSessionResponse OnOpenTerminalSession(
-				const sdl::agentino::Terminal::COpenTerminalSessionGqlRequest& openTerminalSessionRequest,
+	virtual sdl::V1_0::agentino::COpenTerminalSessionResponse OnOpenTerminalSession(
+				const sdl::V1_0::agentino::COpenTerminalSessionGqlRequest& openTerminalSessionRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-	virtual sdl::agentino::Terminal::CSendTerminalInputResponse OnSendTerminalInput(
-				const sdl::agentino::Terminal::CSendTerminalInputGqlRequest& sendTerminalInputRequest,
+	virtual sdl::V1_0::agentino::CSendTerminalInputResponse OnSendTerminalInput(
+				const sdl::V1_0::agentino::CSendTerminalInputGqlRequest& sendTerminalInputRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-	virtual sdl::agentino::Terminal::CCloseTerminalSessionResponse OnCloseTerminalSession(
-				const sdl::agentino::Terminal::CCloseTerminalSessionGqlRequest& closeTerminalSessionRequest,
+	virtual sdl::V1_0::agentino::CInterruptTerminalSessionResponse OnInterruptTerminalSession(
+				const sdl::V1_0::agentino::CInterruptTerminalSessionGqlRequest& interruptTerminalSessionRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-
-	// reimplemented (imtgql::CGqlRequestHandlerCompBase)
-	virtual QJsonObject CreateInternalResponse(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CCloseTerminalSessionResponse OnCloseTerminalSession(
+				const sdl::V1_0::agentino::CCloseTerminalSessionGqlRequest& closeTerminalSessionRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
 
 private:
-	template<class SdlGqlRequest, class SdlResponse>
-	QJsonObject CreateResponse(
-				const imtgql::CGqlRequest& gqlRequest,
-				QString& errorMessage,
-				std::function<SdlResponse(const SdlGqlRequest&, const imtgql::CGqlRequest&, QString&)> func) const;
+	/**
+		Forward the request to the agent addressed by the \c clientid header.
+		\return The agent response, or a default constructed one when the header is
+		missing or the agent answered with an error.
+	*/
+	template <class SdlResponse>
+	SdlResponse ForwardToAgent(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const;
 };
 
 

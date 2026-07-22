@@ -5,6 +5,7 @@ import imtgui 1.0
 import imtguigql 1.0
 import imtcolgui 1.0
 import imtdocgui 1.0
+import imtauthgui 1.0
 import imtcontrols 1.0
 import agentinoAgentsSdl 1.0
 
@@ -40,7 +41,7 @@ DocumentViewBase {
 		if (isNewAgent || multiPageView.getIndexById("Services") >= 0){
 			return
 		}
-		multiPageView.addPage("Services", qsTr("Services"), servicesPageComp, "Icons/Product")
+		multiPageView.addPage("Services", qsTr("Services"), servicesPageComp, "Icons/ServiceCollection")
 		agentEditorContainer.updateServicesBadge()
 	}
 
@@ -48,7 +49,23 @@ DocumentViewBase {
 		if (isNewAgent || multiPageView.getIndexById("Log") >= 0){
 			return
 		}
-		multiPageView.addPage("Log", qsTr("Agent Log"), agentLogPageComp, "Icons/Diagnostics")
+		multiPageView.addPage("Log", qsTr("Agent Log"), agentLogPageComp, "Icons/EventLog")
+	}
+
+	// Was the "Terminal" toolbar command of AgentCollectionView (a fixed workspace tab
+	// bound to the row selected at the time it was pressed) - now this agent's own page,
+	// so the shell always belongs to the agent whose editor it is shown in. Needs a
+	// persisted agent id like Services/Log, plus the RemoteTerminal permission: remote
+	// command execution is the most sensitive capability in the product, and the command
+	// this replaces carried the same permission.
+	function ensureTerminalPage(){
+		if (isNewAgent || multiPageView.getIndexById("Terminal") >= 0){
+			return
+		}
+		if (!PermissionsController.checkPermission("RemoteTerminal")){
+			return
+		}
+		multiPageView.addPage("Terminal", qsTr("Terminal"), terminalPageComp, "Icons/Terminal")
 	}
 
 	// "Services (N)" in the page list - N comes straight off the AgentData payload
@@ -107,6 +124,7 @@ DocumentViewBase {
 		if (!isNewAgent){
 			ensureServicesPage()
 			ensureLogPage()
+			ensureTerminalPage()
 		}
 	}
 
@@ -117,6 +135,7 @@ DocumentViewBase {
 				agentEditorContainer.refreshIsNewAgent()
 				agentEditorContainer.ensureServicesPage()
 				agentEditorContainer.ensureLogPage()
+				agentEditorContainer.ensureTerminalPage()
 			}
 		}
 		// openDocument marks isNew=false before the view gets documentId; once the model is
@@ -127,6 +146,7 @@ DocumentViewBase {
 				agentEditorContainer.refreshIsNewAgent()
 				agentEditorContainer.ensureServicesPage()
 				agentEditorContainer.ensureLogPage()
+				agentEditorContainer.ensureTerminalPage()
 			}
 		}
 		function onDocumentAdded(addedDocumentId){
@@ -164,6 +184,7 @@ DocumentViewBase {
 			multiPageView.addPage("General", qsTr("General"), generalPageComp, "Icons/Settings")
 			agentEditorContainer.ensureServicesPage()
 			agentEditorContainer.ensureLogPage()
+			agentEditorContainer.ensureTerminalPage()
 			multiPageView.currentIndex = multiPageView.getIndexById("General")
 		}
 	}
@@ -353,14 +374,22 @@ DocumentViewBase {
 	}
 
 	// Was AgentCollectionViewBase.qml's "Services" toolbar command (open a fixed-tab
-	// SingleDocumentWorkspaceView showing the selected agent's services) - now this agent's
-	// own page instead of a separate destination reached only from the collection view.
+	// workspace showing the selected agent's services) - now this agent's own page.
+	// MultiDoc: ServiceCollectionView is a pinned Fixed first tab (cannot be closed);
+	// service editors open in additional closable tabs.
 	Component {
 		id: servicesPageComp
 
-		SingleDocumentWorkspaceView {
+		MultiDocWorkspaceView {
 			id: servicesWorkspaceView
 			anchors.fill: parent
+			// Local only: page + tab strip on baseColor so Services matches AgentEditor.
+			// Tab chrome is ServicesDocumentTabDecorator — global TabPanelDecorator is untouched.
+			contentColor: Style.baseColor
+			tabPanelColor: Style.baseColor
+			tabDelegateDecorator: servicesTabDecoratorComp
+			// Default icon for individual service document tabs opened from this workspace.
+			defaultDocumentIcon: "Icons/Service"
 			documentManager: DocumentService {}
 
 			visualStatusProvider: GqlBasedObjectVisualStatusProvider {
@@ -372,15 +401,36 @@ DocumentViewBase {
 
 			Component.onCompleted: {
 				MainDocumentService.registerDocumentService("Services", documentManager)
-				addInitialItem(serviceCollectionViewComp, "")
+				// Fixed / pinned collection tab — close button is hidden by TabPanel.
+				addFixedView(
+							serviceCollectionViewComp,
+							qsTr("Services"),
+							"ServiceCollection",
+							true,
+							true,
+							"Icons/ServiceCollection")
+			}
+
+			Component {
+				id: servicesTabDecoratorComp
+				ServicesDocumentTabDecorator {}
 			}
 
 			Component {
 				id: serviceCollectionViewComp
 
 				ServiceCollectionView {
+					id: serviceCollectionView
+
 					Component.onCompleted: {
 						clientId = agentEditorContainer.documentId
+					}
+
+					// Live row count of the loaded Services list - unlike agentData.m_serviceCount
+					// (a one-shot server snapshot taken when the agent representation loaded), this
+					// tracks add/remove of services while this page is open.
+					onElementsCountChanged: {
+						multiPageView.setPageBadge("Services", "(" + serviceCollectionView.elementsCount + ")")
 					}
 				}
 			}
@@ -401,6 +451,18 @@ DocumentViewBase {
 			function getHeaders(){
 				return {"clientid": agentEditorContainer.documentId}
 			}
+		}
+	}
+
+	// Interactive shell on the agent host. The document id is the agent id every
+	// agent-scoped request in this editor is routed with (same value the Services and
+	// Log pages put into their "clientid" header).
+	Component {
+		id: terminalPageComp
+
+		TerminalView {
+			anchors.fill: parent
+			agentId: agentEditorContainer.documentId
 		}
 	}
 }

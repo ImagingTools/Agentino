@@ -307,19 +307,69 @@ void CAgentChangeObserverComp::HandleServiceStatusChanged(
 	}
 
 	if (applyResult == ApplyStatusResult::Changed){
-		// CollectionSubscriber already fans out OnServiceStatusChanged.
+		// ServiceStatusCollection just changed - MI_SERVICE_STATUS_COLLECTION
+		// (OnServiceStatusCollectionChanged, registered on m_serviceStatusModelCompPtr)
+		// observes that write directly and relays it to GUI clients. Do NOT also emit
+		// here: that used to be the only relay, and returning early exactly on this
+		// branch (the case that matters!) is what silently swallowed every real status
+		// transition - see the removed "CollectionSubscriber already fans out" comment
+		// that described a subscriber wiring which never actually existed.
 		return;
 	}
 
+	// Unchanged (or Failed to write): no collection write happened, so nothing will
+	// trigger OnServiceStatusCollectionChanged. Relay the agent's report directly so an
+	// identical-status heartbeat / a failed mirror write still reaches the GUI.
+	EmitServiceStatusNotification(serviceId, serviceStatus);
+}
+
+
+void CAgentChangeObserverComp::EmitServiceStatusNotification(
+			const QByteArray& serviceId,
+			agentinodata::IServiceStatusInfo::ServiceStatus status)
+{
 	istd::IChangeable::ChangeSet changeSet(istd::IChangeable::CF_ANY);
 	agentinodata::IServiceController::NotifierStatusInfo notifierInfo;
 	notifierInfo.serviceId = serviceId;
-	notifierInfo.serviceStatus = serviceStatus;
+	notifierInfo.serviceStatus = status;
 	changeSet.SetChangeInfo(
 				agentinodata::IServiceController::CN_STATUS_CHANGED,
 				QVariant::fromValue(notifierInfo));
 	changeSet.SetChangeInfo(QByteArrayLiteral("serviceid"), serviceId);
 	istd::CChangeNotifier notifier(this, &changeSet);
+}
+
+
+void CAgentChangeObserverComp::OnServiceStatusCollectionChanged(const istd::IChangeable::ChangeSet& changeSet)
+{
+	if (!m_serviceStatusCollectionCompPtr.IsValid()){
+		return;
+	}
+
+	QByteArray serviceId;
+	if (changeSet.Contains(imtbase::ICollectionInfo::CF_ADDED)){
+		serviceId = changeSet.GetChangeInfo(imtbase::ICollectionInfo::CN_ELEMENT_INSERTED).toByteArray();
+	}
+	else if (changeSet.Contains(imtbase::IObjectCollection::CF_OBJECT_DATA_CHANGED)){
+		serviceId = changeSet.GetChangeInfo(imtbase::IObjectCollection::CN_OBJECT_DATA_CHANGED).toByteArray();
+	}
+
+	if (serviceId.isEmpty()){
+		// Removal / unrelated change (CF_REMOVED etc.) - nothing to relay as a status.
+		return;
+	}
+
+	imtbase::IObjectCollection::DataPtr dataPtr;
+	if (!m_serviceStatusCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
+		return;
+	}
+
+	agentinodata::CServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::CServiceStatusInfo*>(dataPtr.GetPtr());
+	if (serviceStatusInfoPtr == nullptr){
+		return;
+	}
+
+	EmitServiceStatusNotification(serviceId, serviceStatusInfoPtr->GetServiceStatus());
 }
 
 
@@ -611,6 +661,11 @@ void CAgentChangeObserverComp::OnModelChanged(int modelId, const istd::IChangeab
 		return;
 	}
 
+	if (modelId == MI_SERVICE_STATUS_COLLECTION){
+		OnServiceStatusCollectionChanged(changeSet);
+		return;
+	}
+
 	if (modelId == MI_AGENT_STATUS_COLLECTION){
 		// Agent went online/offline — re-open live subscriptions while the WS is up.
 		if (!m_agentStatusCollectionCompPtr.IsValid()){
@@ -673,6 +728,13 @@ void CAgentChangeObserverComp::OnComponentCreated()
 	// Absorbed connection observer: watch agent WS connect/disconnect directly.
 	if (m_loginStatusModelCompPtr.IsValid()){
 		RegisterModel(m_loginStatusModelCompPtr.GetPtr(), MI_LOGIN_STATUS);
+	}
+
+	// Catch-all relay: whichever component wrote ServiceStatusCollection (live push,
+	// disconnect reset, reconnect reconcile, Start/Stop proxy), this makes sure GUI
+	// subscribers always hear about it - see the ModelId enum / class doc comment.
+	if (m_serviceStatusModelCompPtr.IsValid()){
+		RegisterModel(m_serviceStatusModelCompPtr.GetPtr(), MI_SERVICE_STATUS_COLLECTION);
 	}
 
 	// Agents already present in the mirror (DB load / already connected).

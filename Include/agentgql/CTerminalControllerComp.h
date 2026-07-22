@@ -2,12 +2,9 @@
 #pragma once
 
 
-// ImtCore includes
-#include <imtservergql/CGqlRequestHandlerCompBase.h>
-
 // Agentino includes
 #include <agentinodata/ITerminalController.h>
-#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Terminal.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Terminal_fwd.h>
 
 
 namespace agentgql
@@ -17,45 +14,51 @@ namespace agentgql
 /**
 	Agent side GraphQL resolver for the remote terminal feature.
 
-	Runs inside the AgentinoAgent process and delegates every request to the local
-	\ref agentinodata::ITerminalController, which owns the shell processes.
+	Thin per-request adapter: runs inside the AgentinoAgent's GQL handler tree (recreated
+	per request) and delegates every call to the persistent
+	\ref agentinodata::CTerminalSessionManagerComp sibling, which actually owns the shell
+	processes and their buffered output across requests.
 
 	\ingroup Terminal
 */
-class CTerminalControllerComp: public sdl::agentino::Terminal::CGraphQlHandlerCompBase
+class CTerminalControllerComp: public sdl::V1_0::agentino::CTerminalGqlHandlerCompBase
 {
 public:
-	typedef CGraphQlHandlerCompBase BaseClass;
+	typedef sdl::V1_0::agentino::CTerminalGqlHandlerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CTerminalControllerComp);
-		I_ASSIGN(m_terminalControllerCompPtr, "TerminalController", "Terminal controller used to run shell sessions", true, "TerminalController");
+		I_ASSIGN(m_terminalSessionManagerCompPtr, "TerminalSessionManager", "Terminal session manager used to run shell sessions", true, "TerminalSessionManager");
 	I_END_COMPONENT;
 
 protected:
-	// reimplemented (sdl::agentino::Terminal::CGraphQlHandlerCompBase)
-	virtual sdl::agentino::Terminal::CShellTypeListPayload OnListShellTypes(
-				const sdl::agentino::Terminal::CListShellTypesGqlRequest& listShellTypesRequest,
+	// reimplemented (sdl::V1_0::agentino::CTerminalGqlHandlerCompBase)
+	virtual sdl::V1_0::agentino::CShellTypeListPayload OnListShellTypes(
+				const sdl::V1_0::agentino::CListShellTypesGqlRequest& listShellTypesRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-	virtual sdl::agentino::Terminal::CTerminalOutputResponse OnGetTerminalOutput(
-				const sdl::agentino::Terminal::CGetTerminalOutputGqlRequest& getTerminalOutputRequest,
+	virtual sdl::V1_0::agentino::CTerminalOutputResponse OnGetTerminalOutput(
+				const sdl::V1_0::agentino::CGetTerminalOutputGqlRequest& getTerminalOutputRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-	virtual sdl::agentino::Terminal::COpenTerminalSessionResponse OnOpenTerminalSession(
-				const sdl::agentino::Terminal::COpenTerminalSessionGqlRequest& openTerminalSessionRequest,
+	virtual sdl::V1_0::agentino::COpenTerminalSessionResponse OnOpenTerminalSession(
+				const sdl::V1_0::agentino::COpenTerminalSessionGqlRequest& openTerminalSessionRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-	virtual sdl::agentino::Terminal::CSendTerminalInputResponse OnSendTerminalInput(
-				const sdl::agentino::Terminal::CSendTerminalInputGqlRequest& sendTerminalInputRequest,
+	virtual sdl::V1_0::agentino::CSendTerminalInputResponse OnSendTerminalInput(
+				const sdl::V1_0::agentino::CSendTerminalInputGqlRequest& sendTerminalInputRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
-	virtual sdl::agentino::Terminal::CCloseTerminalSessionResponse OnCloseTerminalSession(
-				const sdl::agentino::Terminal::CCloseTerminalSessionGqlRequest& closeTerminalSessionRequest,
+	virtual sdl::V1_0::agentino::CInterruptTerminalSessionResponse OnInterruptTerminalSession(
+				const sdl::V1_0::agentino::CInterruptTerminalSessionGqlRequest& interruptTerminalSessionRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CCloseTerminalSessionResponse OnCloseTerminalSession(
+				const sdl::V1_0::agentino::CCloseTerminalSessionGqlRequest& closeTerminalSessionRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
 
 protected:
-	I_REF(agentinodata::ITerminalController, m_terminalControllerCompPtr);
+	I_REF(agentinodata::ITerminalController, m_terminalSessionManagerCompPtr);
 };
 
 

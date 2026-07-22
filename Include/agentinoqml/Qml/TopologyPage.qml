@@ -527,6 +527,14 @@ ViewBase {
 
 			height: pathColumn.height
 
+			// Server may send "No Extern Paths" (or similar) when the list is empty —
+			// that must not render as a clickable URL.
+			function isOpenableUrl(value){
+				if (!value || value === "")
+					return false
+				return value.indexOf("://") >= 0
+			}
+
 			Column {
 				id: pathColumn
 				width: metaInfoDelegate.width
@@ -536,24 +544,28 @@ ViewBase {
 					delegate: Item {
 						height: linkText.height
 						width: parent.width
+						readonly property bool isLink: metaInfoDelegate.isOpenableUrl(modelData)
 						Text {
 							id: linkText
 							width: parent.width
 							font.family: Style.fontFamily
 							font.pixelSize: Style.fontSizeS
-							font.underline: true
+							font.underline: isLink
+							font.italic: !isLink
 							wrapMode: Text.WordWrap
-							color: Style.lightBlueColor
+							color: isLink ? Style.lightBlueColor : Style.subtitleColor
 							elide: Text.ElideRight
 							text: modelData
 						}
 
 						MouseArea {
 							anchors.fill: linkText
-							hoverEnabled: true
-							cursorShape: Qt.PointingHandCursor
+							hoverEnabled: isLink
+							enabled: isLink
+							cursorShape: isLink ? Qt.PointingHandCursor : Qt.ArrowCursor
 							onClicked: {
-								console.log("onClicked", modelData)
+								if (!isLink)
+									return
 								Qt.openUrlExternally(modelData)
 							}
 						}

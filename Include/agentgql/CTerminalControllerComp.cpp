@@ -1,224 +1,263 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentgql/CTerminalControllerComp.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Terminal.h>
 
 
 namespace agentgql
 {
 
 
+namespace
+{
+
+
+/** Wire enum <-> internal enum. Both are generated from the same set of names. */
+sdl::V1_0::agentino::ShellType ToWireShellType(agentinodata::ITerminalController::ShellType shellType)
+{
+	switch (shellType){
+	case agentinodata::ITerminalController::ST_CMD:
+		return sdl::V1_0::agentino::ShellType::CMD;
+	case agentinodata::ITerminalController::ST_POWERSHELL:
+		return sdl::V1_0::agentino::ShellType::POWERSHELL;
+	case agentinodata::ITerminalController::ST_SH:
+		return sdl::V1_0::agentino::ShellType::SH;
+	case agentinodata::ITerminalController::ST_BASH:
+	default:
+		return sdl::V1_0::agentino::ShellType::BASH;
+	}
+}
+
+
+agentinodata::ITerminalController::ShellType FromWireShellType(sdl::V1_0::agentino::ShellType shellType)
+{
+	switch (shellType){
+	case sdl::V1_0::agentino::ShellType::CMD:
+		return agentinodata::ITerminalController::ST_CMD;
+	case sdl::V1_0::agentino::ShellType::POWERSHELL:
+		return agentinodata::ITerminalController::ST_POWERSHELL;
+	case sdl::V1_0::agentino::ShellType::SH:
+		return agentinodata::ITerminalController::ST_SH;
+	case sdl::V1_0::agentino::ShellType::BASH:
+	default:
+		return agentinodata::ITerminalController::ST_BASH;
+	}
+}
+
+
+sdl::V1_0::agentino::TerminalStreamType ToWireStreamType(agentinodata::ITerminalController::StreamType streamType)
+{
+	switch (streamType){
+	case agentinodata::ITerminalController::STREAM_STDERR:
+		return sdl::V1_0::agentino::TerminalStreamType::STDERR;
+	case agentinodata::ITerminalController::STREAM_SYSTEM:
+		return sdl::V1_0::agentino::TerminalStreamType::SYSTEM;
+	case agentinodata::ITerminalController::STREAM_STDOUT:
+	default:
+		return sdl::V1_0::agentino::TerminalStreamType::STDOUT;
+	}
+}
+
+
+} // namespace
+
+
 // protected methods
 
-// reimplemented (sdl::agentino::Terminal::CGraphQlHandlerCompBase)
+// reimplemented (sdl::V1_0::agentino::CTerminalGqlHandlerCompBase)
 
-sdl::agentino::Terminal::CShellTypeListPayload CTerminalControllerComp::OnListShellTypes(
-			const sdl::agentino::Terminal::CListShellTypesGqlRequest& /*listShellTypesRequest*/,
+sdl::V1_0::agentino::CShellTypeListPayload CTerminalControllerComp::OnListShellTypes(
+			const sdl::V1_0::agentino::CListShellTypesGqlRequest& /*listShellTypesRequest*/,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,
 			QString& errorMessage) const
 {
-	sdl::agentino::Terminal::CShellTypeListPayload response;
+	sdl::V1_0::agentino::CShellTypeListPayload response;
 
-	if (!m_terminalControllerCompPtr.IsValid()){
-		Q_ASSERT_X(false, "Attribute 'TerminalController' was not set", "CTerminalControllerComp");
+	if (!m_terminalSessionManagerCompPtr.IsValid()){
+		errorMessage = QStringLiteral("Unable to list shell types. Error: attribute 'TerminalSessionManager' was not set");
 
 		return response;
 	}
 
-	response.Version_1_0.emplace();
-
-	QList<sdl::agentino::Terminal::CShellTypeInfo::V1_0> items;
-	const QList<agentinodata::ITerminalController::ShellInfo> shells = m_terminalControllerCompPtr->GetAvailableShells();
+	QList<sdl::V1_0::agentino::CShellTypeInfo> items;
+	const QList<agentinodata::ITerminalController::ShellInfo> shells = m_terminalSessionManagerCompPtr->GetAvailableShells();
 	for (const agentinodata::ITerminalController::ShellInfo& shell: shells){
-		sdl::agentino::Terminal::CShellTypeInfo::V1_0 item;
-		item.type = (sdl::agentino::Terminal::ShellType) shell.type;
+		sdl::V1_0::agentino::CShellTypeInfo item;
+		item.type = ToWireShellType(shell.type);
 		item.name = shell.name;
 		item.available = shell.available;
 
 		items << item;
 	}
 
-	response.Version_1_0->items.Emplace();
-	response.Version_1_0->items->FromList(items);
+	response.items.Emplace();
+	response.items->FromList(items);
 
 	return response;
 }
 
 
-sdl::agentino::Terminal::CTerminalOutputResponse CTerminalControllerComp::OnGetTerminalOutput(
-			const sdl::agentino::Terminal::CGetTerminalOutputGqlRequest& getTerminalOutputRequest,
+sdl::V1_0::agentino::CTerminalOutputResponse CTerminalControllerComp::OnGetTerminalOutput(
+			const sdl::V1_0::agentino::CGetTerminalOutputGqlRequest& getTerminalOutputRequest,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,
 			QString& errorMessage) const
 {
-	sdl::agentino::Terminal::CTerminalOutputResponse response;
+	sdl::V1_0::agentino::CTerminalOutputResponse response;
 
-	if (!m_terminalControllerCompPtr.IsValid()){
-		Q_ASSERT_X(false, "Attribute 'TerminalController' was not set", "CTerminalControllerComp");
-
-		return response;
-	}
-
-	sdl::agentino::Terminal::GetTerminalOutputRequestArguments arguments = getTerminalOutputRequest.GetRequestedArguments();
-	if (!arguments.input.Version_1_0.has_value()){
-		Q_ASSERT_X(false, "Version 1.0 is invalid", "CTerminalControllerComp");
+	if (!m_terminalSessionManagerCompPtr.IsValid()){
+		errorMessage = QStringLiteral("Unable to read terminal output. Error: attribute 'TerminalSessionManager' was not set");
 
 		return response;
 	}
 
-	if (!arguments.input.Version_1_0->sessionId.has_value()){
-		errorMessage = QString("Unable to read terminal output with empty session ID");
+	const sdl::V1_0::agentino::GetTerminalOutputRequestArguments arguments = getTerminalOutputRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->sessionId.has_value()){
+		errorMessage = QStringLiteral("Unable to read terminal output. Error: session ID is missing");
 
 		return response;
 	}
 
-	QByteArray sessionId = *arguments.input.Version_1_0->sessionId;
-	qint64 fromSequence = 0;
-	if (arguments.input.Version_1_0->fromSequence.has_value()){
-		fromSequence = *arguments.input.Version_1_0->fromSequence;
-	}
+	const QByteArray sessionId = *arguments.input->sessionId;
+	const qint64 fromSequence = arguments.input->fromSequence.has_value() ? *arguments.input->fromSequence : 0;
 
 	qint64 nextSequence = fromSequence;
 	bool running = false;
-	bool finished = true;
 	int exitCode = -1;
 
-	const QList<agentinodata::ITerminalController::OutputChunk> chunks = m_terminalControllerCompPtr->GetOutput(
-				sessionId, fromSequence, nextSequence, running, finished, exitCode);
+	const QList<agentinodata::ITerminalController::OutputChunk> chunks = m_terminalSessionManagerCompPtr->GetOutput(
+				sessionId, fromSequence, nextSequence, running, exitCode);
 
-	response.Version_1_0.emplace();
-	response.Version_1_0->sessionId = sessionId;
-	response.Version_1_0->nextSequence = nextSequence;
-	response.Version_1_0->running = running;
-	response.Version_1_0->finished = finished;
-	response.Version_1_0->exitCode = exitCode;
+	response.sessionId = sessionId;
+	response.nextSequence = int(nextSequence);
+	response.running = running;
+	response.exitCode = exitCode;
 
-	QList<sdl::agentino::Terminal::CTerminalOutputChunk::V1_0> chunkList;
+	QList<sdl::V1_0::agentino::CTerminalOutputChunk> chunkList;
 	for (const agentinodata::ITerminalController::OutputChunk& chunk: chunks){
-		sdl::agentino::Terminal::CTerminalOutputChunk::V1_0 chunkItem;
-		chunkItem.sequence = chunk.sequence;
-		chunkItem.stream = (sdl::agentino::Terminal::TerminalStreamType) chunk.stream;
+		sdl::V1_0::agentino::CTerminalOutputChunk chunkItem;
+		chunkItem.sequence = int(chunk.sequence);
+		chunkItem.stream = ToWireStreamType(chunk.stream);
 		chunkItem.data = chunk.data;
 
 		chunkList << chunkItem;
 	}
 
-	response.Version_1_0->chunks.Emplace();
-	response.Version_1_0->chunks->FromList(chunkList);
+	response.chunks.Emplace();
+	response.chunks->FromList(chunkList);
 
 	return response;
 }
 
 
-sdl::agentino::Terminal::COpenTerminalSessionResponse CTerminalControllerComp::OnOpenTerminalSession(
-			const sdl::agentino::Terminal::COpenTerminalSessionGqlRequest& openTerminalSessionRequest,
+sdl::V1_0::agentino::COpenTerminalSessionResponse CTerminalControllerComp::OnOpenTerminalSession(
+			const sdl::V1_0::agentino::COpenTerminalSessionGqlRequest& openTerminalSessionRequest,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,
 			QString& errorMessage) const
 {
-	sdl::agentino::Terminal::COpenTerminalSessionResponse response;
+	sdl::V1_0::agentino::COpenTerminalSessionResponse response;
 
-	if (!m_terminalControllerCompPtr.IsValid()){
-		Q_ASSERT_X(false, "Attribute 'TerminalController' was not set", "CTerminalControllerComp");
-
-		return response;
-	}
-
-	sdl::agentino::Terminal::OpenTerminalSessionRequestArguments arguments = openTerminalSessionRequest.GetRequestedArguments();
-	if (!arguments.input.Version_1_0.has_value()){
-		Q_ASSERT_X(false, "Version 1.0 is invalid", "CTerminalControllerComp");
+	if (!m_terminalSessionManagerCompPtr.IsValid()){
+		errorMessage = QStringLiteral("Unable to open terminal session. Error: attribute 'TerminalSessionManager' was not set");
 
 		return response;
 	}
 
-	if (!arguments.input.Version_1_0->shellType.has_value()){
-		errorMessage = QString("Unable to open terminal session without a shell type");
+	const sdl::V1_0::agentino::OpenTerminalSessionRequestArguments arguments = openTerminalSessionRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->shellType.has_value()){
+		errorMessage = QStringLiteral("Unable to open terminal session. Error: shell type is missing");
 
 		return response;
 	}
 
-	agentinodata::ITerminalController::ShellType shellType =
-				(agentinodata::ITerminalController::ShellType) *arguments.input.Version_1_0->shellType;
+	const QByteArray sessionId = m_terminalSessionManagerCompPtr->OpenSession(
+				FromWireShellType(*arguments.input->shellType), errorMessage);
 
-	QByteArray sessionId = m_terminalControllerCompPtr->OpenSession(shellType, errorMessage);
-
-	response.Version_1_0.emplace();
-	response.Version_1_0->sessionId = sessionId;
-	response.Version_1_0->shellType = *arguments.input.Version_1_0->shellType;
-	response.Version_1_0->started = !sessionId.isEmpty();
+	response.sessionId = sessionId;
+	response.shellType = *arguments.input->shellType;
+	response.started = !sessionId.isEmpty();
 
 	return response;
 }
 
 
-sdl::agentino::Terminal::CSendTerminalInputResponse CTerminalControllerComp::OnSendTerminalInput(
-			const sdl::agentino::Terminal::CSendTerminalInputGqlRequest& sendTerminalInputRequest,
+sdl::V1_0::agentino::CSendTerminalInputResponse CTerminalControllerComp::OnSendTerminalInput(
+			const sdl::V1_0::agentino::CSendTerminalInputGqlRequest& sendTerminalInputRequest,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,
 			QString& errorMessage) const
 {
-	sdl::agentino::Terminal::CSendTerminalInputResponse response;
+	sdl::V1_0::agentino::CSendTerminalInputResponse response;
+	response.accepted = false;
 
-	if (!m_terminalControllerCompPtr.IsValid()){
-		Q_ASSERT_X(false, "Attribute 'TerminalController' was not set", "CTerminalControllerComp");
-
-		return response;
-	}
-
-	sdl::agentino::Terminal::SendTerminalInputRequestArguments arguments = sendTerminalInputRequest.GetRequestedArguments();
-	if (!arguments.input.Version_1_0.has_value()){
-		Q_ASSERT_X(false, "Version 1.0 is invalid", "CTerminalControllerComp");
+	if (!m_terminalSessionManagerCompPtr.IsValid()){
+		errorMessage = QStringLiteral("Unable to send terminal input. Error: attribute 'TerminalSessionManager' was not set");
 
 		return response;
 	}
 
-	response.Version_1_0.emplace();
-	response.Version_1_0->accepted = false;
-
-	if (!arguments.input.Version_1_0->sessionId.has_value()){
-		errorMessage = QString("Unable to send terminal input with empty session ID");
+	const sdl::V1_0::agentino::SendTerminalInputRequestArguments arguments = sendTerminalInputRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->sessionId.has_value()){
+		errorMessage = QStringLiteral("Unable to send terminal input. Error: session ID is missing");
 
 		return response;
 	}
 
-	QByteArray sessionId = *arguments.input.Version_1_0->sessionId;
-	QString data;
-	if (arguments.input.Version_1_0->data.has_value()){
-		data = *arguments.input.Version_1_0->data;
-	}
+	const QString data = arguments.input->data.has_value() ? *arguments.input->data : QString();
 
-	response.Version_1_0->accepted = m_terminalControllerCompPtr->SendInput(sessionId, data);
+	response.accepted = m_terminalSessionManagerCompPtr->SendInput(*arguments.input->sessionId, data);
 
 	return response;
 }
 
 
-sdl::agentino::Terminal::CCloseTerminalSessionResponse CTerminalControllerComp::OnCloseTerminalSession(
-			const sdl::agentino::Terminal::CCloseTerminalSessionGqlRequest& closeTerminalSessionRequest,
+sdl::V1_0::agentino::CInterruptTerminalSessionResponse CTerminalControllerComp::OnInterruptTerminalSession(
+			const sdl::V1_0::agentino::CInterruptTerminalSessionGqlRequest& interruptTerminalSessionRequest,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,
 			QString& errorMessage) const
 {
-	sdl::agentino::Terminal::CCloseTerminalSessionResponse response;
+	sdl::V1_0::agentino::CInterruptTerminalSessionResponse response;
+	response.accepted = false;
 
-	if (!m_terminalControllerCompPtr.IsValid()){
-		Q_ASSERT_X(false, "Attribute 'TerminalController' was not set", "CTerminalControllerComp");
-
-		return response;
-	}
-
-	sdl::agentino::Terminal::CloseTerminalSessionRequestArguments arguments = closeTerminalSessionRequest.GetRequestedArguments();
-	if (!arguments.input.Version_1_0.has_value()){
-		Q_ASSERT_X(false, "Version 1.0 is invalid", "CTerminalControllerComp");
+	if (!m_terminalSessionManagerCompPtr.IsValid()){
+		errorMessage = QStringLiteral("Unable to interrupt terminal session. Error: attribute 'TerminalSessionManager' was not set");
 
 		return response;
 	}
 
-	response.Version_1_0.emplace();
-	response.Version_1_0->closed = false;
-
-	if (!arguments.input.Version_1_0->sessionId.has_value()){
-		errorMessage = QString("Unable to close terminal session with empty session ID");
+	const sdl::V1_0::agentino::InterruptTerminalSessionRequestArguments arguments =
+				interruptTerminalSessionRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->sessionId.has_value()){
+		errorMessage = QStringLiteral("Unable to interrupt terminal session. Error: session ID is missing");
 
 		return response;
 	}
 
-	QByteArray sessionId = *arguments.input.Version_1_0->sessionId;
-	response.Version_1_0->closed = m_terminalControllerCompPtr->CloseSession(sessionId);
+	response.accepted = m_terminalSessionManagerCompPtr->InterruptSession(*arguments.input->sessionId);
+
+	return response;
+}
+
+
+sdl::V1_0::agentino::CCloseTerminalSessionResponse CTerminalControllerComp::OnCloseTerminalSession(
+			const sdl::V1_0::agentino::CCloseTerminalSessionGqlRequest& closeTerminalSessionRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::CCloseTerminalSessionResponse response;
+	response.closed = false;
+
+	if (!m_terminalSessionManagerCompPtr.IsValid()){
+		errorMessage = QStringLiteral("Unable to close terminal session. Error: attribute 'TerminalSessionManager' was not set");
+
+		return response;
+	}
+
+	const sdl::V1_0::agentino::CloseTerminalSessionRequestArguments arguments = closeTerminalSessionRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->sessionId.has_value()){
+		errorMessage = QStringLiteral("Unable to close terminal session. Error: session ID is missing");
+
+		return response;
+	}
+
+	response.closed = m_terminalSessionManagerCompPtr->CloseSession(*arguments.input->sessionId);
 
 	return response;
 }

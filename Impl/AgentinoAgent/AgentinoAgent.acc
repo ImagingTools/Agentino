@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5347" Description="ACF"/>
-            <Version Id="1" Number="2236" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="393732" Description="Qt Framework"/>
+            <Version Id="0" Number="6500" Description="ACF"/>
+            <Version Id="1" Number="2438" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -58,14 +58,13 @@
                                 <Value>AgentServer</Value>
                                 <Value>AgentServer/Preferences</Value>
                                 <Value>AgentServer/AutoPersistence</Value>
-                                <Value>AgentServer/FileAutoPersistence</Value>
                                 <Value>AgentServer/ServiceCollection</Value>
                                 <Value>AgentServer/AgentRegistrationClient</Value>
                                 <Value>AgentServer/AgentServiceCollectionSyncClient</Value>
                                 <Value>AgentServer/ProcessHost</Value>
                                 <Value>AgentServer/ServiceTypeCatalog</Value>
                                 <Value>AgentServer/ServiceController</Value>
-                                <Value>AgentServer/TerminalController</Value>
+                                <Value>AgentServer/TerminalSessionManager</Value>
                                 <Value>AgentServer/HttpServerFramework</Value>
                                 <Value>AgentServer/WebSocketServerFramework</Value>
                             </Values>

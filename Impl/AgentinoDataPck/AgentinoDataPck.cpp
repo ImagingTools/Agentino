@@ -41,9 +41,9 @@ I_EXPORT_COMPONENT(
 			"Agent Service Controller / Supervisor");
 
 I_EXPORT_COMPONENT(
-			TerminalController,
-			"Remote terminal controller",
-			"Remote Terminal Session Controller");
+			TerminalSessionManager,
+			"Remote terminal session manager",
+			"Remote Terminal Session Manager");
 
 I_EXPORT_COMPONENT(
 			LegacyServiceController,

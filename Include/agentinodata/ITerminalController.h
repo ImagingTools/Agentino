@@ -22,11 +22,24 @@ namespace agentinodata
 	The operator opens a session, sends input lines to the shell standard input and reads
 	the produced output incrementally.
 
+	Implementations raise \ref CN_TERMINAL_OUTPUT_CHANGED (change-info = sessionId as
+	QByteArray) whenever a session produces new buffered output, so subscribers can push
+	over GraphQL instead of polling GetOutput.
+
+	\note Implementations must be callable from any thread: the agent serves GraphQL
+	requests on worker threads (see \c imtrest::CWorkerManagerComp).
+
 	\ingroup Terminal
 */
 class ITerminalController: virtual public istd::IChangeable
 {
 public:
+	/**
+		Raised when a session has new buffered output.
+		Change-info value is the session id (QByteArray).
+	*/
+	static const QByteArray CN_TERMINAL_OUTPUT_CHANGED;
+
 	/**
 		Supported shell types.
 		\note The numeric values must stay in sync with the 'ShellType' enum defined in Terminal.sdl.
@@ -71,11 +84,6 @@ public:
 	};
 
 	/**
-		Change notification emitted when new output is available for a session.
-	*/
-	static const QByteArray CN_TERMINAL_OUTPUT_CHANGED;
-
-	/**
 		Get the list of shell types that can be launched on the agent machine.
 	*/
 	virtual QList<ShellInfo> GetAvailableShells() const = 0;
@@ -100,13 +108,19 @@ public:
 	virtual bool CloseSession(const QByteArray& sessionId) = 0;
 
 	/**
+		Interrupt the foreground work of the shell without destroying the session
+		(best-effort Ctrl+C / SIGINT). The shell process itself keeps running.
+	*/
+	virtual bool InterruptSession(const QByteArray& sessionId) = 0;
+
+	/**
 		Read output produced by the session since the given sequence number.
 		\param sessionId Session to read from.
 		\param fromSequence Sequence number of the first chunk the caller has not seen yet (0 to read from start).
 		\param nextSequence Filled with the sequence number the caller should request next time.
-		\param running Filled with true while the shell process is still alive.
-		\param finished Filled with true once the shell process has exited.
-		\param exitCode Filled with the process exit code when finished.
+		\param running Filled with true while the shell process is still alive, and with
+			false both for an exited shell and for an unknown session.
+		\param exitCode Filled with the process exit code once the shell has exited.
 		\return The list of new output chunks, empty when nothing new is available.
 	*/
 	virtual QList<OutputChunk> GetOutput(
@@ -114,7 +128,6 @@ public:
 				qint64 fromSequence,
 				qint64& nextSequence,
 				bool& running,
-				bool& finished,
 				int& exitCode) const = 0;
 
 	/**

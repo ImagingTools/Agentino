@@ -95,9 +95,15 @@ interactive shell (`cmd.exe`/`powershell.exe` on Windows, `/bin/bash` or
 design, **remote command execution** and is the most security-sensitive
 capability in the system. The following controls apply:
 
-- **Authorization required**: Opening a session is gated behind the existing
-  `imtauth` authorization layer; it is not exposed to unauthenticated callers.
-  Restrict the relevant permission to trusted operators only.
+- **Authorization required**: Every terminal command (`ListShellTypes`,
+  `OpenTerminalSession`, `SendTerminalInput`, `GetTerminalOutput`,
+  `CloseTerminalSession`) requires the `RemoteTerminal` permission, enforced
+  server-side by the `TerminalPermissions` provider wired into the terminal
+  proxy; the UI additionally hides the Terminal page from operators without it.
+  Restrict that permission to trusted operators only.
+- **Agent addressing required**: The proxy refuses any terminal request that
+  does not name a target agent through the `clientid` request header, so a
+  session can never be opened on an unintended host.
 - **No privilege elevation**: The shell is spawned with the agent service's own
   privileges. The feature never elevates. Run the agent under a least-privilege
   service account to limit the blast radius.

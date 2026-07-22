@@ -13,11 +13,13 @@
 	<file alias="ServiceCollectionView.qml">Qml/ServiceCollectionView.qml</file>
 	<file alias="AgentCollectionView.qml">Qml/AgentCollectionView.qml</file>
 	<file alias="AgentCollectionViewBase.qml">Qml/AgentCollectionViewBase.qml</file>
+	<file alias="AgentinoCollectionTableStyle.qml">Qml/AgentinoCollectionTableStyle.qml</file>
 	<file alias="ServiceEditor.qml">Qml/ServiceEditor.qml</file>
 	<file alias="ServiceEditorTransport.qml">Qml/ServiceEditorTransport.qml</file>
 	<file alias="ServiceEditorWrap.qml">Qml/ServiceEditorWrap.qml</file>
 	<file alias="ServiceValidator.qml">Qml/ServiceValidator.qml</file>
 	<file alias="AgentEditor.qml">Qml/AgentEditor.qml</file>
+	<file alias="ServicesDocumentTabDecorator.qml">Qml/ServicesDocumentTabDecorator.qml</file>
 	<file alias="AgentSettings.qml">Qml/AgentSettings.qml</file>
 	<file alias="AgentCollectionViewCommandsDelegate.qml">Qml/AgentCollectionViewCommandsDelegate.qml</file>
 	<file alias="ServiceCollectionViewCommandsDelegate.qml">Qml/ServiceCollectionViewCommandsDelegate.qml</file>

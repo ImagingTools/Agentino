@@ -92,17 +92,23 @@ DocumentCollectionViewDelegate {
 		let indexes = container.collectionView.table.getSelectedIndexes();
 		if (indexes.length > 0){
 			let serviceId = elements.getData(ServiceItemTypeMetaInfo.s_id, indexes[0])
-			
+
+			if (container.commandsController){
+				container.commandsController.setCommandIsEnabled("Start", false)
+			}
 			startService(serviceId);
 		}
 	}
-	
+
 	function onStop(){
 		let elements = container.collectionView.table.elements;
 		let indexes = container.collectionView.table.getSelectedIndexes();
 		if (indexes.length > 0){
 			let serviceId = elements.getData(ServiceItemTypeMetaInfo.s_id, indexes[0])
-			
+
+			if (container.commandsController){
+				container.commandsController.setCommandIsEnabled("Stop", false)
+			}
 			stopService(serviceId)
 		}
 	}

@@ -20,6 +20,7 @@
 #include <agentinogql/CMirroredServiceCollectionControllerComp.h>
 #include <agentinogql/CServiceStatusCollectionSubscriberControllerComp.h>
 #include <agentinogql/CAgentsSubscriberProxyControllerComp.h>
+#include <agentinogql/CTerminalOutputSubscriberProxyComp.h>
 #include <agentinogql/CAgentinoGqlRemoteRepresentationControllerComp.h>
 #include <agentinogql/CEnrollmentStoreComp.h>
 #include <agentinogql/CEnrollmentGqlControllerComp.h>
@@ -44,6 +45,7 @@ typedef agentinogql::CServiceCollectionSubscriberControllerComp ServiceCollectio
 typedef agentinogql::CMirroredServiceCollectionControllerComp MirroredServiceCollectionController;
 typedef agentinogql::CServiceStatusCollectionSubscriberControllerComp ServiceStatusCollectionSubscriberController;
 typedef agentinogql::CAgentsSubscriberProxyControllerComp AgentsSubscriberProxyController;
+typedef agentinogql::CTerminalOutputSubscriberProxyComp TerminalOutputSubscriberProxy;
 typedef agentinogql::CAgentinoGqlRemoteRepresentationControllerComp AgentinoGqlRemoteRepresentationController;
 typedef agentgql::TVisualStatusControllerCompWrap<AgentinoGqlRemoteRepresentationController> AgentinoRemoteVisualStatusController;
 typedef agentgql::TDocumentRevisionControllerCompWrap<AgentinoGqlRemoteRepresentationController> AgentinoRemoteDocumentRevisionController;

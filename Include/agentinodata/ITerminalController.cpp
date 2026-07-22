@@ -6,7 +6,8 @@ namespace agentinodata
 {
 
 
-const QByteArray ITerminalController::CN_TERMINAL_OUTPUT_CHANGED = QByteArrayLiteral("agentinodata:ITerminalController::OutputChanged");
+const QByteArray ITerminalController::CN_TERMINAL_OUTPUT_CHANGED =
+			QByteArrayLiteral("agentinodata:ITerminalController::TerminalOutputChanged");
 
 
 } // namespace agentinodata

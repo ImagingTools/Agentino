@@ -14,9 +14,16 @@ RemoteCollectionView {
 	// shadow any outer id "root" from the dialog creation context.
 	id: agentsView;
 
+	// Match Services / AgentEditor surfaces (ViewBase default is backgroundColor2).
+	contentColor: Style.baseColor
+
 	visibleMetaInfo: false;
 
 	collectionId: "Agents";
+
+	AgentinoCollectionTableStyle {
+		id: collectionTableStyle
+	}
 
 	// "status" is computed live server-side (connection state + enrollment state), never
 	// stored, so the generic ComplexFilter/collectionFilter machinery this view's
@@ -157,21 +164,6 @@ RemoteCollectionView {
 			enrollmentViewModel: agentsView.enrollmentViewModel
 
 			onCommandActivated: {
-				if (commandId === "Terminal"){
-					let indexes = agentsView.table.getSelectedIndexes();
-					if (indexes.length > 0){
-						let index = indexes[0];
-						let id = agentsView.table.elements.getData("id", index);
-						let name = agentsView.table.elements.getData("computerName", index);
-						let documentManagerPtr = MainDocumentService.getDocumentService("Agents")
-						if (documentManagerPtr){
-							let view = documentManagerPtr.getActiveView();
-							view.addFixedView(terminalWorkspaceView, qsTr("Terminal") + " - " + name, "terminal_" + id, true);
-						}
-					}
-					return;
-				}
-
 				let enrollmentCommandIds = ["Approve", "Reject", "Suspend", "Resume", "Revoke", "Reset"];
 				if (enrollmentCommandIds.indexOf(commandId) < 0){
 					return;
@@ -217,10 +209,13 @@ RemoteCollectionView {
 
 		agentsView.filterMenu.decorator = agentStatusFilterComp;
 		agentsView.refreshStatusCounts();
+		collectionTableStyle.apply(agentsView.table)
 	}
 
 	onHeadersChanged: {
 		if (agentsView.table.headers.getItemsCount() > 0){
+			// Re-apply after CollectionViewBase may reset border defaults on headers.
+			collectionTableStyle.apply(agentsView.table)
 			let orderIndex = agentsView.table.getHeaderIndex("status");
 			if (orderIndex >= 0){
 				agentsView.table.setColumnContentComponent(orderIndex, stateColumnContentComp);
@@ -228,22 +223,12 @@ RemoteCollectionView {
 		}
 	}
 
-	// Double-click opens the same Agent editor as the "Edit" toolbar command - Services and
-	// Log now live inside it as MultiPageView pages instead of a separate destination.
+	// Double-click opens the same Agent editor as the "Edit" toolbar command - Services,
+	// Log and Terminal now live inside it as MultiPageView pages instead of separate
+	// destinations reachable only from this collection view.
 	function onEdit(){
 		if (agentsView.commandsDelegate){
 			agentsView.commandsDelegate.commandHandle("Edit");
-		}
-	}
-
-	Component {
-		id: terminalWorkspaceView
-
-		TerminalView {
-			anchors.fill: parent;
-			agentId: agentsView.table.getSelectedIndexes().length > 0
-				? agentsView.table.elements.getData("id", agentsView.table.getSelectedIndexes()[0])
-				: "";
 		}
 	}
 

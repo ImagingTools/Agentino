@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentinogql/CTerminalControllerProxyComp.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Terminal.h>
 
 
 // ImtCore includes
-#include <imtgql/CGqlContext.h>
+#include <imtgql/CGqlRequest.h>
 
 
 namespace agentinogql
@@ -12,189 +13,89 @@ namespace agentinogql
 
 // protected methods
 
-// reimplemented (sdl::agentino::Terminal::CGraphQlHandlerCompBase)
+// reimplemented (sdl::V1_0::agentino::CTerminalGqlHandlerCompBase)
 
-sdl::agentino::Terminal::CShellTypeListPayload CTerminalControllerProxyComp::OnListShellTypes(
-			const sdl::agentino::Terminal::CListShellTypesGqlRequest& /*listShellTypesRequest*/,
+sdl::V1_0::agentino::CShellTypeListPayload CTerminalControllerProxyComp::OnListShellTypes(
+			const sdl::V1_0::agentino::CListShellTypesGqlRequest& /*listShellTypesRequest*/,
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	sdl::agentino::Terminal::CShellTypeListPayload retVal =
-				SendModelRequest<sdl::agentino::Terminal::CShellTypeListPayload>(gqlRequest, errorMessage);
-	if (!errorMessage.isEmpty()){
-		SendErrorMessage(0, errorMessage, "CTerminalControllerProxyComp");
-
-		return sdl::agentino::Terminal::CShellTypeListPayload();
-	}
-
-	return retVal;
+	return ForwardToAgent<sdl::V1_0::agentino::CShellTypeListPayload>(gqlRequest, errorMessage);
 }
 
 
-sdl::agentino::Terminal::CTerminalOutputResponse CTerminalControllerProxyComp::OnGetTerminalOutput(
-			const sdl::agentino::Terminal::CGetTerminalOutputGqlRequest& /*getTerminalOutputRequest*/,
+sdl::V1_0::agentino::CTerminalOutputResponse CTerminalControllerProxyComp::OnGetTerminalOutput(
+			const sdl::V1_0::agentino::CGetTerminalOutputGqlRequest& /*getTerminalOutputRequest*/,
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	sdl::agentino::Terminal::CTerminalOutputResponse retVal =
-				SendModelRequest<sdl::agentino::Terminal::CTerminalOutputResponse>(gqlRequest, errorMessage);
-	if (!errorMessage.isEmpty()){
-		SendErrorMessage(0, errorMessage, "CTerminalControllerProxyComp");
-
-		return sdl::agentino::Terminal::CTerminalOutputResponse();
-	}
-
-	return retVal;
+	return ForwardToAgent<sdl::V1_0::agentino::CTerminalOutputResponse>(gqlRequest, errorMessage);
 }
 
 
-sdl::agentino::Terminal::COpenTerminalSessionResponse CTerminalControllerProxyComp::OnOpenTerminalSession(
-			const sdl::agentino::Terminal::COpenTerminalSessionGqlRequest& /*openTerminalSessionRequest*/,
+sdl::V1_0::agentino::COpenTerminalSessionResponse CTerminalControllerProxyComp::OnOpenTerminalSession(
+			const sdl::V1_0::agentino::COpenTerminalSessionGqlRequest& /*openTerminalSessionRequest*/,
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	sdl::agentino::Terminal::COpenTerminalSessionResponse retVal =
-				SendModelRequest<sdl::agentino::Terminal::COpenTerminalSessionResponse>(gqlRequest, errorMessage);
-	if (!errorMessage.isEmpty()){
-		SendErrorMessage(0, errorMessage, "CTerminalControllerProxyComp");
-
-		return sdl::agentino::Terminal::COpenTerminalSessionResponse();
-	}
-
-	return retVal;
+	return ForwardToAgent<sdl::V1_0::agentino::COpenTerminalSessionResponse>(gqlRequest, errorMessage);
 }
 
 
-sdl::agentino::Terminal::CSendTerminalInputResponse CTerminalControllerProxyComp::OnSendTerminalInput(
-			const sdl::agentino::Terminal::CSendTerminalInputGqlRequest& /*sendTerminalInputRequest*/,
+sdl::V1_0::agentino::CSendTerminalInputResponse CTerminalControllerProxyComp::OnSendTerminalInput(
+			const sdl::V1_0::agentino::CSendTerminalInputGqlRequest& /*sendTerminalInputRequest*/,
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	sdl::agentino::Terminal::CSendTerminalInputResponse retVal =
-				SendModelRequest<sdl::agentino::Terminal::CSendTerminalInputResponse>(gqlRequest, errorMessage);
-	if (!errorMessage.isEmpty()){
-		SendErrorMessage(0, errorMessage, "CTerminalControllerProxyComp");
-
-		return sdl::agentino::Terminal::CSendTerminalInputResponse();
-	}
-
-	return retVal;
+	return ForwardToAgent<sdl::V1_0::agentino::CSendTerminalInputResponse>(gqlRequest, errorMessage);
 }
 
 
-sdl::agentino::Terminal::CCloseTerminalSessionResponse CTerminalControllerProxyComp::OnCloseTerminalSession(
-			const sdl::agentino::Terminal::CCloseTerminalSessionGqlRequest& /*closeTerminalSessionRequest*/,
+sdl::V1_0::agentino::CInterruptTerminalSessionResponse CTerminalControllerProxyComp::OnInterruptTerminalSession(
+			const sdl::V1_0::agentino::CInterruptTerminalSessionGqlRequest& /*interruptTerminalSessionRequest*/,
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	sdl::agentino::Terminal::CCloseTerminalSessionResponse retVal =
-				SendModelRequest<sdl::agentino::Terminal::CCloseTerminalSessionResponse>(gqlRequest, errorMessage);
-	if (!errorMessage.isEmpty()){
-		SendErrorMessage(0, errorMessage, "CTerminalControllerProxyComp");
-
-		return sdl::agentino::Terminal::CCloseTerminalSessionResponse();
-	}
-
-	return retVal;
+	return ForwardToAgent<sdl::V1_0::agentino::CInterruptTerminalSessionResponse>(gqlRequest, errorMessage);
 }
 
 
-// reimplemented (imtgql::CGqlRequestHandlerCompBase)
-
-QJsonObject CTerminalControllerProxyComp::CreateInternalResponse(
-			const imtgql::CGqlRequest& gqlRequest,
+sdl::V1_0::agentino::CCloseTerminalSessionResponse CTerminalControllerProxyComp::OnCloseTerminalSession(
+			const sdl::V1_0::agentino::CCloseTerminalSessionGqlRequest& /*closeTerminalSessionRequest*/,
+			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	QByteArray commandId = gqlRequest.GetCommandId();
-
-	if (sdl::agentino::Terminal::CListShellTypesGqlRequest::GetCommandId() == commandId){
-		return CreateResponse<
-			sdl::agentino::Terminal::CListShellTypesGqlRequest,
-			sdl::agentino::Terminal::CShellTypeListPayload>(
-			gqlRequest,
-			errorMessage,
-			[&](const auto& req, const auto& gqlReq, QString& err){
-				return OnListShellTypes(req, gqlReq, err);
-			});
-	}
-	if (sdl::agentino::Terminal::CGetTerminalOutputGqlRequest::GetCommandId() == commandId){
-		return CreateResponse<
-			sdl::agentino::Terminal::CGetTerminalOutputGqlRequest,
-			sdl::agentino::Terminal::CTerminalOutputResponse>(
-			gqlRequest,
-			errorMessage,
-			[&](const auto& req, const auto& gqlReq, QString& err){
-				return OnGetTerminalOutput(req, gqlReq, err);
-			});
-	}
-	if (sdl::agentino::Terminal::COpenTerminalSessionGqlRequest::GetCommandId() == commandId){
-		return CreateResponse<
-			sdl::agentino::Terminal::COpenTerminalSessionGqlRequest,
-			sdl::agentino::Terminal::COpenTerminalSessionResponse>(
-			gqlRequest,
-			errorMessage,
-			[&](const auto& req, const auto& gqlReq, QString& err){
-				return OnOpenTerminalSession(req, gqlReq, err);
-			});
-	}
-	if (sdl::agentino::Terminal::CSendTerminalInputGqlRequest::GetCommandId() == commandId){
-		return CreateResponse<
-			sdl::agentino::Terminal::CSendTerminalInputGqlRequest,
-			sdl::agentino::Terminal::CSendTerminalInputResponse>(
-			gqlRequest,
-			errorMessage,
-			[&](const auto& req, const auto& gqlReq, QString& err){
-				return OnSendTerminalInput(req, gqlReq, err);
-			});
-	}
-	if (sdl::agentino::Terminal::CCloseTerminalSessionGqlRequest::GetCommandId() == commandId){
-		return CreateResponse<
-			sdl::agentino::Terminal::CCloseTerminalSessionGqlRequest,
-			sdl::agentino::Terminal::CCloseTerminalSessionResponse>(
-			gqlRequest,
-			errorMessage,
-			[&](const auto& req, const auto& gqlReq, QString& err){
-				return OnCloseTerminalSession(req, gqlReq, err);
-			});
-	}
-
-	return QJsonObject();
+	return ForwardToAgent<sdl::V1_0::agentino::CCloseTerminalSessionResponse>(gqlRequest, errorMessage);
 }
 
 
 // private methods
 
-template<class SdlGqlRequest, class SdlResponse>
-QJsonObject CTerminalControllerProxyComp::CreateResponse(
+template <class SdlResponse>
+SdlResponse CTerminalControllerProxyComp::ForwardToAgent(
 			const imtgql::CGqlRequest& gqlRequest,
-			QString& errorMessage,
-			std::function<SdlResponse(const SdlGqlRequest&, const imtgql::CGqlRequest&, QString&)> func) const
+			QString& errorMessage) const
 {
-	QByteArray commandId = gqlRequest.GetCommandId();
+	// Require clientid so the shell is opened on a concrete agent instead of silently
+	// hitting whatever the API client happens to be connected to.
+	if (gqlRequest.GetHeader(QByteArrayLiteral("clientid")).isEmpty()){
+		errorMessage = QStringLiteral(
+					"Unable to serve terminal request. Error: request header 'clientid' (agent id) is missing");
+		SendErrorMessage(0, errorMessage, "CTerminalControllerProxyComp");
 
-	SdlGqlRequest terminalGqlRequest(gqlRequest, true);
-
-	Q_ASSERT(terminalGqlRequest.IsValid());
-	if (!terminalGqlRequest.IsValid()){
-		return QJsonObject();
+		return SdlResponse();
 	}
 
-	SdlResponse retVal = func(terminalGqlRequest, gqlRequest, errorMessage);
+	// Permission check is performed by CPermissibleGqlRequestHandlerComp base
+	// (CreateResponse -> CheckPermissions) before this method is invoked.
+	SdlResponse retVal = SendModelRequest<SdlResponse>(gqlRequest, errorMessage);
 	if (!errorMessage.isEmpty()){
 		SendErrorMessage(0, errorMessage, "CTerminalControllerProxyComp");
 
-		return QJsonObject();
+		return SdlResponse();
 	}
 
-	QJsonObject resultObj;
-	if (!retVal.WriteToJsonObject(resultObj)){
-		errorMessage = QString("Unable to create response for command '%1'. Error: Writing to JSON object failed").arg(qPrintable(commandId));
-		SendErrorMessage(0, errorMessage, "CTerminalControllerProxyComp");
-
-		return QJsonObject();
-	}
-
-	return resultObj;
+	return retVal;
 }
 
 

@@ -334,6 +334,10 @@ bool CAgentCollectionControllerComp::UpdateObjectFromRepresentationRequest(
 		m_objectCollectionCompPtr->SetElementDescription(objectId, *agentData.description);
 	}
 
+	if (agentData.tracingLevel){
+		agentPtr->SetTracingLevel(*agentData.tracingLevel);
+	}
+
 	return true;
 }
 

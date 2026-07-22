@@ -18,6 +18,7 @@
 #include <agentgql/CAgentMessageCollectionControllerComp.h>
 #include <agentgql/CAgentSettingsControllerComp.h>
 #include <agentgql/CServiceLogSubscriberControllerComp.h>
+#include <agentgql/CTerminalOutputPublisherComp.h>
 #include <agentgql/CAgentGqlRemoteRepresentationControllerComp.h>
 #include <agentgql/CAgentConnectionSubscriberControllerComp.h>
 #include <agentgql/CAgentServicesRemoteSubscriberProxyComp.h>
@@ -41,6 +42,7 @@ typedef agentgql::CMessageCollectionControllerComp MessageCollectionController;
 typedef agentgql::CAgentMessageCollectionControllerComp AgentMessageCollectionController;
 typedef agentgql::CAgentSettingsControllerComp AgentSettingsController;
 typedef agentgql::CServiceLogSubscriberControllerComp ServiceLogSubscriberController;
+typedef agentgql::CTerminalOutputPublisherComp TerminalOutputPublisher;
 typedef agentgql::CAgentGqlRemoteRepresentationControllerComp AgentGqlRemoteRepresentationController;
 typedef agentgql::CAgentConnectionSubscriberControllerComp AgentConnectionSubscriberController;
 typedef agentgql::CAgentServicesRemoteSubscriberProxyComp AgentServicesRemoteSubscriberProxy;

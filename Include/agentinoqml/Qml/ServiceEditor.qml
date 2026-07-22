@@ -309,7 +309,7 @@ DocumentViewBase {
 		if (isNewService || multiPageView.getIndexById("Log") >= 0){
 			return
 		}
-		multiPageView.addPage("Log", qsTr("Service Log"), serviceLogPageComp, "Icons/Diagnostics")
+		multiPageView.addPage("Log", qsTr("Service Log"), serviceLogPageComp, "Icons/EventLog")
 	}
 
 	onDocumentIdChanged: refreshIsNewService()
@@ -659,6 +659,9 @@ DocumentViewBase {
 							description: qsTr("Executable path used to start the service and detect its running process")
 							placeHolderText: serviceEditorContainer.pathBrowsePlaceHolder(false)
 							pathKind: Enums.pathKindFile
+							// Windows executables + common binary suffixes; "*" = extensionless
+							// Linux/Unix binaries (no suffix). Other file types cannot be picked.
+							extensions: ["exe", "com", "bin", "run", "appimage", "out", "*"]
 							// Server: need clientId (remote agent FS). Agent app: local FS always.
 							browseEnabled: serviceEditorContainer.pathBrowseEnabled
 							// Path can only come from the browse dialog - manual typing is
@@ -856,7 +859,7 @@ DocumentViewBase {
 
 						BaseText {
 							text: "\u2713"
-							color: Style.positiveAccentColor
+							color: Style.imaginToolsAccentColor
 							font.bold: true
 							font.pixelSize: Style.fontSizeM
 							anchors.verticalCenter: parent.verticalCenter
@@ -1182,7 +1185,7 @@ DocumentViewBase {
 
 						BaseText {
 							text: "\u2713"
-							color: Style.positiveAccentColor
+							color: Style.imaginToolsAccentColor
 							font.bold: true
 							font.pixelSize: Style.fontSizeM
 							anchors.verticalCenter: parent.verticalCenter
@@ -1719,6 +1722,8 @@ DocumentViewBase {
 								name: qsTr("Start Script Path")
 								description: qsTr("Path to the script executed to start the service")
 								pathKind: Enums.pathKindFile
+								// Script formats only (Windows shell / PowerShell / Unix shells / common interpreters).
+								extensions: ["sh", "bash", "bat", "cmd", "ps1", "py", "pl", "rb", "vbs"]
 								browseEnabled: serviceEditorContainer.pathBrowseEnabled
 								readOnlyPath: true
 
@@ -1749,6 +1754,8 @@ DocumentViewBase {
 								name: qsTr("Stop Script Path")
 								description: qsTr("Path to the script executed to stop the service")
 								pathKind: Enums.pathKindFile
+								// Same script whitelist as Start Script Path.
+								extensions: ["sh", "bash", "bat", "cmd", "ps1", "py", "pl", "rb", "vbs"]
 								browseEnabled: serviceEditorContainer.pathBrowseEnabled
 								readOnlyPath: true
 
