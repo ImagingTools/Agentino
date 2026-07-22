@@ -38,7 +38,52 @@ ViewBase {
 	function normalizeServiceStatus(status){
 		return topologyViewModel.normalizeServiceStatus(status)
 	}
-	
+
+	// Meta-info only for a service that is still on the canvas — avoids GetElementMetaInfo
+	// errors after Remove when selection/subscription still holds a deleted id.
+	function refreshSelectedMetaInfo(){
+		if (scheme.selectedService === "")
+			return
+		if (scheme.findModelIndex(scheme.selectedService) < 0)
+			return
+		collectionDataProvider.getObjectMetaInfo(scheme.selectedService)
+	}
+
+	function clearServiceSelection(){
+		scheme.selectedIndex = -1
+		scheme.selectedService = ""
+		topologyPage.selectedAgentId = ""
+		metaInfo.contentVisible = false
+		if (topologyPage.commandsController){
+			topologyPage.commandsController.setCommandIsEnabled("Start", false)
+			topologyPage.commandsController.setCommandIsEnabled("Stop", false)
+			topologyPage.commandsController.setCommandIsEnabled("Edit", false)
+			topologyPage.commandsController.setCommandIsEnabled("Remove", false)
+		}
+	}
+
+	// Topology.Service.agentOnline — false when the owning agent is disconnected.
+	function isSelectedAgentOnline(){
+		if (scheme.selectedIndex < 0 || !scheme.objectsModel)
+			return false
+		if (scheme.selectedIndex >= scheme.objectsModel.count)
+			return false
+		let item = scheme.objectsModel.get(scheme.selectedIndex).item
+		if (!item)
+			return false
+		// Treat missing field as online (legacy payloads); only explicit false blocks delete.
+		return item.m_agentOnline !== false
+	}
+
+	function canRemoveSelectedService(){
+		return scheme.selectedService !== "" && topologyPage.isSelectedAgentOnline()
+	}
+
+	function showCannotRemoveWhileDisconnected(){
+		ModalDialogManager.showErrorDialog(
+					qsTr("Cannot delete the service while the agent is disconnected. Reconnect the agent and try again."))
+	}
+
 	Component.onCompleted: {
 		if (documentManager){
 			documentManager.registerDocumentView("Service", serviceEditorComp);
@@ -77,7 +122,8 @@ ViewBase {
 				setCommandVisible("Save", false)
 				setCommandIsEnabled("New", true)
 				setCommandIsEnabled("Edit", serviceSelected)
-				setCommandIsEnabled("Remove", serviceSelected)
+				// Delete requires a live agent — mirror-only delete comes back on reconnect.
+				setCommandIsEnabled("Remove", serviceSelected && topologyPage.isSelectedAgentOnline())
 				setIsToggleable("AutoFit", true);
 				setToggled("AutoFit", scheme.autoFit);
 			}
@@ -118,6 +164,7 @@ ViewBase {
 			if (index === scheme.selectedIndex && topologyPage.commandsController){
 				topologyPage.commandsController.setCommandIsEnabled("Start", false)
 				topologyPage.commandsController.setCommandIsEnabled("Stop", false)
+				topologyPage.commandsController.setCommandIsEnabled("Remove", false)
 			}
 			scheme.requestPaint()
 			return
@@ -143,6 +190,7 @@ ViewBase {
 			let busy = serviceStatus === "STARTING" || serviceStatus === "STOPPING"
 			topologyPage.commandsController.setCommandIsEnabled("Start", serviceStatus === "NOT_RUNNING" && !busy);
 			topologyPage.commandsController.setCommandIsEnabled("Stop", serviceStatus === "RUNNING" && !busy);
+			topologyPage.commandsController.setCommandIsEnabled("Remove", topologyPage.isSelectedAgentOnline());
 		}
 
 		serviceStatus = item.m_status;
@@ -182,7 +230,7 @@ ViewBase {
 			}
 
 			if (serviceId === scheme.selectedService){
-				collectionDataProvider.getObjectMetaInfo(scheme.selectedService)
+				topologyPage.refreshSelectedMetaInfo()
 			}
 		}
 
@@ -259,6 +307,10 @@ ViewBase {
 			}
 
 			function onRemove(){
+				if (!topologyPage.canRemoveSelectedService()){
+					topologyPage.showCannotRemoveWhileDisconnected()
+					return
+				}
 				ModalDialogManager.openDialog(topologyRemoveDialogComp, {})
 			}
 
@@ -275,6 +327,10 @@ ViewBase {
 					message: serviceCommandsDelegate.removeMessage
 					onFinished: {
 						if (buttonId == Enums.yes && scheme.selectedService !== ""){
+							if (!topologyPage.canRemoveSelectedService()){
+								topologyPage.showCannotRemoveWhileDisconnected()
+								return
+							}
 							collectionDataProvider.removeElements([scheme.selectedService])
 						}
 					}
@@ -368,9 +424,13 @@ ViewBase {
 		}
 
 		onDeleteSignal: {
-			if (scheme.selectedService !== ""){
-				ModalDialogManager.openDialog(topologyRemoveDialogComp, {})
+			if (scheme.selectedService === "")
+				return
+			if (!topologyPage.canRemoveSelectedService()){
+				topologyPage.showCannotRemoveWhileDisconnected()
+				return
 			}
+			ModalDialogManager.openDialog(topologyRemoveDialogComp, {})
 		}
 
 		onSelectedIndexChanged: {
@@ -384,14 +444,15 @@ ViewBase {
 				selectedService = serviceId;
 				topologyPage.selectedAgentId = item.m_agentId
 				let status = topologyPage.normalizeServiceStatus(item.m_status);
+				let agentOnline = item.m_agentOnline !== false
 
-				topologyPage.commandsController.setCommandIsEnabled("Start", status === "NOT_RUNNING")
-				topologyPage.commandsController.setCommandIsEnabled("Stop", status === "RUNNING")
+				topologyPage.commandsController.setCommandIsEnabled("Start", agentOnline && status === "NOT_RUNNING")
+				topologyPage.commandsController.setCommandIsEnabled("Stop", agentOnline && status === "RUNNING")
 				topologyPage.commandsController.setCommandIsEnabled("Edit", true)
-				topologyPage.commandsController.setCommandIsEnabled("Remove", true)
+				topologyPage.commandsController.setCommandIsEnabled("Remove", agentOnline)
 				
 				metaInfo.contentVisible = true;
-				collectionDataProvider.getObjectMetaInfo(selectedService)
+				topologyPage.refreshSelectedMetaInfo()
 			}
 			else{
 				selectedService = ""
@@ -497,6 +558,29 @@ ViewBase {
 		collectionId: "Services"
 		onObjectMetaInfoReceived: {
 			metaInfo.elementMetaInfo = metaInfoData
+		}
+		onObjectMetaInfoReceiveFailed: {
+			// Deleted / missing service — keep the panel quiet rather than showing a stale error.
+			if (scheme.selectedService === "" || scheme.findModelIndex(scheme.selectedService) < 0){
+				metaInfo.contentVisible = false
+			}
+		}
+		// RemoveElements success: do not wait for OnServicesCollectionChanged (can lag or
+		// miss). Clear selection so nothing re-requests meta for a deleted id, then reload.
+		onElementsRemoved: {
+			let removedIds = elementIds
+			let selectedGone = false
+			if (removedIds && scheme.selectedService !== ""){
+				for (let i = 0; i < removedIds.length; i++){
+					if (("" + removedIds[i]) === scheme.selectedService){
+						selectedGone = true
+						break
+					}
+				}
+			}
+			if (selectedGone)
+				topologyPage.clearServiceSelection()
+			topologyPage.topologyViewModel.requestReload()
 		}
 		
 		function getHeaders(){

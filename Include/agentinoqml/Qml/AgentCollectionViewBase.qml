@@ -18,6 +18,8 @@ RemoteCollectionView {
 	contentColor: Style.baseColor
 
 	visibleMetaInfo: false;
+	// Column sort is not useful for the Agents grid (status/enrollment are live server fields).
+	hasSort: false
 
 	collectionId: "Agents";
 

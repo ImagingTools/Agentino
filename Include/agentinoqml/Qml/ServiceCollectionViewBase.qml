@@ -34,7 +34,10 @@ RemoteCollectionView {
 		serviceId: root.serviceId
 	}
 	
-	filterMenuVisible: false;
+	// No column sort / collection filter UI for the per-agent Services grid.
+	hasSort: false
+	hasFilter: false
+	filterMenuVisible: false
 
 	collectionId: "Services";
 	additionalFieldIds: ["description","status","statusName", "dependencyStatus", "dependantStatusInfo"]

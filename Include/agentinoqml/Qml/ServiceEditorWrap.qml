@@ -270,6 +270,10 @@ ServiceEditor {
 		}
 
 		onServiceStatusChanged: {
+			// Temporary diagnostic: confirms whether ServiceEditorWrap's own filter is what
+			// drops the update for a second open tab (mismatched/stale serviceId) vs the
+			// message never reaching this instance's controller at all. Remove once confirmed.
+			console.log("[diag] ServiceEditorWrap serviceId=" + serviceEditor.serviceId + " got serviceStatusChanged for=" + serviceId + " status=" + status + " match=" + (serviceId === serviceEditor.serviceId))
 			if (serviceId === serviceEditor.serviceId){
 				serviceEditor.setServiceStatus(status)
 				let normalized = serviceEditor.serviceStatus

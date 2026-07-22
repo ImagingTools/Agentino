@@ -162,6 +162,17 @@ private:
 		std::function<SdlResponse(const SdlGqlRequest&, const imtgql::CGqlRequest&, QString&)> func) const;
 	bool SetServiceStatus(const QByteArray& serviceId, agentinodata::IServiceStatusInfo::ServiceStatus status) const;
 	bool SetServiceStatus(const QByteArray& serviceId, sdl::V1_0::agentino::ServiceStatus status) const;
+
+	/**
+		When a proxied request to the agent fails (SendModelRequest/SendModelRequestAsync
+		returns a non-empty errorMessage), this turns the generic transport error ("Response
+		is invalid") into an actionable one if the reason is simply that the agent is offline
+		(ServiceStatusCollection already carries SS_UNDEFINED for this service - see
+		CAgentChangeObserverComp::ResetAgentServiceStatuses). Returns the original
+		errorMessage unchanged for every other failure (real GQL error, malformed response, ...).
+	*/
+	QString DescribeProxyError(const QByteArray& serviceId, const QString& errorMessage) const;
+
 	/** Candidate producers across the fleet for one output slot (used by OnAvailableConnections). */
 	QList<sdl::V1_0::agentino::CDependantConnectionInfo> BuildAvailableConnections(const QByteArray& connectionUsageId) const;
 	istd::TSharedInterfacePtr<imtcom::CServerConnectionInterfaceParam> GetDependantServerConnectionParam(const QByteArray& dependantId) const;

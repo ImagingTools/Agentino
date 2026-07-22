@@ -656,6 +656,7 @@ sdl::V1_0::imtbase::CUpdatedNotificationPayload CServiceControllerProxyComp::OnU
 	sdl::V1_0::imtbase::CUpdatedNotificationPayload retVal =
 			SendModelRequest<sdl::V1_0::imtbase::CUpdatedNotificationPayload>(gqlRequest, errorMessage);
 	if (!errorMessage.isEmpty()){
+		errorMessage = DescribeProxyError(serviceId, errorMessage);
 		SendErrorMessage(0, errorMessage, "CServiceStatusControllerProxyComp");
 		return sdl::V1_0::imtbase::CUpdatedNotificationPayload();
 	}
@@ -878,18 +879,29 @@ sdl::V1_0::imtbase::CRemovedNotificationPayload CServiceControllerProxyComp::OnS
 	QByteArray agentId = gqlRequest.GetHeader("clientid");
 
 	sdl::V1_0::imtbase::CRemovedNotificationPayload retVal = SendModelRequest<sdl::V1_0::imtbase::CRemovedNotificationPayload>(gqlRequest, errorMessage);
-	if (errorMessage.isEmpty()){
-		// Success: the service is removed strictly on the Agent (single source of truth). The
-		// server mirror / statuses are purged reactively when the Agent pushes
-		// NotifyAgentServicesCollectionChanged('removed') -> HandleAgentServiceCollectionNotify.
-		return retVal;
+	if (!errorMessage.isEmpty()){
+		// Do not purge the mirror when the agent is offline — the agent still owns the
+		// service and would re-publish it on reconnect (same rule as OnRemoveElements).
+		const QString offlineMessage = QStringLiteral(
+					"Cannot delete the service while the agent is disconnected. "
+					"Reconnect the agent and try again.");
+		const QString rewritten = !serviceIds.isEmpty()
+					? DescribeProxyError(serviceIds.first(), errorMessage)
+					: errorMessage;
+		if (rewritten.contains(QStringLiteral("disconnected"), Qt::CaseInsensitive)
+					|| errorMessage.contains(QStringLiteral("disconnect"), Qt::CaseInsensitive)
+					|| errorMessage.contains(QStringLiteral("offline"), Qt::CaseInsensitive)
+					|| errorMessage.contains(QStringLiteral("timeout"), Qt::CaseInsensitive)
+					|| errorMessage.contains(QStringLiteral("not connected"), Qt::CaseInsensitive)){
+			errorMessage = offlineMessage;
+		}
+		else if (rewritten != errorMessage){
+			errorMessage = rewritten;
+		}
+		return sdl::V1_0::imtbase::CRemovedNotificationPayload();
 	}
 
-	// Fallback only: the Agent forward failed (agent offline / already missing this service), so
-	// no 'removed' push will arrive. Purge the stale mirror entry directly to avoid a stuck item.
-	SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
-	errorMessage.clear();
-
+	// Agent accepted delete — drop mirror entry optimistically.
 	m_serviceManagerCompPtr->RemoveServices(agentId, imtbase::ICollectionInfo::Ids(serviceIds.begin(), serviceIds.end()));
 	RemoveServiceStatuses(serviceIds);
 
@@ -929,23 +941,44 @@ sdl::V1_0::imtbase::CRemoveElementsPayload CServiceControllerProxyComp::OnRemove
 	}
 
 	QByteArray agentId = gqlRequest.GetHeader("clientid");
+	if (agentId.isEmpty()){
+		errorMessage = QStringLiteral(
+					"Cannot delete the service: agent id (clientid) is missing from the request");
+		response.success = false;
+		return response;
+	}
 
-	// Forward the original 'RemoveElements' request to the owning Agent unchanged - the
-	// Agent's ServiceCollectionController owns the real 'ServiceRepository' collection and
-	// handles this generic command correctly (unlike the server-side local mirror).
-	sdl::V1_0::imtbase::CRemoveElementsPayload retVal = SendModelRequest<sdl::V1_0::imtbase::CRemoveElementsPayload>(gqlRequest, errorMessage);
-	if (errorMessage.isEmpty()){
-		// Success: removed strictly on the Agent; the server mirror / statuses are purged
-		// reactively on the Agent's NotifyAgentServicesCollectionChanged('removed') push.
+	// Forward to the owning Agent (source of truth). Never delete only from the server
+	// mirror while the agent is offline — after reconnect the agent would re-sync the
+	// service and it would reappear on Topology.
+	sdl::V1_0::imtbase::CRemoveElementsPayload retVal =
+				SendModelRequest<sdl::V1_0::imtbase::CRemoveElementsPayload>(gqlRequest, errorMessage);
+	if (!errorMessage.isEmpty()){
+		// Prefer a clear offline message when the forward failed because the agent is down.
+		const QString offlineMessage = QStringLiteral(
+					"Cannot delete the service while the agent is disconnected. "
+					"Reconnect the agent and try again.");
+		const QString rewritten = DescribeProxyError(serviceIds.first(), errorMessage);
+		if (rewritten.contains(QStringLiteral("disconnected"), Qt::CaseInsensitive)
+					|| errorMessage.contains(QStringLiteral("disconnect"), Qt::CaseInsensitive)
+					|| errorMessage.contains(QStringLiteral("offline"), Qt::CaseInsensitive)
+					|| errorMessage.contains(QStringLiteral("timeout"), Qt::CaseInsensitive)
+					|| errorMessage.contains(QStringLiteral("not connected"), Qt::CaseInsensitive)){
+			errorMessage = offlineMessage;
+		}
+		else if (rewritten != errorMessage){
+			errorMessage = rewritten;
+		}
+		// Keep errorMessage for the GraphQL error payload (client shows Error dialog).
+		retVal.success = false;
 		return retVal;
 	}
 
-	// Fallback only: the Agent forward failed (agent offline / already missing), so no 'removed'
-	// push will arrive. Purge the stale mirror entry directly to avoid a stuck item.
-	SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
-	errorMessage.clear();
-
-	m_serviceManagerCompPtr->RemoveServices(agentId, imtbase::ICollectionInfo::Ids(serviceIds.begin(), serviceIds.end()));
+	// Agent accepted the delete — optimistically drop the mirror entry so GetTopology /
+	// list UIs update even if NotifyAgentServicesCollectionChanged is delayed.
+	m_serviceManagerCompPtr->RemoveServices(
+				agentId,
+				imtbase::ICollectionInfo::Ids(serviceIds.begin(), serviceIds.end()));
 	RemoveServiceStatuses(serviceIds);
 	retVal.success = true;
 
@@ -1063,6 +1096,9 @@ sdl::V1_0::agentino::CPluginInfo CServiceControllerProxyComp::OnLoadPlugin(
 
 	sdl::V1_0::agentino::CPluginInfo retVal = SendModelRequest<sdl::V1_0::agentino::CPluginInfo>(gqlRequest, errorMessage);
 	if (!errorMessage.isEmpty()){
+		// LoadPluginInput only carries servicePath - the service id travels as the
+		// "serviceid" header (ServiceEditorWrap's dataScope-based getHeaders()).
+		errorMessage = DescribeProxyError(gqlRequest.GetHeader("serviceid"), errorMessage);
 		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 		return sdl::V1_0::agentino::CPluginInfo();
 	}
@@ -1085,6 +1121,8 @@ sdl::V1_0::agentino::CServiceSettingsPayload CServiceControllerProxyComp::OnGetS
 
 	sdl::V1_0::agentino::CServiceSettingsPayload retVal = SendModelRequest<sdl::V1_0::agentino::CServiceSettingsPayload>(gqlRequest, errorMessage);
 	if (!errorMessage.isEmpty()){
+		const QByteArray serviceId = arguments.input->serviceId.has_value() ? *arguments.input->serviceId : QByteArray();
+		errorMessage = DescribeProxyError(serviceId, errorMessage);
 		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 		return sdl::V1_0::agentino::CServiceSettingsPayload();
 	}
@@ -1105,6 +1143,8 @@ sdl::V1_0::agentino::CServiceSettingsPayload CServiceControllerProxyComp::OnUpda
 
 	sdl::V1_0::agentino::CServiceSettingsPayload retVal = SendModelRequest<sdl::V1_0::agentino::CServiceSettingsPayload>(gqlRequest, errorMessage);
 	if (!errorMessage.isEmpty()){
+		const QByteArray serviceId = arguments.input->serviceId.has_value() ? *arguments.input->serviceId : QByteArray();
+		errorMessage = DescribeProxyError(serviceId, errorMessage);
 		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 		return sdl::V1_0::agentino::CServiceSettingsPayload();
 	}
@@ -1469,6 +1509,27 @@ bool CServiceControllerProxyComp::SetServiceStatus(const QByteArray& serviceId, 
 	}
 
 	return SetServiceStatus(serviceId, serviceStatus);
+}
+
+
+QString CServiceControllerProxyComp::DescribeProxyError(const QByteArray& serviceId, const QString& errorMessage) const
+{
+	if (errorMessage.isEmpty() || serviceId.isEmpty() || !m_serviceStatusCollectionCompPtr.IsValid()){
+		return errorMessage;
+	}
+
+	imtbase::IObjectCollection::DataPtr dataPtr;
+	if (!m_serviceStatusCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
+		return errorMessage;
+	}
+
+	agentinodata::CServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::CServiceStatusInfo*>(dataPtr.GetPtr());
+	if (serviceStatusInfoPtr == nullptr
+				|| serviceStatusInfoPtr->GetServiceStatus() != agentinodata::IServiceStatusInfo::SS_UNDEFINED){
+		return errorMessage;
+	}
+
+	return QStringLiteral("Agent is disconnected");
 }
 
 

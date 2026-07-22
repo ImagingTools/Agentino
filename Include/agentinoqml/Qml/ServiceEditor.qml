@@ -488,7 +488,11 @@ DocumentViewBase {
 			(serviceEditorContainer.isNewService ? Style.borderColor :
 				(serviceEditorContainer.serviceRunning ? Style.greenColor :
 					(serviceEditorContainer.serviceStatus === ServiceStatus.s_Starting ||
-					serviceEditorContainer.serviceStatus === ServiceStatus.s_Stopping ? Style.lightBlueColor : Style.errorColor)))
+					serviceEditorContainer.serviceStatus === ServiceStatus.s_Stopping ? Style.lightBlueColor :
+						// Undefined (agent offline / not yet known) is not an error like a crashed/
+						// failed service - it's neutral "we don't know", so it gets a neutral gray
+						// instead of the same red used for a real failure.
+						(serviceEditorContainer.serviceStatus === ServiceStatus.s_Undefined ? Style.subtitleColor : Style.errorColor))))
 		border.width: 1
 		z: 100
 		
@@ -511,7 +515,8 @@ DocumentViewBase {
 				height: 10
 				radius: 5
 				anchors.verticalCenter: parent.verticalCenter
-				color: serviceEditorContainer.serviceRunning ? Style.greenColor : Style.errorColor
+				color: serviceEditorContainer.serviceRunning ? Style.greenColor :
+					(serviceEditorContainer.serviceStatus === ServiceStatus.s_Undefined ? Style.subtitleColor : Style.errorColor)
 				visible: !serviceEditorContainer.isNewService && !serviceEditorContainer.operationInProgress
 			}
 			

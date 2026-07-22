@@ -369,6 +369,17 @@ void CAgentChangeObserverComp::OnServiceStatusCollectionChanged(const istd::ICha
 		return;
 	}
 
+	// Diagnostic: pair with ResetAgentServiceStatuses' log line above - if a serviceId
+	// logged there never shows up here, the collection write for it never reached this
+	// observer (framework/collection issue). If it shows up here but the client still
+	// doesn't update, the break is downstream (WS fanout or the client-side filter).
+	SendInfoMessage(
+				0,
+				QString("Relaying status change for service '%1': %2")
+							.arg(QString::fromUtf8(serviceId))
+							.arg(static_cast<int>(serviceStatusInfoPtr->GetServiceStatus())),
+				"CAgentChangeObserverComp");
+
 	EmitServiceStatusNotification(serviceId, serviceStatusInfoPtr->GetServiceStatus());
 }
 
@@ -804,6 +815,17 @@ void CAgentChangeObserverComp::ResetAgentServiceStatuses(const QByteArray& agent
 	}
 
 	const imtbase::ICollectionInfo::Ids ids = serviceCollectionPtr->GetElementIds();
+	// Diagnostic: confirms whether the mirror's per-agent service collection actually
+	// contains every open/edited service for this agent, or only a subset - a service
+	// missing here would never get its status reset on disconnect (stays stale in the
+	// GUI) and would explain "notifications only work for one of several open editors".
+	SendInfoMessage(
+				0,
+				QString("Agent '%1' disconnected - resetting status for %2 service(s): %3")
+							.arg(QString::fromUtf8(agentId))
+							.arg(ids.count())
+							.arg(QString::fromUtf8(QByteArrayList(ids.begin(), ids.end()).join(", "))),
+				"CAgentChangeObserverComp");
 	for (const imtbase::ICollectionInfo::Id& serviceId : ids){
 		ApplyServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_UNDEFINED);
 	}

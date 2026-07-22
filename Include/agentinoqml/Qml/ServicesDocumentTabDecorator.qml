@@ -188,11 +188,16 @@ DecoratorBase {
 		}
 	}
 
+	// Spinner only over the label (not the whole tab / close slot), so a stuck
+	// waitName load cannot block closing the tab.
 	Loading {
 		id: loading
-		anchors.fill: parent
-		indicatorSize: Style.controlHeightS
+		anchors.centerIn: labelItem
+		width: Style.controlHeightS
+		height: Style.controlHeightS
+		indicatorSize: Style.iconSizeS
 		background.color: "transparent"
 		visible: false
+		z: 5
 	}
 }
