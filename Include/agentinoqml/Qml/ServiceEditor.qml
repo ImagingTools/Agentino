@@ -2034,7 +2034,7 @@ DocumentViewBase {
 				
 				Rectangle {
 					anchors.fill: parent
-					color: Style.backgroundColor2
+					color: Style.baseColor
 					visible: !serviceEditorContainer.serviceRunning
 					
 					Row {

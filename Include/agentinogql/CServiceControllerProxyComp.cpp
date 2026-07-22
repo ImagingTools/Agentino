@@ -168,36 +168,56 @@ bool CServiceControllerProxyComp::StartAsyncServiceSync(
 							[this, agentIdCopy, serviceIdCopy](
 										sdl::V1_0::agentino::CServiceData serviceData,
 										QString fetchError) {
-								const bool hasId = serviceData.id.has_value() && !serviceData.id->isEmpty();
-								const bool hasName = serviceData.name.has_value() && !serviceData.name->isEmpty();
-								if (!fetchError.isEmpty()){
-									SendErrorMessage(
-												0,
-												QStringLiteral(
-															"Async GetService for mirror failed (agent '%1' service '%2'): %3")
-															.arg(QString::fromUtf8(agentIdCopy),
-																 QString::fromUtf8(serviceIdCopy),
-																 fetchError),
-												"CServiceControllerProxyComp");
-									// Soft error with a usable body: still apply (seed/list may be thin).
-									if (!hasId && !hasName){
-										return;
-									}
-								}
-								if (!hasId){
-									serviceData.id = serviceIdCopy;
-								}
-								if (!hasName){
-									serviceData.name = QString::fromUtf8(serviceIdCopy);
-								}
+								// This completion runs on the SubscriptionManager thread, not this
+								// component's own thread - the same issue as
+								// StartAsyncAgentReconcile's ServicesList completion (see the
+								// comment there). ApplyServicesListReconcile fires one of these
+								// GetService requests per service in a tight loop, so several of
+								// these completions can race each other and the reconcile's own
+								// seed step across threads. ApplyServiceDataToMirror's
+								// ServiceExists()-then-AddService()/SetService() is a classic
+								// check-then-act - unprotected, two racing calls for the SAME
+								// service can both see "does not exist" and both insert, leaving a
+								// duplicate row in the mirror (reproduced: reconciling an agent
+								// with services open left one of them duplicated in the mirror,
+								// and the duplicate's presence is exactly what then also broke its
+								// own status relay). Hop before touching the mirror, same as
+								// everywhere else in this file that mutates it from a callback.
+								QMetaObject::invokeMethod(
+											this,
+											[this, agentIdCopy, serviceIdCopy, serviceData, fetchError]() mutable {
+												const bool hasId = serviceData.id.has_value() && !serviceData.id->isEmpty();
+												const bool hasName = serviceData.name.has_value() && !serviceData.name->isEmpty();
+												if (!fetchError.isEmpty()){
+													SendErrorMessage(
+																0,
+																QStringLiteral(
+																			"Async GetService for mirror failed (agent '%1' service '%2'): %3")
+																			.arg(QString::fromUtf8(agentIdCopy),
+																				 QString::fromUtf8(serviceIdCopy),
+																				 fetchError),
+																"CServiceControllerProxyComp");
+													// Soft error with a usable body: still apply (seed/list may be thin).
+													if (!hasId && !hasName){
+														return;
+													}
+												}
+												if (!hasId){
+													serviceData.id = serviceIdCopy;
+												}
+												if (!hasName){
+													serviceData.name = QString::fromUtf8(serviceIdCopy);
+												}
 
-								QString applyError;
-								if (!ApplyServiceDataToMirror(agentIdCopy, serviceIdCopy, serviceData, applyError)){
-									SendErrorMessage(
-												0,
-												applyError,
-												"CServiceControllerProxyComp");
-								}
+												QString applyError;
+												if (!ApplyServiceDataToMirror(agentIdCopy, serviceIdCopy, serviceData, applyError)){
+													SendErrorMessage(
+																0,
+																applyError,
+																"CServiceControllerProxyComp");
+												}
+											},
+											Qt::QueuedConnection);
 							});
 
 	if (!token.IsValid()){
@@ -307,29 +327,45 @@ bool CServiceControllerProxyComp::StartAsyncAgentReconcile(
 
 	// Capture agentId; callback runs on SubscriptionManager thread without nested loop.
 	const QByteArray agentIdCopy = agentId;
+	CServiceControllerProxyComp* self = const_cast<CServiceControllerProxyComp*>(this);
 	imtclientgql::IAsyncGqlRequestTokenPtr token = SendModelRequestAsync<sdl::V1_0::agentino::CServiceListPayload>(
 				listGqlRequest,
-				[this, agentIdCopy](sdl::V1_0::agentino::CServiceListPayload listPayload, QString listError) {
-					// Soft GraphQL / parse errors may still carry usable items (OptRead).
-					// Only abort when the items field is missing (incomplete body).
-					// Empty array items:[] is a valid "agent has no services" result.
-					const bool hasItemsField = listPayload.items.has_value();
-					if (!listError.isEmpty()){
-						SendErrorMessage(0, listError, "CServiceControllerProxyComp");
-						if (!hasItemsField){
-							m_agentsBeingReconciled.remove(agentIdCopy);
-							// Do NOT touch m_pendingReconcile here — this callback runs on the
-							// SubscriptionManager thread, not this component's thread, and
-							// m_pendingReconcile is only ever safe to read/write via the
-							// QueueReconcile()/OnDeferredReconcile() queued hop (see below).
-							// If a nested reconcile was requested while this one was in flight,
-							// that QueueReconcile() call already scheduled OnDeferredReconcile(),
-							// which will drain it once m_agentsBeingReconciled is clear (just above).
-							return;
-						}
-					}
-					QString applyError;
-					ApplyServicesListReconcile(agentIdCopy, listPayload, applyError);
+				[self, agentIdCopy](sdl::V1_0::agentino::CServiceListPayload listPayload, QString listError) {
+					// This completion runs on the SubscriptionManager thread, not this
+					// component's own thread (see the old comment below, kept for context).
+					// ApplyServicesListReconcile mutates m_agentsBeingReconciled and writes
+					// ServiceManager / ServiceStatusCollection, whose change notifications
+					// cascade synchronously to observers (including AgentChangeObserver's
+					// relay to GUI subscribers) on whatever thread calls SetObjectData.
+					// Left unhopped, this raced with everything else that touches those same
+					// collections on the main thread and intermittently dropped/corrupted the
+					// reconcile for one of several services processed in the same batch -
+					// QueueServiceSync/QueueReconcile just below already hop for the same
+					// reason; this completion callback was the one path that didn't.
+					QMetaObject::invokeMethod(
+								self,
+								[self, agentIdCopy, listPayload, listError]() {
+									// Soft GraphQL / parse errors may still carry usable items (OptRead).
+									// Only abort when the items field is missing (incomplete body).
+									// Empty array items:[] is a valid "agent has no services" result.
+									const bool hasItemsField = listPayload.items.has_value();
+									if (!listError.isEmpty()){
+										self->SendErrorMessage(0, listError, "CServiceControllerProxyComp");
+										if (!hasItemsField){
+											self->m_agentsBeingReconciled.remove(agentIdCopy);
+											// Do NOT touch m_pendingReconcile here — that field is only ever
+											// safe to read/write via the QueueReconcile()/OnDeferredReconcile()
+											// hop, kept separate from this one for clarity. If a nested
+											// reconcile was requested while this one was in flight, that
+											// QueueReconcile() call already scheduled OnDeferredReconcile(),
+											// which will drain it now that m_agentsBeingReconciled is clear.
+											return;
+										}
+									}
+									QString applyError;
+									self->ApplyServicesListReconcile(agentIdCopy, listPayload, applyError);
+								},
+								Qt::QueuedConnection);
 				});
 
 	if (!token.IsValid()){
@@ -391,6 +427,21 @@ bool CServiceControllerProxyComp::ApplyServicesListReconcile(
 			staleIds << mirrorId;
 		}
 	}
+
+	// Temporary diagnostic: shows exactly what the agent's ServicesList response contained
+	// and what the reconcile decided to do with it - confirms whether a service that never
+	// gets its status corrected on reconnect is (a) missing from the agent's own response,
+	// (b) present but wrongly classified as stale/removed, or (c) present and processed
+	// normally (in which case the drop happens further down/elsewhere). Remove once closed.
+	SendInfoMessage(
+				0,
+				QString("ApplyServicesListReconcile for agent '%1': rawItemCount=%2 agentServiceIds=[%3] mirrorIds=[%4] staleIds=[%5]")
+							.arg(QString::fromUtf8(agentId))
+							.arg(rawItemCount)
+							.arg(QString::fromUtf8(agentServiceIds.join(", ")))
+							.arg(QString::fromUtf8(mirrorIds.join(", ")))
+							.arg(QString::fromUtf8(staleIds.join(", "))),
+				"CServiceControllerProxyComp");
 
 	// Batch CF_SERVICE_* / status notifications into one GUI poke.
 	istd::CChangeGroup serviceChangeGroup(m_serviceManagerCompPtr.GetPtr());

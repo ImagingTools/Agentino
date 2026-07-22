@@ -7,6 +7,7 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QMap>
 #include <QtCore/QString>
+#include <QtCore/QTimer>
 
 // ACF includes
 #include <ilog/TLoggerCompWrap.h>
@@ -162,6 +163,19 @@ private:
 	// component made it) re-reads the current status for the changed service and relays it.
 	void OnServiceStatusCollectionChanged(const istd::IChangeable::ChangeSet& changeSet);
 
+	// Unconditionally re-emit the current status of every service in the status collection.
+	// The per-change relay above can miss a service when the shared collection is written and
+	// observed from more than one thread at once (reconcile vs live push): the relay iterates
+	// the collection while another thread mutates it, so a status change can be published for
+	// one service and silently skipped for another in the same burst - nondeterministically.
+	// Calling this once, after a reconnect has settled, guarantees every open editor receives
+	// the authoritative current status regardless of any relay lost to that race.
+	void RelayAllServiceStatuses();
+
+	// Arms a single-shot timer (per agent) that calls RelayAllServiceStatuses() once the
+	// reconnect reconcile has had time to populate real statuses.
+	void ScheduleReconnectStatusRebroadcast(const QByteArray& agentId);
+
 	static bool ParseServiceStatus(
 				const QString& statusText,
 				agentinodata::IServiceStatusInfo::ServiceStatus& status);
@@ -183,6 +197,9 @@ private:
 
 	QMap<QByteArray, QByteArray> m_registeredAgents; // <agentId, subscriptionId> for OnAgentServiceStatusChanged
 	QMap<QByteArray, QByteArray> m_registeredServiceCollectionAgents; // <agentId, subscriptionId> for OnAgentServicesCollectionChanged
+
+	// Per-agent single-shot timers for the post-reconnect authoritative status rebroadcast.
+	QMap<QByteArray, QTimer*> m_reconnectRebroadcastTimers;
 };
 
 

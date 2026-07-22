@@ -342,45 +342,79 @@ void CAgentChangeObserverComp::EmitServiceStatusNotification(
 
 void CAgentChangeObserverComp::OnServiceStatusCollectionChanged(const istd::IChangeable::ChangeSet& changeSet)
 {
+	Q_UNUSED(changeSet);
+
+	// Do NOT try to extract "the one" changed service id from changeSet: a batched
+	// reconcile (CServiceControllerProxyComp::ApplyServicesListReconcile) wraps its whole
+	// per-service status-write loop in a single istd::CChangeGroup on this same collection.
+	// imod::CModelBase folds every nested SetObjectData's changeSet into one cumulated
+	// changeSet at the end of the group (NotifyAfterChange: m_cumulatedChangeIds +=
+	// changeSet) - and the extra change-info is a map keyed by a fixed id
+	// (CN_OBJECT_DATA_CHANGED), so only the LAST service written during the batch survives
+	// the merge. Extracting a single id here silently dropped every other service in the
+	// same reconcile burst. Relaying every tracked service's current status instead is cheap
+	// (a handful of services per agent) and idempotent on the client.
+	RelayAllServiceStatuses();
+}
+
+
+void CAgentChangeObserverComp::RelayAllServiceStatuses()
+{
 	if (!m_serviceStatusCollectionCompPtr.IsValid()){
 		return;
 	}
 
-	QByteArray serviceId;
-	if (changeSet.Contains(imtbase::ICollectionInfo::CF_ADDED)){
-		serviceId = changeSet.GetChangeInfo(imtbase::ICollectionInfo::CN_ELEMENT_INSERTED).toByteArray();
-	}
-	else if (changeSet.Contains(imtbase::IObjectCollection::CF_OBJECT_DATA_CHANGED)){
-		serviceId = changeSet.GetChangeInfo(imtbase::IObjectCollection::CN_OBJECT_DATA_CHANGED).toByteArray();
-	}
+	const imtbase::ICollectionInfo::Ids ids = m_serviceStatusCollectionCompPtr->GetElementIds();
+	for (const QByteArray& serviceId : ids){
+		imtbase::IObjectCollection::DataPtr dataPtr;
+		if (!m_serviceStatusCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
+			continue;
+		}
 
-	if (serviceId.isEmpty()){
-		// Removal / unrelated change (CF_REMOVED etc.) - nothing to relay as a status.
+		agentinodata::CServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::CServiceStatusInfo*>(dataPtr.GetPtr());
+		if (serviceStatusInfoPtr == nullptr){
+			continue;
+		}
+
+		EmitServiceStatusNotification(serviceId, serviceStatusInfoPtr->GetServiceStatus());
+	}
+}
+
+
+void CAgentChangeObserverComp::ScheduleReconnectStatusRebroadcast(const QByteArray& agentId)
+{
+	if (agentId.isEmpty()){
 		return;
 	}
 
-	imtbase::IObjectCollection::DataPtr dataPtr;
-	if (!m_serviceStatusCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
+	// QTimer must be created/started on this component's own thread; the reconnect event that
+	// gets us here can arrive on the WebSocket I/O thread. Hop first (same pattern as
+	// QueueHandleResponse), then touch the timer.
+	if (QThread::currentThread() != thread()){
+		const QByteArray agentIdCopy = agentId;
+		QMetaObject::invokeMethod(
+					this,
+					[this, agentIdCopy]() {
+						ScheduleReconnectStatusRebroadcast(agentIdCopy);
+					},
+					Qt::QueuedConnection);
 		return;
 	}
 
-	agentinodata::CServiceStatusInfo* serviceStatusInfoPtr = dynamic_cast<agentinodata::CServiceStatusInfo*>(dataPtr.GetPtr());
-	if (serviceStatusInfoPtr == nullptr){
-		return;
+	// Reuse one timer per agent so a burst of reconnect events collapses into a single
+	// authoritative rebroadcast. The delay lets the async reconcile (ServicesList +
+	// per-service GetService) populate real statuses first; when it fires we re-emit them
+	// all unconditionally, so any relay lost to the cross-thread race is recovered.
+	QTimer* timer = m_reconnectRebroadcastTimers.value(agentId, nullptr);
+	if (timer == nullptr){
+		timer = new QTimer(this);
+		timer->setSingleShot(true);
+		connect(timer, &QTimer::timeout, this, [this]() {
+			RelayAllServiceStatuses();
+		});
+		m_reconnectRebroadcastTimers.insert(agentId, timer);
 	}
-
-	// Diagnostic: pair with ResetAgentServiceStatuses' log line above - if a serviceId
-	// logged there never shows up here, the collection write for it never reached this
-	// observer (framework/collection issue). If it shows up here but the client still
-	// doesn't update, the break is downstream (WS fanout or the client-side filter).
-	SendInfoMessage(
-				0,
-				QString("Relaying status change for service '%1': %2")
-							.arg(QString::fromUtf8(serviceId))
-							.arg(static_cast<int>(serviceStatusInfoPtr->GetServiceStatus())),
-				"CAgentChangeObserverComp");
-
-	EmitServiceStatusNotification(serviceId, serviceStatusInfoPtr->GetServiceStatus());
+	timer->start(3000);
 }
 
 
@@ -711,6 +745,10 @@ void CAgentChangeObserverComp::OnModelChanged(int modelId, const istd::IChangeab
 												.arg(QString::fromUtf8(agentId), reconcileError),
 									"CAgentChangeObserverComp");
 					}
+					// The reconcile above is asynchronous and its per-change status relays can be
+					// lost to the shared-collection cross-thread race. Arm an authoritative
+					// rebroadcast so every open editor converges on the real status after reconnect.
+					ScheduleReconnectStatusRebroadcast(agentId);
 				}
 			}
 			else if (statusInfoPtr->GetAgentStatus() == agentinodata::IAgentStatusInfo::AS_DISCONNECTED){
@@ -756,6 +794,15 @@ void CAgentChangeObserverComp::OnComponentCreated()
 void CAgentChangeObserverComp::OnComponentDestroyed()
 {
 	UnregisterAllModels();
+
+	const QList<QTimer*> timers = m_reconnectRebroadcastTimers.values();
+	for (QTimer* timer : timers){
+		if (timer != nullptr){
+			timer->stop();
+			delete timer;
+		}
+	}
+	m_reconnectRebroadcastTimers.clear();
 
 	BaseClass::OnComponentDestroyed();
 }
@@ -815,17 +862,6 @@ void CAgentChangeObserverComp::ResetAgentServiceStatuses(const QByteArray& agent
 	}
 
 	const imtbase::ICollectionInfo::Ids ids = serviceCollectionPtr->GetElementIds();
-	// Diagnostic: confirms whether the mirror's per-agent service collection actually
-	// contains every open/edited service for this agent, or only a subset - a service
-	// missing here would never get its status reset on disconnect (stays stale in the
-	// GUI) and would explain "notifications only work for one of several open editors".
-	SendInfoMessage(
-				0,
-				QString("Agent '%1' disconnected - resetting status for %2 service(s): %3")
-							.arg(QString::fromUtf8(agentId))
-							.arg(ids.count())
-							.arg(QString::fromUtf8(QByteArrayList(ids.begin(), ids.end()).join(", "))),
-				"CAgentChangeObserverComp");
 	for (const imtbase::ICollectionInfo::Id& serviceId : ids){
 		ApplyServiceStatus(serviceId, agentinodata::IServiceStatusInfo::SS_UNDEFINED);
 	}

@@ -20,6 +20,7 @@
 	<file alias="ServiceValidator.qml">Qml/ServiceValidator.qml</file>
 	<file alias="AgentEditor.qml">Qml/AgentEditor.qml</file>
 	<file alias="ServicesDocumentTabDecorator.qml">Qml/ServicesDocumentTabDecorator.qml</file>
+	<file alias="TerminalTabDecorator.qml">Qml/TerminalTabDecorator.qml</file>
 	<file alias="AgentSettings.qml">Qml/AgentSettings.qml</file>
 	<file alias="AgentCollectionViewCommandsDelegate.qml">Qml/AgentCollectionViewCommandsDelegate.qml</file>
 	<file alias="ServiceCollectionViewCommandsDelegate.qml">Qml/ServiceCollectionViewCommandsDelegate.qml</file>
@@ -33,6 +34,7 @@
 	<file alias="ServiceController.qml">Qml/ServiceController.qml</file>
 	<file alias="GqlBasedServiceController.qml">Qml/GqlBasedServiceController.qml</file>
 	<file alias="TerminalView.qml">Qml/TerminalView.qml</file>
+	<file alias="TerminalSessionPane.qml">Qml/TerminalSessionPane.qml</file>
 	<file alias="TerminalController.qml">Qml/TerminalController.qml</file>
 	<file alias="DataScope.qml">Qml/DataScope.qml</file>
 	<file alias="ServiceStatusModel.qml">Qml/ServiceStatusModel.qml</file>
