@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="it_IT">
+<TS version="2.1" language="sv_SE">
 <context>
     <name>AccountCollectionViewCommandsDelegate</name>
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/AccountCollectionViewCommandsDelegate.qml" line="+9"/>
         <source>Deleting an account</source>
-        <translation>Eliminazione di un account</translation>
+        <translation>Tar bort ett konto</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Delete the selected account ?</source>
-        <translation>Eliminare l'account selezionato?</translation>
+        <translation>Ta bort det valda kontot?</translation>
     </message>
 </context>
 <context>
@@ -19,87 +19,87 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/AccountEditor.qml" line="+209"/>
         <source>Account name</source>
-        <translation>Nome account</translation>
+        <translation>Kontonamn</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Enter the account name</source>
-        <translation>Inserisci il nome dell'account</translation>
+        <translation>Ange kontonamnet</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Account description</source>
-        <translation>Descrizione account</translation>
+        <translation>Kontobeskrivning</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Enter the account description</source>
-        <translation>Inserisci la descrizione dell'account</translation>
+        <translation>Ange kontobeskrivningen</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Email</source>
-        <translation>Email</translation>
+        <translation>E-post</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Enter the email</source>
-        <translation>Inserisci l'email</translation>
+        <translation>Ange e-postadressen</translation>
     </message>
     <message>
         <location line="+28"/>
         <source>Company address</source>
-        <translation>Indirizzo aziendale</translation>
+        <translation>Företagsadress</translation>
     </message>
     <message>
         <location line="+31"/>
         <source>Country</source>
-        <translation>Paese</translation>
+        <translation>Land</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Enter the country</source>
-        <translation>Inserisci il paese</translation>
+        <translation>Ange landet</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>City</source>
-        <translation>Città</translation>
+        <translation>Ort</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Enter the city</source>
-        <translation>Inserisci la città</translation>
+        <translation>Ange orten</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Postal Code</source>
-        <translation>Codice postale</translation>
+        <translation>Postnummer</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Enter the postal code</source>
-        <translation>Inserisci il codice postale</translation>
+        <translation>Ange postnumret</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Street</source>
-        <translation>Via</translation>
+        <translation>Gata</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Enter the street</source>
-        <translation>Inserisci la via</translation>
+        <translation>Ange gatan</translation>
     </message>
     <message>
         <location line="+31"/>
         <source>Group Name</source>
-        <translation>Nome gruppo</translation>
+        <translation>Gruppnamn</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Groups</source>
-        <translation>Gruppi</translation>
+        <translation>Grupper</translation>
     </message>
 </context>
 <context>
@@ -108,19 +108,19 @@
         <location filename="../../../Bin/web/src/imtauthgui/AdministrationView.qml" line="+29"/>
         <location line="+50"/>
         <source>Roles</source>
-        <translation>Ruoli</translation>
+        <translation>Roller</translation>
     </message>
     <message>
         <location line="-45"/>
         <location line="+46"/>
         <source>Users</source>
-        <translation>Utenti</translation>
+        <translation>Användare</translation>
     </message>
     <message>
         <location line="-41"/>
         <location line="+42"/>
         <source>Groups</source>
-        <translation>Gruppi</translation>
+        <translation>Grupper</translation>
     </message>
 </context>
 <context>
@@ -129,13 +129,13 @@
         <location filename="../../../Bin/web/src/AgentCollectionViewCommandsDelegate.qml" line="+13"/>
         <location filename="../../../Include/agentinoqml/Qml/AgentCollectionViewCommandsDelegate.qml" line="+13"/>
         <source>Deleting an agent</source>
-        <translation>Eliminazione di un agente</translation>
+        <translation>Tar bort en agent</translation>
     </message>
     <message>
         <location line="+1"/>
         <location filename="../../../Include/agentinoqml/Qml/AgentCollectionViewCommandsDelegate.qml" line="+1"/>
         <source>Delete the selected agent ?</source>
-        <translation>Eliminare l'agente selezionato?</translation>
+        <translation>Ta bort den valda agenten?</translation>
     </message>
 </context>
 <context>
@@ -144,25 +144,25 @@
         <location filename="../../../Bin/web/src/AgentEditor.qml" line="+72"/>
         <location filename="../../../Include/agentinoqml/Qml/AgentEditor.qml" line="+72"/>
         <source>Name</source>
-        <translation>Nome</translation>
+        <translation>Namn</translation>
     </message>
     <message>
         <location line="+9"/>
         <location filename="../../../Include/agentinoqml/Qml/AgentEditor.qml" line="+9"/>
         <source>Enter the name</source>
-        <translation>Inserisci il nome</translation>
+        <translation>Ange namnet</translation>
     </message>
     <message>
         <location line="+18"/>
         <location filename="../../../Include/agentinoqml/Qml/AgentEditor.qml" line="+18"/>
         <source>Description</source>
-        <translation>Descrizione</translation>
+        <translation>Beskrivning</translation>
     </message>
     <message>
         <location line="+9"/>
         <location filename="../../../Include/agentinoqml/Qml/AgentEditor.qml" line="+9"/>
         <source>Enter the description</source>
-        <translation>Inserisci la descrizione</translation>
+        <translation>Ange beskrivningen</translation>
     </message>
 </context>
 <context>
@@ -171,13 +171,13 @@
         <location filename="../../../Bin/web/src/AgentSettings.qml" line="+28"/>
         <location filename="../../../Include/agentinoqml/Qml/AgentSettings.qml" line="+28"/>
         <source>Connected</source>
-        <translation>Connesso</translation>
+        <translation>Ansluten</translation>
     </message>
     <message>
         <location line="+4"/>
         <location filename="../../../Include/agentinoqml/Qml/AgentSettings.qml" line="+4"/>
         <source>Disconnected</source>
-        <translation>Disconnesso</translation>
+        <translation>Frånkopplad</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -185,19 +185,19 @@
         <location filename="../../../Include/agentinoqml/Qml/AgentSettings.qml" line="+6"/>
         <location line="+127"/>
         <source>Checking the connection</source>
-        <translation>Verifica della connessione</translation>
+        <translation>Kontrollerar anslutningen</translation>
     </message>
     <message>
         <location line="-123"/>
         <location filename="../../../Include/agentinoqml/Qml/AgentSettings.qml" line="-123"/>
         <source>Unknown</source>
-        <translation>Sconosciuto</translation>
+        <translation>Okänd</translation>
     </message>
     <message>
         <location line="+73"/>
         <location filename="../../../Include/agentinoqml/Qml/AgentSettings.qml" line="+73"/>
         <source>Status</source>
-        <translation>Stato</translation>
+        <translation>Status</translation>
     </message>
     <message>
         <location line="+63"/>
@@ -209,13 +209,13 @@
         <location line="+4"/>
         <location filename="../../../Include/agentinoqml/Qml/AgentSettings.qml" line="+4"/>
         <source>Enter the agentino URL</source>
-        <translation>Inserisci l'URL Agentino</translation>
+        <translation>Ange Agentino-URL</translation>
     </message>
     <message>
         <location line="+17"/>
         <location filename="../../../Include/agentinoqml/Qml/AgentSettings.qml" line="+17"/>
         <source>Connect</source>
-        <translation>Connetti</translation>
+        <translation>Anslut</translation>
     </message>
 </context>
 <context>
@@ -223,17 +223,17 @@
     <message>
         <location filename="../../../Bin/web/src/imtgui/Application/ApplicationMain.qml" line="+214"/>
         <source>Try connecting to </source>
-        <translation>Tentativo di connessione a </translation>
+        <translation>Försöker ansluta till </translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Server connection error</source>
-        <translation>Errore di connessione al server</translation>
+        <translation>Serveranslutningsfel</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Authorization server connection error</source>
-        <translation>Errore di connessione al server di autorizzazione</translation>
+        <translation>Anslutningsfel till auktoriseringsservern</translation>
     </message>
 </context>
 <context>
@@ -250,7 +250,7 @@
     <message>
         <location line="-390"/>
         <source>Service Management System Server</source>
-        <translation>Server del sistema di gestione dei servizi</translation>
+        <translation>Server för tjänsthanteringssystem</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -278,7 +278,7 @@
         <location line="+128"/>
         <location line="+174"/>
         <source>Settings</source>
-        <translation>Impostazioni</translation>
+        <translation>Inställningar</translation>
     </message>
     <message>
         <location line="-386"/>
@@ -330,7 +330,7 @@
         <location line="+44"/>
         <location line="+4"/>
         <source>Services</source>
-        <translation>Servizi</translation>
+        <translation>Tjänster</translation>
     </message>
     <message>
         <location line="-216"/>
@@ -375,7 +375,7 @@
         <location line="+34"/>
         <location line="+44"/>
         <source>Undo</source>
-        <translation>Annulla</translation>
+        <translation>Ångra</translation>
     </message>
     <message>
         <location line="-456"/>
@@ -431,7 +431,7 @@
         <location line="+34"/>
         <location line="+44"/>
         <source>Redo</source>
-        <translation>Ripeti</translation>
+        <translation>Gör om</translation>
     </message>
     <message>
         <location line="-468"/>
@@ -499,7 +499,7 @@
         <location line="+34"/>
         <location line="+12"/>
         <source>Save</source>
-        <translation>Salva</translation>
+        <translation>Spara</translation>
     </message>
     <message>
         <location line="-468"/>
@@ -573,7 +573,7 @@
         <location line="+90"/>
         <location line="+34"/>
         <source>Close</source>
-        <translation>Chiudi</translation>
+        <translation>Stäng</translation>
     </message>
     <message>
         <location line="-416"/>
@@ -614,7 +614,7 @@
         <location line="+24"/>
         <location line="+278"/>
         <source>Start</source>
-        <translation>Avvia</translation>
+        <translation>Starta</translation>
     </message>
     <message>
         <location line="-368"/>
@@ -633,7 +633,7 @@
         <location line="+20"/>
         <location line="+282"/>
         <source>Stop</source>
-        <translation>Arresta</translation>
+        <translation>Stoppa</translation>
     </message>
     <message>
         <location line="-368"/>
@@ -673,7 +673,7 @@
         <location line="+42"/>
         <location line="+44"/>
         <source>Edit</source>
-        <translation>Modifica</translation>
+        <translation>Redigera</translation>
     </message>
     <message>
         <location line="-424"/>
@@ -708,7 +708,7 @@
         <location line="+70"/>
         <location line="+302"/>
         <source>Edit Settings</source>
-        <translation>Modifica impostazioni</translation>
+        <translation>Redigera inställningar</translation>
     </message>
     <message>
         <location line="-344"/>
@@ -724,7 +724,7 @@
         <location line="+302"/>
         <location line="+38"/>
         <source>New Service</source>
-        <translation>Nuovo servizio</translation>
+        <translation>Ny tjänst</translation>
     </message>
     <message>
         <location line="-408"/>
@@ -777,7 +777,7 @@
         <location line="+52"/>
         <location line="+34"/>
         <source>Remove</source>
-        <translation>Rimuovi</translation>
+        <translation>Ta bort</translation>
     </message>
     <message>
         <location line="-400"/>
@@ -871,21 +871,21 @@
         <location line="+90"/>
         <location line="+202"/>
         <source>Description</source>
-        <translation>Descrizione</translation>
+        <translation>Beskrivning</translation>
     </message>
     <message>
         <location line="-354"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="-6"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-354"/>
         <source>Time</source>
-        <translation>Ora</translation>
+        <translation>Tid</translation>
     </message>
     <message>
         <location line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+2"/>
         <source>Source</source>
-        <translation>Origine</translation>
+        <translation>Källa</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -901,7 +901,7 @@
         <location line="+92"/>
         <location line="+202"/>
         <source>Name</source>
-        <translation>Nome</translation>
+        <translation>Namn</translation>
     </message>
     <message>
         <location line="-344"/>
@@ -917,21 +917,21 @@
         <location line="+88"/>
         <location line="+202"/>
         <source>Status</source>
-        <translation>Stato</translation>
+        <translation>Status</translation>
     </message>
     <message>
         <location line="-296"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="-460"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-296"/>
         <source>Computer Name</source>
-        <translation>Nome computer</translation>
+        <translation>Datornamn</translation>
     </message>
     <message>
         <location line="+8"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+8"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+8"/>
         <source>Last Connection</source>
-        <translation>Ultima connessione</translation>
+        <translation>Senaste anslutning</translation>
     </message>
     <message>
         <location line="+24"/>
@@ -959,7 +959,7 @@
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-6"/>
         <source>Administration</source>
-        <translation>Amministrazione</translation>
+        <translation>Administration</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -987,7 +987,7 @@
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-6"/>
         <source>Agents</source>
-        <translation>Agenti</translation>
+        <translation>Agenter</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -1018,7 +1018,7 @@
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-6"/>
         <source>Topology</source>
-        <translation>Topologia</translation>
+        <translation>Topologi</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -1049,35 +1049,35 @@
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+110"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+18"/>
         <source>Mode</source>
-        <translation>Modalità</translation>
+        <translation>Läge</translation>
     </message>
     <message>
         <location line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+6"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+4"/>
         <source>General</source>
-        <translation>Generale</translation>
+        <translation>Allmänt</translation>
     </message>
     <message>
         <location line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="-2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+2"/>
         <source>Language</source>
-        <translation>Lingua</translation>
+        <translation>Språk</translation>
     </message>
     <message>
         <location line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="-2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-8"/>
         <source>ProLife Settings</source>
-        <translation>Impostazioni ProLife</translation>
+        <translation>ProLife-inställningar</translation>
     </message>
     <message>
         <location line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="-4"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+4"/>
         <source>DB Settings</source>
-        <translation>Impostazioni DB</translation>
+        <translation>DB-inställningar</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -1105,7 +1105,7 @@
         <location line="+10"/>
         <location line="+18"/>
         <source>New</source>
-        <translation>Nuovo</translation>
+        <translation>Ny</translation>
     </message>
     <message>
         <location line="-94"/>
@@ -1118,7 +1118,7 @@
         <location line="+78"/>
         <location line="+18"/>
         <source>Duplicate</source>
-        <translation>Duplica</translation>
+        <translation>Duplicera</translation>
     </message>
     <message>
         <location line="-86"/>
@@ -1128,7 +1128,7 @@
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-94"/>
         <location line="+28"/>
         <source>Import</source>
-        <translation>Importa</translation>
+        <translation>Importera</translation>
     </message>
     <message>
         <location line="-54"/>
@@ -1138,14 +1138,14 @@
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-26"/>
         <location line="+28"/>
         <source>Export</source>
-        <translation>Esporta</translation>
+        <translation>Exportera</translation>
     </message>
     <message>
         <location line="-20"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="-20"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+56"/>
         <source>Create License File</source>
-        <translation>Crea file di licenza</translation>
+        <translation>Skapa licensfil</translation>
     </message>
     <message>
         <location line="+6"/>
@@ -1155,14 +1155,14 @@
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-32"/>
         <location line="+10"/>
         <source>Open</source>
-        <translation>Apri</translation>
+        <translation>Öppna</translation>
     </message>
     <message>
         <location line="+26"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+102"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-86"/>
         <source>Installations</source>
-        <translation>Installazioni</translation>
+        <translation>Installationer</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -1176,28 +1176,28 @@
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-2"/>
         <source>Packages</source>
-        <translation>Pacchetti</translation>
+        <translation>Paket</translation>
     </message>
     <message>
         <location line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-6"/>
         <source>Accounts</source>
-        <translation>Account</translation>
+        <translation>Konton</translation>
     </message>
     <message>
         <location line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+4"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+2"/>
         <source>Products</source>
-        <translation>Prodotti</translation>
+        <translation>Produkter</translation>
     </message>
     <message>
         <location line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+4"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+138"/>
         <source>Backup</source>
-        <translation>Backup</translation>
+        <translation>Säkerhetskopia</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -1207,21 +1207,21 @@
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-10"/>
         <location line="+14"/>
         <source>Database</source>
-        <translation>Database</translation>
+        <translation>Databas</translation>
     </message>
     <message>
         <location line="-12"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="-4"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-10"/>
         <source>Backup Folder</source>
-        <translation>Cartella di backup</translation>
+        <translation>Säkerhetskopieringsmapp</translation>
     </message>
     <message>
         <location line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+6"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-2"/>
         <source>Scheduler</source>
-        <translation>Pianificatore</translation>
+        <translation>Schemaläggare</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -1235,21 +1235,21 @@
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="-4"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+16"/>
         <source>Cache clearing interval</source>
-        <translation>Intervallo di svuotamento cache</translation>
+        <translation>Intervall för cacherensning</translation>
     </message>
     <message>
         <location line="+6"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+18"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-6"/>
         <source>Server Port</source>
-        <translation>Porta del server</translation>
+        <translation>Serverport</translation>
     </message>
     <message>
         <location line="+88"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+112"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+112"/>
         <source>Zoom Out</source>
-        <translation>Zoom indietro</translation>
+        <translation>Zooma ut</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -1263,7 +1263,7 @@
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="-26"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-6"/>
         <source>Auto Fit</source>
-        <translation>Adattamento automatico</translation>
+        <translation>Autoanpassa</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -1277,14 +1277,14 @@
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+14"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-22"/>
         <source>Stop service</source>
-        <translation>Arresta servizio</translation>
+        <translation>Stoppa tjänst</translation>
     </message>
     <message>
         <location line="+4"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="-4"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+8"/>
         <source>Zoom In</source>
-        <translation>Zoom avanti</translation>
+        <translation>Zooma in</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -1298,7 +1298,7 @@
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="-18"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+2"/>
         <source>Start service</source>
-        <translation>Avvia servizio</translation>
+        <translation>Starta tjänst</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -1316,7 +1316,7 @@
     <message>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="-520"/>
         <source>User Version</source>
-        <translation>Versione utente</translation>
+        <translation>Användarversion</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -1326,7 +1326,7 @@
     <message>
         <location line="+4"/>
         <source>User Management System Server</source>
-        <translation>Server del sistema di gestione degli utenti</translation>
+        <translation>Server för användarhanteringssystem</translation>
     </message>
 </context>
 <context>
@@ -1334,33 +1334,33 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/AuthorizationPage.qml" line="+158"/>
         <source>Welcome</source>
-        <translation>Benvenuto</translation>
+        <translation>Välkommen</translation>
     </message>
     <message>
         <location line="+42"/>
         <location line="+203"/>
         <source>Login</source>
-        <translation>Accedi</translation>
+        <translation>Logga in</translation>
     </message>
     <message>
         <location line="-186"/>
         <source>Enter the login</source>
-        <translation>Inserisci il login</translation>
+        <translation>Ange inloggningsnamnet</translation>
     </message>
     <message>
         <location line="+34"/>
         <source>Password</source>
-        <translation>Password</translation>
+        <translation>Lösenord</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Enter the password</source>
-        <translation>Inserisci la password</translation>
+        <translation>Ange lösenordet</translation>
     </message>
     <message>
         <location line="+69"/>
         <source>Password recovery</source>
-        <translation>Recupero password</translation>
+        <translation>Lösenordsåterställning</translation>
     </message>
 </context>
 <context>
@@ -1368,192 +1368,192 @@
     <message>
         <location filename="../../../Bin/web/src/imtcontrols/Inputs/CalendarNew.qml" line="+58"/>
         <source>January</source>
-        <translation>Gennaio</translation>
+        <translation>Januari</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>February</source>
-        <translation>Febbraio</translation>
+        <translation>Februari</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>March</source>
-        <translation>Marzo</translation>
+        <translation>Mars</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>April</source>
-        <translation>Aprile</translation>
+        <translation>April</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>May</source>
-        <translation>Maggio</translation>
+        <translation>Maj</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>June</source>
-        <translation>Giugno</translation>
+        <translation>Juni</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>July</source>
-        <translation>Luglio</translation>
+        <translation>Juli</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>August</source>
-        <translation>Agosto</translation>
+        <translation>Augusti</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>September</source>
-        <translation>Settembre</translation>
+        <translation>September</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>October</source>
-        <translation>Ottobre</translation>
+        <translation>Oktober</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>November</source>
-        <translation>Novembre</translation>
+        <translation>November</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>December</source>
-        <translation>Dicembre</translation>
+        <translation>December</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Январь</source>
-        <translation>Gennaio</translation>
+        <translation>Januari</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Февраль</source>
-        <translation>Febbraio</translation>
+        <translation>Februari</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Март</source>
-        <translation>Marzo</translation>
+        <translation>Mars</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Апрель</source>
-        <translation>Aprile</translation>
+        <translation>April</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Май</source>
-        <translation>Maggio</translation>
+        <translation>Maj</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Июнь</source>
-        <translation>Giugno</translation>
+        <translation>Juni</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Июль</source>
-        <translation>Luglio</translation>
+        <translation>Juli</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Август</source>
-        <translation>Agosto</translation>
+        <translation>Augusti</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Сентябрь</source>
-        <translation>Settembre</translation>
+        <translation>September</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Октябрь</source>
-        <translation>Ottobre</translation>
+        <translation>Oktober</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Ноябрь</source>
-        <translation>Novembre</translation>
+        <translation>November</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Декабрь</source>
-        <translation>Dicembre</translation>
+        <translation>December</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Пн</source>
-        <translation>Lun</translation>
+        <translation>Mån</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Вт</source>
-        <translation>Mar</translation>
+        <translation>Tis</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Ср</source>
-        <translation>Mer</translation>
+        <translation>Ons</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Чт</source>
-        <translation>Gio</translation>
+        <translation>Tors</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Пт</source>
-        <translation>Ven</translation>
+        <translation>Fre</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Сб</source>
-        <translation>Sab</translation>
+        <translation>Lör</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Вс</source>
-        <translation>Dom</translation>
+        <translation>Sön</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Mo</source>
-        <translation>Lun</translation>
+        <translation>Mån</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Tu</source>
-        <translation>Mar</translation>
+        <translation>Tis</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>We</source>
-        <translation>Mer</translation>
+        <translation>Ons</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Th</source>
-        <translation>Gio</translation>
+        <translation>Tors</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Fr</source>
-        <translation>Ven</translation>
+        <translation>Fre</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Sa</source>
-        <translation>Sab</translation>
+        <translation>Lör</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Su</source>
-        <translation>Dom</translation>
+        <translation>Sön</translation>
     </message>
 </context>
 <context>
@@ -1566,27 +1566,27 @@
     <message>
         <location line="+1"/>
         <source>Cancel</source>
-        <translation>Annulla</translation>
+        <translation>Avbryt</translation>
     </message>
     <message>
         <location line="+65"/>
         <source>Invalid user password</source>
-        <translation>Password utente non valida</translation>
+        <translation>Ogiltigt användarlösenord</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Old Password</source>
-        <translation>Vecchia password</translation>
+        <translation>Gammalt lösenord</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Enter the password</source>
-        <translation>Inserisci la password</translation>
+        <translation>Ange lösenordet</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>New Password</source>
-        <translation>Nuova password</translation>
+        <translation>Nytt lösenord</translation>
     </message>
 </context>
 <context>
@@ -1594,32 +1594,32 @@
     <message>
         <location filename="../../../Bin/web/src/imtcolgui/CollectionStructure.qml" line="+189"/>
         <source>Edit</source>
-        <translation>Modifica</translation>
+        <translation>Redigera</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Remove</source>
-        <translation>Rimuovi</translation>
+        <translation>Ta bort</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Rename</source>
-        <translation>Rinomina</translation>
+        <translation>Byt namn</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Set Description</source>
-        <translation>Imposta descrizione</translation>
+        <translation>Ange beskrivning</translation>
     </message>
     <message>
         <location line="+333"/>
         <source>This table has been modified from another computer</source>
-        <translation>Questa tabella è stata modificata da un altro computer</translation>
+        <translation>Den här tabellen har ändrats från en annan dator</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Update</source>
-        <translation>Aggiorna</translation>
+        <translation>Uppdatera</translation>
     </message>
 </context>
 <context>
@@ -1627,42 +1627,42 @@
     <message>
         <location filename="../../../Bin/web/src/imtcolgui/CollectionStructureCommandsDelegateBase.qml" line="+46"/>
         <source>Deleting a selected element</source>
-        <translation>Eliminazione di un elemento selezionato</translation>
+        <translation>Tar bort ett valt element</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Remove selected item from the collection ?</source>
-        <translation>Rimuovere l'elemento selezionato dalla raccolta?</translation>
+        <translation>Ta bort det valda objektet från samlingen?</translation>
     </message>
     <message>
         <location line="+134"/>
         <source>Please enter the name of the new node</source>
-        <translation>Inserisci il nome del nuovo nodo</translation>
+        <translation>Ange namnet på den nya noden</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Please enter the name of the document:</source>
-        <translation>Inserisci il nome del documento:</translation>
+        <translation>Ange dokumentets namn:</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Please enter the description of the document:</source>
-        <translation>Inserisci la descrizione del documento:</translation>
+        <translation>Ange dokumentets beskrivning:</translation>
     </message>
     <message>
         <location line="+75"/>
         <source>Rename document</source>
-        <translation>Rinomina documento</translation>
+        <translation>Byt namn på dokument</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>New node</source>
-        <translation>Nuovo nodo</translation>
+        <translation>Ny nod</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>Set description</source>
-        <translation>Imposta descrizione</translation>
+        <translation>Ange beskrivning</translation>
     </message>
 </context>
 <context>
@@ -1670,7 +1670,7 @@
     <message>
         <location filename="../../../Bin/web/src/imtcolgui/CollectionStructureCommandsObserver.qml" line="+28"/>
         <source>Open</source>
-        <translation>Apri</translation>
+        <translation>Öppna</translation>
     </message>
 </context>
 <context>
@@ -1679,49 +1679,49 @@
         <location filename="../../../Bin/web/src/imtcolgui/CollectionViewCommandsDelegateBase.qml" line="+15"/>
         <location line="+244"/>
         <source>Deleting a selected element</source>
-        <translation>Eliminazione di un elemento selezionato</translation>
+        <translation>Tar bort ett valt element</translation>
     </message>
     <message>
         <location line="-243"/>
         <location line="+244"/>
         <source>Remove selected item from the collection ?</source>
-        <translation>Rimuovere l'elemento selezionato dalla raccolta?</translation>
+        <translation>Ta bort det valda objektet från samlingen?</translation>
     </message>
     <message>
         <location line="-140"/>
         <source>Edit</source>
-        <translation>Modifica</translation>
+        <translation>Redigera</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Remove</source>
-        <translation>Rimuovi</translation>
+        <translation>Ta bort</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Rename</source>
-        <translation>Rinomina</translation>
+        <translation>Byt namn</translation>
     </message>
     <message>
         <location line="+6"/>
         <location line="+85"/>
         <source>Set Description</source>
-        <translation>Imposta descrizione</translation>
+        <translation>Ange beskrivning</translation>
     </message>
     <message>
         <location line="-64"/>
         <source>Please enter the name of the document:</source>
-        <translation>Inserisci il nome del documento:</translation>
+        <translation>Ange dokumentets namn:</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Please enter the description of the document:</source>
-        <translation>Inserisci la descrizione del documento:</translation>
+        <translation>Ange dokumentets beskrivning:</translation>
     </message>
     <message>
         <location line="+65"/>
         <source>Rename Document</source>
-        <translation>Rinomina documento</translation>
+        <translation>Byt namn på dokument</translation>
     </message>
 </context>
 <context>
@@ -1729,7 +1729,7 @@
     <message>
         <location filename="../../../Bin/web/src/imtcolgui/CollectionViewCommandsObserver.qml" line="+28"/>
         <source>Open</source>
-        <translation>Apri</translation>
+        <translation>Öppna</translation>
     </message>
 </context>
 <context>
@@ -1737,42 +1737,42 @@
     <message>
         <location filename="../../../Bin/web/src/imtgui/Application/DatabaseBackupController.qml" line="+26"/>
         <source>Backup</source>
-        <translation>Backup</translation>
+        <translation>Säkerhetskopia</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Restore</source>
-        <translation>Ripristina</translation>
+        <translation>Återställ</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>Restore successful</source>
-        <translation>Ripristino riuscito</translation>
+        <translation>Återställningen lyckades</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Database restore was successful</source>
-        <translation>Ripristino del database riuscito</translation>
+        <translation>Databasåterställningen lyckades</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Error when trying to restore the database</source>
-        <translation>Errore durante il ripristino del database</translation>
+        <translation>Fel vid försök att återställa databasen</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Error when trying to create a database backup</source>
-        <translation>Errore durante la creazione del backup del database</translation>
+        <translation>Fel vid försök att skapa en databassäkerhetskopia</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Select backup file</source>
-        <translation>Seleziona il file di backup</translation>
+        <translation>Välj säkerhetskopieringsfil</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Save file</source>
-        <translation>Salva file</translation>
+        <translation>Spara fil</translation>
     </message>
 </context>
 <context>
@@ -1780,62 +1780,62 @@
     <message>
         <location filename="../../../Bin/web/src/imtcontrols/Inputs/DatePicker.qml" line="+11"/>
         <source>January</source>
-        <translation>Gennaio</translation>
+        <translation>Januari</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>February</source>
-        <translation>Febbraio</translation>
+        <translation>Februari</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>March</source>
-        <translation>Marzo</translation>
+        <translation>Mars</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>April</source>
-        <translation>Aprile</translation>
+        <translation>April</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>May</source>
-        <translation>Maggio</translation>
+        <translation>Maj</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>June</source>
-        <translation>Giugno</translation>
+        <translation>Juni</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>July</source>
-        <translation>Luglio</translation>
+        <translation>Juli</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>August</source>
-        <translation>Agosto</translation>
+        <translation>Augusti</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>September</source>
-        <translation>Settembre</translation>
+        <translation>September</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>October</source>
-        <translation>Ottobre</translation>
+        <translation>Oktober</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>November</source>
-        <translation>Novembre</translation>
+        <translation>November</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>December</source>
-        <translation>Dicembre</translation>
+        <translation>December</translation>
     </message>
 </context>
 <context>
@@ -1843,62 +1843,62 @@
     <message>
         <location filename="../../../Bin/web/src/imtcontrols/Inputs/DatePicker_.qml" line="+10"/>
         <source>January</source>
-        <translation>Gennaio</translation>
+        <translation>Januari</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>February</source>
-        <translation>Febbraio</translation>
+        <translation>Februari</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>March</source>
-        <translation>Marzo</translation>
+        <translation>Mars</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>April</source>
-        <translation>Aprile</translation>
+        <translation>April</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>May</source>
-        <translation>Maggio</translation>
+        <translation>Maj</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>June</source>
-        <translation>Giugno</translation>
+        <translation>Juni</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>July</source>
-        <translation>Luglio</translation>
+        <translation>Juli</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>August</source>
-        <translation>Agosto</translation>
+        <translation>Augusti</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>September</source>
-        <translation>Settembre</translation>
+        <translation>September</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>October</source>
-        <translation>Ottobre</translation>
+        <translation>Oktober</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>November</source>
-        <translation>Novembre</translation>
+        <translation>November</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>December</source>
-        <translation>Dicembre</translation>
+        <translation>December</translation>
     </message>
 </context>
 <context>
@@ -1906,13 +1906,13 @@
     <message>
         <location filename="../../../Bin/web/src/imtcontrols/Base/Decorators.qml" line="+830"/>
         <source>Прогресс:</source>
-        <translation>Avanzamento:</translation>
+        <translation>Förlopp:</translation>
     </message>
     <message>
         <location line="+77"/>
         <location line="+1"/>
         <source>Выполнено</source>
-        <translation>Completato</translation>
+        <translation>Klar</translation>
     </message>
 </context>
 <context>
@@ -1928,7 +1928,7 @@
     <message>
         <location filename="../../../Bin/web/src/imtdocgui/DocumentHistoryView.qml" line="+142"/>
         <source>There is no history for this document</source>
-        <translation>Non è disponibile alcuna cronologia per questo documento</translation>
+        <translation>Det finns ingen historik för det här dokumentet</translation>
     </message>
 </context>
 <context>
@@ -1936,27 +1936,27 @@
     <message>
         <location filename="../../../Bin/web/src/imtdocgui/DocumentService.qml" line="+9"/>
         <source>&lt;no name&gt;</source>
-        <translation>&lt;senza nome&gt;</translation>
+        <translation>&lt;inget namn&gt;</translation>
     </message>
     <message>
         <location line="+773"/>
         <source>Document history</source>
-        <translation>Cronologia del documento</translation>
+        <translation>Dokumenthistorik</translation>
     </message>
     <message>
         <location line="+68"/>
         <source>Save document</source>
-        <translation>Salva documento</translation>
+        <translation>Spara dokument</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Save all changes ?</source>
-        <translation>Salvare tutte le modifiche?</translation>
+        <translation>Spara alla ändringar?</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Cancel</source>
-        <translation>Annulla</translation>
+        <translation>Avbryt</translation>
     </message>
 </context>
 <context>
@@ -1964,7 +1964,7 @@
     <message>
         <location filename="../../../Bin/web/src/imtdocgui/DocumentWorkspaceCommandsDelegate.qml" line="+11"/>
         <source>Document history</source>
-        <translation>Cronologia del documento</translation>
+        <translation>Dokumenthistorik</translation>
     </message>
 </context>
 <context>
@@ -1972,7 +1972,7 @@
     <message>
         <location filename="../../../Bin/web/src/imtcontrols/Dialogs/ErrorDialog.qml" line="+10"/>
         <source>Error</source>
-        <translation>Errore</translation>
+        <translation>Fel</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -1986,7 +1986,7 @@
     <message>
         <location filename="../../../Bin/web/src/imtgui/Application/ErrorManager.qml" line="+67"/>
         <source>Warning message</source>
-        <translation>Messaggio di avviso</translation>
+        <translation>Varningsmeddelande</translation>
     </message>
 </context>
 <context>
@@ -1995,37 +1995,37 @@
         <location filename="../../../Bin/web/src/ExternPortsDialog.qml" line="+11"/>
         <location filename="../../../Include/agentinoqml/Qml/ExternPortsDialog.qml" line="+11"/>
         <source>Edit ports</source>
-        <translation>Modifica porte</translation>
+        <translation>Redigera portar</translation>
     </message>
     <message>
         <location line="+5"/>
         <location filename="../../../Include/agentinoqml/Qml/ExternPortsDialog.qml" line="+5"/>
         <source>Save</source>
-        <translation>Salva</translation>
+        <translation>Spara</translation>
     </message>
     <message>
         <location line="+1"/>
         <location filename="../../../Include/agentinoqml/Qml/ExternPortsDialog.qml" line="+1"/>
         <source>Cancel</source>
-        <translation>Annulla</translation>
+        <translation>Avbryt</translation>
     </message>
     <message>
         <location line="+42"/>
         <location filename="../../../Include/agentinoqml/Qml/ExternPortsDialog.qml" line="+42"/>
         <source>Host</source>
-        <translation>Host</translation>
+        <translation>Värd</translation>
     </message>
     <message>
         <location line="+4"/>
         <location filename="../../../Include/agentinoqml/Qml/ExternPortsDialog.qml" line="+4"/>
         <source>Port</source>
-        <translation>Porta</translation>
+        <translation>Port</translation>
     </message>
     <message>
         <location line="+4"/>
         <location filename="../../../Include/agentinoqml/Qml/ExternPortsDialog.qml" line="+4"/>
         <source>Description</source>
-        <translation>Descrizione</translation>
+        <translation>Beskrivning</translation>
     </message>
 </context>
 <context>
@@ -2033,33 +2033,33 @@
     <message>
         <location filename="../../../Bin/web/src/imtlicgui/FeatureEditor.qml" line="+184"/>
         <source>Subfeatures</source>
-        <translation>Sottofunzionalità</translation>
+        <translation>Underfunktioner</translation>
     </message>
     <message>
         <location line="+155"/>
         <location line="+44"/>
         <source>Dependencies</source>
-        <translation>Dipendenze</translation>
+        <translation>Beroenden</translation>
     </message>
     <message>
         <location line="+134"/>
         <source>Feature Name</source>
-        <translation>Nome funzionalità</translation>
+        <translation>Funktionsnamn</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Feature-ID</source>
-        <translation>ID funzionalità</translation>
+        <translation>Funktions-ID</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Feature Description</source>
-        <translation>Descrizione funzionalità</translation>
+        <translation>Funktionsbeskrivning</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Optional</source>
-        <translation>Opzionale</translation>
+        <translation>Valfritt</translation>
     </message>
 </context>
 <context>
@@ -2067,22 +2067,22 @@
     <message>
         <location filename="../../../Bin/web/src/imtlicgui/FeaturesDialog.qml" line="+10"/>
         <source>Select features</source>
-        <translation>Seleziona funzionalità</translation>
+        <translation>Välj funktioner</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Add</source>
-        <translation>Aggiungi</translation>
+        <translation>Lägg till</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Cancel</source>
-        <translation>Annulla</translation>
+        <translation>Avbryt</translation>
     </message>
     <message>
         <location line="+54"/>
         <source>Feature Name</source>
-        <translation>Nome funzionalità</translation>
+        <translation>Funktionsnamn</translation>
     </message>
 </context>
 <context>
@@ -2090,7 +2090,7 @@
     <message>
         <location filename="../../../Bin/web/src/imtgui/Panels/FilterPanelDecorator.qml" line="+25"/>
         <source>Enter some text to filter the item list</source>
-        <translation>Inserisci del testo per filtrare l'elenco degli elementi</translation>
+        <translation>Ange text för att filtrera objektlistan</translation>
     </message>
 </context>
 <context>
@@ -2107,7 +2107,7 @@
         <location filename="../../../Bin/Release_Qt6_VC16_x64/QtQuick/Dialogs/quickimpl/qml/+Universal/FontDialog.qml" line="+120"/>
         <location filename="../../../Bin/Release_Qt6_VC16_x64/QtQuick/Dialogs/quickimpl/qml/FontDialog.qml" line="+126"/>
         <source>Writing System</source>
-        <translation>Sistema di scrittura</translation>
+        <translation>Skriftsystem</translation>
     </message>
 </context>
 <context>
@@ -2116,43 +2116,43 @@
         <location filename="../../../Bin/Debug_Qt6_VC16_x64/QtQuick/Dialogs/quickimpl/qml/FontDialogContent.qml" line="+63"/>
         <location filename="../../../Bin/Release_Qt6_VC16_x64/QtQuick/Dialogs/quickimpl/qml/FontDialogContent.qml" line="+63"/>
         <source>Family</source>
-        <translation>Famiglia</translation>
+        <translation>Familj</translation>
     </message>
     <message>
         <location line="+50"/>
         <location filename="../../../Bin/Release_Qt6_VC16_x64/QtQuick/Dialogs/quickimpl/qml/FontDialogContent.qml" line="+50"/>
         <source>Style</source>
-        <translation>Stile</translation>
+        <translation>Stil</translation>
     </message>
     <message>
         <location line="+46"/>
         <location filename="../../../Bin/Release_Qt6_VC16_x64/QtQuick/Dialogs/quickimpl/qml/FontDialogContent.qml" line="+46"/>
         <source>Size</source>
-        <translation>Dimensione</translation>
+        <translation>Storlek</translation>
     </message>
     <message>
         <location line="+52"/>
         <location filename="../../../Bin/Release_Qt6_VC16_x64/QtQuick/Dialogs/quickimpl/qml/FontDialogContent.qml" line="+52"/>
         <source>Effects</source>
-        <translation>Effetti</translation>
+        <translation>Effekter</translation>
     </message>
     <message>
         <location line="+15"/>
         <location filename="../../../Bin/Release_Qt6_VC16_x64/QtQuick/Dialogs/quickimpl/qml/FontDialogContent.qml" line="+15"/>
         <source>Underline</source>
-        <translation>Sottolineato</translation>
+        <translation>Understruken</translation>
     </message>
     <message>
         <location line="+5"/>
         <location filename="../../../Bin/Release_Qt6_VC16_x64/QtQuick/Dialogs/quickimpl/qml/FontDialogContent.qml" line="+5"/>
         <source>Strikeout</source>
-        <translation>Barrato</translation>
+        <translation>Genomstruken</translation>
     </message>
     <message>
         <location line="+9"/>
         <location filename="../../../Bin/Release_Qt6_VC16_x64/QtQuick/Dialogs/quickimpl/qml/FontDialogContent.qml" line="+9"/>
         <source>Sample</source>
-        <translation>Esempio</translation>
+        <translation>Exempel</translation>
     </message>
 </context>
 <context>
@@ -2160,7 +2160,7 @@
     <message>
         <location filename="../../../Bin/web/src/imtcontrols/Views/Gallery.qml" line="+380"/>
         <source>Удалить фото</source>
-        <translation>Elimina foto</translation>
+        <translation>Ta bort foto</translation>
     </message>
 </context>
 <context>
@@ -2169,27 +2169,27 @@
         <location filename="../../../Bin/web/src/imtauthgui/GroupEditor.qml" line="+222"/>
         <location line="+68"/>
         <source>Group Name</source>
-        <translation>Nome gruppo</translation>
+        <translation>Gruppnamn</translation>
     </message>
     <message>
         <location line="-59"/>
         <source>Enter the name</source>
-        <translation>Inserisci il nome</translation>
+        <translation>Ange namnet</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Description</source>
-        <translation>Descrizione</translation>
+        <translation>Beskrivning</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Enter the description</source>
-        <translation>Inserisci la descrizione</translation>
+        <translation>Ange beskrivningen</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Parent Groups</source>
-        <translation>Gruppi principali</translation>
+        <translation>Överordnade grupper</translation>
     </message>
 </context>
 <context>
@@ -2197,12 +2197,12 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/GroupRoles.qml" line="+113"/>
         <source>Roles</source>
-        <translation>Ruoli</translation>
+        <translation>Roller</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Role Name</source>
-        <translation>Nome ruolo</translation>
+        <translation>Rollnamn</translation>
     </message>
 </context>
 <context>
@@ -2210,12 +2210,12 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/GroupUsers.qml" line="+108"/>
         <source>Users</source>
-        <translation>Utenti</translation>
+        <translation>Användare</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>User Name</source>
-        <translation>Nome utente</translation>
+        <translation>Användarnamn</translation>
     </message>
 </context>
 <context>
@@ -2224,31 +2224,31 @@
         <location filename="../../../Bin/web/src/imtcontrols/Actions/InputActions.qml" line="+37"/>
         <location filename="../../../Bin/web/src/imtcontrols/Inputs/InputActions.qml" line="+36"/>
         <source>Cut</source>
-        <translation>Taglia</translation>
+        <translation>Klipp ut</translation>
     </message>
     <message>
         <location line="+4"/>
         <location filename="../../../Bin/web/src/imtcontrols/Inputs/InputActions.qml" line="+4"/>
         <source>Copy</source>
-        <translation>Copia</translation>
+        <translation>Kopiera</translation>
     </message>
     <message>
         <location line="+4"/>
         <location filename="../../../Bin/web/src/imtcontrols/Inputs/InputActions.qml" line="+4"/>
         <source>Paste</source>
-        <translation>Incolla</translation>
+        <translation>Klistra in</translation>
     </message>
     <message>
         <location line="+4"/>
         <location filename="../../../Bin/web/src/imtcontrols/Inputs/InputActions.qml" line="+4"/>
         <source>Remove</source>
-        <translation>Rimuovi</translation>
+        <translation>Ta bort</translation>
     </message>
     <message>
         <location line="+4"/>
         <location filename="../../../Bin/web/src/imtcontrols/Inputs/InputActions.qml" line="+4"/>
         <source>Select All</source>
-        <translation>Seleziona tutto</translation>
+        <translation>Markera alla</translation>
     </message>
 </context>
 <context>
@@ -2263,7 +2263,7 @@
         <location line="-16"/>
         <location line="+17"/>
         <source>Cancel</source>
-        <translation>Annulla</translation>
+        <translation>Avbryt</translation>
     </message>
 </context>
 <context>
@@ -2272,53 +2272,53 @@
         <location filename="../../../Bin/web/src/imtlicgui/LicenseEditor.qml" line="+230"/>
         <location line="+225"/>
         <source>License Name</source>
-        <translation>Nome licenza</translation>
+        <translation>Licensnamn</translation>
     </message>
     <message>
         <location line="-216"/>
         <source>Enter the license name</source>
-        <translation>Inserisci il nome della licenza</translation>
+        <translation>Ange licensnamnet</translation>
     </message>
     <message>
         <location line="+21"/>
         <location line="+200"/>
         <source>License-ID</source>
-        <translation>ID licenza</translation>
+        <translation>Licens-ID</translation>
     </message>
     <message>
         <location line="-191"/>
         <source>Enter the license ID</source>
-        <translation>Inserisci l'ID della licenza</translation>
+        <translation>Ange licens-ID</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Description</source>
-        <translation>Descrizione</translation>
+        <translation>Beskrivning</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Enter the license description</source>
-        <translation>Inserisci la descrizione della licenza</translation>
+        <translation>Ange licensbeskrivningen</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Product</source>
-        <translation>Prodotto</translation>
+        <translation>Produkt</translation>
     </message>
     <message>
         <location line="+44"/>
         <source>Features</source>
-        <translation>Funzionalità</translation>
+        <translation>Funktioner</translation>
     </message>
     <message>
         <location line="+47"/>
         <source>Dependencies</source>
-        <translation>Dipendenze</translation>
+        <translation>Beroenden</translation>
     </message>
     <message>
         <location line="+67"/>
         <source>Feature Name</source>
-        <translation>Nome funzionalità</translation>
+        <translation>Funktionsnamn</translation>
     </message>
 </context>
 <context>
@@ -2326,7 +2326,7 @@
     <message>
         <location filename="../../../Bin/web/src/imtgui/View/LogView.qml" line="+30"/>
         <source>Log</source>
-        <translation>Registro</translation>
+        <translation>Logg</translation>
     </message>
 </context>
 <context>
@@ -2334,22 +2334,22 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/LoginDialog.qml" line="+46"/>
         <source>Welcome to Lisa</source>
-        <translation>Benvenuto in Lisa</translation>
+        <translation>Välkommen till Lisa</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Please login</source>
-        <translation>Effettua il login</translation>
+        <translation>Logga in</translation>
     </message>
     <message>
         <location line="+75"/>
         <source>Remember me</source>
-        <translation>Ricordami</translation>
+        <translation>Kom ihåg mig</translation>
     </message>
     <message>
         <location line="+30"/>
         <source>Login</source>
-        <translation>Accedi</translation>
+        <translation>Logga in</translation>
     </message>
 </context>
 <context>
@@ -2357,19 +2357,19 @@
     <message>
         <location filename="../../../Bin/web/src/imtcontrols/Dialogs/MessageDialog.qml" line="+8"/>
         <source>Message</source>
-        <translation>Messaggio</translation>
+        <translation>Meddelande</translation>
     </message>
     <message>
         <location line="+8"/>
         <location line="+13"/>
         <source>Yes</source>
-        <translation>Sì</translation>
+        <translation>Ja</translation>
     </message>
     <message>
         <location line="-12"/>
         <location line="+13"/>
         <source>No</source>
-        <translation>No</translation>
+        <translation>Nej</translation>
     </message>
 </context>
 <context>
@@ -2377,12 +2377,12 @@
     <message>
         <location filename="../../../Bin/web/src/imtlicgui/PackageCollectionViewCommandsDelegate.qml" line="+9"/>
         <source>Deleting a feature</source>
-        <translation>Eliminazione di una funzionalità</translation>
+        <translation>Tar bort en funktion</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Delete the selected feature ?</source>
-        <translation>Eliminare la funzionalità selezionata?</translation>
+        <translation>Ta bort den valda funktionen?</translation>
     </message>
 </context>
 <context>
@@ -2390,12 +2390,12 @@
     <message>
         <location filename="../../../Bin/web/src/imtlicgui/PackageViewItemDelegate.qml" line="+159"/>
         <source>Feature-ID already exists (In this or another package)</source>
-        <translation>L'ID funzionalità esiste già (in questo o in un altro pacchetto)</translation>
+        <translation>Funktions-ID finns redan (i detta eller ett annat paket)</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>It is impossible to rename the feature, please remove all dependencies</source>
-        <translation>Impossibile rinominare la funzionalità, rimuovere tutte le dipendenze</translation>
+        <translation>Det går inte att byta namn på funktionen, ta bort alla beroenden</translation>
     </message>
 </context>
 <context>
@@ -2403,22 +2403,22 @@
     <message>
         <location filename="../../../Bin/web/src/imtgui/Settings/PageAboutProvider.qml" line="+34"/>
         <source>About</source>
-        <translation>Informazioni</translation>
+        <translation>Om</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Client Version</source>
-        <translation>Versione client</translation>
+        <translation>Klientversion</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Server Version</source>
-        <translation>Versione server</translation>
+        <translation>Serverversion</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Server Log</source>
-        <translation>Registro del server</translation>
+        <translation>Serverlogg</translation>
     </message>
 </context>
 <context>
@@ -2426,7 +2426,7 @@
     <message>
         <location filename="../../../Bin/web/src/imtgui/View/Pagination.qml" line="+182"/>
         <source>Per page: </source>
-        <translation>Per pagina: </translation>
+        <translation>Per sida: </translation>
     </message>
 </context>
 <context>
@@ -2434,33 +2434,33 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/PasswordInput.qml" line="+29"/>
         <source>Password cannot be empty</source>
-        <translation>La password non può essere vuota</translation>
+        <translation>Lösenordet får inte vara tomt</translation>
     </message>
     <message>
         <location line="+5"/>
         <location line="+67"/>
         <source>Passwords don&apos;t match</source>
-        <translation>Le password non corrispondono</translation>
+        <translation>Lösenorden matchar inte</translation>
     </message>
     <message>
         <location line="-48"/>
         <source>Password</source>
-        <translation>Password</translation>
+        <translation>Lösenord</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Enter the password</source>
-        <translation>Inserisci la password</translation>
+        <translation>Ange lösenordet</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Confirm Password</source>
-        <translation>Conferma password</translation>
+        <translation>Bekräfta lösenord</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Confirm password</source>
-        <translation>Conferma password</translation>
+        <translation>Bekräfta lösenord</translation>
     </message>
 </context>
 <context>
@@ -2469,7 +2469,7 @@
         <location filename="../../../Bin/web/src/imtgui/Settings/PreferenceDialog.qml" line="+17"/>
         <location line="+21"/>
         <source>Apply</source>
-        <translation>Applica</translation>
+        <translation>Verkställ</translation>
     </message>
     <message>
         <location line="-20"/>
@@ -2477,17 +2477,17 @@
         <location line="+23"/>
         <location line="+6"/>
         <source>Close</source>
-        <translation>Chiudi</translation>
+        <translation>Stäng</translation>
     </message>
     <message>
         <location line="-23"/>
         <source>Preferences</source>
-        <translation>Preferenze</translation>
+        <translation>Inställningar</translation>
     </message>
     <message>
         <location line="+35"/>
         <source>Cancel</source>
-        <translation>Annulla</translation>
+        <translation>Avbryt</translation>
     </message>
 </context>
 <context>
@@ -2497,19 +2497,19 @@
         <location line="+42"/>
         <location line="+6"/>
         <source>Preferences</source>
-        <translation>Preferenze</translation>
+        <translation>Inställningar</translation>
     </message>
     <message>
         <location line="-41"/>
         <location line="+216"/>
         <source>Apply</source>
-        <translation>Applica</translation>
+        <translation>Verkställ</translation>
     </message>
     <message>
         <location line="-213"/>
         <location line="+214"/>
         <source>Close</source>
-        <translation>Chiudi</translation>
+        <translation>Stäng</translation>
     </message>
 </context>
 <context>
@@ -2517,22 +2517,22 @@
     <message>
         <location filename="../../../Bin/web/src/imtlicgui/ProductCollectionViewCommandsDelegate.qml" line="+11"/>
         <source>Deleting a product</source>
-        <translation>Eliminazione di un prodotto</translation>
+        <translation>Tar bort en produkt</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Delete the selected product ?</source>
-        <translation>Eliminare il prodotto selezionato?</translation>
+        <translation>Ta bort den valda produkten?</translation>
     </message>
     <message>
         <location line="+40"/>
         <source>Please enter the name of the document:</source>
-        <translation>Inserisci il nome del documento:</translation>
+        <translation>Ange dokumentets namn:</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Save file</source>
-        <translation>Salva file</translation>
+        <translation>Spara fil</translation>
     </message>
 </context>
 <context>
@@ -2540,32 +2540,32 @@
     <message>
         <location filename="../../../Bin/web/src/imtlicgui/ProductView.qml" line="+41"/>
         <source>Feature Name</source>
-        <translation>Nome funzionalità</translation>
+        <translation>Funktionsnamn</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Feature-ID</source>
-        <translation>ID funzionalità</translation>
+        <translation>Funktions-ID</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Description</source>
-        <translation>Descrizione</translation>
+        <translation>Beskrivning</translation>
     </message>
     <message>
         <location line="+173"/>
         <source>Product Name</source>
-        <translation>Nome prodotto</translation>
+        <translation>Produktnamn</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Enter the product name</source>
-        <translation>Inserisci il nome del prodotto</translation>
+        <translation>Ange produktnamnet</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Category</source>
-        <translation>Categoria</translation>
+        <translation>Kategori</translation>
     </message>
 </context>
 <context>
@@ -2573,7 +2573,7 @@
     <message>
         <location filename="../../../Bin/web/src/imtcontrols/Views/ProgressBar.qml" line="+15"/>
         <source>Прогресс:</source>
-        <translation>Avanzamento:</translation>
+        <translation>Förlopp:</translation>
     </message>
 </context>
 <context>
@@ -2581,12 +2581,12 @@
     <message>
         <location filename="../../../Bin/web/src/imtguigql/RemoteCollectionView.qml" line="+132"/>
         <source>This table has been modified from another computer</source>
-        <translation>Questa tabella è stata modificata da un altro computer</translation>
+        <translation>Den här tabellen har ändrats från en annan dator</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Update</source>
-        <translation>Aggiorna</translation>
+        <translation>Uppdatera</translation>
     </message>
 </context>
 <context>
@@ -2594,12 +2594,12 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/RoleCollectionView.qml" line="+214"/>
         <source>Roles</source>
-        <translation>Ruoli</translation>
+        <translation>Roller</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>New Role</source>
-        <translation>Nuovo ruolo</translation>
+        <translation>Ny roll</translation>
     </message>
 </context>
 <context>
@@ -2607,12 +2607,12 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/RoleCollectionViewCommandsDelegate.qml" line="+11"/>
         <source>Deleting a role</source>
-        <translation>Eliminazione di un ruolo</translation>
+        <translation>Tar bort en roll</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Delete the selected role ?</source>
-        <translation>Eliminare il ruolo selezionato?</translation>
+        <translation>Ta bort den valda rollen?</translation>
     </message>
 </context>
 <context>
@@ -2621,32 +2621,32 @@
         <location filename="../../../Bin/web/src/imtauthgui/RoleEditor.qml" line="+220"/>
         <location line="+87"/>
         <source>Role Name</source>
-        <translation>Nome ruolo</translation>
+        <translation>Rollnamn</translation>
     </message>
     <message>
         <location line="-78"/>
         <source>Enter the role name</source>
-        <translation>Inserisci il nome del ruolo</translation>
+        <translation>Ange rollnamnet</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Role-ID</source>
-        <translation>ID ruolo</translation>
+        <translation>Roll-ID</translation>
     </message>
     <message>
         <location line="+22"/>
         <source>Description</source>
-        <translation>Descrizione</translation>
+        <translation>Beskrivning</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Enter the description</source>
-        <translation>Inserisci la descrizione</translation>
+        <translation>Ange beskrivningen</translation>
     </message>
     <message>
         <location line="+47"/>
         <source>Parent Roles</source>
-        <translation>Ruoli principali</translation>
+        <translation>Överordnade roller</translation>
     </message>
 </context>
 <context>
@@ -2654,17 +2654,17 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/RolePermissions.qml" line="+162"/>
         <source>Permission</source>
-        <translation>Autorizzazione</translation>
+        <translation>Behörighet</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>No dependencies</source>
-        <translation>Nessuna dipendenza</translation>
+        <translation>Inga beroenden</translation>
     </message>
     <message>
         <location line="+35"/>
         <source>Dependencies</source>
-        <translation>Dipendenze</translation>
+        <translation>Beroenden</translation>
     </message>
 </context>
 <context>
@@ -2673,13 +2673,13 @@
         <location filename="../../../Bin/web/src/imtauthgui/RoleView.qml" line="+25"/>
         <location line="+98"/>
         <source>General</source>
-        <translation>Generale</translation>
+        <translation>Allmänt</translation>
     </message>
     <message>
         <location line="-93"/>
         <location line="+94"/>
         <source>Permissions</source>
-        <translation>Autorizzazioni</translation>
+        <translation>Behörigheter</translation>
     </message>
 </context>
 <context>
@@ -2687,7 +2687,7 @@
     <message>
         <location filename="../../../Bin/web/src/imtgui/View/SearchComp.qml" line="+665"/>
         <source>Search</source>
-        <translation>Cerca</translation>
+        <translation>Sök</translation>
     </message>
 </context>
 <context>
@@ -2695,12 +2695,12 @@
     <message>
         <location filename="../../../Bin/web/src/imtgui/Settings/ServerLogProvider.qml" line="+20"/>
         <source>Download</source>
-        <translation>Scarica</translation>
+        <translation>Ladda ner</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Save file</source>
-        <translation>Salva file</translation>
+        <translation>Spara fil</translation>
     </message>
 </context>
 <context>
@@ -2709,7 +2709,7 @@
         <location filename="../../../Bin/web/src/ServiceCollectionViewBase.qml" line="+161"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceCollectionViewBase.qml" line="+161"/>
         <source>&lt;New service&gt;</source>
-        <translation>&lt;Nuovo servizio&gt;</translation>
+        <translation>&lt;Ny tjänst&gt;</translation>
     </message>
 </context>
 <context>
@@ -2718,13 +2718,13 @@
         <location filename="../../../Bin/web/src/ServiceCollectionViewCommandsDelegate.qml" line="+15"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceCollectionViewCommandsDelegate.qml" line="+15"/>
         <source>Deleting an agent</source>
-        <translation>Eliminazione di un agente</translation>
+        <translation>Tar bort en agent</translation>
     </message>
     <message>
         <location line="+1"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceCollectionViewCommandsDelegate.qml" line="+1"/>
         <source>Delete the selected agent ?</source>
-        <translation>Eliminare l'agente selezionato?</translation>
+        <translation>Ta bort den valda agenten?</translation>
     </message>
 </context>
 <context>
@@ -2733,13 +2733,13 @@
         <location filename="../../../Bin/web/src/ServiceEditor.qml" line="+156"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceEditor.qml" line="+156"/>
         <source>Name</source>
-        <translation>Nome</translation>
+        <translation>Namn</translation>
     </message>
     <message>
         <location line="+9"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceEditor.qml" line="+9"/>
         <source>Enter the name</source>
-        <translation>Inserisci il nome</translation>
+        <translation>Ange namnet</translation>
     </message>
     <message>
         <location line="+18"/>
@@ -2749,61 +2749,61 @@
         <location line="+155"/>
         <location line="+325"/>
         <source>Description</source>
-        <translation>Descrizione</translation>
+        <translation>Beskrivning</translation>
     </message>
     <message>
         <location line="-471"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceEditor.qml" line="-471"/>
         <source>Enter the description</source>
-        <translation>Inserisci la descrizione</translation>
+        <translation>Ange beskrivningen</translation>
     </message>
     <message>
         <location line="+18"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceEditor.qml" line="+18"/>
         <source>Path</source>
-        <translation>Percorso</translation>
+        <translation>Sökväg</translation>
     </message>
     <message>
         <location line="+9"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceEditor.qml" line="+9"/>
         <source>Enter the path</source>
-        <translation>Inserisci il percorso</translation>
+        <translation>Ange sökvägen</translation>
     </message>
     <message>
         <location line="+18"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceEditor.qml" line="+18"/>
         <source>Arguments</source>
-        <translation>Argomenti</translation>
+        <translation>Argument</translation>
     </message>
     <message>
         <location line="+9"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceEditor.qml" line="+9"/>
         <source>Enter the arguments</source>
-        <translation>Inserisci gli argomenti</translation>
+        <translation>Ange argumenten</translation>
     </message>
     <message>
         <location line="+20"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceEditor.qml" line="+20"/>
         <source>Autostart (</source>
-        <translation>Avvio automatico (</translation>
+        <translation>Autostart (</translation>
     </message>
     <message>
         <location line="+0"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceEditor.qml" line="+0"/>
         <source>on</source>
-        <translation>attivato</translation>
+        <translation>på</translation>
     </message>
     <message>
         <location line="+0"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceEditor.qml" line="+0"/>
         <source>off</source>
-        <translation>disattivato</translation>
+        <translation>av</translation>
     </message>
     <message>
         <location line="+21"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceEditor.qml" line="+21"/>
         <source>Incoming Connections</source>
-        <translation>Connessioni in entrata</translation>
+        <translation>Inkommande anslutningar</translation>
     </message>
     <message>
         <location line="+46"/>
@@ -2811,37 +2811,37 @@
         <location filename="../../../Include/agentinoqml/Qml/ServiceEditor.qml" line="+46"/>
         <location line="+320"/>
         <source>Usage</source>
-        <translation>Utilizzo</translation>
+        <translation>Användning</translation>
     </message>
     <message>
         <location line="-310"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceEditor.qml" line="-310"/>
         <source>Host</source>
-        <translation>Host</translation>
+        <translation>Värd</translation>
     </message>
     <message>
         <location line="+5"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceEditor.qml" line="+5"/>
         <source>Port</source>
-        <translation>Porta</translation>
+        <translation>Port</translation>
     </message>
     <message>
         <location line="+5"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceEditor.qml" line="+5"/>
         <source>Extern Addresses</source>
-        <translation>Indirizzi esterni</translation>
+        <translation>Externa adresser</translation>
     </message>
     <message>
         <location line="+146"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceEditor.qml" line="+146"/>
         <source>Dependant Services</source>
-        <translation>Servizi dipendenti</translation>
+        <translation>Beroende tjänster</translation>
     </message>
     <message>
         <location line="+159"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceEditor.qml" line="+159"/>
         <source>Service</source>
-        <translation>Servizio</translation>
+        <translation>Tjänst</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -2851,23 +2851,23 @@
     </message>
     <message>
         <source>Settings</source>
-        <translation>Impostazioni</translation>
+        <translation>Inställningar</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Salva</translation>
+        <translation>Spara</translation>
     </message>
     <message>
         <source>Settings file: </source>
-        <translation>File di impostazioni: </translation>
+        <translation>Inställningsfil: </translation>
     </message>
     <message>
         <source>Settings file does not exist yet: </source>
-        <translation>Il file di impostazioni non esiste ancora: </translation>
+        <translation>Inställningsfilen finns inte ännu: </translation>
     </message>
     <message>
         <source>No settings file is configured for this service</source>
-        <translation>Nessun file di impostazioni è configurato per questo servizio</translation>
+        <translation>Ingen inställningsfil är konfigurerad för den här tjänsten</translation>
     </message>
 </context>
 <context>
@@ -2876,7 +2876,7 @@
         <location filename="../../../Bin/web/src/ServiceValidator.qml" line="+12"/>
         <location filename="../../../Include/agentinoqml/Qml/ServiceValidator.qml" line="+12"/>
         <source>Permission denied</source>
-        <translation>Autorizzazione negata</translation>
+        <translation>Åtkomst nekad</translation>
     </message>
 </context>
 <context>
@@ -2884,7 +2884,7 @@
     <message>
         <location filename="../../../Bin/web/src/imtgui/Settings/SettingsObserver.qml" line="+43"/>
         <source>Please restart the application so that the changes apply</source>
-        <translation>Riavvia l'applicazione affinché le modifiche abbiano effetto</translation>
+        <translation>Starta om programmet för att ändringarna ska börja gälla</translation>
     </message>
 </context>
 <context>
@@ -2892,38 +2892,38 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/SuperuserPasswordPage.qml" line="+51"/>
         <source>Please enter a non-empty password</source>
-        <translation>Inserisci una password non vuota</translation>
+        <translation>Ange ett lösenord som inte är tomt</translation>
     </message>
     <message>
         <location line="+5"/>
         <location line="+109"/>
         <source>Passwords don&apos;t match</source>
-        <translation>Le password non corrispondono</translation>
+        <translation>Lösenorden matchar inte</translation>
     </message>
     <message>
         <location line="-74"/>
         <source>Please enter the password for system administrator</source>
-        <translation>Inserisci la password dell'amministratore di sistema</translation>
+        <translation>Ange lösenordet för systemadministratören</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Password</source>
-        <translation>Password</translation>
+        <translation>Lösenord</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Enter the password</source>
-        <translation>Inserisci la password</translation>
+        <translation>Ange lösenordet</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Confirm Password</source>
-        <translation>Conferma password</translation>
+        <translation>Bekräfta lösenord</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Confirm password</source>
-        <translation>Conferma password</translation>
+        <translation>Bekräfta lösenord</translation>
     </message>
     <message>
         <location line="+41"/>
@@ -2936,12 +2936,12 @@
     <message>
         <location filename="../../../Bin/web/src/imtguigql/SystemStatusController.qml" line="+107"/>
         <source>server connection error</source>
-        <translation>errore di connessione al server</translation>
+        <translation>serveranslutningsfel</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>database connection error</source>
-        <translation>errore di connessione al database</translation>
+        <translation>databasanslutningsfel</translation>
     </message>
 </context>
 <context>
@@ -2949,17 +2949,17 @@
     <message>
         <location filename="../../../Bin/web/src/imtcontrols/Inputs/TimeIntervalPicker.qml" line="+126"/>
         <source>Days</source>
-        <translation>Giorni</translation>
+        <translation>Dagar</translation>
     </message>
     <message>
         <location line="+26"/>
         <source>Hours</source>
-        <translation>Ore</translation>
+        <translation>Timmar</translation>
     </message>
     <message>
         <location line="+26"/>
         <source>Minutes</source>
-        <translation>Minuti</translation>
+        <translation>Minuter</translation>
     </message>
 </context>
 <context>
@@ -2967,12 +2967,48 @@
     <message>
         <location filename="../../../Bin/web/src/imtcontrols/Inputs/TimePicker.qml" line="+96"/>
         <source>Hours</source>
-        <translation>Ore</translation>
+        <translation>Timmar</translation>
     </message>
     <message>
         <location line="+26"/>
         <source>Minutes</source>
-        <translation>Minuti</translation>
+        <translation>Minuter</translation>
+    </message>
+</context>
+<context>
+    <name>AgentCollectionViewBase</name>
+    <message>
+        <location filename="../../../Include/agentinoqml/Qml/AgentCollectionViewBase.qml" line="+34"/>
+        <source>Terminal</source>
+        <translation>Terminal</translation>
+    </message>
+</context>
+<context>
+    <name>TerminalView</name>
+    <message>
+        <location filename="../../../Include/agentinoqml/Qml/TerminalView.qml" line="+74"/>
+        <source>Open</source>
+        <translation>Öppna</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Close</source>
+        <translation>Stäng</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Clear</source>
+        <translation>Rensa</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Type a command and press Enter</source>
+        <translation>Skriv ett kommando och tryck på Retur</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Send</source>
+        <translation>Skicka</translation>
     </message>
 </context>
 <context>
@@ -2980,52 +3016,52 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/UserCollectionView.qml" line="+88"/>
         <source>View roles</source>
-        <translation>Visualizza ruoli</translation>
+        <translation>Visa roller</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>has been assigned</source>
-        <translation>è stato assegnato</translation>
+        <translation>har tilldelats</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>roles:</source>
-        <translation>ruoli:</translation>
+        <translation>roller:</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>No roles</source>
-        <translation>Nessun ruolo</translation>
+        <translation>Inga roller</translation>
     </message>
     <message>
         <location line="+60"/>
         <source>View groups</source>
-        <translation>Visualizza gruppi</translation>
+        <translation>Visa grupper</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>is included into</source>
-        <translation>è incluso in</translation>
+        <translation>ingår i</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>groups</source>
-        <translation>gruppi</translation>
+        <translation>grupper</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>No groups</source>
-        <translation>Nessun gruppo</translation>
+        <translation>Inga grupper</translation>
     </message>
     <message>
         <location line="+68"/>
         <source>Users</source>
-        <translation>Utenti</translation>
+        <translation>Användare</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>New User</source>
-        <translation>Nuovo utente</translation>
+        <translation>Ny användare</translation>
     </message>
 </context>
 <context>
@@ -3033,12 +3069,12 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/UserCollectionViewCommandsDelegate.qml" line="+9"/>
         <source>Deleting an user</source>
-        <translation>Eliminazione di un utente</translation>
+        <translation>Tar bort en användare</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Delete the selected user ?</source>
-        <translation>Eliminare l'utente selezionato?</translation>
+        <translation>Ta bort den valda användaren?</translation>
     </message>
 </context>
 <context>
@@ -3046,42 +3082,42 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/UserEditor.qml" line="+88"/>
         <source>Username</source>
-        <translation>Nome utente</translation>
+        <translation>Användarnamn</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Enter the user name</source>
-        <translation>Inserisci il nome utente</translation>
+        <translation>Ange användarnamnet</translation>
     </message>
     <message>
         <location line="+24"/>
         <source>Password</source>
-        <translation>Password</translation>
+        <translation>Lösenord</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Enter the password</source>
-        <translation>Inserisci la password</translation>
+        <translation>Ange lösenordet</translation>
     </message>
     <message>
         <location line="+25"/>
         <source>Name</source>
-        <translation>Nome</translation>
+        <translation>Namn</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Enter the name</source>
-        <translation>Inserisci il nome</translation>
+        <translation>Ange namnet</translation>
     </message>
     <message>
         <location line="+22"/>
         <source>Email address</source>
-        <translation>Indirizzo email</translation>
+        <translation>E-postadress</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Enter the email</source>
-        <translation>Inserisci l'email</translation>
+        <translation>Ange e-postadressen</translation>
     </message>
 </context>
 <context>
@@ -3089,12 +3125,12 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/UserGroupCollectionView.qml" line="+86"/>
         <source>Groups</source>
-        <translation>Gruppi</translation>
+        <translation>Grupper</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>New Group</source>
-        <translation>Nuovo gruppo</translation>
+        <translation>Ny grupp</translation>
     </message>
 </context>
 <context>
@@ -3102,12 +3138,12 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/UserGroupCollectionViewCommandsDelegate.qml" line="+9"/>
         <source>Deleting an group of users</source>
-        <translation>Eliminazione di un gruppo di utenti</translation>
+        <translation>Tar bort en användargrupp</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Delete the selected group of users ?</source>
-        <translation>Eliminare il gruppo di utenti selezionato?</translation>
+        <translation>Ta bort den valda användargruppen?</translation>
     </message>
 </context>
 <context>
@@ -3116,19 +3152,19 @@
         <location filename="../../../Bin/web/src/imtauthgui/UserGroupView.qml" line="+24"/>
         <location line="+115"/>
         <source>General</source>
-        <translation>Generale</translation>
+        <translation>Allmänt</translation>
     </message>
     <message>
         <location line="-110"/>
         <location line="+112"/>
         <source>Roles</source>
-        <translation>Ruoli</translation>
+        <translation>Roller</translation>
     </message>
     <message>
         <location line="-107"/>
         <location line="+106"/>
         <source>Users</source>
-        <translation>Utenti</translation>
+        <translation>Användare</translation>
     </message>
 </context>
 <context>
@@ -3136,17 +3172,17 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/UserGroups.qml" line="+92"/>
         <source>Groups</source>
-        <translation>Gruppi</translation>
+        <translation>Grupper</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>Group Name</source>
-        <translation>Nome gruppo</translation>
+        <translation>Gruppnamn</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Description</source>
-        <translation>Descrizione</translation>
+        <translation>Beskrivning</translation>
     </message>
 </context>
 <context>
@@ -3154,12 +3190,12 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/UserPanel.qml" line="+124"/>
         <source>Change Password</source>
-        <translation>Cambia password</translation>
+        <translation>Ändra lösenord</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Logout</source>
-        <translation>Esci</translation>
+        <translation>Logga ut</translation>
     </message>
 </context>
 <context>
@@ -3167,17 +3203,17 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/UserPanelDelegate.qml" line="+33"/>
         <source>Password changed successfully</source>
-        <translation>Password modificata con successo</translation>
+        <translation>Lösenordet ändrades</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Change Password</source>
-        <translation>Cambia password</translation>
+        <translation>Ändra lösenord</translation>
     </message>
     <message>
         <location line="+36"/>
         <source>Password changed</source>
-        <translation>Password modificata</translation>
+        <translation>Lösenordet ändrat</translation>
     </message>
 </context>
 <context>
@@ -3185,12 +3221,12 @@
     <message>
         <location filename="../../../Bin/web/src/imtauthgui/UserRoles.qml" line="+90"/>
         <source>Roles</source>
-        <translation>Ruoli</translation>
+        <translation>Roller</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Role Name</source>
-        <translation>Nome ruolo</translation>
+        <translation>Rollnamn</translation>
     </message>
 </context>
 <context>
@@ -3199,19 +3235,19 @@
         <location filename="../../../Bin/web/src/imtauthgui/UserView.qml" line="+25"/>
         <location line="+117"/>
         <source>General</source>
-        <translation>Generale</translation>
+        <translation>Allmänt</translation>
     </message>
     <message>
         <location line="-112"/>
         <location line="+113"/>
         <source>Roles</source>
-        <translation>Ruoli</translation>
+        <translation>Roller</translation>
     </message>
     <message>
         <location line="-108"/>
         <location line="+109"/>
         <source>Groups</source>
-        <translation>Gruppi</translation>
+        <translation>Grupper</translation>
     </message>
 </context>
 <context>
@@ -3219,7 +3255,7 @@
     <message>
         <location filename="../../../Include/agentgql/CServiceCollectionControllerComp.cpp" line="+650"/>
         <source>Service name can&apos;t be empty</source>
-        <translation>Il nome del servizio non può essere vuoto</translation>
+        <translation>Tjänstnamnet får inte vara tomt</translation>
     </message>
 </context>
 <context>
@@ -3227,12 +3263,12 @@
     <message>
         <location filename="../../../Include/agentinogql/CAgentCollectionControllerComp.cpp" line="+279"/>
         <source>Unable to get an service info!</source>
-        <translation>Impossibile ottenere le informazioni del servizio!</translation>
+        <translation>Det gick inte att hämta tjänstinformation!</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>Service name can&apos;t be empty</source>
-        <translation>Il nome del servizio non può essere vuoto</translation>
+        <translation>Tjänstnamnet får inte vara tomt</translation>
     </message>
 </context>
 <context>
@@ -3240,24 +3276,24 @@
     <message>
         <location filename="../../../Include/agentinogql/CServiceCollectionControllerComp.cpp" line="+433"/>
         <source>Incoming Connections</source>
-        <translation>Connessioni in entrata</translation>
+        <translation>Inkommande anslutningar</translation>
     </message>
     <message>
         <location line="+40"/>
         <source>Dependant services on port</source>
-        <translation>Servizi dipendenti sulla porta</translation>
+        <translation>Beroende tjänster på port</translation>
     </message>
     <message>
         <location line="+28"/>
         <source>Service depends on</source>
-        <translation>Il servizio dipende da</translation>
+        <translation>Tjänsten är beroende av</translation>
     </message>
 </context>
 <context>
     <name>ServiceEditorWrap</name>
     <message>
         <source>Service settings saved</source>
-        <translation>Impostazioni del servizio salvate</translation>
+        <translation>Tjänstinställningarna sparade</translation>
     </message>
 </context>
 </TS>
