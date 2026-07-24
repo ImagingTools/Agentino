@@ -9,6 +9,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
+#include <QtCore/QMutexLocker>
 #include <QtCore/QSaveFile>
 
 // ImtCore includes
@@ -17,6 +18,9 @@
 // Agentino includes
 #include <agentinodata/agentinodata.h>
 #include <agentinodata/CServiceInfo.h>
+
+
+#undef StartService
 
 
 namespace agentgql
@@ -127,6 +131,86 @@ sdl::V1_0::agentino::CServiceStatusResponse CServiceControllerComp::OnStopServic
 		break;
 	}
 
+	return response;
+}
+
+
+sdl::V1_0::agentino::CClearServiceLogPayload CServiceControllerComp::OnClearServiceLog(
+			const sdl::V1_0::agentino::CClearServiceLogGqlRequest& clearServiceLogRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::CClearServiceLogPayload response;
+
+	if (!m_serviceCollectionCompPtr.IsValid()){
+		errorMessage = QStringLiteral("Service collection is not configured");
+		return response;
+	}
+
+	sdl::V1_0::agentino::ClearServiceLogRequestArguments arguments = clearServiceLogRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->serviceId.has_value()){
+		errorMessage = QStringLiteral("ClearServiceLog request has no service id");
+		return response;
+	}
+
+	const QByteArray serviceId = *arguments.input->serviceId;
+	const QByteArray headerServiceId = gqlRequest.GetHeader("serviceid");
+	if (!headerServiceId.isEmpty() && headerServiceId != serviceId){
+		errorMessage = QStringLiteral("ClearServiceLog request service id does not match the routing header");
+		return response;
+	}
+
+	imtbase::IObjectCollection::DataPtr dataPtr;
+	if (!m_serviceCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
+		errorMessage = QStringLiteral("Service '%1' was not found in the service repository")
+				.arg(QString::fromUtf8(serviceId));
+		return response;
+	}
+
+	const agentinodata::CServiceInfo* serviceInfoPtr = dynamic_cast<const agentinodata::CServiceInfo*>(dataPtr.GetPtr());
+	if (serviceInfoPtr == nullptr){
+		errorMessage = QStringLiteral("Service '%1' has an invalid descriptor")
+				.arg(QString::fromUtf8(serviceId));
+		return response;
+	}
+
+	const QByteArray serviceName = m_serviceCollectionCompPtr->GetElementInfo(
+			serviceId, imtbase::IObjectCollection::EIT_NAME).toByteArray();
+	const QFileInfo fileInfo(serviceInfoPtr->GetServicePath());
+	const QString pluginPath = fileInfo.path() + "/Plugins";
+
+	QMutexLocker pluginMapLocker(&m_pluginMapMutex);
+	if (!m_pluginMap.contains(serviceName)){
+		istd::TDelPtr<PluginManager>& pluginManagerPtr = m_pluginMap[serviceName];
+		pluginManagerPtr.SetPtr(new PluginManager(
+				IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceLog),
+				IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceLog),
+				nullptr));
+		if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceLog")){
+			errorMessage = QStringLiteral("Unable to load service-log plugins from '%1'").arg(pluginPath);
+			m_pluginMap.remove(serviceName);
+			return response;
+		}
+	}
+
+	for (const auto& pluginData : m_pluginMap[serviceName]->m_plugins){
+		imtservice::IObjectCollectionPlugin* pluginPtr = pluginData.pluginPtr;
+		if (pluginPtr == nullptr || pluginPtr->GetPluginName() != fileInfo.baseName() + "Log"){
+			continue;
+		}
+
+		istd::TUniqueInterfacePtr<imtbase::IObjectCollection> messageCollection =
+				pluginPtr->GetObjectCollectionFactory()->CreateInstance();
+		response.success = messageCollection.IsValid() && messageCollection->RemoveElementSet(nullptr);
+		if (!response.success){
+			errorMessage = QStringLiteral("Unable to clear log for service '%1'")
+					.arg(QString::fromUtf8(serviceId));
+		}
+		return response;
+	}
+
+	errorMessage = QStringLiteral("Service log plugin was not found for service '%1'")
+			.arg(QString::fromUtf8(serviceId));
 	return response;
 }
 

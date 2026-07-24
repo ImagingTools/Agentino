@@ -227,25 +227,6 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServiceLogController" PackageId="AgentGqlPck" ComponentId="ServiceLogController">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
-                        <Data IsEnabled="true">
-                            <Values>
-                                <Value>GetServiceLog</Value>
-                            </Values>
-                        </Data>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
         <Element Id="TopologyCommands" PackageId="" ComponentId="TopologyCommands">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>

@@ -93,6 +93,7 @@ private:
 				const QByteArray& serviceId,
 				CServiceFsm::Event event,
 				ServiceFailureReason forcedReason = ServiceFailureReason::None);
+	QString GetServiceDisplayName(const QByteArray& serviceId) const;
 	void EmitStatus(const ServiceRuntimeState& state);
 	ServiceRuntimeState& EnsureState(const QByteArray& serviceId);
 	bool BuildSpawnRequest(const QByteArray& serviceId, IProcessHost::SpawnRequest& request, QString& errorMessage) const;

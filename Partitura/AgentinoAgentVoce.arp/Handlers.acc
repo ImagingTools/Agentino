@@ -362,6 +362,7 @@
                                 <Value>AvailableConnections</Value>
                                 <Value>LoadPlugin</Value>
                                 <Value>SetOutputConnection</Value>
+								<Value>ClearServiceLog</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -394,6 +395,7 @@
                                 <Value>OpenTerminalSession</Value>
                                 <Value>SendTerminalInput</Value>
                                 <Value>InterruptTerminalSession</Value>
+                                <Value>ResizeTerminalSession</Value>
                                 <Value>CloseTerminalSession</Value>
                             </Values>
                         </Data>

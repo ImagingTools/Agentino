@@ -634,21 +634,21 @@ ViewBase {
 							width: parent.width
 							font.family: Style.fontFamily
 							font.pixelSize: Style.fontSizeS
-							font.underline: isLink
-							font.italic: !isLink
+							font.underline: parent.isLink
+							font.italic: !parent.isLink
 							wrapMode: Text.WordWrap
-							color: isLink ? Style.lightBlueColor : Style.subtitleColor
+							color: parent.isLink ? Style.lightBlueColor : Style.subtitleColor
 							elide: Text.ElideRight
 							text: modelData
 						}
 
 						MouseArea {
 							anchors.fill: linkText
-							hoverEnabled: isLink
-							enabled: isLink
-							cursorShape: isLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+							hoverEnabled: parent.isLink
+							enabled: parent.isLink
+							cursorShape: parent.isLink ? Qt.PointingHandCursor : Qt.ArrowCursor
 							onClicked: {
-								if (!isLink)
+								if (!parent.isLink)
 									return
 								Qt.openUrlExternally(modelData)
 							}

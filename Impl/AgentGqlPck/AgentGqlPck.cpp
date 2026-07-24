@@ -40,9 +40,9 @@ I_EXPORT_COMPONENT(
 			"Agent Registration Client");
 
 I_EXPORT_COMPONENT(
-			ServiceLogController,
-			"Service log controller",
-			"Service Log Controller");
+			AgentLogController,
+			"Agent log controller",
+			"Agent Log Controller");
 
 I_EXPORT_COMPONENT(
 			MessageCollectionController,

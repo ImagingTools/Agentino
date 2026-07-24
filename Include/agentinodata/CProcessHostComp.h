@@ -69,6 +69,7 @@ private:
 		QProcess* process = nullptr;
 		qint64 pid = 0;
 		bool adopted = false;
+		bool stopRequested = false;
 		void* nativeHandle = nullptr; // Windows HANDLE for adopted, else nullptr
 	};
 

@@ -35,25 +35,21 @@ DocumentViewBase {
 	property string pluginServicePath: ""
 
 	function getHeaders(){
-		// Prefer typed DataScope when set; fall back to editor properties (QG1 transition).
-		if (dataScope !== null && (dataScope.agentId.length > 0 || dataScope.serviceId.length > 0)) {
-			let scoped = {}
-			if (dataScope.agentId.length > 0)
-				scoped["clientid"] = dataScope.agentId
-			if (dataScope.serviceId.length > 0)
-				scoped["serviceid"] = dataScope.serviceId
-			return scoped
-		}
 		let headers = {}
-		if (serviceEditorContainer.clientId !== ""){
-			headers["clientid"] = serviceEditorContainer.clientId
-			if (dataScope !== null)
-				dataScope.agentId = serviceEditorContainer.clientId
+		let agentId = dataScope !== null ? dataScope.agentId : ""
+		if (agentId === ""){
+			agentId = serviceEditorContainer.clientId
 		}
-		if (serviceEditorContainer.serviceData){
-			headers["serviceid"] = serviceEditorContainer.serviceData.m_id
-			if (dataScope !== null)
-				dataScope.serviceId = serviceEditorContainer.serviceData.m_id
+		if (agentId !== ""){
+			headers["clientid"] = agentId
+		}
+
+		let serviceId = dataScope !== null ? dataScope.serviceId : ""
+		if (serviceId === "" && serviceEditorContainer.serviceData){
+			serviceId = serviceEditorContainer.serviceData.m_id
+		}
+		if (serviceId !== ""){
+			headers["serviceid"] = serviceId
 		}
 		return headers
 	}
@@ -1963,6 +1959,13 @@ DocumentViewBase {
 			anchors.fill: parent
 			filterRightMargin: statusPopup.width + Style.marginXL
 			collectionId: "ServiceLog"
+			clearLogCommandId: AgentinoServicesSdlCommandIds.s_clearServiceLog
+			clearLogInputComp: Component {
+				ClearServiceInput {
+					m_serviceId: serviceEditorContainer.serviceData.m_id
+				}
+			}
+			clearLogPayloadComp: Component { ClearServiceLogPayload {} }
 			gqlGetListCommandId: "GetServiceLog"
 			subscriptionCommandId: "OnServiceLogCollectionChanged"
 

@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6306" Description="ACF"/>
-            <Version Id="1" Number="2256" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="395267" Description="Qt Framework"/>
+            <Version Id="0" Number="6500" Description="ACF"/>
+            <Version Id="1" Number="2438" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -30,6 +30,11 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="AgentInfo" PackageId="AgentinoDataPck" ComponentId="AgentInfo">
+            <Data IsEnabled="true" Flags="2">
+                <AttributeInfoMap/>
+            </Data>
+        </Element>
         <Element Id="AgentServiceManager" PackageId="AgentinoDataPck" ComponentId="AgentServiceManager">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
@@ -40,11 +45,6 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="AgentInfo" PackageId="AgentinoDataPck" ComponentId="AgentInfo">
-            <Data IsEnabled="true" Flags="2">
-                <AttributeInfoMap/>
             </Data>
         </Element>
         <Element Id="AgentStatusCollection" PackageId="ImtCorePck" ComponentId="ObjectCollection">
@@ -113,11 +113,11 @@
                     <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="AgentCollection"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="AgentServiceManager"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="AgentServiceManager"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServiceStatusCollection"/>
@@ -224,11 +224,11 @@
     <ExportedComponents>
         <Component ExportedId="AgentCollection" ComponentId="AgentCollection"/>
         <Component ExportedId="AgentServiceManager" ComponentId="AgentServiceManager"/>
-        <Component ExportedId="ServiceManager" ComponentId="AgentServiceManager"/>
         <Component ExportedId="AgentStatusCollection" ComponentId="AgentStatusCollection"/>
         <Component ExportedId="AutoPersistence" ComponentId="FileAutoPersistence/AutoPersistence"/>
         <Component ExportedId="RoleRepository" ComponentId="UserLocalRepositories/RoleRepository"/>
         <Component ExportedId="ServiceCompositeInfo" ComponentId="ServiceCompositeInfo"/>
+        <Component ExportedId="ServiceManager" ComponentId="AgentServiceManager"/>
         <Component ExportedId="ServiceStatusCollection" ComponentId="ServiceStatusCollection"/>
         <Component ExportedId="SessionSqlRepository" ComponentId="UserLocalRepositories/SessionSqlRepository"/>
         <Component ExportedId="TopologyCollection" ComponentId="TopologyCollection"/>

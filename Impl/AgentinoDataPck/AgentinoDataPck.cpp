@@ -46,11 +46,6 @@ I_EXPORT_COMPONENT(
 			"Remote Terminal Session Manager");
 
 I_EXPORT_COMPONENT(
-			LegacyServiceController,
-			"Legacy poll-based service controller",
-			"Legacy Service Controller");
-
-I_EXPORT_COMPONENT(
 			AgentServiceManager,
 			"ServiceManager role over agent nested service mirrors (R1.4 split)",
 			"Agent Service Manager");

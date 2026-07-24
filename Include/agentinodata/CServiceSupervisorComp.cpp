@@ -101,6 +101,12 @@ bool CServiceSupervisorComp::Stop(const QByteArray& serviceId, QString& errorMes
 	CancelTimer(m_healthTimers, serviceId);
 
 	ServiceRuntimeState& state = EnsureState(serviceId);
+	if (state.status == ServiceRuntimeStatus::Stopping) {
+		if (!m_processHostCompPtr->IsRunning(serviceId)) {
+			ApplyEvent(serviceId, CServiceFsm::Event::ChildExited);
+		}
+		return true;
+	}
 	if (state.status == ServiceRuntimeStatus::Stopped
 				|| state.status == ServiceRuntimeStatus::Failed) {
 		if (!m_processHostCompPtr->IsRunning(serviceId)) {
@@ -179,7 +185,15 @@ bool CServiceSupervisorComp::StartService(const QByteArray& serviceId)
 	}
 
 	QString error;
-	return Start(serviceId, error);
+	const bool started = Start(serviceId, error);
+	if (!started) {
+		SendErrorMessage(
+					0,
+					QStringLiteral("Unable to start service '%1': %2")
+							.arg(GetServiceDisplayName(serviceId), error),
+					QStringLiteral("StartService"));
+	}
+	return started;
 }
 
 
@@ -197,7 +211,15 @@ bool CServiceSupervisorComp::StopService(const QByteArray& serviceId)
 	}
 
 	QString error;
-	return Stop(serviceId, error);
+	const bool stopped = Stop(serviceId, error);
+	if (!stopped) {
+		SendErrorMessage(
+					0,
+					QStringLiteral("Unable to stop service '%1': %2")
+							.arg(GetServiceDisplayName(serviceId), error),
+					QStringLiteral("StopService"));
+	}
+	return stopped;
 }
 
 
@@ -234,7 +256,13 @@ void CServiceSupervisorComp::OnComponentDestroyed()
 		const ServiceRuntimeStatus st = m_states[id].status;
 		if (st == ServiceRuntimeStatus::Running || st == ServiceRuntimeStatus::Starting) {
 			QString err;
-			Stop(id, err);
+			if (!Stop(id, err)) {
+				SendWarningMessage(
+						0,
+						QStringLiteral("Unable to stop service '%1' during shutdown: %2")
+								.arg(GetServiceDisplayName(id), err),
+						QStringLiteral("Shutdown"));
+			}
 		}
 	}
 
@@ -255,9 +283,6 @@ void CServiceSupervisorComp::OnChildExited(
 			int exitCode,
 			QProcess::ExitStatus exitStatus)
 {
-	Q_UNUSED(exitCode);
-	Q_UNUSED(exitStatus);
-
 	CancelTimer(m_stopTimers, serviceId);
 	CancelTimer(m_healthTimers, serviceId);
 	// Process is gone — drop durable PID so a later agent restart does not adopt a dead id.
@@ -267,16 +292,35 @@ void CServiceSupervisorComp::OnChildExited(
 	const ServiceRuntimeStatus previous = state.status;
 
 	if (previous == ServiceRuntimeStatus::Stopping) {
+		SendInfoMessage(
+					0,
+					QStringLiteral("Service '%1' stopped")
+							.arg(GetServiceDisplayName(serviceId)),
+					QStringLiteral("ProcessHost"));
 		ApplyEvent(serviceId, CServiceFsm::Event::ChildExited);
 		return;
 	}
 
 	if (previous == ServiceRuntimeStatus::Starting) {
+		SendErrorMessage(
+					0,
+					QStringLiteral("Service '%1' exited while starting (exit code %2, status %3)")
+							.arg(GetServiceDisplayName(serviceId))
+							.arg(exitCode)
+							.arg(exitStatus == QProcess::NormalExit ? QStringLiteral("normal") : QStringLiteral("crashed")),
+					QStringLiteral("ProcessHost"));
 		ApplyEvent(serviceId, CServiceFsm::Event::ChildExited, ServiceFailureReason::StartFailed);
 		return;
 	}
 
 	if (previous == ServiceRuntimeStatus::Running) {
+		SendWarningMessage(
+					0,
+					QStringLiteral("Service '%1' exited unexpectedly (exit code %2, status %3)")
+							.arg(GetServiceDisplayName(serviceId))
+							.arg(exitCode)
+							.arg(exitStatus == QProcess::NormalExit ? QStringLiteral("normal") : QStringLiteral("crashed")),
+					QStringLiteral("ProcessHost"));
 		// Running → Crashed. Stay Crashed for the backoff; do NOT enter Starting yet
 		// (that would make Start() early-return without spawning).
 		ApplyEvent(serviceId, CServiceFsm::Event::ChildExited);
@@ -325,6 +369,13 @@ void CServiceSupervisorComp::OnChildExited(
 
 void CServiceSupervisorComp::OnChildStarted(const QByteArray& serviceId, qint64 pid)
 {
+	SendInfoMessage(
+			0,
+			QStringLiteral("Service '%1' started with PID %2")
+					.arg(GetServiceDisplayName(serviceId))
+					.arg(pid),
+			QStringLiteral("ProcessHost"));
+
 	ServiceRuntimeState& state = EnsureState(serviceId);
 	state.pid = pid;
 	ApplyEvent(serviceId, CServiceFsm::Event::ChildReady);
@@ -352,7 +403,12 @@ void CServiceSupervisorComp::OnChildStarted(const QByteArray& serviceId, qint64 
 
 void CServiceSupervisorComp::OnChildError(const QByteArray& serviceId, QString errorMessage)
 {
-	Q_UNUSED(errorMessage);
+	SendErrorMessage(
+			0,
+			QStringLiteral("Process error for service '%1': %2")
+					.arg(GetServiceDisplayName(serviceId), errorMessage),
+			QStringLiteral("ProcessHost"));
+
 	ServiceRuntimeState& state = EnsureState(serviceId);
 	if (state.status == ServiceRuntimeStatus::Starting) {
 		ApplyEvent(serviceId, CServiceFsm::Event::ChildExited, ServiceFailureReason::SpawnError);
@@ -402,7 +458,13 @@ void CServiceSupervisorComp::OnRestartBackoff()
 	// Crashed → Starting (via Start event) + spawn. State was deliberately left Crashed
 	// during the backoff so this path does not hit the Starting early-return.
 	QString error;
-	Start(serviceId, error);
+	if (!Start(serviceId, error)) {
+		SendErrorMessage(
+				0,
+				QStringLiteral("Unable to restart service '%1' after crash: %2")
+						.arg(GetServiceDisplayName(serviceId), error),
+				QStringLiteral("RestartBackoff"));
+	}
 }
 
 
@@ -446,6 +508,21 @@ bool CServiceSupervisorComp::ApplyEvent(
 	state.observedAt = QDateTime::currentDateTimeUtc();
 	EmitStatus(state);
 	return true;
+}
+
+
+QString CServiceSupervisorComp::GetServiceDisplayName(const QByteArray& serviceId) const
+{
+	if (m_serviceCollectionCompPtr.IsValid()) {
+		const QString serviceName = m_serviceCollectionCompPtr->GetElementInfo(
+					serviceId,
+					imtbase::ICollectionInfo::EIT_NAME).toString();
+		if (!serviceName.isEmpty()) {
+			return serviceName;
+		}
+	}
+
+	return QString::fromUtf8(serviceId);
 }
 
 
@@ -696,7 +773,7 @@ void CServiceSupervisorComp::PersistPid(
 
 void CServiceSupervisorComp::ClearPersistedPid(const QByteArray& serviceId)
 {
-	if (m_durablePids.remove(serviceId) > 0) {
+	if (m_durablePids.remove(serviceId)) {
 		SaveDurableState();
 	}
 }
@@ -834,7 +911,13 @@ void CServiceSupervisorComp::AutoStartServices()
 			continue;
 		}
 		QString error;
-		Start(id, error);
+		if (!Start(id, error)) {
+			SendErrorMessage(
+					0,
+					QStringLiteral("Unable to auto-start service '%1': %2")
+							.arg(GetServiceDisplayName(id), error),
+					QStringLiteral("AutoStart"));
+		}
 	}
 }
 

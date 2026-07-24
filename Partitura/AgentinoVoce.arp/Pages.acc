@@ -498,6 +498,8 @@
                                             <Value>ServiceLogList</Value>
                                             <Value>AgentLogList</Value>
                                             <Value>GetServiceLog</Value>
+											<Value>ClearServiceLog</Value>
+											<Value>ClearAgentLog</Value>
                                             <Value>GetObjectVisualStatus</Value>
                                         </Values>
                                     </Data>

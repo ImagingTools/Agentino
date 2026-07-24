@@ -9,6 +9,7 @@
 
 // Agentino includes
 #include <agentinodata/IServiceController.h>
+#include <agentgql/CServiceLog.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services_fwd.h>
 
 
@@ -16,7 +17,9 @@ namespace agentgql
 {
 
 
-class CServiceControllerComp: public sdl::V1_0::agentino::CServicesGqlHandlerCompBase
+class CServiceControllerComp:
+			public sdl::V1_0::agentino::CServicesGqlHandlerCompBase,
+			public CServiceLog
 {
 public:
 	typedef sdl::V1_0::agentino::CServicesGqlHandlerCompBase BaseClass;
@@ -35,6 +38,10 @@ protected:
 				QString& errorMessage) const override;
 	virtual sdl::V1_0::agentino::CServiceStatusResponse OnStopService(
 				const sdl::V1_0::agentino::CStopServiceGqlRequest& stopServiceRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CClearServiceLogPayload OnClearServiceLog(
+				const sdl::V1_0::agentino::CClearServiceLogGqlRequest& clearServiceLogRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
 	virtual sdl::V1_0::imtbase::CRemovedNotificationPayload OnServicesRemove(

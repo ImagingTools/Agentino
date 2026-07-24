@@ -104,6 +104,10 @@ protected:
 		const sdl::V1_0::agentino::CStopServiceGqlRequest& stopServiceRequest,
 		const ::imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CClearServiceLogPayload OnClearServiceLog(
+		const sdl::V1_0::agentino::CClearServiceLogGqlRequest& clearServiceLogRequest,
+		const ::imtgql::CGqlRequest& gqlRequest,
+		QString& errorMessage) const override;
 	virtual sdl::V1_0::imtbase::CRemovedNotificationPayload OnServicesRemove(
 		const sdl::V1_0::agentino::CServicesRemoveGqlRequest& removeServiceRequest,
 		const ::imtgql::CGqlRequest& gqlRequest,

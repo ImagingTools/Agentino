@@ -210,6 +210,7 @@ bool CProcessHostComp::SignalStop(const QByteArray& serviceId, QString& errorMes
 	}
 	Child& child = m_children[serviceId];
 	if (child.adopted) {
+		child.stopRequested = true;
 		return TerminateOsProcess(child, false, errorMessage);
 	}
 	if (child.process == nullptr) {
@@ -219,11 +220,16 @@ bool CProcessHostComp::SignalStop(const QByteArray& serviceId, QString& errorMes
 	if (child.process->state() == QProcess::NotRunning) {
 		return true;
 	}
-	// Graceful request first; many Windows services ignore terminate() and need kill().
+	child.stopRequested = true;
+	// Give cooperative services a short exit window before the guaranteed kill fallback.
 	child.process->terminate();
-	if (!child.process->waitForFinished(3000)) {
+	if (!child.process->waitForFinished(500)) {
 		child.process->kill();
-		child.process->waitForFinished(2000);
+		if (!child.process->waitForFinished(2000)) {
+			errorMessage = QStringLiteral("Process %1 did not stop after terminate and kill")
+					.arg(child.pid);
+			return false;
+		}
 	}
 	return true;
 }
@@ -250,6 +256,7 @@ bool CProcessHostComp::ForceKill(const QByteArray& serviceId, QString& errorMess
 	}
 	Child& child = m_children[serviceId];
 	if (child.adopted) {
+		child.stopRequested = true;
 		return TerminateOsProcess(child, true, errorMessage);
 	}
 	if (child.process == nullptr) {
@@ -257,7 +264,13 @@ bool CProcessHostComp::ForceKill(const QByteArray& serviceId, QString& errorMess
 		return false;
 	}
 	if (child.process->state() != QProcess::NotRunning) {
+		child.stopRequested = true;
 		child.process->kill();
+		if (!child.process->waitForFinished(2000)) {
+			errorMessage = QStringLiteral("Process %1 did not stop after kill")
+					.arg(child.pid);
+			return false;
+		}
 	}
 	return true;
 }
@@ -323,18 +336,27 @@ void CProcessHostComp::OnProcessFinished(int exitCode, QProcess::ExitStatus exit
 	if (serviceId.isEmpty()) {
 		return;
 	}
-	if (m_children.contains(serviceId)) {
-		m_children[serviceId].pid = 0;
+	if (!m_children.contains(serviceId)) {
+		return;
 	}
+	const bool stopRequested = m_children.value(serviceId).stopRequested;
+	if (stopRequested) {
+		exitStatus = QProcess::NormalExit;
+	}
+	ClearChildEntry(serviceId, false);
 	emit ChildExited(serviceId, exitCode, exitStatus);
 }
 
 
 void CProcessHostComp::OnProcessError(QProcess::ProcessError error)
 {
-	Q_UNUSED(error);
 	const QByteArray serviceId = ServiceIdForSender();
-	if (serviceId.isEmpty()) {
+	if (serviceId.isEmpty() || !m_children.contains(serviceId)) {
+		return;
+	}
+	if (error == QProcess::Crashed
+				&& m_children.contains(serviceId)
+				&& m_children[serviceId].stopRequested) {
 		return;
 	}
 	QProcess* process = qobject_cast<QProcess*>(sender());
@@ -366,8 +388,12 @@ void CProcessHostComp::OnAdoptPoll()
 		}
 	}
 	for (const QByteArray& serviceId : dead) {
+		const bool stopRequested = m_children.value(serviceId).stopRequested;
 		ClearChildEntry(serviceId, false);
-		emit ChildExited(serviceId, -1, QProcess::CrashExit);
+		emit ChildExited(
+				serviceId,
+				-1,
+				stopRequested ? QProcess::NormalExit : QProcess::CrashExit);
 	}
 	// Stop poll when nothing adopted remains.
 	bool anyAdopted = false;
@@ -447,7 +473,7 @@ bool CProcessHostComp::TerminateOsProcess(const Child& child, bool force, QStrin
 	HANDLE handle = static_cast<HANDLE>(child.nativeHandle);
 	HANDLE opened = nullptr;
 	if (handle == nullptr) {
-		opened = ::OpenProcess(PROCESS_TERMINATE, FALSE, static_cast<DWORD>(child.pid));
+		opened = ::OpenProcess(PROCESS_TERMINATE | SYNCHRONIZE, FALSE, static_cast<DWORD>(child.pid));
 		handle = opened;
 	}
 	if (handle == nullptr || handle == INVALID_HANDLE_VALUE) {
@@ -458,11 +484,19 @@ bool CProcessHostComp::TerminateOsProcess(const Child& child, bool force, QStrin
 	// a custom protocol; ForceKill and SignalStop both end the process by PID.
 	Q_UNUSED(force);
 	const BOOL ok = ::TerminateProcess(handle, 1);
+	if (!ok) {
+		if (opened != nullptr) {
+			::CloseHandle(opened);
+		}
+		errorMessage = QStringLiteral("TerminateProcess failed for pid %1").arg(child.pid);
+		return false;
+	}
+	const bool stopped = !force || ::WaitForSingleObject(handle, 2000) == WAIT_OBJECT_0;
 	if (opened != nullptr) {
 		::CloseHandle(opened);
 	}
-	if (!ok) {
-		errorMessage = QStringLiteral("TerminateProcess failed for pid %1").arg(child.pid);
+	if (!stopped) {
+		errorMessage = QStringLiteral("Process %1 did not stop after TerminateProcess").arg(child.pid);
 		return false;
 	}
 	return true;
@@ -474,6 +508,15 @@ bool CProcessHostComp::TerminateOsProcess(const Child& child, bool force, QStrin
 		}
 		errorMessage = QStringLiteral("kill(%1) failed: %2").arg(child.pid).arg(errno);
 		return false;
+	}
+	if (force) {
+		for (int attempt = 0; attempt < 40 && IsPidAlive(child.pid); ++attempt) {
+			QThread::msleep(50);
+		}
+		if (IsPidAlive(child.pid)) {
+			errorMessage = QStringLiteral("Process %1 did not stop after SIGKILL").arg(child.pid);
+			return false;
+		}
 	}
 	return true;
 #endif

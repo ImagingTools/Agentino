@@ -889,6 +889,21 @@ sdl::V1_0::agentino::CServiceStatusResponse CServiceControllerProxyComp::OnStopS
 }
 
 
+sdl::V1_0::agentino::CClearServiceLogPayload CServiceControllerProxyComp::OnClearServiceLog(
+			const sdl::V1_0::agentino::CClearServiceLogGqlRequest& clearServiceLogRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::ClearServiceLogRequestArguments arguments = clearServiceLogRequest.GetRequestedArguments();
+	if (!arguments.input.has_value()){
+		errorMessage = QStringLiteral("Service id is required to clear the service log");
+		return sdl::V1_0::agentino::CClearServiceLogPayload();
+	}
+
+	return SendModelRequest<sdl::V1_0::agentino::CClearServiceLogPayload>(gqlRequest, errorMessage);
+}
+
+
 sdl::V1_0::imtbase::CRemovedNotificationPayload CServiceControllerProxyComp::OnServicesRemove(
 			const sdl::V1_0::agentino::CServicesRemoveGqlRequest& removeServiceRequest,
 			const ::imtgql::CGqlRequest& gqlRequest,
@@ -1245,6 +1260,16 @@ QJsonObject CServiceControllerProxyComp::CreateInternalResponse(
 			errorMessage,
 			[&](const auto& req, const auto& gqlReq, QString& err){
 				return OnStopService(req, gqlReq, err);
+			});
+	}
+	if (sdl::V1_0::agentino::CClearServiceLogGqlRequest::GetCommandId() == commandId){
+		return CreateResponse<
+			sdl::V1_0::agentino::CClearServiceLogGqlRequest,
+			sdl::V1_0::agentino::CClearServiceLogPayload>(
+			gqlRequest,
+			errorMessage,
+			[&](const auto& req, const auto& gqlReq, QString& err){
+				return OnClearServiceLog(req, gqlReq, err);
 			});
 	}
 	if (sdl::V1_0::agentino::CServicesRemoveGqlRequest::GetCommandId() == commandId){

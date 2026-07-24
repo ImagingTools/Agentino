@@ -78,6 +78,7 @@
                             <Values>
                                 <Value>ServiceMessageCollectionController</Value>
                                 <Value>AgentMessageCollectionController</Value>
+								<Value>AgentLogController</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -178,6 +179,22 @@
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="AgentLogController" PackageId="AgentGqlPck" ComponentId="AgentLogController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="AgentLogCollection" Type="Reference" ExportId="AgentMessageObjectCollection">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>ClearAgentLog</Value>
+                            </Values>
+                        </Data>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>

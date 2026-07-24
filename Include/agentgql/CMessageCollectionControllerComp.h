@@ -9,7 +9,7 @@
 #include <agentgql/CServiceLog.h>
 
 // Generated includes
-#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/ServiceLog_fwd.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services_fwd.h>
 #include <imtbasesdl/SDL/1.0/CPP/ImtCollection_fwd.h>
 
 

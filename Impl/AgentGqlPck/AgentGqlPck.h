@@ -13,7 +13,7 @@
 #include <agentgql/CServiceControllerComp.h>
 #include <agentgql/CTerminalControllerComp.h>
 #include <agentgql/CAgentRegistrationClientComp.h>
-#include <agentgql/CServiceLogControllerComp.h>
+#include <agentgql/CAgentLogControllerComp.h>
 #include <agentgql/CMessageCollectionControllerComp.h>
 #include <agentgql/CAgentMessageCollectionControllerComp.h>
 #include <agentgql/CAgentSettingsControllerComp.h>
@@ -37,7 +37,7 @@ typedef agentgql::CServiceCollectionControllerComp ServiceCollectionController;
 typedef agentgql::CServiceControllerComp ServiceController;
 typedef agentgql::CTerminalControllerComp TerminalController;
 typedef agentgql::CAgentRegistrationClientComp AgentRegistrationClient;
-typedef agentgql::CServiceLogControllerComp ServiceLogController;
+typedef agentgql::CAgentLogControllerComp AgentLogController;
 typedef agentgql::CMessageCollectionControllerComp MessageCollectionController;
 typedef agentgql::CAgentMessageCollectionControllerComp AgentMessageCollectionController;
 typedef agentgql::CAgentSettingsControllerComp AgentSettingsController;

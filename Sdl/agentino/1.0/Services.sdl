@@ -162,9 +162,17 @@ type ServiceSettingsPayload {
 	exists: Boolean
 }
 
+type ClearServiceLogPayload {
+	success: Boolean!
+}
+
 input ServiceSettingsInput {
 	serviceId: ID!
 	content: String!
+}
+
+input ClearServiceInput {
+	serviceId: ID!
 }
 
 type PluginInfo {
@@ -176,6 +184,7 @@ type PluginInfo {
 type Query {
 	ServicesList (input: ServiceListInput): ServiceListPayload!
 	GetService (input: InputId): ServiceData!
+	GetServiceLog (input: CollectionViewParams): MessageListPayload!
 	GetServiceStatus (input: InputId): ServiceStatusResponse!
 	GetServiceSettings (input: ServiceInput): ServiceSettingsPayload!
 	AvailableConnections (input: AvailableConnectionsInput): AvailableConnectionsPayload!
@@ -188,6 +197,7 @@ type Mutation {
 	
 	StartService (input: ServiceInput): ServiceStatusResponse!
 	StopService (input: ServiceInput): ServiceStatusResponse!
+	ClearServiceLog (input: ClearServiceInput): ClearServiceLogPayload!
 	
 	ServicesRemove (input: RemoveElementsInput): RemovedNotificationPayload!
 	UpdateConnectionUrl (input: ConnectionUrlInput): UpdateConnectionUrlResponse!
@@ -196,6 +206,13 @@ type Mutation {
 }
 
 collectionSchema {
+	type ServiceLog {
+		ref: MessageItem
+		operations {
+			list: GetServiceLog
+		}
+	}
+
 	type Service {
 		ref: ServiceItem
 		operations {

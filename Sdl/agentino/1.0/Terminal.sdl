@@ -66,6 +66,18 @@ type InterruptTerminalSessionResponse {
 	accepted: Boolean!
 }
 
+# Tells the agent the GUI's visible character grid so curses/full-screen programs
+# draw correctly. Best-effort; a session with no PTY (should not happen) just no-ops.
+input ResizeTerminalSessionInput {
+	sessionId: ID!
+	columns: Integer!
+	rows: Integer!
+}
+
+type ResizeTerminalSessionResponse {
+	resized: Boolean!
+}
+
 input TerminalOutputInput {
 	sessionId: ID!
 	fromSequence: Integer
@@ -98,6 +110,7 @@ type Mutation {
 	OpenTerminalSession (input: OpenTerminalSessionInput): OpenTerminalSessionResponse!
 	SendTerminalInput (input: SendTerminalInputInput): SendTerminalInputResponse!
 	InterruptTerminalSession (input: InterruptTerminalSessionInput): InterruptTerminalSessionResponse!
+	ResizeTerminalSession (input: ResizeTerminalSessionInput): ResizeTerminalSessionResponse!
 	CloseTerminalSession (input: CloseTerminalSessionInput): CloseTerminalSessionResponse!
 }
 

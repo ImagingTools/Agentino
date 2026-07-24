@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentgql/CMessageCollectionControllerComp.h>
-#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/ServiceLog.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services.h>
 #include <GeneratedFiles/imtbasesdl/SDL/1.0/CPP/ImtCollection.h>
 
 
@@ -48,7 +48,11 @@ bool CMessageCollectionControllerComp::CreateRepresentationFromObject(
 	if (gqlContextPtr != nullptr){
 		imtgql::IGqlContext::Headers headers = gqlContextPtr->GetHeaders();
 
-		serviceId = headers["serviceid"];
+		serviceId = headers.value("serviceid");
+	}
+	if (serviceId.isEmpty()){
+		errorMessage = QStringLiteral("GetServiceLog request has no 'serviceid' header");
+		return false;
 	}
 
 	istd::TSharedInterfacePtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(serviceId, errorMessage);
@@ -94,9 +98,14 @@ QJsonObject CMessageCollectionControllerComp::ListObjects(
 	const imtgql::CGqlRequest& gqlRequest,
 	QString &errorMessage) const
 {
-	QByteArray serviceid = gqlRequest.GetHeader("serviceid");
+	const QByteArray serviceId = gqlRequest.GetHeader("serviceid");
+	if (serviceId.isEmpty()){
+		errorMessage = QStringLiteral("GetServiceLog request has no 'serviceid' header");
+		SendErrorMessage(0, errorMessage, "CMessageCollectionControllerComp");
+		return QJsonObject();
+	}
 
-	istd::TSharedInterfacePtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(serviceid, errorMessage);
+	istd::TSharedInterfacePtr<imtbase::IObjectCollection> messageCollectionPtr = GetMessageCollection(serviceId, errorMessage);
 	if (!messageCollectionPtr.IsValid()){
 		SendErrorMessage(0, errorMessage, "CMessageCollectionControllerComp");
 
@@ -184,7 +193,11 @@ void CMessageCollectionControllerComp::OnComponentDestroyed()
 istd::TSharedInterfacePtr<imtbase::IObjectCollection> CMessageCollectionControllerComp::GetMessageCollection(const QByteArray& serviceId, QString& errorMessage) const
 {
 	if (!m_objectCollectionCompPtr.IsValid()){
-		errorMessage = QString("Internal error").toUtf8();
+		errorMessage = QStringLiteral("Service repository is not configured");
+		return nullptr;
+	}
+	if (serviceId.isEmpty()){
+		errorMessage = QStringLiteral("Service id is empty");
 		return nullptr;
 	}
 
@@ -201,12 +214,22 @@ istd::TSharedInterfacePtr<imtbase::IObjectCollection> CMessageCollectionControll
 	}
 
 	imtbase::IObjectCollection::DataPtr dataPtr;
-	if (m_objectCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
-		const agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = dynamic_cast<const agentinodata::CIdentifiableServiceInfo*>(dataPtr.GetPtr());
-		if (serviceInfoPtr != nullptr){
+	if (!m_objectCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
+		errorMessage = QStringLiteral("Service '%1' was not found in the service repository")
+				.arg(QString::fromUtf8(serviceId));
+		return nullptr;
+	}
+
+	const agentinodata::CIdentifiableServiceInfo* serviceInfoPtr = dynamic_cast<const agentinodata::CIdentifiableServiceInfo*>(dataPtr.GetPtr());
+	if (serviceInfoPtr == nullptr){
+		errorMessage = QStringLiteral("Service '%1' has an invalid descriptor")
+				.arg(QString::fromUtf8(serviceId));
+		return nullptr;
+	}
+
+	{
 			QByteArray serviceName = serviceInfoPtr->GetServiceTypeId().toUtf8();
 			QString servicePath = serviceInfoPtr->GetServicePath();
-			QByteArray serviceTypeName = serviceInfoPtr->GetServiceTypeId().toUtf8();
 
 			QFileInfo fileInfo(servicePath);
 			QString pluginPath = fileInfo.path() + "/Plugins";
@@ -216,7 +239,9 @@ istd::TSharedInterfacePtr<imtbase::IObjectCollection> CMessageCollectionControll
 				pluginManagerPtr.SetPtr(new PluginManager(IMT_CREATE_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceLog), IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceLog), nullptr));
 
 				if (!pluginManagerPtr->LoadPluginDirectory(pluginPath, "plugin", "ServiceLog")){
-					SendErrorMessage(0, QString("Unable to load a plugin for '%1'").arg(qPrintable(serviceName)), "CMessageCollectionControllerComp");
+					errorMessage = QStringLiteral("Unable to load service-log plugins from '%1' for service '%2' (type '%3')")
+							.arg(pluginPath, QString::fromUtf8(serviceId), QString::fromUtf8(serviceName));
+					SendErrorMessage(0, errorMessage, "CMessageCollectionControllerComp");
 					m_pluginMap.remove(serviceName);
 
 					return nullptr;
@@ -252,9 +277,8 @@ istd::TSharedInterfacePtr<imtbase::IObjectCollection> CMessageCollectionControll
 				}
 
 				errorMessage = QString("Plugin directory '%1' loaded but no plugin named '%2' was found for service '%3' — GetServiceLog will return empty")
-							.arg(pluginPath, fileInfo.baseName() + "Log", QString::fromUtf8(serviceName));
+							.arg(pluginPath, fileInfo.baseName() + "Log", QString::fromUtf8(serviceId));
 			}
-		}
 	}
 
 	return nullptr;

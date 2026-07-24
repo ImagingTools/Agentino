@@ -67,6 +67,14 @@ type AgentData {
 	serviceCount: Int
 }
 
+type ClearAgentLogPayload {
+	success: Boolean!
+}
+
+input ClearAgentLogInput {
+	agentId: ID!
+}
+
 input AgentDataInput {
 	id: ID!
 	item: AgentData!
@@ -80,6 +88,7 @@ type Query {
 type Mutation {
 	UpdateAgent (input: AgentDataInput): UpdatedNotificationPayload!
 	AddAgent (input: AgentDataInput): AddedNotificationPayload!
+	ClearAgentLog (input: ClearAgentLogInput): ClearAgentLogPayload!
 }
 
 collectionSchema {

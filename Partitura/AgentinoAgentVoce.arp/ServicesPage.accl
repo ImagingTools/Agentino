@@ -19,7 +19,6 @@
         <Element ComponentName="ServiceCommands" X="650" Y="275" Note=""/>
         <Element ComponentName="ServiceCompositeInfo" X="775" Y="600" Note=""/>
         <Element ComponentName="ServiceHeadersDataProvider" X="125" Y="450" Note=""/>
-        <Element ComponentName="ServiceLogController" X="1025" Y="100" Note=""/>
         <Element ComponentName="TopologyCommands" X="900" Y="400" Note=""/>
         <Element ComponentName="TopologyController" X="900" Y="100" Note=""/>
     </PositionMap>
