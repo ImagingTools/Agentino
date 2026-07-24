@@ -55,6 +55,10 @@ protected:
 				const sdl::V1_0::agentino::CInterruptTerminalSessionGqlRequest& interruptTerminalSessionRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CResizeTerminalSessionResponse OnResizeTerminalSession(
+				const sdl::V1_0::agentino::CResizeTerminalSessionGqlRequest& resizeTerminalSessionRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
 	virtual sdl::V1_0::agentino::CCloseTerminalSessionResponse OnCloseTerminalSession(
 				const sdl::V1_0::agentino::CCloseTerminalSessionGqlRequest& closeTerminalSessionRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,

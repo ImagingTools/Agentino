@@ -447,6 +447,13 @@ DocumentViewBase {
 		MessageCollectionView {
 			anchors.fill: parent
 			collectionId: "AgentLog"
+			clearLogCommandId: AgentinoAgentsSdlCommandIds.s_clearAgentLog
+			clearLogInputComp: Component {
+				ClearAgentLogInput {
+					m_agentId: agentEditorContainer.documentId
+				}
+			}
+			clearLogPayloadComp: Component { ClearAgentLogPayload {} }
 
 			function getHeaders(){
 				return {"clientid": agentEditorContainer.documentId}

@@ -236,6 +236,36 @@ sdl::V1_0::agentino::CInterruptTerminalSessionResponse CTerminalControllerComp::
 }
 
 
+sdl::V1_0::agentino::CResizeTerminalSessionResponse CTerminalControllerComp::OnResizeTerminalSession(
+			const sdl::V1_0::agentino::CResizeTerminalSessionGqlRequest& resizeTerminalSessionRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::CResizeTerminalSessionResponse response;
+	response.resized = false;
+
+	if (!m_terminalSessionManagerCompPtr.IsValid()){
+		errorMessage = QStringLiteral("Unable to resize terminal session. Error: attribute 'TerminalSessionManager' was not set");
+
+		return response;
+	}
+
+	const sdl::V1_0::agentino::ResizeTerminalSessionRequestArguments arguments =
+				resizeTerminalSessionRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->sessionId.has_value()
+				|| !arguments.input->columns.has_value() || !arguments.input->rows.has_value()){
+		errorMessage = QStringLiteral("Unable to resize terminal session. Error: session ID or size is missing");
+
+		return response;
+	}
+
+	response.resized = m_terminalSessionManagerCompPtr->ResizeSession(
+				*arguments.input->sessionId, *arguments.input->columns, *arguments.input->rows);
+
+	return response;
+}
+
+
 sdl::V1_0::agentino::CCloseTerminalSessionResponse CTerminalControllerComp::OnCloseTerminalSession(
 			const sdl::V1_0::agentino::CCloseTerminalSessionGqlRequest& closeTerminalSessionRequest,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,

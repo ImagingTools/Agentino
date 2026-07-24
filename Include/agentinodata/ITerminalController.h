@@ -114,6 +114,12 @@ public:
 	virtual bool InterruptSession(const QByteArray& sessionId) = 0;
 
 	/**
+		Tell the session's pseudo-terminal the GUI's current character grid size, so
+		full-screen/curses programs redraw correctly. Best-effort; a no-op returns false.
+	*/
+	virtual bool ResizeSession(const QByteArray& sessionId, int columns, int rows) = 0;
+
+	/**
 		Read output produced by the session since the given sequence number.
 		\param sessionId Session to read from.
 		\param fromSequence Sequence number of the first chunk the caller has not seen yet (0 to read from start).

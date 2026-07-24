@@ -60,6 +60,15 @@ sdl::V1_0::agentino::CInterruptTerminalSessionResponse CTerminalControllerProxyC
 }
 
 
+sdl::V1_0::agentino::CResizeTerminalSessionResponse CTerminalControllerProxyComp::OnResizeTerminalSession(
+			const sdl::V1_0::agentino::CResizeTerminalSessionGqlRequest& /*resizeTerminalSessionRequest*/,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
+{
+	return ForwardToAgent<sdl::V1_0::agentino::CResizeTerminalSessionResponse>(gqlRequest, errorMessage);
+}
+
+
 sdl::V1_0::agentino::CCloseTerminalSessionResponse CTerminalControllerProxyComp::OnCloseTerminalSession(
 			const sdl::V1_0::agentino::CCloseTerminalSessionGqlRequest& /*closeTerminalSessionRequest*/,
 			const ::imtgql::CGqlRequest& gqlRequest,

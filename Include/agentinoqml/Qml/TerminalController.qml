@@ -88,6 +88,15 @@ QtObject {
 		interruptRequest.send({"sessionId": root.sessionId});
 	}
 
+	// Best-effort: tells the agent's pty the GUI's current character grid so
+	// full-screen/curses programs redraw correctly. Never blocks the session on failure.
+	function resizeSession(columns, rows){
+		if (root.sessionId.length === 0 || root.connectionLost || root.closeInFlight){
+			return;
+		}
+		resizeRequest.send({"sessionId": root.sessionId, "columns": columns, "rows": rows});
+	}
+
 	// Request remote close; local teardown is only via forgetSession (single exit).
 	function closeSession(){
 		if (root.sessionId.length === 0 || root.closeInFlight || root.sessionTeardownDone){
@@ -478,6 +487,33 @@ QtObject {
 
 		function onError(message, type){
 			root.errorOccurred(message);
+		}
+	}
+
+	property GqlRequestSender resizeRequest: GqlRequestSender {
+		gqlCommandId: "ResizeTerminalSession";
+		requestType: 1;
+
+		function getHeaders(){
+			return root.getHeaders();
+		}
+
+		function createQueryParams(query, params){
+			let inputParams = Gql.GqlObject("input");
+			inputParams.InsertField("sessionId", params["sessionId"]);
+			inputParams.InsertField("columns", params["columns"]);
+			inputParams.InsertField("rows", params["rows"]);
+			query.AddParam(inputParams);
+
+			query.AddField(Gql.GqlObject("resized"));
+		}
+
+		function onResult(data){
+			// Best-effort - nothing to react to either way.
+		}
+
+		function onError(message, type){
+			// A resize failure is not worth surfacing to the operator or the session.
 		}
 	}
 

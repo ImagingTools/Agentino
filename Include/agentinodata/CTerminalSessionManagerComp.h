@@ -10,6 +10,36 @@
 #include <QtCore/QStringConverter>
 #include <QtCore/QTimer>
 
+// moc does not see Q_OS_WIN (it only expands the macros this project's CMake passes
+// explicitly - _WIN32 is not among them, only WIN32/_WIN64 - so a class guarded by
+// #if defined(Q_OS_WIN) alone would silently vanish from the generated moc file with
+// no error, just missing metaobject symbols at link time). WIN32/_WIN64 are always
+// defined by CMake's own Windows generators, independent of the project's own defines,
+// so this local macro is visible to moc as well as the real compiler.
+#if defined(Q_OS_WIN) || defined(WIN32) || defined(_WIN32) || defined(_WIN64)
+#	define AGENTINO_TERMINAL_WIN 1
+#endif
+
+#if defined(AGENTINO_TERMINAL_WIN)
+#	ifndef WIN32_LEAN_AND_MEAN
+#		define WIN32_LEAN_AND_MEAN
+#	endif
+	// ConPTY (CreatePseudoConsole etc.) is only declared for Windows 10+; match what
+	// Qt's own qt_windows.h would set, in case this header is included before any Qt
+	// header that pulls it in first.
+#	ifndef WINVER
+#		define WINVER 0x0A00
+#	endif
+#	ifndef _WIN32_WINNT
+#		define _WIN32_WINNT 0x0A00
+#	endif
+#	include <windows.h>
+#	include <QtCore/QThread>
+#	include <QtCore/QWinEventNotifier>
+#else
+#	include <QtCore/QSocketNotifier>
+#endif
+
 // ACF includes
 #include <ilog/TLoggerCompWrap.h>
 #include <istd/TDelPtr.h>
@@ -22,16 +52,48 @@ namespace agentinodata
 {
 
 
+#if defined(AGENTINO_TERMINAL_WIN)
+
+/**
+	Blocking reader for one session's ConPTY output pipe, run on its own thread since
+	Win32 anonymous pipes have no event-loop-friendly (overlapped) read primitive that
+	Qt can wait on directly. Owned/started/stopped by \ref CTerminalSessionManagerComp;
+	the pipe handle is closed by the owner to unblock \c ReadFile and end \c run().
+
+	\ingroup Terminal
+*/
+class CTerminalPtyReaderThread: public QThread
+{
+	Q_OBJECT
+public:
+	explicit CTerminalPtyReaderThread(HANDLE pipeReadHandle, QObject* parentPtr = nullptr);
+
+Q_SIGNALS:
+	void DataRead(const QByteArray& data);
+	void ReaderFinished();
+
+protected:
+	// reimplemented (QThread)
+	virtual void run() override;
+
+private:
+	HANDLE m_pipeReadHandle;
+};
+
+#endif // Q_OS_WIN
+
+
 /**
 	Default implementation of \ref ITerminalController.
 
 	Owns the real terminal sessions on the agent host: each session is a single shell
-	QProcess started with the privileges of the agent service. Output of every session is
+	process attached to a real pseudo-terminal (ConPTY on Windows, \c openpty on
+	Linux/macOS) - not a plain pipe - so full-screen/curses programs (vim, mc, top) and
+	ANSI color output work as they would in a native terminal. Output of every session is
 	buffered (bounded) and exposed incrementally; new chunks raise
 	\ref ITerminalController::CN_TERMINAL_OUTPUT_CHANGED so GraphQL publishers can push
 	to subscribers (GetOutput remains for catch-up). The component never builds a shell
-	command line from user input: the requested data is written verbatim to the shell
-	standard input.
+	command line from user input: the requested data is written verbatim to the pty.
 
 	Named "session manager" (not "controller") to keep it distinct from the GQL-facing
 	\c agentgql::CTerminalControllerComp, which is a thin per-request resolver that
@@ -41,9 +103,9 @@ namespace agentinodata
 	tree is recreated per request, so session state (open shells, buffered output) would
 	not survive between an OpenSession call and the next poll if it lived there.
 
-	\note Thread affinity: the agent answers GraphQL requests on worker threads, but a
-	QProcess may only be used from the thread that created it. Every operation that
-	touches a process is therefore executed on this component's own thread (the
+	\note Thread affinity: the agent answers GraphQL requests on worker threads, but the
+	native process/pty handles may only be used from the thread that created them. Every
+	operation that touches them is therefore executed on this component's own thread (the
 	application thread) - see \ref RunOnComponentThread - while the session book keeping
 	is protected by \ref m_mutex so that read-only polling never has to leave the worker.
 
@@ -72,6 +134,7 @@ public:
 	virtual bool SendInput(const QByteArray& sessionId, const QString& data) override;
 	virtual bool CloseSession(const QByteArray& sessionId) override;
 	virtual bool InterruptSession(const QByteArray& sessionId) override;
+	virtual bool ResizeSession(const QByteArray& sessionId, int columns, int rows) override;
 	virtual QList<OutputChunk> GetOutput(
 				const QByteArray& sessionId,
 				qint64 fromSequence,
@@ -85,16 +148,11 @@ public:
 	virtual void OnComponentDestroyed() override;
 
 protected Q_SLOTS:
-	void OnReadyReadStandardOutput();
-	void OnReadyReadStandardError();
-	void OnProcessFinished(int exitCode, QProcess::ExitStatus exitStatus);
-	void OnProcessErrorOccurred(QProcess::ProcessError error);
 	void OnIdleTimeout();
 
 private:
 	struct Session
 	{
-		istd::TDelPtr<QProcess> processPtr;
 		ShellType shellType = ST_BASH;
 		QList<OutputChunk> chunks;
 		qint64 firstSequence = 0;
@@ -105,10 +163,27 @@ private:
 		QDateTime lastActivity;
 		// True after the ~60s idle warning was pushed; reset on real user/process activity.
 		bool idleWarningSent = false;
-		// Kept per stream so that a multi byte character split over two reads is decoded
-		// correctly instead of being turned into replacement characters.
-		QStringDecoder stdOutDecoder = QStringDecoder(QStringDecoder::Utf8);
-		QStringDecoder stdErrDecoder = QStringDecoder(QStringDecoder::Utf8);
+		// A real pty merges stdout+stderr onto one stream (both are the same fd/pipe),
+		// so only one decoder is needed; kept on the session so a multi-byte character
+		// split across two reads still decodes correctly.
+		QStringDecoder ptyDecoder = QStringDecoder(QStringDecoder::Utf8);
+
+#if defined(AGENTINO_TERMINAL_WIN)
+		HPCON hPC = nullptr;
+		PROCESS_INFORMATION processInfo{};
+		HANDLE pipeInWrite = nullptr;   // agent -> child stdin
+		HANDLE pipeOutRead = nullptr;   // child stdout/stderr -> agent
+		istd::TDelPtr<CTerminalPtyReaderThread> readerThreadPtr;
+		istd::TDelPtr<QWinEventNotifier> exitNotifierPtr;
+		// Both must be true before the session is finalized as finished - the reader
+		// draining the last output and the exit-code notifier can arrive in either order.
+		bool readerFinished = false;
+		bool processExited = false;
+#else
+		istd::TDelPtr<QProcess> processPtr;
+		int ptyMasterFd = -1;
+		istd::TDelPtr<QSocketNotifier> readNotifierPtr;
+#endif
 	};
 
 	/**
@@ -122,14 +197,24 @@ private:
 	QByteArray OpenSessionOnOwnThread(ShellType shellType, QString& errorMessage);
 	bool SendInputOnOwnThread(const QByteArray& sessionId, const QString& data);
 	bool InterruptSessionOnOwnThread(const QByteArray& sessionId);
+	bool ResizeSessionOnOwnThread(const QByteArray& sessionId, int columns, int rows);
+	/**
+		Write \p bytes to the session's pty verbatim - no newline massaging. Used by both
+		\ref SendInputOnOwnThread (which appends a newline first) and interrupt (a single
+		raw 0x03 byte must reach the pty with nothing appended after it).
+	*/
+	bool WriteRawOnOwnThread(Session& session, const QByteArray& bytes);
 	void AppendChunk(
 				const QByteArray& sessionId,
 				Session& session,
 				StreamType stream,
 				const QString& data,
 				bool updateActivity = true);
-	QByteArray FindSessionId(const QProcess* processPtr) const;
 	void RemoveSession(const QByteArray& sessionId);
+	// Marks the session finished/appends the SYSTEM chunk once every platform-specific
+	// shutdown signal for it has arrived (see the two bool flags on Session, Windows only -
+	// Unix has a single QProcess::finished signal and needs no such join).
+	void FinalizeIfDone(const QByteArray& sessionId, Session& session, int exitCode);
 
 private:
 	/** Maximum number of concurrently open sessions. */

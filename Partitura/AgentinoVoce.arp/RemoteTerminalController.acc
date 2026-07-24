@@ -110,6 +110,25 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
+        <Element Id="ResizeTerminalSessionPermissions" PackageId="ImtServerAppPck" ComponentId="SingleCommandPermissionsProvider">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CommandId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="ResizeTerminalSession"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>RemoteTerminal</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="CloseTerminalSessionPermissions" PackageId="ImtServerAppPck" ComponentId="SingleCommandPermissionsProvider">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
@@ -140,6 +159,7 @@
                                 <Value>OpenTerminalSessionPermissions</Value>
                                 <Value>SendTerminalInputPermissions</Value>
                                 <Value>InterruptTerminalSessionPermissions</Value>
+                                <Value>ResizeTerminalSessionPermissions</Value>
                                 <Value>CloseTerminalSessionPermissions</Value>
                             </Values>
                         </Data>
@@ -161,6 +181,7 @@
                                 <Value>OpenTerminalSession</Value>
                                 <Value>SendTerminalInput</Value>
                                 <Value>InterruptTerminalSession</Value>
+                                <Value>ResizeTerminalSession</Value>
                                 <Value>CloseTerminalSession</Value>
                             </Values>
                         </Data>
