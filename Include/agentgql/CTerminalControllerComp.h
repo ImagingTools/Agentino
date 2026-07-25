@@ -48,6 +48,10 @@ protected:
 				const sdl::V1_0::agentino::CSendTerminalInputGqlRequest& sendTerminalInputRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CSendTerminalRawInputResponse OnSendTerminalRawInput(
+				const sdl::V1_0::agentino::CSendTerminalRawInputGqlRequest& sendTerminalRawInputRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
 	virtual sdl::V1_0::agentino::CInterruptTerminalSessionResponse OnInterruptTerminalSession(
 				const sdl::V1_0::agentino::CInterruptTerminalSessionGqlRequest& interruptTerminalSessionRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,

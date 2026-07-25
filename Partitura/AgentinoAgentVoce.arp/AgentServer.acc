@@ -448,7 +448,6 @@
                                 <Value>AgentSubscribers/ServiceLogSubscriberController</Value>
                                 <Value>AgentSubscribers/AgentLogCollectionSubscriberController</Value>
                                 <Value>AgentSubscribers/AgentServicesRemoteSubscriberProxy</Value>
-                                <Value>AgentSubscribers/TerminalOutputPublisher</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

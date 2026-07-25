@@ -2,6 +2,10 @@
 #pragma once
 
 
+// Qt includes
+#include <QtCore/QMap>
+#include <QtCore/QMutex>
+
 // ImtCore includes
 #include <imtclientgql/TClientRequestManagerCompWrap.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Terminal_fwd.h>
@@ -19,6 +23,16 @@ namespace agentinogql
 	\ref CServiceControllerProxyComp and \ref CFileSystemControllerProxyComp), returning
 	the agent response unchanged. The actual shell process always runs on the agent
 	machine.
+
+	\note Session ownership: the RemoteTerminal permission alone only proves the caller
+	may use *some* terminal, not that they may touch *this* sessionId - a session is only
+	known to the agent by sessionId, with no per-caller identity at all (the server->agent
+	path strips x-authentication-token), so ownership must be enforced here, the one place
+	that sees both the authenticated caller (imtgql::IGqlContext::GetUserId(), via
+	gqlRequest.GetRequestContext()) and every per-session command. OnOpenTerminalSession
+	records the caller as the session's owner; every other per-session command checks it
+	before forwarding, fail-closed (a sessionId this instance never recorded ownership for -
+	e.g. after a server restart - is refused, not merely warned about).
 
 	\ingroup Terminal
 */
@@ -51,6 +65,10 @@ protected:
 				const sdl::V1_0::agentino::CSendTerminalInputGqlRequest& sendTerminalInputRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CSendTerminalRawInputResponse OnSendTerminalRawInput(
+				const sdl::V1_0::agentino::CSendTerminalRawInputGqlRequest& sendTerminalRawInputRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
 	virtual sdl::V1_0::agentino::CInterruptTerminalSessionResponse OnInterruptTerminalSession(
 				const sdl::V1_0::agentino::CInterruptTerminalSessionGqlRequest& interruptTerminalSessionRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
@@ -72,6 +90,20 @@ private:
 	*/
 	template <class SdlResponse>
 	SdlResponse ForwardToAgent(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const;
+
+	static QByteArray ExtractSessionId(const imtgql::CGqlRequest& gqlRequest);
+	static QByteArray ExtractUserId(const imtgql::CGqlRequest& gqlRequest);
+
+	/**
+		\return true if \p gqlRequest's sessionId (if it has one) is owned by its caller;
+		on false, \p errorMessage is set and the caller must not forward the request.
+		A request with no sessionId param (e.g. ListShellTypes) always passes.
+	*/
+	bool CheckSessionOwnership(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const;
+
+private:
+	mutable QMutex m_sessionOwnersMutex;
+	mutable QMap<QByteArray, QByteArray> m_sessionOwners; // sessionId -> owning userId
 };
 
 

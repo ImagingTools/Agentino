@@ -2,9 +2,6 @@
 #include <agentgql/CTerminalOutputPublisherComp.h>
 
 
-// std includes
-#include <limits>
-
 // Qt includes
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
@@ -59,24 +56,12 @@ bool CTerminalOutputPublisherComp::RegisterSubscription(
 		return false;
 	}
 
-	// Start the cursor at the current end of the buffer so only post-subscribe output
-	// is pushed. The GUI does one GetTerminalOutput catch-up for history.
-	qint64 cursor = 0;
-	if (m_terminalControllerCompPtr.IsValid()){
-		const QByteArray sessionId = ExtractSessionId(gqlRequest);
-		if (!sessionId.isEmpty()){
-			qint64 nextSequence = 0;
-			bool running = false;
-			int exitCode = -1;
-			m_terminalControllerCompPtr->GetOutput(
-						sessionId,
-						std::numeric_limits<qint64>::max(),
-						nextSequence,
-						running,
-						exitCode);
-			cursor = nextSequence;
-		}
-	}
+	// Cursor starts at the client-requested fromSequence: the first OnUpdate-driven push
+	// will then GetOutput(from = cursor), delivering everything at or after it, so any
+	// chunk produced in the gap between the GUI's GetTerminalOutput catch-up and this
+	// registration is still picked up rather than skipped. No push happens here (see the
+	// class note): real-time delivery is entirely OnUpdate-driven.
+	const qint64 cursor = ExtractFromSequence(gqlRequest);
 
 	QMutexLocker locker(&m_cursorMutex);
 	m_subscriptionCursors.insert(subscriptionId, cursor);
@@ -124,6 +109,25 @@ QByteArray CTerminalOutputPublisherComp::ExtractSessionId(const imtgql::CGqlRequ
 	}
 
 	return inputPtr->GetParamArgumentValue("sessionId").toByteArray();
+}
+
+
+qint64 CTerminalOutputPublisherComp::ExtractFromSequence(const imtgql::CGqlRequest& gqlRequest)
+{
+	const imtgql::CGqlParamObject* inputPtr = gqlRequest.GetParamObject("input");
+	if (inputPtr == nullptr){
+		return 0;
+	}
+
+	const QVariant value = inputPtr->GetParamArgumentValue("fromSequence");
+	if (!value.isValid() || value.isNull()){
+		return 0;
+	}
+
+	bool ok = false;
+	const qint64 fromSequence = value.toLongLong(&ok);
+
+	return (ok && fromSequence > 0) ? fromSequence : 0;
 }
 
 
@@ -203,6 +207,7 @@ void CTerminalOutputPublisherComp::PublishForSession(const QByteArray& sessionId
 			payload.insert(QStringLiteral("exitCode"), exitCode);
 
 			const QByteArray body = QJsonDocument(payload).toJson(QJsonDocument::Compact);
+
 			if (!PushDataToSubscriber(subscriptionId, s_commandId, body, *networkRequestPtr)){
 				SendErrorMessage(
 							0,
@@ -216,6 +221,7 @@ void CTerminalOutputPublisherComp::PublishForSession(const QByteArray& sessionId
 			m_subscriptionCursors.insert(subscriptionId, nextSequence);
 		}
 	}
+
 }
 
 

@@ -10,6 +10,7 @@
 // ImtCore includes
 #include <imtgql/CGqlContext.h>
 #include <imtgql/CGqlRequest.h>
+#include <imtgql/IGqlContext.h>
 
 
 namespace agentinogql
@@ -93,6 +94,26 @@ bool CTerminalOutputSubscriberProxyComp::RegisterSubscription(
 		return false;
 	}
 
+	// Ownership: the first user to subscribe to a sessionId's output claims it, so a
+	// second user who merely learns the sessionId (e.g. from a log) cannot attach to
+	// someone else's terminal output. Only checked (read-only) here - the claim itself is
+	// recorded after BaseClass::RegisterSubscription actually succeeds, so a rejected
+	// registration never leaks a phantom claim that UnregisterSubscription cannot release.
+	const QByteArray sessionId = ExtractSessionId(gqlRequest);
+	const imtgql::IGqlContext* gqlContextPtr = gqlRequest.GetRequestContext();
+	const QByteArray userId = gqlContextPtr != nullptr ? gqlContextPtr->GetUserId() : QByteArray();
+
+	if (!sessionId.isEmpty()){
+		QMutexLocker stateLocker(&m_stateMutex);
+
+		const QByteArray existingOwner = m_sessionSubscribers.value(sessionId);
+		if (!existingOwner.isEmpty() && existingOwner != userId){
+			errorMessage = QStringLiteral("This terminal session belongs to another user");
+
+			return false;
+		}
+	}
+
 	const bool retVal = BaseClass::RegisterSubscription(subscriptionId, gqlRequest, networkRequest, errorMessage);
 	if (!retVal){
 		return false;
@@ -108,7 +129,18 @@ bool CTerminalOutputSubscriberProxyComp::RegisterSubscription(
 		return false;
 	}
 
+	QMutexLocker stateLocker(&m_stateMutex);
 	m_remoteSubscriptions.insert(remoteSubscriptionId, subscriptionId);
+	if (!sessionId.isEmpty()){
+		m_sessionSubscribers.insert(sessionId, userId);
+		m_subscriptionSessions.insert(subscriptionId, sessionId);
+	}
+	SendInfoMessage(
+				0,
+				QString("[diag] terminal relay registered session=%1 agentSub=%2 guiSub=%3")
+							.arg(QString::fromUtf8(sessionId), QString::fromUtf8(remoteSubscriptionId),
+									 QString::fromUtf8(subscriptionId)),
+				"CTerminalOutputSubscriberProxyComp");
 
 	return true;
 }
@@ -122,12 +154,22 @@ bool CTerminalOutputSubscriberProxyComp::UnregisterSubscription(const QByteArray
 
 	const bool retVal = BaseClass::UnregisterSubscription(subscriptionId);
 	if (retVal){
+		QMutexLocker stateLocker(&m_stateMutex);
+
 		for (auto it = m_remoteSubscriptions.constBegin(); it != m_remoteSubscriptions.constEnd(); ++it){
 			if (it.value() == subscriptionId){
-				m_subscriptionManagerCompPtr->UnregisterSubscription(it.key());
-				m_remoteSubscriptions.remove(it.key());
+				const QByteArray remoteSubscriptionId = it.key();
+				stateLocker.unlock();
+				m_subscriptionManagerCompPtr->UnregisterSubscription(remoteSubscriptionId);
+				stateLocker.relock();
+				m_remoteSubscriptions.remove(remoteSubscriptionId);
 				break;
 			}
+		}
+
+		const QByteArray sessionId = m_subscriptionSessions.take(subscriptionId);
+		if (!sessionId.isEmpty()){
+			m_sessionSubscribers.remove(sessionId);
 		}
 	}
 
@@ -141,6 +183,9 @@ void CTerminalOutputSubscriberProxyComp::OnResponseReceived(
 			const QByteArray& subscriptionId,
 			const QByteArray& subscriptionData)
 {
+	// Relayed synchronously on the subscription manager's delivery thread, exactly like
+	// CAgentsSubscriberProxyControllerComp - no owner-thread hop (that dropped every push
+	// after the first). m_stateMutex keeps the map read safe against register/unregister.
 	const QJsonDocument document = QJsonDocument::fromJson(subscriptionData);
 	const QStringList keys = document.object().keys();
 	if (keys.isEmpty()){
@@ -148,7 +193,20 @@ void CTerminalOutputSubscriberProxyComp::OnResponseReceived(
 	}
 
 	const QByteArray subscriptionTypeId = keys[0].toUtf8();
-	const QByteArray localSubscriptionId = m_remoteSubscriptions.value(subscriptionId);
+
+	QByteArray localSubscriptionId;
+	{
+		QMutexLocker stateLocker(&m_stateMutex);
+		localSubscriptionId = m_remoteSubscriptions.value(subscriptionId);
+	}
+
+	// TEMP DIAGNOSTIC: confirms the server received a push from the agent and whether it
+	// maps to a live GUI subscription - remove once resolved.
+	SendInfoMessage(0, QString("[diag] relay recv type=%1 remoteSub=%2 -> guiSub=%3 (%4 bytes)")
+				.arg(QString::fromUtf8(subscriptionTypeId), QString::fromUtf8(subscriptionId),
+					localSubscriptionId.isEmpty() ? QStringLiteral("<none>") : QString::fromUtf8(localSubscriptionId))
+				.arg(subscriptionData.size()), "CTerminalOutputSubscriberProxyComp");
+
 	if (localSubscriptionId.isEmpty()){
 		return;
 	}
@@ -158,6 +216,8 @@ void CTerminalOutputSubscriberProxyComp::OnResponseReceived(
 
 	// Push only to the GUI subscription that opened this agent subscription — do not
 	// PublishData (broadcast) or every open terminal page would receive every session.
+	// The push runs while holding the base m_mutex so the stored networkRequest cannot be
+	// freed by a concurrent socket disconnect mid-push (see CGqlPublisherCompBase).
 	QMutexLocker locker(&m_mutex);
 
 	for (const RequestNetworks& entry : m_registeredSubscribers){
@@ -188,6 +248,21 @@ void CTerminalOutputSubscriberProxyComp::OnSubscriptionStatusChanged(
 			const SubscriptionStatus& /*status*/,
 			const QString& /*message*/)
 {
+	// The subscription manager only ever reports SS_REGISTERED here (never a loss), so
+	// there is nothing actionable to relay - matching CAgentsSubscriberProxyControllerComp.
+	// Detecting a genuine server<->agent drop needs the agent-connection status path
+	// (as in CAgentChangeObserverComp), not this callback.
+}
+
+
+QByteArray CTerminalOutputSubscriberProxyComp::ExtractSessionId(const imtgql::CGqlRequest& gqlRequest)
+{
+	const imtgql::CGqlParamObject* inputPtr = gqlRequest.GetParamObject("input");
+	if (inputPtr == nullptr){
+		return QByteArray();
+	}
+
+	return inputPtr->GetParamArgumentValue("sessionId").toByteArray();
 }
 
 

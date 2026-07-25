@@ -3,8 +3,10 @@
 
 
 // Qt includes
+#include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
+#include <QtCore/QProcessEnvironment>
 #include <QtCore/QStandardPaths>
 #include <QtCore/QThread>
 #include <QtCore/QUuid>
@@ -130,6 +132,18 @@ bool CTerminalSessionManagerComp::SendInput(const QByteArray& sessionId, const Q
 
 	RunOnComponentThread([&](){
 		retVal = SendInputOnOwnThread(sessionId, data);
+	});
+
+	return retVal;
+}
+
+
+bool CTerminalSessionManagerComp::SendRawInput(const QByteArray& sessionId, const QString& data)
+{
+	bool retVal = false;
+
+	RunOnComponentThread([&](){
+		retVal = SendRawInputOnOwnThread(sessionId, data);
 	});
 
 	return retVal;
@@ -381,16 +395,14 @@ QByteArray CTerminalSessionManagerComp::OpenSessionOnOwnThread(ShellType shellTy
 
 		return QByteArray();
 	}
-
 	HPCON hPC = nullptr;
 	const COORD initialSize{80, 24};
 	const HRESULT createResult = ::CreatePseudoConsole(initialSize, pipeInRead, pipeOutWrite, 0, &hPC);
-	// ConPTY duplicated the ends it needs; our copies are no longer required either way.
-	::CloseHandle(pipeInRead);
-	::CloseHandle(pipeOutWrite);
 	if (FAILED(createResult)){
+		::CloseHandle(pipeInRead);
 		::CloseHandle(pipeInWrite);
 		::CloseHandle(pipeOutRead);
+		::CloseHandle(pipeOutWrite);
 		errorMessage = QString("Unable to open terminal session: CreatePseudoConsole failed (0x%1)")
 					.arg(quint32(createResult), 8, 16, QLatin1Char('0'));
 		SendErrorMessage(0, errorMessage, "CTerminalSessionManagerComp");
@@ -400,6 +412,10 @@ QByteArray CTerminalSessionManagerComp::OpenSessionOnOwnThread(ShellType shellTy
 
 	STARTUPINFOEXW startupInfo{};
 	startupInfo.StartupInfo.cb = sizeof(startupInfo);
+	startupInfo.StartupInfo.dwFlags = STARTF_USESTDHANDLES;
+	startupInfo.StartupInfo.hStdInput = nullptr;
+	startupInfo.StartupInfo.hStdOutput = nullptr;
+	startupInfo.StartupInfo.hStdError = nullptr;
 
 	SIZE_T attributeListSize = 0;
 	::InitializeProcThreadAttributeList(nullptr, 1, 0, &attributeListSize);
@@ -421,28 +437,32 @@ QByteArray CTerminalSessionManagerComp::OpenSessionOnOwnThread(ShellType shellTy
 			std::free(startupInfo.lpAttributeList);
 		}
 		::ClosePseudoConsole(hPC);
+		::CloseHandle(pipeInRead);
 		::CloseHandle(pipeInWrite);
 		::CloseHandle(pipeOutRead);
+		::CloseHandle(pipeOutWrite);
 		errorMessage = QStringLiteral("Unable to open terminal session: failed to prepare the pseudo console attribute list");
 		SendErrorMessage(0, errorMessage, "CTerminalSessionManagerComp");
 
 		return QByteArray();
 	}
 
-	// Arguments here are fixed flags chosen by ResolveShellProgram, never user input,
-	// so this simple quoting is safe (no embedded quotes/spaces to escape).
-	QString commandLine = QStringLiteral("\"%1\"").arg(program);
+	// Arguments here are fixed switches chosen by ResolveShellProgram, never user input.
+	const QString nativeProgram = QDir::toNativeSeparators(program);
+	QString commandLine = QStringLiteral("\"%1\"").arg(nativeProgram);
 	for (const QString& argument: arguments){
-		commandLine += QStringLiteral(" \"%1\"").arg(argument);
+		commandLine += QLatin1Char(' ') + argument;
 	}
 	std::wstring commandLineBuffer = commandLine.toStdWString();
 	commandLineBuffer.push_back(L'\0'); // CreateProcessW requires a mutable, writable buffer
 
-	const std::wstring workingDirectory = QDir::toNativeSeparators(QDir::homePath()).toStdWString();
+	const std::wstring applicationName = nativeProgram.toStdWString();
+	const QString workingDirectoryPath = QCoreApplication::applicationDirPath();
+	const std::wstring workingDirectory = QDir::toNativeSeparators(workingDirectoryPath).toStdWString();
 
 	PROCESS_INFORMATION processInfo{};
 	const BOOL created = ::CreateProcessW(
-				nullptr,
+				applicationName.c_str(),
 				commandLineBuffer.data(),
 				nullptr,
 				nullptr,
@@ -455,6 +475,9 @@ QByteArray CTerminalSessionManagerComp::OpenSessionOnOwnThread(ShellType shellTy
 
 	::DeleteProcThreadAttributeList(startupInfo.lpAttributeList);
 	std::free(startupInfo.lpAttributeList);
+	// ConPTY needs these channel ends until the attached client has been created.
+	::CloseHandle(pipeInRead);
+	::CloseHandle(pipeOutWrite);
 
 	if (!created){
 		::ClosePseudoConsole(hPC);
@@ -498,7 +521,7 @@ QByteArray CTerminalSessionManagerComp::OpenSessionOnOwnThread(ShellType shellTy
 		}
 		const QString decoded = liveSessionPtr->ptyDecoder.decode(data);
 		if (!decoded.isEmpty()){
-			AppendChunk(sessionId, *liveSessionPtr, STREAM_STDOUT, decoded);
+			QueueOutput(sessionId, *liveSessionPtr, decoded);
 		}
 	});
 	connect(rawSessionPtr->readerThreadPtr.GetPtr(), &CTerminalPtyReaderThread::ReaderFinished, this,
@@ -508,6 +531,7 @@ QByteArray CTerminalSessionManagerComp::OpenSessionOnOwnThread(ShellType shellTy
 		if (liveSessionPtr == nullptr){
 			return;
 		}
+		FlushPendingOutput(sessionId, *liveSessionPtr);
 		liveSessionPtr->readerFinished = true;
 		FinalizeIfDone(sessionId, *liveSessionPtr, liveSessionPtr->exitCode);
 	});
@@ -518,12 +542,14 @@ QByteArray CTerminalSessionManagerComp::OpenSessionOnOwnThread(ShellType shellTy
 				[this, sessionId](){
 		QMutexLocker exitLocker(&m_mutex);
 		Session* liveSessionPtr = m_sessionMap.value(sessionId, nullptr);
-		if (liveSessionPtr == nullptr){
+		if (liveSessionPtr == nullptr || liveSessionPtr->processExited){
 			return;
 		}
+		liveSessionPtr->exitNotifierPtr->setEnabled(false);
 		DWORD winExitCode = 0;
 		::GetExitCodeProcess(liveSessionPtr->processInfo.hProcess, &winExitCode);
 		liveSessionPtr->processExited = true;
+		liveSessionPtr->exitCode = int(winExitCode);
 		FinalizeIfDone(sessionId, *liveSessionPtr, int(winExitCode));
 	});
 
@@ -628,7 +654,10 @@ QByteArray CTerminalSessionManagerComp::OpenSessionOnOwnThread(ShellType shellTy
 	QProcess* processPtr = sessionPtr->processPtr.GetPtr();
 	processPtr->setProgram(program);
 	processPtr->setArguments(arguments);
-	processPtr->setWorkingDirectory(QDir::homePath());
+	processPtr->setWorkingDirectory(QCoreApplication::applicationDirPath());
+	QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
+	environment.insert(QStringLiteral("TERM"), QStringLiteral("xterm"));
+	processPtr->setProcessEnvironment(environment);
 
 	// Runs IN the forked child, after fork()/before exec() - async-signal-safe calls
 	// only (no Qt, no heap allocation). slaveFd is a plain int, captured by value.
@@ -799,17 +828,44 @@ bool CTerminalSessionManagerComp::SendInputOnOwnThread(const QByteArray& session
 
 		return false;
 	}
-
-	// The user input is written verbatim to the pty. A trailing new line is added only
-	// when missing so the typed command is actually executed by the shell.
+	// The user input is written verbatim to the pty. Add the platform's Enter key
+	// when missing so the shell executes the command.
 	QString payload = data;
+#if defined(Q_OS_WIN)
+	if (!payload.endsWith('\r')){
+		while (payload.endsWith('\r') || payload.endsWith('\n')){
+			payload.chop(1);
+		}
+		payload.append('\r');
+	}
+#else
 	if (!payload.endsWith('\n')){
 		payload.append('\n');
 	}
+#endif
 
 	const bool written = WriteRawOnOwnThread(*sessionPtr, payload.toUtf8());
 	sessionPtr->lastActivity = QDateTime::currentDateTimeUtc();
 	sessionPtr->idleWarningSent = false;
+
+	return written;
+}
+
+
+bool CTerminalSessionManagerComp::SendRawInputOnOwnThread(const QByteArray& sessionId, const QString& data)
+{
+	QMutexLocker locker(&m_mutex);
+
+	Session* sessionPtr = m_sessionMap.value(sessionId, nullptr);
+	if (sessionPtr == nullptr || sessionPtr->finished || data.length() > MaxInputLength){
+		return false;
+	}
+
+	const bool written = WriteRawOnOwnThread(*sessionPtr, data.toUtf8());
+	if (written){
+		sessionPtr->lastActivity = QDateTime::currentDateTimeUtc();
+		sessionPtr->idleWarningSent = false;
+	}
 
 	return written;
 }
@@ -876,8 +932,10 @@ bool CTerminalSessionManagerComp::ResolveShellProgram(ShellType shellType, QStri
 #if defined(Q_OS_WIN)
 	switch (shellType){
 	case ST_CMD:
-		// ConPTY presents a real console, so cmd.exe needs no special arguments.
 		program = QStandardPaths::findExecutable(QStringLiteral("cmd.exe"));
+		if (!program.isEmpty()){
+			arguments << QStringLiteral("/D");
+		}
 		break;
 	case ST_POWERSHELL:
 		program = QStandardPaths::findExecutable(QStringLiteral("powershell.exe"));
@@ -953,6 +1011,40 @@ void CTerminalSessionManagerComp::AppendChunk(
 	istd::IChangeable::ChangeSet changeSet(istd::IChangeable::CF_ANY);
 	changeSet.SetChangeInfo(CN_TERMINAL_OUTPUT_CHANGED, QVariant(sessionId));
 	istd::CChangeNotifier notifier(this, &changeSet);
+}
+
+
+void CTerminalSessionManagerComp::QueueOutput(
+			const QByteArray& sessionId,
+			Session& session,
+			const QString& data)
+{
+	session.pendingOutput.append(data);
+	if (session.outputFlushScheduled){
+		return;
+	}
+
+	session.outputFlushScheduled = true;
+	QTimer::singleShot(OutputFlushIntervalMs, this, [this, sessionId](){
+		QMutexLocker locker(&m_mutex);
+		Session* sessionPtr = m_sessionMap.value(sessionId, nullptr);
+		if (sessionPtr != nullptr){
+			FlushPendingOutput(sessionId, *sessionPtr);
+		}
+	});
+}
+
+
+void CTerminalSessionManagerComp::FlushPendingOutput(const QByteArray& sessionId, Session& session)
+{
+	session.outputFlushScheduled = false;
+	if (session.pendingOutput.isEmpty()){
+		return;
+	}
+
+	QString output;
+	output.swap(session.pendingOutput);
+	AppendChunk(sessionId, session, STREAM_STDOUT, output);
 }
 
 

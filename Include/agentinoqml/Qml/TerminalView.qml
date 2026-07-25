@@ -275,6 +275,7 @@ Item {
 		ModalDialogManager.openDialog(shellMenuComp, {
 			"x": point.x,
 			"model": shellModel,
+			"terminalView": root,
 			"width": Style.sizeHintXXS
 		});
 	}
@@ -402,13 +403,14 @@ Item {
 
 		PopupMenuDialog {
 			id: shellPopup;
+			property var terminalView: null;
 
 			opacity: 0;
 			itemHeight: Style.controlHeightM;
 			radius: Style.radiusM;
 			hiddenBackground: true;
 			shownItemsCount: 6;
-			selectedIndex: root.preferredShellIndex();
+			selectedIndex: shellPopup.terminalView ? shellPopup.terminalView.preferredShellIndex() : -1;
 			nameId: "name";
 
 			onHeightChanged: {
@@ -436,9 +438,9 @@ Item {
 				if (index < 0){
 					return;
 				}
-				let typeId = shellModel.getData("id", index);
-				let name = shellModel.getData("name", index);
-				root.openNewTab(typeId, name);
+				let typeId = shellPopup.model.getData("id", index);
+				let name = shellPopup.model.getData("name", index);
+				shellPopup.terminalView.openNewTab(typeId, name);
 			}
 		}
 	}
@@ -543,6 +545,13 @@ Item {
 			anchors.verticalCenter: parent.verticalCenter;
 			height: parent.height;
 			spacing: 0;
+
+			BusyIndicator {
+				anchors.verticalCenter: parent.verticalCenter;
+				width: Style.iconSizeS;
+				height: Style.iconSizeS;
+				visible: shellTypesController.requestInFlight;
+			}
 
 			Button {
 				id: newTabButton;

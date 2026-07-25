@@ -39,7 +39,6 @@ typedef icomp::TMakeComponentWrap<
 					agentinodata::IAgentInfo,
 					iser::ISerializable,
 					istd::IChangeable> AgentInfo;
-// ServiceController is the event-sourced supervisor (Architecture Audit §4.6 cutover).
 typedef icomp::TModelCompWrap<agentinodata::CServiceSupervisorComp> ServiceController;
 typedef icomp::TModelCompWrap<agentinodata::CTerminalSessionManagerComp> TerminalSessionManager;
 typedef icomp::TModelCompWrap<agentinodata::CAgentServiceManagerComp> AgentServiceManager;

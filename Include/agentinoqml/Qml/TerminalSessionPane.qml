@@ -40,6 +40,8 @@ Item {
 
 	// Plain text for copy/download (no HTML).
 	property string plainLog: "";
+	property string richLog: "";
+	property bool startupOutputPhase: true;
 
 	property var commandHistory: [];
 	property int historyIndex: -1;
@@ -50,9 +52,6 @@ Item {
 
 	readonly property int idleCloseExitCode: -2;
 	readonly property int manualCloseExitCode: -1;
-
-	// Cross-platform mono stack: Windows (Courier New), Linux (DejaVu / Liberation), fallbacks.
-	readonly property string monoFontFamily: "Courier New, DejaVu Sans Mono, Liberation Mono, Courier, monospace";
 
 	// ── Full-screen (alternate screen buffer) emulation state ───────────────
 	// Curses-style apps (vim, mc, top) switch the pty into the "alternate screen"
@@ -78,6 +77,16 @@ Item {
 	// Held-back tail of a possibly-split alt-screen-transition sequence
 	// (\x1b[?1049h/l, \x1b[?47h/l) so it is not misread across two chunks.
 	property string routerPendingPartial: "";
+
+	// ── Primary-screen live line (raw keyboard passthrough) ─────────────────
+	// With raw passthrough every keystroke round-trips to the shell, which echoes it and
+	// edits the current command line in place (backspace, \r rewrite for Tab-completion /
+	// history recall). The scrollback model is append-only and cannot show in-place edits,
+	// so the still-unterminated last line is held here and rendered live (below the
+	// committed scrollback, with a cursor block) instead of being appended as fragments;
+	// it is committed to the scrollback only when its terminating newline arrives.
+	property string primaryBuffer: "";
+	property string currentLineHtml: "";
 
 	// ── ANSI / HTML helpers ─────────────────────────────────────────────────
 
@@ -258,6 +267,7 @@ Item {
 		root.altSgrState = {color: null, bold: false};
 		root.altPendingPartial = "";
 		root.resetGrid(root.gridCols, root.gridRows);
+		gridView.forceActiveFocus();
 	}
 
 	function exitAltScreen(){
@@ -266,6 +276,62 @@ Item {
 		}
 		root.altScreenActive = false;
 		root.screenVersion++;
+		if (controller.running && !controller.connectionLost){
+			inputField.forceActiveFocus();
+		}
+	}
+
+	function vtInputForKey(event){
+		if ((event.modifiers & Qt.ControlModifier)
+				&& event.key >= Qt.Key_A && event.key <= Qt.Key_Z){
+			return String.fromCharCode(event.key - Qt.Key_A + 1);
+		}
+
+		switch (event.key){
+		case Qt.Key_Up: return "\x1b[A";
+		case Qt.Key_Down: return "\x1b[B";
+		case Qt.Key_Right: return "\x1b[C";
+		case Qt.Key_Left: return "\x1b[D";
+		case Qt.Key_Home: return "\x1b[H";
+		case Qt.Key_End: return "\x1b[F";
+		case Qt.Key_PageUp: return "\x1b[5~";
+		case Qt.Key_PageDown: return "\x1b[6~";
+		case Qt.Key_Insert: return "\x1b[2~";
+		case Qt.Key_Delete: return "\x1b[3~";
+		case Qt.Key_F1: return "\x1bOP";
+		case Qt.Key_F2: return "\x1bOQ";
+		case Qt.Key_F3: return "\x1bOR";
+		case Qt.Key_F4: return "\x1bOS";
+		case Qt.Key_F5: return "\x1b[15~";
+		case Qt.Key_F6: return "\x1b[17~";
+		case Qt.Key_F7: return "\x1b[18~";
+		case Qt.Key_F8: return "\x1b[19~";
+		case Qt.Key_F9: return "\x1b[20~";
+		case Qt.Key_F10: return "\x1b[21~";
+		case Qt.Key_Backspace: return "\x7f";
+		case Qt.Key_Backtab: return "\x1b[Z";
+		case Qt.Key_Tab: return "\t";
+		case Qt.Key_Return:
+		case Qt.Key_Enter: return "\r";
+		case Qt.Key_Escape: return "\x1b";
+		}
+
+		if (event.text.length === 0){
+			return "";
+		}
+		return (event.modifiers & Qt.AltModifier) ? "\x1b" + event.text : event.text;
+	}
+
+	function sendAltScreenKey(event){
+		if (!root.altScreenActive || !controller.running || controller.connectionLost){
+			return;
+		}
+
+		let data = root.vtInputForKey(event);
+		if (data.length > 0){
+			controller.sendRawInput(data);
+			event.accepted = true;
+		}
 	}
 
 	function scrollGridUp(){
@@ -676,7 +742,7 @@ Item {
 					root.feedAltScreenData(segment);
 				}
 				else{
-					root.appendScrollbackText(segment, streamId);
+					root.feedPrimary(segment, streamId);
 				}
 			}
 
@@ -705,12 +771,12 @@ Item {
 		if (partialIdx >= 0){
 			let visible = tail.substring(0, partialIdx);
 			if (visible.length > 0){
-				root.appendScrollbackText(visible, streamId);
+				root.feedPrimary(visible, streamId);
 			}
 			root.routerPendingPartial = tail.substring(partialIdx);
 		}
 		else{
-			root.appendScrollbackText(tail, streamId);
+			root.feedPrimary(tail, streamId);
 		}
 	}
 
@@ -732,6 +798,10 @@ Item {
 	function clearOutput(){
 		outputModel.clear();
 		root.plainLog = "";
+		root.richLog = "";
+		root.primaryBuffer = "";
+		root.currentLineHtml = "";
+		root.startupOutputPhase = true;
 		root.altScreenActive = false;
 		root.routerPendingPartial = "";
 		root.altPendingPartial = "";
@@ -764,8 +834,68 @@ Item {
 		root.routerPendingPartial = "";
 	}
 
+	// Primary-screen VT stream: accumulate until a newline terminates one or more lines,
+	// commit those (resolved) to the scrollback, and keep the trailing unterminated line as
+	// the live line. Command output (lines ending in \n) still renders exactly as before;
+	// only the interactive prompt+typing line is now shown live.
+	function feedPrimary(text, streamId){
+		root.primaryBuffer += text;
+
+		let nl = root.primaryBuffer.lastIndexOf("\n");
+		if (nl >= 0){
+			let completed = root.primaryBuffer.substring(0, nl);
+			root.primaryBuffer = root.primaryBuffer.substring(nl + 1);
+
+			let lines = completed.split("\n");
+			let out = "";
+			for (let k = 0; k < lines.length; ++k){
+				out += root.resolvePrimaryLine(lines[k]) + "\n";
+			}
+			root.appendScrollbackText(out, streamId);
+		}
+
+		root.currentLineHtml = root.renderLiveLine(root.primaryBuffer, streamId);
+		scrollToEndTimer.restart();
+	}
+
+	// Collapses one raw line's in-place edits to the text finally visible on it: take only
+	// what follows the last carriage return (cmd rewrites a line as "\r<new content>"), drop
+	// non-SGR escape sequences (cursor moves, erase-line, OSC titles) while keeping SGR
+	// colour codes, then fold backspaces. Good enough for typing echo, backspace and
+	// Tab/history line-rewrites without a full cell-grid emulator.
+	function resolvePrimaryLine(raw){
+		let s = String(raw);
+		let cr = s.lastIndexOf("\r");
+		if (cr >= 0){
+			s = s.substring(cr + 1);
+		}
+		s = s.replace(/\x1b\][^\x07]*(?:\x07|\x1b\\)/g, "");
+		s = s.replace(/\x1b\[[0-9;?]*[A-Za-ln-z]/g, "");
+
+		let result = "";
+		for (let i = 0; i < s.length; ++i){
+			if (s[i] === "\b"){
+				result = result.slice(0, -1);
+			}
+			else{
+				result += s[i];
+			}
+		}
+		return result;
+	}
+
+	function renderLiveLine(raw, streamId){
+		let resolved = root.resolvePrimaryLine(raw);
+		let html = resolved.length > 0 ? root.ansiToHtml(resolved, root.streamColor(streamId)) : "";
+		if (!controller.running || controller.connectionLost){
+			return html;
+		}
+		// Trailing block cursor so the caret is visible where the shell expects input.
+		return html + "<span style=\"background-color:" + Style.textSelectedColor + ";color:#ffffff\"> </span>";
+	}
+
 	function appendScrollbackText(text, streamId){
-		// Split into lines for ListView virtualisation (keep trailing empty only if ends with \n).
+		// Keep a bounded line model so line count and rich-text selection stay in sync.
 		let parts = String(text).split("\n");
 		let endsWithNl = String(text).endsWith("\n");
 		let lineCount = endsWithNl ? parts.length - 1 : parts.length;
@@ -773,17 +903,33 @@ Item {
 
 		for (let i = 0; i < lineCount; ++i){
 			let line = parts[i];
+			let visibleLine = line
+						.replace(/\x1b\[[0-9;?]*[A-Za-z]/g, "")
+						.replace(/\x1b\][^\x07]*(?:\x07|\x1b\\)/g, "")
+						.replace(/[\x00-\x20\x7f]/g, "");
+			if (root.startupOutputPhase && streamId !== "SYSTEM" && visibleLine.length === 0){
+				continue;
+			}
 			// Re-add newline for all but last incomplete line unless source ended with \n.
 			let display = line + ((i < lineCount - 1 || endsWithNl) ? "\n" : "");
 			if (display.length === 0){
 				continue;
 			}
 			let html = root.ansiToHtml(display, color);
-			outputModel.append({"plain": display, "html": html, "stream": streamId});
+			outputModel.append({"html": html});
+			root.richLog += html;
 		}
 
+		let trimmed = false;
 		while (outputModel.count > root.maxOutputLines){
 			outputModel.remove(0);
+			trimmed = true;
+		}
+		if (trimmed){
+			root.richLog = "";
+			for (let index = 0; index < outputModel.count; ++index){
+				root.richLog += outputModel.get(index).html;
+			}
 		}
 
 		scrollToEndTimer.restart();
@@ -871,7 +1017,10 @@ Item {
 	}
 
 	function submitCommand(){
-		if (!controller.running || controller.connectionLost){
+		// commandInFlight: refuse a new line until the previous SendTerminalInput is acked,
+		// so commands are delivered to the shell strictly one at a time (see the input
+		// field's readOnly / the Send button's enabled bindings, which mirror this).
+		if (!controller.running || controller.connectionLost || controller.commandInFlight){
 			return;
 		}
 
@@ -882,7 +1031,8 @@ Item {
 		}
 
 		root.pushCommandHistory(command);
-		// Backend appends trailing '\n' so the shell executes the line.
+		root.startupOutputPhase = false;
+		// Backend appends the platform-specific Enter sequence so the shell executes the line.
 		controller.sendInput(command);
 		inputField.text = "";
 		inputField.forceActiveFocus();
@@ -935,7 +1085,11 @@ Item {
 			logFileIO.source = filePath;
 		}
 
-		logFileIO.write(root.plainLog);
+		// Prefix a UTF-8 BOM (U+FEFF). The log holds decoded Unicode (Cyrillic, box-drawing,
+		// etc.); FileIO.write emits the string's UTF-8 bytes as-is, and without the BOM a
+		// Windows editor opens it in the local ANSI code page and shows mojibake. The BOM
+		// makes the UTF-8 encoding explicit so the saved file reads exactly as on screen.
+		logFileIO.write("\uFEFF" + root.plainLog);
 		root.showActionHint(qsTr("Log saved"));
 	}
 
@@ -989,6 +1143,9 @@ Item {
 		if (controller.busy){
 			return qsTr("Working…");
 		}
+		if (controller.requestInFlight){
+			return qsTr("Sending request…");
+		}
 		if (controller.running){
 			return qsTr("Session active · idle warning ~1 min before 15 min close · ↑/↓ history");
 		}
@@ -1006,6 +1163,9 @@ Item {
 			return Style.imaginToolsAccentColor;
 		}
 		if (controller.busy){
+			return Style.highlightColor;
+		}
+		if (controller.requestInFlight){
 			return Style.highlightColor;
 		}
 		if (controller.running){
@@ -1032,14 +1192,28 @@ Item {
 		return n === 1 ? qsTr("1 line") : qsTr("%1 lines").arg(n);
 	}
 
+	// Label for the top-right activity popup, describing the request currently in flight.
+	function requestPopupLabel(){
+		if (controller.busy && !controller.running){
+			return qsTr("Opening session…");
+		}
+		if (controller.closeInFlight){
+			return qsTr("Closing session…");
+		}
+		if (controller.commandInFlight){
+			return qsTr("Sending command…");
+		}
+		return qsTr("Working…");
+	}
+
 	// Tells the agent's pty the GUI's visible character grid so full-screen/curses
 	// programs (vim, mc, top) draw at the right size instead of assuming 80x24.
 	function sendTerminalSize(){
 		if (!controller.running || root.charWidth <= 0 || root.charHeight <= 0){
 			return;
 		}
-		let columns = Math.max(1, Math.floor(outputListView.width / root.charWidth));
-		let rows = Math.max(1, Math.floor(outputListView.height / root.charHeight));
+		let columns = Math.max(1, Math.floor(outputFlickable.width / root.charWidth));
+		let rows = Math.max(1, Math.floor(outputFlickable.height / root.charHeight));
 		root.applyLocalGridSize(columns, rows);
 		controller.resizeSession(columns, rows);
 	}
@@ -1076,7 +1250,7 @@ Item {
 		visible: false;
 		text: "MMMMMMMMMMMMMMMMMMMM";
 		wrapMode: Text.NoWrap;
-		font.family: root.monoFontFamily;
+		font.family: Style.fontFamily
 		font.pixelSize: Style.fontSizeM;
 	}
 
@@ -1103,8 +1277,8 @@ Item {
 		interval: 0;
 		repeat: false;
 		onTriggered: {
-			if (outputListView.contentHeight > outputListView.height){
-				outputListView.positionViewAtEnd();
+			if (outputFlickable.contentHeight > outputFlickable.height){
+				outputFlickable.contentY = outputFlickable.contentHeight - outputFlickable.height;
 			}
 		}
 	}
@@ -1193,6 +1367,11 @@ Item {
 			var query = Gql.GqlRequest("subscription", gqlCommandId);
 			var inputParams = Gql.GqlObject("input");
 			inputParams.InsertField("sessionId", controller.sessionId);
+			// Re-read at each registerSubscription() call (initial open, reconnect, or the
+			// resubscribe-after-drop path) - the publisher pushes every buffered chunk from
+			// here onward as soon as it registers, so this is what makes the subscribe call
+			// itself double as catch-up, with no separate query needed to close the gap.
+			inputParams.InsertField("fromSequence", controller.nextSequence);
 			query.AddParam(inputParams);
 
 			query.AddField(Gql.GqlObject("sessionId"));
@@ -1206,6 +1385,7 @@ Item {
 			query.AddField(Gql.GqlObject("nextSequence"));
 			query.AddField(Gql.GqlObject("running"));
 			query.AddField(Gql.GqlObject("exitCode"));
+			query.AddField(Gql.GqlObject("upstreamHealthy"));
 
 			return query;
 		}
@@ -1232,7 +1412,9 @@ Item {
 			root.errorText = "";
 			root.appendOutput(qsTr("[session opened]\n"), "SYSTEM");
 			root.sessionStateChanged();
-			inputField.forceActiveFocus();
+			// Focus the output, not the compose box: typing goes straight to the shell
+			// (full cmd-like keyboard). The box stays available for pasting/composing.
+			outputText.forceActiveFocus();
 			resizeDebounceTimer.restart();
 		}
 
@@ -1425,7 +1607,7 @@ Item {
 		}
 	}
 
-	// ─── Output panel (virtualised) ─────────────────────────────────────────
+	// ─── Output panel ───────────────────────────────────────────────────────
 	Rectangle {
 		id: outputPanel;
 
@@ -1444,8 +1626,8 @@ Item {
 		border.width: 1;
 		clip: true;
 
-		ListView {
-			id: outputListView;
+		Flickable {
+			id: outputFlickable;
 
 			anchors.fill: parent;
 			anchors.margins: Style.marginS;
@@ -1454,34 +1636,68 @@ Item {
 			visible: !root.altScreenActive;
 			clip: true;
 			boundsBehavior: Flickable.StopAtBounds;
-			// Virtualisation: only visible delegates are created.
-			cacheBuffer: Style.controlHeightM * 20;
-			model: outputModel;
+			contentWidth: width;
+			contentHeight: outputText.contentHeight;
 
 			onWidthChanged: resizeDebounceTimer.restart();
 			onHeightChanged: resizeDebounceTimer.restart();
 
-			delegate: Text {
-				width: outputListView.width;
-				textFormat: Text.RichText;
-				wrapMode: Text.WrapAnywhere;
-				font.family: root.monoFontFamily;
+			TextEdit {
+				id: outputText;
+				width: outputFlickable.width;
+				height: contentHeight;
+				readOnly: true;
+				selectByMouse: true;
+				persistentSelection: true;
+				textFormat: TextEdit.RichText;
+				wrapMode: TextEdit.WrapAnywhere;
+				font.family: Style.fontFamily
 				font.pixelSize: Style.fontSizeM;
-				text: model.html;
-				// Accessible plain text for selection is limited in ListView; Copy all uses plainLog.
+				color: Style.textColor;
+				selectionColor: Style.textSelectedColor;
+				selectedTextColor: "#ffffff";
+				// The committed scrollback plus the live (still-being-typed) line, so raw
+				// keyboard echo and in-place line editing show up as one continuous line.
+				text: root.richLog + root.currentLineHtml;
+
+				Keys.onPressed: {
+					// Ctrl+C copies the selection when there is one (otherwise it falls
+					// through to the shell below as a real interrupt).
+					if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_C
+								&& outputText.selectedText.length > 0){
+						clipboardProxy.text = outputText.selectedText;
+						clipboardProxy.selectAll();
+						clipboardProxy.copy();
+						clipboardProxy.select(0, 0);
+						event.accepted = true;
+						return;
+					}
+
+					// Full cmd-like keyboard: every other key is sent straight to the shell,
+					// which echoes it and runs its own line editing / history / Tab-completion.
+					// The compose box below remains for pasting or composing a long line.
+					if (controller.running && !controller.connectionLost){
+						let data = root.vtInputForKey(event);
+						if (data.length > 0){
+							root.startupOutputPhase = false;
+							controller.sendRawInput(data);
+							event.accepted = true;
+						}
+					}
+				}
 			}
 		}
 
 		CustomScrollbar {
 			visible: !root.altScreenActive;
-			z: outputListView.z + 1;
+			z: outputFlickable.z + 1;
 			anchors.right: parent.right;
 			anchors.rightMargin: Style.marginXS;
-			anchors.top: outputListView.top;
-			anchors.bottom: outputListView.bottom;
+			anchors.top: outputFlickable.top;
+			anchors.bottom: outputFlickable.bottom;
 			secondSize: Style.marginS;
 			radius: Style.radiusS;
-			targetItem: outputListView;
+			targetItem: outputFlickable;
 		}
 
 		// ─── Full-screen app view (alt screen buffer: vim, mc, top, …) ──────────
@@ -1492,7 +1708,12 @@ Item {
 			anchors.margins: Style.marginS;
 
 			visible: root.altScreenActive;
+			focus: root.altScreenActive;
 			clip: true;
+
+			Keys.onPressed: {
+				root.sendAltScreenKey(event);
+			}
 
 			Repeater {
 				model: root.gridRows;
@@ -1503,7 +1724,7 @@ Item {
 					width: gridView.width;
 					height: root.charHeight;
 					textFormat: Text.RichText;
-					font.family: root.monoFontFamily;
+					font.family: Style.fontFamily
 					font.pixelSize: Style.fontSizeM;
 					text: root.gridRowHtml(index);
 				}
@@ -1548,6 +1769,51 @@ Item {
 			}
 		}
 
+		// Top-right activity pill: a spinner + label shown while any terminal request is
+		// round-tripping to the agent. Sits above the output (z:30) but is naturally hidden
+		// behind the full busy overlay during open/close since that is opaque over the panel.
+		Rectangle {
+			id: requestPopup;
+
+			anchors.top: parent.top;
+			anchors.right: parent.right;
+			anchors.topMargin: Style.marginM;
+			anchors.rightMargin: Style.marginM + Style.marginL;
+			z: 30;
+
+			visible: controller.requestInFlight;
+			height: Style.controlHeightM;
+			width: requestPopupRow.implicitWidth + 2 * Style.marginL;
+			radius: height / 2;
+			color: Style.baseColor;
+			border.color: Style.imaginToolsAccentColor;
+			border.width: 1;
+			opacity: 0.97;
+
+			Row {
+				id: requestPopupRow;
+				anchors.centerIn: parent;
+				spacing: Style.spacingS;
+
+				Loading {
+					anchors.verticalCenter: parent.verticalCenter;
+					width: Style.iconSizeM;
+					height: Style.iconSizeM;
+					indicatorSize: Style.iconSizeS;
+					visible: true;
+					background.color: "transparent";
+				}
+
+				Text {
+					anchors.verticalCenter: parent.verticalCenter;
+					text: root.requestPopupLabel();
+					color: Style.textColor;
+					font.family: Style.fontFamily;
+					font.pixelSize: Style.fontSizeS;
+				}
+			}
+		}
+
 		// Connection-lost banner over the log.
 		Rectangle {
 			anchors.left: parent.left;
@@ -1580,7 +1846,8 @@ Item {
 		anchors.bottom: statusBar.top;
 		anchors.bottomMargin: Style.marginM;
 
-		height: Style.controlHeightM;
+		height: root.altScreenActive ? 0 : Style.controlHeightM;
+		visible: !root.altScreenActive;
 
 		Rectangle {
 			id: inputBackground;
@@ -1621,7 +1888,7 @@ Item {
 				anchors.leftMargin: Style.marginM;
 				anchors.rightMargin: Style.marginM;
 				verticalAlignment: TextInput.AlignVCenter;
-				font.family: root.monoFontFamily;
+				font.family: Style.fontFamily
 				font.pixelSize: Style.fontSizeM;
 				color: Style.textColor;
 				selectionColor: Style.textSelectedColor;
@@ -1630,7 +1897,7 @@ Item {
 				clip: true;
 				// Single-line only — Enter submits, does not insert a newline.
 				echoMode: TextInput.Normal;
-				readOnly: !controller.running || controller.connectionLost;
+				readOnly: !controller.running || controller.connectionLost || controller.commandInFlight;
 				activeFocusOnPress: !readOnly;
 
 				// Primary path: TextInput emits accepted on Return/Enter.
@@ -1680,7 +1947,8 @@ Item {
 			widthFromDecorator: true;
 			height: parent.height;
 			text: qsTr("Send");
-			enabled: controller.running && !controller.connectionLost && inputField.text.length > 0;
+			enabled: controller.running && !controller.connectionLost
+						&& !controller.commandInFlight && inputField.text.length > 0;
 			tooltipText: qsTr("Send command (Enter)");
 			onClicked: root.submitCommand();
 		}
@@ -1710,7 +1978,7 @@ Item {
 		Text {
 			anchors.left: parent.left;
 			anchors.leftMargin: Style.marginM;
-			anchors.right: lineCountText.left;
+			anchors.right: requestIndicator.left;
 			anchors.rightMargin: Style.marginM;
 			anchors.verticalCenter: parent.verticalCenter;
 			elide: Text.ElideMiddle;
@@ -1719,6 +1987,16 @@ Item {
 			opacity: (root.errorText !== "" || root.actionHint !== "" || controller.connectionLost) ? 1 : 0.85;
 			font.family: Style.fontFamily;
 			font.pixelSize: Style.fontSizeM;
+		}
+
+		BusyIndicator {
+			id: requestIndicator;
+			anchors.right: lineCountText.left;
+			anchors.rightMargin: Style.marginM;
+			anchors.verticalCenter: parent.verticalCenter;
+			width: Style.iconSizeS;
+			height: Style.iconSizeS;
+			visible: controller.requestInFlight && !controller.busy;
 		}
 
 		Text {

@@ -91,12 +91,14 @@ Users are responsible for:
 
 The AgentinoServer UI includes a **remote terminal** feature that opens an
 interactive shell (`cmd.exe`/`powershell.exe` on Windows, `/bin/bash` or
-`/bin/sh` on Linux/macOS) on the machine running a selected agent. This is, by
-design, **remote command execution** and is the most security-sensitive
-capability in the system. The following controls apply:
+`/bin/sh` on Linux/macOS) attached to a real pseudo-terminal (ConPTY on
+Windows, `openpty` on Linux/macOS) on the machine running a selected agent.
+This is, by design, **remote command execution** and is the most
+security-sensitive capability in the system. The following controls apply:
 
 - **Authorization required**: Every terminal command (`ListShellTypes`,
-  `OpenTerminalSession`, `SendTerminalInput`, `GetTerminalOutput`,
+  `OpenTerminalSession`, `SendTerminalInput`, `InterruptTerminalSession`,
+  `ResizeTerminalSession`, `GetTerminalOutput`, `OnTerminalOutputChanged`,
   `CloseTerminalSession`) requires the `RemoteTerminal` permission, enforced
   server-side by the `TerminalPermissions` provider wired into the terminal
   proxy; the UI additionally hides the Terminal page from operators without it.
@@ -107,14 +109,30 @@ capability in the system. The following controls apply:
 - **No privilege elevation**: The shell is spawned with the agent service's own
   privileges. The feature never elevates. Run the agent under a least-privilege
   service account to limit the blast radius.
-- **Input via stdin**: Operator input is written verbatim to the process
-  standard input rather than being assembled into a shell command string,
-  avoiding command-injection beyond the shell the operator explicitly opened.
+- **Input via stdin**: Operator input is written verbatim to the pseudo-terminal
+  rather than being assembled into a shell command string, avoiding
+  command-injection beyond the shell the operator explicitly opened. This holds
+  regardless of the pty: it is still always a raw byte write, never a
+  constructed command line. `InterruptTerminalSession` (Ctrl+C) is the same
+  mechanism — it writes a single `0x03` byte, which the pty's own line
+  discipline (or ConPTY's console subsystem) turns into SIGINT/`CTRL_C_EVENT`
+  for the foreground process group, exactly like a real terminal.
+- **ANSI/screen rendering is presentation-only**: The GUI translates recognized
+  ANSI SGR color codes into on-screen styling in its scrollback log, and
+  additionally renders a bounded client-side character-grid emulator (fixed
+  rows×columns, cursor position, erase/scroll/insert-delete, SGR colors) while
+  a program has the pty in the alternate screen buffer (full-screen tools like
+  `vim`/`mc`/`top`). Both paths only ever interpret bytes as text-cell state to
+  draw; nothing from the output stream is evaluated or executed — a hostile or
+  corrupted program can at most produce garbled/miscolored *text*, not code
+  execution in the client.
 - **Resource bounds**: Concurrent sessions per agent, per-session output buffer
   size, and per-command input length are capped, and idle sessions are
-  automatically closed after a timeout.
-- **Clean teardown**: All live sessions are terminated when the agent component
-  is destroyed (orderly service shutdown).
+  automatically closed after a timeout (with an advance warning pushed to the
+  operator shortly before the session closes).
+- **Clean teardown**: All live sessions — and their pseudo-terminal/process
+  handles — are terminated when the agent component is destroyed (orderly
+  service shutdown).
 
 Operational guidance:
 

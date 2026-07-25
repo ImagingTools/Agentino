@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6435" Description="ACF"/>
-            <Version Id="1" Number="2410" Description="ACF-Solutions"/>
+            <Version Id="0" Number="6500" Description="ACF"/>
+            <Version Id="1" Number="2438" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -21,7 +21,6 @@
                                 <Value>ProfileController</Value>
                                 <Value>SettingsController</Value>
                                 <Value>AuthorizationConcept</Value>
-                                <Value>AuthorizationOptions</Value>
                                 <Value>SingleProductPermission</Value>
                                 <Value>UserGroupsPage</Value>
                                 <Value>UsersPage</Value>
@@ -45,7 +44,16 @@
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="DatabaseConnectionChecker" Type="Reference" ExportId="DatabaseConnectionChecker">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="ServerConnectionInterface">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="SuperuserProvider" Type="Reference" ExportId="SuperuserProvider">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
@@ -76,18 +84,6 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="AuthorizationOptions" PackageId="ImtAuthVoce" ComponentId="AuthorizationOptions">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
@@ -129,27 +125,6 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ProfileController" PackageId="ImtGraphQlVoce" ComponentId="ProfileController">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="GroupCollection" Type="Reference" ExportId="UserGroupRepository">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="RoleCollection" Type="Reference" ExportId="RoleRepository">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="UserCollection" Type="Reference" ExportId="UserRepository">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
         <Element Id="GroupsFilterableSelectController" PackageId="ImtServerGqlPck" ComponentId="FilterableSelectController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
@@ -166,6 +141,27 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="ProfileController" PackageId="ImtGraphQlVoce" ComponentId="ProfileController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="GroupCollection" Type="Reference" ExportId="UserGroupRepository">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RoleCollection" Type="Reference" ExportId="RoleRepository">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserCollection" Type="Reference" ExportId="UserRepository">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
@@ -211,27 +207,6 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="UsersFilterableSelectController" PackageId="ImtServerGqlPck" ComponentId="FilterableSelectController">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="CollectionId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Users"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="UserRepository">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
@@ -319,6 +294,27 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="UsersFilterableSelectController" PackageId="ImtServerGqlPck" ComponentId="FilterableSelectController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CollectionId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="Users"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ObjectCollection" Type="Reference" ExportId="UserRepository">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>

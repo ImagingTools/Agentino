@@ -336,8 +336,10 @@ mutation {
 
 ### Remote Terminal
 
-The AgentinoServer UI can open an interactive shell on the machine running a
-selected agent, letting an operator run commands and watch the output remotely.
+The AgentinoServer UI can open a real, interactive terminal on the machine
+running a selected agent — a Windows Terminal-style multi-tab host, not a
+one-shot command runner — letting an operator run commands, use full-screen
+tools, and watch colored output remotely.
 
 How to use:
 
@@ -346,28 +348,43 @@ How to use:
 2. Select the **Terminal** page of the agent editor. The page is offered only for
    an already enrolled agent, and only to operators holding the `RemoteTerminal`
    permission.
-3. Choose a shell type. Only shells the agent actually reports as available are
-   listed:
-   - **Windows**: `cmd.exe` or `powershell.exe`
-   - **Linux/macOS**: `/bin/bash` (falling back to `/bin/sh`)
-4. Click **Open**, type commands into the input field, and press **Enter** (or
-   **Send**). Standard output and standard error are streamed back into the
-   read-only output area. Use **Clear** to wipe the local view and **Close** to
-   terminate the session.
+3. Press **+** for a new tab with the preferred shell (Command Prompt on Windows
+   agents, Bash on Linux agents by default), or **▾** to pick a specific shell.
+   Only shells the agent actually reports as available are offered.
+4. Type commands and press **Enter** (or **Send**). Use **Ctrl+C** to interrupt
+   the current foreground command without closing the session, **Clear** to wipe
+   the local view, and the tab's close button to terminate that session.
 
-The session belongs to the agent whose editor it was opened in, and is closed
-again when that editor page goes away.
+Each tab belongs to the agent whose editor it was opened in and is torn down
+when its tab or the editor page closes.
 
-How it works: the shell process runs on the agent via `QProcess`
+How it works: each session's shell runs attached to a **real pseudo-terminal** —
+ConPTY on Windows, `openpty` on Linux/macOS — not a plain pipe
 (`agentinodata::CTerminalSessionManagerComp`, wired standalone in
 `TerminalController.acc` so its session state survives across the many separate
-requests one session spans), is exposed over the agent's local GraphQL endpoint
-by a thin per-request resolver (`agentgql::CTerminalControllerComp`), and the
-server proxies each request to the agent named by the `clientid` request header
+requests one session spans). A real pty is why full-screen/curses programs
+(`vim`, `mc`, `top`) and colorized tools work as they would in a native
+terminal — a plain pipe cannot support them at all (no `ioctl`, no terminal
+process group). The GUI translates ANSI SGR color codes to on-screen styling in
+its normal scrollback log. When a program switches the pty to the *alternate
+screen buffer* (`vim`, `mc`, `top`, and similar full-screen tools all do this),
+the GUI instead renders a small client-side character-grid emulator: a fixed
+rows×columns buffer with real cursor tracking, erase/scroll-region/insert-delete
+support and SGR colors, swapping back to the scrollback log once the program
+exits. Nothing from the output stream is evaluated or executed either way — at
+most a hostile or corrupted program can produce garbled/miscolored *text*.
+The pty is exposed over the agent's local GraphQL endpoint by a thin per-request
+resolver (`agentgql::CTerminalControllerComp`), and the server proxies each
+request to the agent named by the `clientid` request header
 (`agentinogql::CTerminalControllerProxyComp`, wired in
-`RemoteTerminalController.acc`). Command input is delivered to the process
-**via stdin**; output is retrieved by the UI by polling the `GetTerminalOutput`
-query with an incremental cursor.
+`RemoteTerminalController.acc`). Command input is delivered to the pty
+**via stdin**, unchanged whether or not a pty is attached — it is still always
+raw bytes, never assembled into a shell command line. Output is pushed to the
+GUI over a GraphQL subscription (`OnTerminalOutputChanged`) as soon as the pty
+produces it, with `GetTerminalOutput` used only for one catch-up fetch right
+after a session opens or a dropped subscription reconnects. The GUI also
+reports its visible character grid back to the agent (`ResizeTerminalSession`),
+so full-screen programs draw at the right size instead of assuming 80×24.
 
 > ⚠️ **Security**: the remote terminal is full remote command execution on the
 > agent host. It is gated behind the existing authorization layer, runs with the

@@ -132,6 +132,7 @@ public:
 	virtual QList<ShellInfo> GetAvailableShells() const override;
 	virtual QByteArray OpenSession(ShellType shellType, QString& errorMessage) override;
 	virtual bool SendInput(const QByteArray& sessionId, const QString& data) override;
+	virtual bool SendRawInput(const QByteArray& sessionId, const QString& data) override;
 	virtual bool CloseSession(const QByteArray& sessionId) override;
 	virtual bool InterruptSession(const QByteArray& sessionId) override;
 	virtual bool ResizeSession(const QByteArray& sessionId, int columns, int rows) override;
@@ -167,6 +168,8 @@ private:
 		// so only one decoder is needed; kept on the session so a multi-byte character
 		// split across two reads still decodes correctly.
 		QStringDecoder ptyDecoder = QStringDecoder(QStringDecoder::Utf8);
+		QString pendingOutput;
+		bool outputFlushScheduled = false;
 
 #if defined(AGENTINO_TERMINAL_WIN)
 		HPCON hPC = nullptr;
@@ -196,6 +199,7 @@ private:
 	bool ResolveShellProgram(ShellType shellType, QString& program, QStringList& arguments) const;
 	QByteArray OpenSessionOnOwnThread(ShellType shellType, QString& errorMessage);
 	bool SendInputOnOwnThread(const QByteArray& sessionId, const QString& data);
+	bool SendRawInputOnOwnThread(const QByteArray& sessionId, const QString& data);
 	bool InterruptSessionOnOwnThread(const QByteArray& sessionId);
 	bool ResizeSessionOnOwnThread(const QByteArray& sessionId, int columns, int rows);
 	/**
@@ -210,6 +214,8 @@ private:
 				StreamType stream,
 				const QString& data,
 				bool updateActivity = true);
+			void QueueOutput(const QByteArray& sessionId, Session& session, const QString& data);
+			void FlushPendingOutput(const QByteArray& sessionId, Session& session);
 	void RemoveSession(const QByteArray& sessionId);
 	// Marks the session finished/appends the SYSTEM chunk once every platform-specific
 	// shutdown signal for it has arrived (see the two bool flags on Session, Windows only -
@@ -229,6 +235,8 @@ private:
 	static const int IdleWarningLeadSeconds = 60;
 	/** Interval at which idle sessions are checked, in milliseconds. */
 	static const int IdleCheckIntervalMs = 30000;
+	/** Window for combining adjacent native pty reads into one output notification. */
+	static const int OutputFlushIntervalMs = 10;
 	/** Exit code written when a session is closed by the idle timer (not a process exit). */
 	static const int IdleCloseExitCode = -2;
 

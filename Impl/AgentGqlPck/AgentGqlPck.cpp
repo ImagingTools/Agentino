@@ -99,6 +99,11 @@ I_EXPORT_COMPONENT(
 			"Pushes local service-collection changes to the central server over WebSocket",
 			"Agent Service Collection Sync Client");
 
+I_EXPORT_COMPONENT(
+			TerminalOutputPublisher,
+			"Terminal output publisher",
+			"Terminal Output Publisher");
+
 
 } // namespace AgentGqlPck
 

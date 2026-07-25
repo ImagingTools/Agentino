@@ -3,8 +3,12 @@
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Terminal.h>
 
 
+// Qt includes
+#include <QtCore/QMutexLocker>
+
 // ImtCore includes
 #include <imtgql/CGqlRequest.h>
+#include <imtgql/IGqlContext.h>
 
 
 namespace agentinogql
@@ -20,6 +24,7 @@ sdl::V1_0::agentino::CShellTypeListPayload CTerminalControllerProxyComp::OnListS
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
+	// No sessionId involved - nothing to own-check.
 	return ForwardToAgent<sdl::V1_0::agentino::CShellTypeListPayload>(gqlRequest, errorMessage);
 }
 
@@ -29,7 +34,27 @@ sdl::V1_0::agentino::CTerminalOutputResponse CTerminalControllerProxyComp::OnGet
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	return ForwardToAgent<sdl::V1_0::agentino::CTerminalOutputResponse>(gqlRequest, errorMessage);
+	if (!CheckSessionOwnership(gqlRequest, errorMessage)){
+		SendErrorMessage(0, errorMessage, "CTerminalControllerProxyComp");
+
+		return sdl::V1_0::agentino::CTerminalOutputResponse();
+	}
+
+	sdl::V1_0::agentino::CTerminalOutputResponse retVal =
+				ForwardToAgent<sdl::V1_0::agentino::CTerminalOutputResponse>(gqlRequest, errorMessage);
+
+	// Opportunistic cleanup: the agent reports the session as gone (exited or evicted by
+	// its own idle timeout), so this ownership entry can be forgotten instead of sitting
+	// around forever - the same sessionId will never legitimately reappear.
+	if (retVal.running.HasValue() && !retVal.running.GetValue()){
+		const QByteArray sessionId = ExtractSessionId(gqlRequest);
+		if (!sessionId.isEmpty()){
+			QMutexLocker locker(&m_sessionOwnersMutex);
+			m_sessionOwners.remove(sessionId);
+		}
+	}
+
+	return retVal;
 }
 
 
@@ -38,7 +63,19 @@ sdl::V1_0::agentino::COpenTerminalSessionResponse CTerminalControllerProxyComp::
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	return ForwardToAgent<sdl::V1_0::agentino::COpenTerminalSessionResponse>(gqlRequest, errorMessage);
+	sdl::V1_0::agentino::COpenTerminalSessionResponse retVal =
+				ForwardToAgent<sdl::V1_0::agentino::COpenTerminalSessionResponse>(gqlRequest, errorMessage);
+
+	// The session only exists from this point on, and only this caller (the one who just
+	// opened it) may be its owner - every later command against this sessionId is checked
+	// against this entry (CheckSessionOwnership).
+	if (errorMessage.isEmpty() && retVal.sessionId.HasValue() && !retVal.sessionId.GetValue().isEmpty()){
+		const QByteArray userId = ExtractUserId(gqlRequest);
+		QMutexLocker locker(&m_sessionOwnersMutex);
+		m_sessionOwners.insert(retVal.sessionId.GetValue(), userId);
+	}
+
+	return retVal;
 }
 
 
@@ -47,7 +84,28 @@ sdl::V1_0::agentino::CSendTerminalInputResponse CTerminalControllerProxyComp::On
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
+	if (!CheckSessionOwnership(gqlRequest, errorMessage)){
+		SendErrorMessage(0, errorMessage, "CTerminalControllerProxyComp");
+
+		return sdl::V1_0::agentino::CSendTerminalInputResponse();
+	}
+
 	return ForwardToAgent<sdl::V1_0::agentino::CSendTerminalInputResponse>(gqlRequest, errorMessage);
+}
+
+
+sdl::V1_0::agentino::CSendTerminalRawInputResponse CTerminalControllerProxyComp::OnSendTerminalRawInput(
+			const sdl::V1_0::agentino::CSendTerminalRawInputGqlRequest& /*sendTerminalRawInputRequest*/,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
+{
+	if (!CheckSessionOwnership(gqlRequest, errorMessage)){
+		SendErrorMessage(0, errorMessage, "CTerminalControllerProxyComp");
+
+		return sdl::V1_0::agentino::CSendTerminalRawInputResponse();
+	}
+
+	return ForwardToAgent<sdl::V1_0::agentino::CSendTerminalRawInputResponse>(gqlRequest, errorMessage);
 }
 
 
@@ -56,6 +114,12 @@ sdl::V1_0::agentino::CInterruptTerminalSessionResponse CTerminalControllerProxyC
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
+	if (!CheckSessionOwnership(gqlRequest, errorMessage)){
+		SendErrorMessage(0, errorMessage, "CTerminalControllerProxyComp");
+
+		return sdl::V1_0::agentino::CInterruptTerminalSessionResponse();
+	}
+
 	return ForwardToAgent<sdl::V1_0::agentino::CInterruptTerminalSessionResponse>(gqlRequest, errorMessage);
 }
 
@@ -65,6 +129,12 @@ sdl::V1_0::agentino::CResizeTerminalSessionResponse CTerminalControllerProxyComp
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
+	if (!CheckSessionOwnership(gqlRequest, errorMessage)){
+		SendErrorMessage(0, errorMessage, "CTerminalControllerProxyComp");
+
+		return sdl::V1_0::agentino::CResizeTerminalSessionResponse();
+	}
+
 	return ForwardToAgent<sdl::V1_0::agentino::CResizeTerminalSessionResponse>(gqlRequest, errorMessage);
 }
 
@@ -74,7 +144,25 @@ sdl::V1_0::agentino::CCloseTerminalSessionResponse CTerminalControllerProxyComp:
 			const ::imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
-	return ForwardToAgent<sdl::V1_0::agentino::CCloseTerminalSessionResponse>(gqlRequest, errorMessage);
+	if (!CheckSessionOwnership(gqlRequest, errorMessage)){
+		SendErrorMessage(0, errorMessage, "CTerminalControllerProxyComp");
+
+		return sdl::V1_0::agentino::CCloseTerminalSessionResponse();
+	}
+
+	sdl::V1_0::agentino::CCloseTerminalSessionResponse retVal =
+				ForwardToAgent<sdl::V1_0::agentino::CCloseTerminalSessionResponse>(gqlRequest, errorMessage);
+
+	// The caller is explicitly done with this sessionId either way (even an agent-side
+	// close failure is treated as closed client-side, same as TerminalController.qml's own
+	// forgetSession on a CloseTerminalSession error) - forget the owner now, not later.
+	const QByteArray sessionId = ExtractSessionId(gqlRequest);
+	if (!sessionId.isEmpty()){
+		QMutexLocker locker(&m_sessionOwnersMutex);
+		m_sessionOwners.remove(sessionId);
+	}
+
+	return retVal;
 }
 
 
@@ -105,6 +193,59 @@ SdlResponse CTerminalControllerProxyComp::ForwardToAgent(
 	}
 
 	return retVal;
+}
+
+
+QByteArray CTerminalControllerProxyComp::ExtractSessionId(const imtgql::CGqlRequest& gqlRequest)
+{
+	const imtgql::CGqlParamObject* inputPtr = gqlRequest.GetParamObject("input");
+	if (inputPtr == nullptr){
+		return QByteArray();
+	}
+
+	return inputPtr->GetParamArgumentValue("sessionId").toByteArray();
+}
+
+
+QByteArray CTerminalControllerProxyComp::ExtractUserId(const imtgql::CGqlRequest& gqlRequest)
+{
+	const imtgql::IGqlContext* gqlContextPtr = gqlRequest.GetRequestContext();
+
+	return gqlContextPtr != nullptr ? gqlContextPtr->GetUserId() : QByteArray();
+}
+
+
+bool CTerminalControllerProxyComp::CheckSessionOwnership(
+			const imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
+{
+	const QByteArray sessionId = ExtractSessionId(gqlRequest);
+	if (sessionId.isEmpty()){
+		return true;
+	}
+
+	const QByteArray callerUserId = ExtractUserId(gqlRequest);
+
+	QMutexLocker locker(&m_sessionOwnersMutex);
+
+	const auto it = m_sessionOwners.constFind(sessionId);
+	if (it == m_sessionOwners.constEnd()){
+		// Fail-closed: a sessionId this instance never recorded (already closed, evicted,
+		// or from before a server restart) must be refused, not merely warned about - the
+		// alternative is indistinguishable from "anyone who guesses/logs a sessionId can
+		// use it".
+		errorMessage = QStringLiteral("Unknown or expired terminal session");
+
+		return false;
+	}
+
+	if (it.value() != callerUserId){
+		errorMessage = QStringLiteral("This terminal session belongs to another user");
+
+		return false;
+	}
+
+	return true;
 }
 
 

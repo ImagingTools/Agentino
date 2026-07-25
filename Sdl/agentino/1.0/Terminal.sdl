@@ -48,6 +48,17 @@ type SendTerminalInputResponse {
 	accepted: Boolean!
 }
 
+# Writes terminal bytes verbatim without adding Enter. Used for VT key sequences
+# from full-screen terminal applications such as mc, vim and top.
+input SendTerminalRawInputInput {
+	sessionId: ID!
+	data: String!
+}
+
+type SendTerminalRawInputResponse {
+	accepted: Boolean!
+}
+
 input CloseTerminalSessionInput {
 	sessionId: ID!
 }
@@ -93,12 +104,19 @@ type TerminalOutputChunk {
 # not know (any more) - in either case the client must stop polling and show exitCode.
 # There is deliberately no 'finished' field: the generated QObject wrapper inherits
 # imtbase::CItemModelBase, which already declares a 'finished' signal.
+#
+# 'upstreamHealthy' is absent/true on every real payload relayed from the agent; the
+# server proxy sets it to false only in a synthetic payload it manufactures itself
+# (chunks empty, sessionId/nextSequence carried over from the last real payload) when
+# the server<->agent push subscription is lost, so the GUI's reconnect state reflects
+# the whole chain rather than just the GUI<->server WebSocket link.
 type TerminalOutputResponse {
 	sessionId: ID!
 	chunks: [TerminalOutputChunk]!
 	nextSequence: Integer!
 	running: Boolean!
 	exitCode: Integer
+	upstreamHealthy: Boolean
 }
 
 type Query {
@@ -109,16 +127,20 @@ type Query {
 type Mutation {
 	OpenTerminalSession (input: OpenTerminalSessionInput): OpenTerminalSessionResponse!
 	SendTerminalInput (input: SendTerminalInputInput): SendTerminalInputResponse!
+	SendTerminalRawInput (input: SendTerminalRawInputInput): SendTerminalRawInputResponse!
 	InterruptTerminalSession (input: InterruptTerminalSessionInput): InterruptTerminalSessionResponse!
 	ResizeTerminalSession (input: ResizeTerminalSessionInput): ResizeTerminalSessionResponse!
 	CloseTerminalSession (input: CloseTerminalSessionInput): CloseTerminalSessionResponse!
 }
 
-# Pushed by the agent whenever a session produces new output. GetTerminalOutput stays
-# for a single catch-up fetch right after OpenSession (close the race between opening
-# the session and establishing this subscription); afterwards the client relies on push.
+# Pushed by the agent whenever a session produces new output. The publisher sends every
+# buffered chunk from fromSequence onward as soon as the subscription registers, so the
+# subscribe call itself is the catch-up - there is no window between opening a session
+# and seeing its output. GetTerminalOutput remains only for gap recovery after a dropped
+# and re-established subscription (client-driven reconnect).
 input TerminalOutputSubscriptionInput {
 	sessionId: ID!
+	fromSequence: Integer
 }
 
 type Subscription {

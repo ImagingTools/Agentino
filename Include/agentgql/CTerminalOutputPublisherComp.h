@@ -29,6 +29,14 @@ namespace agentgql
 	subscriber has not seen yet (per-subscription cursor). Same pattern as
 	\ref agentinogql::CServiceSubscriberControllerComp for status, but with parameter
 	filtering that status/log subscriptions do not need.
+
+	\note RegisterSubscription honours the client's \c fromSequence as the initial cursor
+	but does NOT itself push a catch-up: every new chunk is delivered by \ref OnUpdate
+	(the change-notification from the session manager), and the GUI issues one
+	\c GetTerminalOutput after opening to fetch whatever was produced before this
+	subscription registered. Pushing from inside RegisterSubscription's own call frame -
+	before the GraphQL/WebSocket layer has finished acknowledging the subscribe - is a
+	protocol-ordering hazard, so it is deliberately avoided here.
 */
 class CTerminalOutputPublisherComp:
 			public imtservergql::CGqlPublisherCompBase,
@@ -44,7 +52,18 @@ public:
 					"Terminal session manager that owns shell processes and buffers output",
 					true,
 					"TerminalSessionManager");
-		I_ASSIGN_TO(m_modelCompPtr, m_terminalControllerCompPtr, true);
+		// Same component as TerminalController, but resolved as imod::IModel so this
+		// publisher can observe CN_TERMINAL_OUTPUT_CHANGED. A direct I_ASSIGN (resolved
+		// through the framework's IChangeable->IModel bridge, exactly like
+		// CServiceSubscriberControllerComp's "Model") is used rather than I_ASSIGN_TO from
+		// m_terminalControllerCompPtr: ITerminalController derives from istd::IChangeable,
+		// not imod::IModel, so following that ref yields no IModel and OnUpdate never fires.
+		I_ASSIGN(
+					m_modelCompPtr,
+					"Model",
+					"Observed model (the terminal session manager) emitting CN_TERMINAL_OUTPUT_CHANGED",
+					true,
+					"TerminalSessionManager");
 	I_END_COMPONENT;
 
 protected:
@@ -65,6 +84,7 @@ protected:
 
 private:
 	static QByteArray ExtractSessionId(const imtgql::CGqlRequest& gqlRequest);
+	static qint64 ExtractFromSequence(const imtgql::CGqlRequest& gqlRequest);
 	static QString StreamToWire(agentinodata::ITerminalController::StreamType stream);
 	void PublishForSession(const QByteArray& sessionId);
 

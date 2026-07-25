@@ -186,6 +186,9 @@
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="DatabaseConnectionChecker" Type="Reference" ExportId="DatabaseConnectionChecker">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="DatabaseEngine">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -213,6 +216,9 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="ServerConnectionInterface">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="SuperuserProvider" Type="Reference" ExportId="SuperuserProvider">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">

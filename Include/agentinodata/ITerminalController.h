@@ -103,6 +103,12 @@ public:
 	virtual bool SendInput(const QByteArray& sessionId, const QString& data) = 0;
 
 	/**
+		Send terminal control bytes verbatim without appending a line terminator.
+		Used for VT key sequences from interactive full-screen applications.
+	*/
+	virtual bool SendRawInput(const QByteArray& sessionId, const QString& data) = 0;
+
+	/**
 		Terminate the shell of the given session and release all associated resources.
 	*/
 	virtual bool CloseSession(const QByteArray& sessionId) = 0;

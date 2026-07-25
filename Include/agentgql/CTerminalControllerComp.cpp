@@ -208,6 +208,36 @@ sdl::V1_0::agentino::CSendTerminalInputResponse CTerminalControllerComp::OnSendT
 }
 
 
+sdl::V1_0::agentino::CSendTerminalRawInputResponse CTerminalControllerComp::OnSendTerminalRawInput(
+			const sdl::V1_0::agentino::CSendTerminalRawInputGqlRequest& sendTerminalRawInputRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::CSendTerminalRawInputResponse response;
+	response.accepted = false;
+
+	if (!m_terminalSessionManagerCompPtr.IsValid()){
+		errorMessage = QStringLiteral("Unable to send terminal input. Error: attribute 'TerminalSessionManager' was not set");
+
+		return response;
+	}
+
+	const sdl::V1_0::agentino::SendTerminalRawInputRequestArguments arguments =
+				sendTerminalRawInputRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->sessionId.has_value()
+				|| !arguments.input->data.has_value()){
+		errorMessage = QStringLiteral("Unable to send terminal input. Error: session ID or data is missing");
+
+		return response;
+	}
+
+	response.accepted = m_terminalSessionManagerCompPtr->SendRawInput(
+				*arguments.input->sessionId, *arguments.input->data);
+
+	return response;
+}
+
+
 sdl::V1_0::agentino::CInterruptTerminalSessionResponse CTerminalControllerComp::OnInterruptTerminalSession(
 			const sdl::V1_0::agentino::CInterruptTerminalSessionGqlRequest& interruptTerminalSessionRequest,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,

@@ -104,6 +104,11 @@ I_EXPORT_COMPONENT(
 			"One agent's enrollment record (EnrollmentStore's RecordCollection item)",
 			"Agent Enrollment Record");
 
+I_EXPORT_COMPONENT(
+			TerminalOutputSubscriberProxy,
+			"Terminal output subscriber proxy",
+			"Terminal Output Subscriber Proxy");
+
 
 } // namespace AgentinoGqlPck
 

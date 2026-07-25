@@ -22,7 +22,27 @@ QtObject {
 	property string sessionId: "";
 	property bool running: false;
 	property int nextSequence: 0;
+	// Chunks received with sequence > nextSequence (a push outran an in-flight catch-up,
+	// or a resend), keyed by sequence as a string key. Held back - not applied - until
+	// nextSequence reaches them, so output is always applied in order exactly once; see
+	// applyOutputPayload/drainPendingChunks.
+	property var pendingChunks: ({});
 	property bool busy: false;
+	readonly property bool requestInFlight: shellTypesRequest.state === "Loading"
+									|| openRequest.state === "Loading"
+									|| inputRequest.state === "Loading"
+									|| rawInputRequest.state === "Loading"
+									|| interruptRequest.state === "Loading"
+									|| resizeRequest.state === "Loading"
+									|| closeRequest.state === "Loading"
+									|| outputRequest.state === "Loading";
+
+	// True only while a command/keystroke delivery is round-tripping to the agent. Used to
+	// serialise input: the GUI must not enqueue a second command until the previous
+	// SendTerminalInput/SendTerminalRawInput has been acknowledged (resize/output/catch-up
+	// requests are deliberately excluded - they never block the operator's typing).
+	readonly property bool commandInFlight: inputRequest.state === "Loading"
+									|| rawInputRequest.state === "Loading";
 
 	// Set by TerminalView.
 	property var outputSubscription: null;
@@ -75,10 +95,17 @@ QtObject {
 	}
 
 	function sendInput(data){
-		if (root.sessionId.length === 0 || root.connectionLost || root.closeInFlight){
+		if (root.sessionId.length === 0 || root.connectionLost || root.closeInFlight || root.commandInFlight){
 			return;
 		}
 		inputRequest.send({"sessionId": root.sessionId, "data": data});
+	}
+
+	function sendRawInput(data){
+		if (root.sessionId.length === 0 || root.connectionLost || root.closeInFlight || data.length === 0){
+			return;
+		}
+		rawInputRequest.send({"sessionId": root.sessionId, "data": data});
 	}
 
 	function interruptSession(){
@@ -261,20 +288,52 @@ QtObject {
 		return current;
 	}
 
+	// Applies one already-received-in-order chunk and then drains any later chunks that
+	// arrived earlier (out of order) and are now contiguous with nextSequence.
+	function emitChunkInOrder(sequence, stream, text){
+		root.outputReceived(text, stream);
+		root.nextSequence = sequence + 1;
+		root.drainPendingChunks();
+	}
+
+	function drainPendingChunks(){
+		let key = String(root.nextSequence);
+		while (key in root.pendingChunks){
+			let pending = root.pendingChunks[key];
+			delete root.pendingChunks[key];
+			root.outputReceived(pending.text, pending.stream);
+			root.nextSequence = root.nextSequence + 1;
+			key = String(root.nextSequence);
+		}
+	}
+
 	function applyOutputPayload(data){
 		if (!data){
 			return;
 		}
 
-		// Successful push proves the channel is alive.
-		if (root.connectionLost){
-			root.connectionLost = false;
-			root.resubscribeAttempted = false;
-		}
-
 		let payload = unwrapPayload(data);
 		if (!payload){
 			return;
+		}
+
+		// upstreamHealthy:false is a synthetic, chunk-less payload the server proxy
+		// manufactures when its own subscription to the agent is lost - it means the whole
+		// server<->agent chain is down, not just this GUI's own WebSocket link, which a
+		// merely-successful push (handled below) cannot by itself disprove.
+		let upstreamHealthyValue = fieldValue(payload, "upstreamHealthy");
+		if (upstreamHealthyValue === false || upstreamHealthyValue === "false"){
+			if (!root.connectionLost){
+				root.connectionLost = true;
+				root.connectionLostChangedSignal();
+			}
+			return;
+		}
+
+		// Any other successful push proves the channel is alive.
+		if (root.connectionLost){
+			root.connectionLost = false;
+			root.resubscribeAttempted = false;
 		}
 
 		let chunks = fieldValue(payload, "chunks");
@@ -288,10 +347,6 @@ QtObject {
 			let sequence = sequenceRaw !== undefined && sequenceRaw !== null && sequenceRaw !== ""
 						? parseInt(sequenceRaw)
 						: -1;
-
-			if (sequence >= 0 && sequence < root.nextSequence){
-				continue;
-			}
 
 			let stream = fieldValue(chunks, "stream", i);
 			let text = fieldValue(chunks, "data", i);
@@ -310,18 +365,50 @@ QtObject {
 				text = "";
 			}
 
-			root.outputReceived(String(text), String(stream));
-
-			if (sequence >= root.nextSequence){
-				root.nextSequence = sequence + 1;
+			if (sequence < 0){
+				// No usable sequence number at all (malformed/legacy payload) - apply
+				// immediately rather than block the whole stream on an ordering key we
+				// don't have; this is the sole exception to the ordering guarantee below.
+				root.outputReceived(String(text), String(stream));
+				continue;
 			}
+
+			if (sequence < root.nextSequence){
+				// Already applied (duplicate delivery, e.g. overlapping catch-up + push).
+				continue;
+			}
+
+			if (sequence > root.nextSequence){
+				// Arrived ahead of a gap that hasn't been filled yet (e.g. a live push
+				// outran an in-flight catch-up query) - hold it, do NOT advance
+				// nextSequence, so the still-missing earlier chunks are not later mistaken
+				// for duplicates and silently dropped once they do arrive.
+				root.pendingChunks[String(sequence)] = {stream: String(stream), text: String(text)};
+				continue;
+			}
+
+			root.emitChunkInOrder(sequence, String(stream), String(text));
 		}
 
+		// The server's own authoritative cursor. Only ever jumps nextSequence *forward*
+		// past chunks this payload did not include - meaning they are truly gone (evicted
+		// from the agent's bounded buffer before this client ever saw them), not merely
+		// out of order; anything out of order was already buffered above instead of
+		// relying on this jump. Chunks buffered in pendingChunks at a sequence below the
+		// jumped-to value are consequently unrecoverable and are pruned so they cannot
+		// wedge nextSequence's advancement forever; the client's log shows a gap, not a
+		// stuck cursor.
 		let reportedRaw = fieldValue(payload, "nextSequence");
 		if (reportedRaw !== undefined && reportedRaw !== null && reportedRaw !== ""){
 			let reported = parseInt(reportedRaw);
 			if (reported > root.nextSequence){
 				root.nextSequence = reported;
+				for (let key in root.pendingChunks){
+					if (parseInt(key) < root.nextSequence){
+						delete root.pendingChunks[key];
+					}
+				}
+				root.drainPendingChunks();
 			}
 		}
 
@@ -348,6 +435,7 @@ QtObject {
 		root.subscriptionEverHealthy = false;
 		root.sessionId = "";
 		root.nextSequence = 0;
+		root.pendingChunks = ({});
 		root.sessionClosed(exitCode);
 	}
 
@@ -418,12 +506,19 @@ QtObject {
 
 			root.sessionId = newSessionId;
 			root.nextSequence = 0;
+			root.pendingChunks = ({});
 			root.running = true;
 			root.sessionTeardownDone = false;
 			root.closeInFlight = false;
 			root.connectionLost = false;
 			root.resubscribeAttempted = false;
 			root.subscriptionEverHealthy = false;
+			// Register the live subscription first (its cursor starts at nextSequence, so
+			// nothing produced from now on is missed), then fetch whatever was already
+			// buffered before this point via one GetTerminalOutput. The subscription itself
+			// does not replay history, so this catch-up is what fills the open->subscribe
+			// gap; the sequence-ordered reconciliation in applyOutputPayload dedups any
+			// overlap between the two.
 			root.startOutputSubscription();
 			root.catchUpOutput();
 			root.sessionOpened(newSessionId);
@@ -455,6 +550,34 @@ QtObject {
 		function onResult(data){
 			if (data.containsKey("accepted") && data.getData("accepted") !== true){
 				root.errorOccurred(qsTr("The agent rejected the command."));
+			}
+		}
+
+		function onError(message, type){
+			root.errorOccurred(message);
+		}
+	}
+
+	property GqlRequestSender rawInputRequest: GqlRequestSender {
+		gqlCommandId: "SendTerminalRawInput";
+		requestType: 1;
+
+		function getHeaders(){
+			return root.getHeaders();
+		}
+
+		function createQueryParams(query, params){
+			let inputParams = Gql.GqlObject("input");
+			inputParams.InsertField("sessionId", params["sessionId"]);
+			inputParams.InsertField("data", params["data"]);
+			query.AddParam(inputParams);
+
+			query.AddField(Gql.GqlObject("accepted"));
+		}
+
+		function onResult(data){
+			if (data.containsKey("accepted") && data.getData("accepted") !== true){
+				root.errorOccurred(qsTr("The agent rejected terminal input."));
 			}
 		}
 
