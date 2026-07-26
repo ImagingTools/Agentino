@@ -639,13 +639,26 @@ bool CServiceSupervisorComp::SpawnChild(const QByteArray& serviceId, QString& er
 		return false;
 	}
 
-	// Already emitted Starting via ApplyEvent(Start). ChildReady → Running from OnChildStarted.
-	// OnChildStarted also persists durable PID.
 	ServiceRuntimeState& state = EnsureState(serviceId);
 	if (pid > 0) {
 		state.pid = pid;
 	}
 	state.observedAt = QDateTime::currentDateTimeUtc();
+
+	// Complete Starting -> Running deterministically instead of relying on the
+	// QProcess::started() signal firing synchronously inside Spawn()'s waitForStarted().
+	// That assumption holds on Windows (started() is emitted during the wait, so
+	// OnChildStarted already ran and the status is Running by now), but on Linux started()
+	// is delivered later through the event loop - and StartService holds this (main) thread
+	// inside Start() via a BlockingQueuedConnection, so the loop is never pumped before the
+	// reply is sent. The result was a stuck "Starting" after the first Start, with the client
+	// only seeing "Running" after a second Start (which hit AlignRunning). Spawn() returning
+	// true already means the child is OS-started (== ChildReady), so drive the transition
+	// here. If the async started() still arrives afterwards, OnChildStarted is idempotent once
+	// Running (ChildReady is rejected by the FSM; the health timer merely restarts).
+	if (pid > 0 && state.status == ServiceRuntimeStatus::Starting) {
+		OnChildStarted(serviceId, pid);
+	}
 	return true;
 }
 
