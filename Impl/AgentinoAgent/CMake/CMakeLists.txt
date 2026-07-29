@@ -64,7 +64,6 @@ target_link_libraries(${PROJECT_NAME}
 	agentinogql
 	agentgql
 	agentinodata
-	imtcol
 	imtcontrolsqml
 	imtdocguiqml
 	imtcolguiqml
