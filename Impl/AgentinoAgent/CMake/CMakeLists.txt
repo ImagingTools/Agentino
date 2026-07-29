@@ -19,16 +19,65 @@ endif()
 include(${ACFDIR}/Config/CMake/CustomBuild.cmake)
 include(${ACFDIR}/Config/CMake/ApplicationConfig.cmake)
 
-target_link_libraries(${PROJECT_NAME} iauth iservice)
-target_link_libraries(${PROJECT_NAME} imtqml imtstyle imtauthgui imtauthgql imtstylecontrolsqml imtgui imtguigql imtlic imtauth imtcrypt imtauthsdl imtappsdl imtbasesdl imt2dsdl imtcolorsdl)
-target_link_libraries(${PROJECT_NAME} imtrest imtlicgui imtlicgql imtclientgql imtgql imtauthdb imtchatdb imtdeskdb imtdb imtbase imtapp imtfile imtlog imtcom imtservergql imtcol imtmail imtserverapp imtchat)
-target_link_libraries(${PROJECT_NAME} AcfLoc AcfSlnLoc ImtCoreLoc AgentinoLoc)
-target_link_libraries(${PROJECT_NAME} agentinoqml agentinogql agentgql agentinodata)
-target_link_libraries(${PROJECT_NAME} imtcol imtcontrolsqml imtdocguiqml imtcolguiqml imtguiqml imtguigqlqml imtauthguiqml imtlicguiqml)
-target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::WebSockets)
-target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Quick)
-target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Sql)
-target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(${PROJECT_NAME}
+	iauth
+	iservice
+	imtqml
+	imtstyle
+	imtauthgui
+	imtauthgql
+	imtstylecontrolsqml
+	imtgui
+	imtguigql
+	imtlic
+	imtauth
+	imtcrypt
+	imtauthsdl
+	imtappsdl
+	imtbasesdl
+	imt2dsdl
+	imtcolorsdl
+	imtrest
+	imtlicgui
+	imtlicgql
+	imtclientgql
+	imtgql
+	imtauthdb
+	imtchatdb
+	imtdeskdb
+	imtdb
+	imtbase
+	imtapp
+	imtfile
+	imtlog
+	imtcom
+	imtservergql
+	imtcol
+	imtmail
+	imtserverapp
+	imtchat
+	AcfLoc
+	AcfSlnLoc
+	ImtCoreLoc
+	AgentinoLoc
+	agentinoqml
+	agentinogql
+	agentgql
+	agentinodata
+	imtcol
+	imtcontrolsqml
+	imtdocguiqml
+	imtcolguiqml
+	imtguiqml
+	imtguigqlqml
+	imtauthguiqml
+	imtlicguiqml
+	imtsdl
+	Qt${QT_VERSION_MAJOR}::WebSockets
+	Qt${QT_VERSION_MAJOR}::Quick
+	Qt${QT_VERSION_MAJOR}::Sql
+	Qt${QT_VERSION_MAJOR}::Widgets
+)
 
 include(${ACFDIR}/Config/CMake/AcfQt.cmake)
 include(${ACFDIR}/Config/CMake/AcfStdGui.cmake)

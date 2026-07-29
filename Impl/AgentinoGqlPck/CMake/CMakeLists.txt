@@ -8,12 +8,13 @@ include(${ACFDIR}/Config/CMake/AcfStdGui.cmake)
 target_link_libraries(${PROJECT_NAME}
 	imtbase
 	imtbasesdl
+	imtsdl
+	imtcol
 	imtcom
 	imtgql
 	imtgui
 	imtwidgets
 	imtlic
-	imtcol
 	imtdb
 	imtrest
 	imtclientgql
@@ -24,10 +25,11 @@ target_link_libraries(${PROJECT_NAME}
 	imtgui
 	imtwidgets
 	imtauth
+	agentinodata
+	agentinosdl
 	agentgql
 	agentinogql
-	agentinodata
-	agentinosdl)
+)
 
 ADD_DEFINITIONS(-DUNICODE)
 ADD_DEFINITIONS(-D_UNICODE)
