@@ -21,9 +21,6 @@ target_link_libraries(${PROJECT_NAME}
 	imtservergql
 	imtserverapp
 	imtguigql
-	imtbase
-	imtgui
-	imtwidgets
 	imtauth
 	agentinodata
 	agentinosdl
