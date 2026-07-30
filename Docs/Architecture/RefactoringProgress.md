@@ -72,8 +72,8 @@ See [RefactoringCompletionPlan.md](./RefactoringCompletionPlan.md) and [R7-Smoke
 | `IAsyncGqlClient` on HTTP `CAsyncApiClientComp` | Pre-existing |
 | `CSubscriptionManagerComp` = **async only** (`IAsyncGqlClient`); sync via `CGqlClientSyncAdapterComp` | **Split** |
 | `WebSocketServerFramework`: `IAsyncGqlClient`→SubscriptionManager, `IGqlClient`→GqlClientSyncAdapter | **Done** |
-| `TClientRequestManagerCompWrap` = sync only; `TAsyncClientRequestManagerCompWrap` = async only | **Split** |
-| Agentino `CServiceControllerProxyComp` stacks both wraps; reconcile/Start/Stop async-only | **Done** |
+| `TClientRequestManagerCompWrap` = sync only; async via `QFuture`-based `IAsyncGqlClient::SendRequest` (ImtCore PR #786 removed `TAsyncClientRequestManagerCompWrap`) | **Split** |
+| Agentino `CServiceControllerProxyComp`: sync wrap + local `QFuture`-based `SendModelRequestAsync`; reconcile/Start/Stop async-only | **Done** |
 | Full GQL mutation handlers without Wait | Open (needs async GQL response framework) |
 | **R3** typed-WS physical wire | Deferred |
 

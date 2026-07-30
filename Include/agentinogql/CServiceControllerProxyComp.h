@@ -2,14 +2,19 @@
 #pragma once
 
 
+// stdlib
+#include <functional>
+
 // Qt includes
+#include <QtCore/QFuture>
+#include <QtCore/QFutureWatcher>
 #include <QtCore/QJsonObject>
 #include <QtCore/QObject>
 #include <QtCore/QSet>
 #include <QtCore/QTimer>
 
 // ImtCore includes
-#include <imtclientgql/TAsyncClientRequestManagerCompWrap.h>
+#include <imtclientgql/IAsyncGqlClient.h>
 #include <imtclientgql/TClientRequestManagerCompWrap.h>
 
 // Agentino includes
@@ -36,25 +41,24 @@ namespace agentinogql
 /**
 	Server proxy for agent services.
 
-	Inherits stacked request managers (separate classes, not dual-logic one wrap):
+	Combines sync and async request paths:
 	- \c TClientRequestManagerCompWrap — sync \c ApiClient (\c IGqlClient)
-	- \c TAsyncClientRequestManagerCompWrap — async \c AsyncApiClient (\c IAsyncGqlClient)
+	- local \c SendModelRequestAsync — async \c AsyncApiClient
+	  (\c QFuture-based \c IAsyncGqlClient::SendRequest)
 
 	Mirror reconcile / Start / Stop use async only (no Wait on the WS path).
 	Other agent mutations still use sync \c SendModelRequest via \c ApiClient.
 */
 class CServiceControllerProxyComp:
 			public QObject,
-			public imtclientgql::TAsyncClientRequestManagerCompWrap<
-						imtclientgql::TClientRequestManagerCompWrap<
-									sdl::V1_0::agentino::CServicesGqlHandlerCompBase>>,
+			public imtclientgql::TClientRequestManagerCompWrap<
+						sdl::V1_0::agentino::CServicesGqlHandlerCompBase>,
 			virtual public IServiceCollectionSynchronizer
 {
 	Q_OBJECT
 public:
-	typedef imtclientgql::TAsyncClientRequestManagerCompWrap<
-				imtclientgql::TClientRequestManagerCompWrap<
-							sdl::V1_0::agentino::CServicesGqlHandlerCompBase>> BaseClass;
+	typedef imtclientgql::TClientRequestManagerCompWrap<
+				sdl::V1_0::agentino::CServicesGqlHandlerCompBase> BaseClass;
 
 	CServiceControllerProxyComp();
 
@@ -64,7 +68,8 @@ public:
 		I_ASSIGN(m_serviceStatusCollectionCompPtr, "ServiceStatusCollection", "Service status collection", false, "ServiceStatusCollection");
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", false, "AgentCollection");
 		I_ASSIGN(m_enrollmentControllerCompPtr, "EnrollmentController", "Gate reconcile/mirror for non-Approved agents", false, "EnrollmentStore");
-		// ApiClient + AsyncApiClient come from the stacked base wraps.
+		I_ASSIGN(m_asyncApiClientCompPtr, "AsyncApiClient", "Asynchronous API Client (IAsyncGqlClient)", true, "AsyncApiClient");
+		// ApiClient comes from the base wrap.
 		// Wire both to WebSocketServerFramework (IGqlClient via SyncAdapter, IAsyncGqlClient via SubscriptionManager).
 	I_END_COMPONENT;
 
@@ -157,6 +162,88 @@ protected:
 
 	// Live agent → server collection notify (does not use reverse subscription path).
 	QJsonObject HandleAgentServiceCollectionNotify(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const;
+
+	/**
+		Non-blocking model request via the async client
+		(\c QFuture-based \c IAsyncGqlClient::SendRequest — replaces the removed
+		ImtCore \c TAsyncClientRequestManagerCompWrap::SendModelRequestAsync).
+		\param callback invoked once with (parsedSdl, errorMessage) on this
+		component's thread.
+		Returns \c false if the async client is missing or the request is invalid.
+	*/
+	template<class SdlClass>
+	bool SendModelRequestAsync(
+				const imtgql::IGqlRequest& request,
+				std::function<void(SdlClass, QString)> callback) const
+	{
+		if (!m_asyncApiClientCompPtr.IsValid() || !callback){
+			return false;
+		}
+
+		imtclientgql::IGqlClient::GqlRequestPtr requestPtr;
+		requestPtr.MoveCastedPtr(request.CloneMe());
+		if (!requestPtr.IsValid()){
+			callback(SdlClass(), QStringLiteral("Request is invalid"));
+			return false;
+		}
+
+		imtclientgql::CClientRequestModelHelpers::AttachMissingContext(requestPtr);
+
+		const QByteArray commandId = request.GetCommandId();
+
+		QFuture<imtclientgql::IAsyncGqlClient::GqlResult> future =
+					m_asyncApiClientCompPtr->SendRequest(requestPtr);
+
+		// The watcher lives on this component's thread: SendModelRequestAsync may be
+		// called from GQL worker threads without an event loop, and QFutureWatcher
+		// needs one to deliver finished(). Arm it via a queued call on its own thread
+		// (same invokeMethod pattern as ImtCore's CSubscriptionManagerComp).
+		auto* watcherPtr = new QFutureWatcher<imtclientgql::IAsyncGqlClient::GqlResult>();
+		QObject::connect(
+					watcherPtr,
+					&QFutureWatcherBase::finished,
+					watcherPtr,
+					[watcherPtr, callback, commandId]() {
+						const QFuture<imtclientgql::IAsyncGqlClient::GqlResult> finishedFuture =
+									watcherPtr->future();
+						watcherPtr->deleteLater();
+
+						if (finishedFuture.isCanceled() || finishedFuture.resultCount() < 1){
+							callback(SdlClass(), QStringLiteral("Request was cancelled"));
+							return;
+						}
+
+						const imtclientgql::IAsyncGqlClient::GqlResult result = finishedFuture.result();
+						QString error;
+						SdlClass payload;
+						if (result.responsePtr.IsValid()){
+							payload = imtclientgql::CClientRequestModelHelpers::ParseModelResponse<SdlClass>(
+										result.responsePtr->GetResponseData(),
+										commandId,
+										error);
+						}
+						else{
+							error = result.errorMessage.isEmpty()
+										? QStringLiteral("Request failed")
+										: result.errorMessage;
+						}
+						callback(payload, error);
+					});
+		watcherPtr->moveToThread(thread());
+		QMetaObject::invokeMethod(
+					watcherPtr,
+					[watcherPtr, future]() {
+						watcherPtr->setFuture(future);
+					},
+					Qt::QueuedConnection);
+
+		return true;
+	}
+
+	bool HasAsyncApiClient() const
+	{
+		return m_asyncApiClientCompPtr.IsValid();
+	}
 	
 private:
 	template<class SdlGqlRequest, class SdlResponse>
@@ -250,6 +337,7 @@ protected:
 	I_REF(imtbase::IObjectCollection, m_serviceStatusCollectionCompPtr);
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
 	I_REF(IEnrollmentController, m_enrollmentControllerCompPtr);
+	I_REF(imtclientgql::IAsyncGqlClient, m_asyncApiClientCompPtr);
 
 	// Agents with an async ServicesList reconcile in flight. Coalesces overlapping
 	// reconciles: a request that arrives while one is running is deferred, not dropped.
