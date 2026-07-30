@@ -7,7 +7,6 @@
 
 // Qt includes
 #include <QtCore/QFuture>
-#include <QtCore/QFutureWatcher>
 #include <QtCore/QJsonObject>
 #include <QtCore/QObject>
 #include <QtCore/QSet>
@@ -163,81 +162,65 @@ protected:
 	// Live agent → server collection notify (does not use reverse subscription path).
 	QJsonObject HandleAgentServiceCollectionNotify(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const;
 
+	/** Parsed SDL payload plus error message of one completed async model request. */
+	template<class SdlClass>
+	struct AsyncModelResult
+	{
+		SdlClass payload;
+		QString errorMessage;
+	};
+
 	/**
 		Non-blocking model request via the async client
 		(\c QFuture-based \c IAsyncGqlClient::SendRequest — replaces the removed
 		ImtCore \c TAsyncClientRequestManagerCompWrap::SendModelRequestAsync).
-		\param callback invoked once with (parsedSdl, errorMessage) on this
-		component's thread.
-		Returns \c false if the async client is missing or the request is invalid.
+		Returns a future with the parsed SDL payload and the error message;
+		dispatch failures (missing async client, invalid request) are reported
+		through an already-finished future. Consume it with
+		\c QFuture::then(context,...) to receive the result on \a context's thread.
 	*/
 	template<class SdlClass>
-	bool SendModelRequestAsync(
-				const imtgql::IGqlRequest& request,
-				std::function<void(SdlClass, QString)> callback) const
+	QFuture<AsyncModelResult<SdlClass>> SendModelRequestAsync(
+				const imtgql::IGqlRequest& request) const
 	{
-		if (!m_asyncApiClientCompPtr.IsValid() || !callback){
-			return false;
+		using Result = AsyncModelResult<SdlClass>;
+
+		if (!m_asyncApiClientCompPtr.IsValid()){
+			return QtFuture::makeReadyValueFuture(
+						Result{SdlClass(), QStringLiteral("Attribute 'AsyncApiClient' was not set")});
 		}
 
 		imtclientgql::IGqlClient::GqlRequestPtr requestPtr;
 		requestPtr.MoveCastedPtr(request.CloneMe());
 		if (!requestPtr.IsValid()){
-			callback(SdlClass(), QStringLiteral("Request is invalid"));
-			return false;
+			return QtFuture::makeReadyValueFuture(
+						Result{SdlClass(), QStringLiteral("Request is invalid")});
 		}
 
 		imtclientgql::CClientRequestModelHelpers::AttachMissingContext(requestPtr);
 
 		const QByteArray commandId = request.GetCommandId();
 
-		QFuture<imtclientgql::IAsyncGqlClient::GqlResult> future =
-					m_asyncApiClientCompPtr->SendRequest(requestPtr);
-
-		// The watcher lives on this component's thread: SendModelRequestAsync may be
-		// called from GQL worker threads without an event loop, and QFutureWatcher
-		// needs one to deliver finished(). Arm it via a queued call on its own thread
-		// (same invokeMethod pattern as ImtCore's CSubscriptionManagerComp).
-		auto* watcherPtr = new QFutureWatcher<imtclientgql::IAsyncGqlClient::GqlResult>();
-		QObject::connect(
-					watcherPtr,
-					&QFutureWatcherBase::finished,
-					watcherPtr,
-					[watcherPtr, callback, commandId]() {
-						const QFuture<imtclientgql::IAsyncGqlClient::GqlResult> finishedFuture =
-									watcherPtr->future();
-						watcherPtr->deleteLater();
-
-						if (finishedFuture.isCanceled() || finishedFuture.resultCount() < 1){
-							callback(SdlClass(), QStringLiteral("Request was cancelled"));
-							return;
-						}
-
-						const imtclientgql::IAsyncGqlClient::GqlResult result = finishedFuture.result();
-						QString error;
-						SdlClass payload;
+		return m_asyncApiClientCompPtr->SendRequest(requestPtr)
+					.then([commandId](const imtclientgql::IAsyncGqlClient::GqlResult& result) -> Result {
+						Result modelResult;
 						if (result.responsePtr.IsValid()){
-							payload = imtclientgql::CClientRequestModelHelpers::ParseModelResponse<SdlClass>(
-										result.responsePtr->GetResponseData(),
-										commandId,
-										error);
+							modelResult.payload =
+										imtclientgql::CClientRequestModelHelpers::ParseModelResponse<SdlClass>(
+													result.responsePtr->GetResponseData(),
+													commandId,
+													modelResult.errorMessage);
 						}
 						else{
-							error = result.errorMessage.isEmpty()
+							modelResult.errorMessage = result.errorMessage.isEmpty()
 										? QStringLiteral("Request failed")
 										: result.errorMessage;
 						}
-						callback(payload, error);
+						return modelResult;
+					})
+					.onCanceled([]() -> Result {
+						return Result{SdlClass(), QStringLiteral("Request was cancelled")};
 					});
-		watcherPtr->moveToThread(thread());
-		QMetaObject::invokeMethod(
-					watcherPtr,
-					[watcherPtr, future]() {
-						watcherPtr->setFuture(future);
-					},
-					Qt::QueuedConnection);
-
-		return true;
 	}
 
 	bool HasAsyncApiClient() const
