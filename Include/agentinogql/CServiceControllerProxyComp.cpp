@@ -26,7 +26,6 @@
 #include <imtbase/imtbase.h>
 #include <imtcom/IServerConnectionInterface.h>
 #include <imtgql/CGqlContext.h>
-#include <imtclientgql/IAsyncGqlRequestToken.h>
 
 
 namespace agentinogql
@@ -162,16 +161,16 @@ bool CServiceControllerProxyComp::StartAsyncServiceSync(
 
 	const QByteArray agentIdCopy = agentId;
 	const QByteArray serviceIdCopy = serviceId;
-	imtclientgql::IAsyncGqlRequestTokenPtr token =
+	const bool dispatched =
 				SendModelRequestAsync<sdl::V1_0::agentino::CServiceData>(
 							getGqlRequest,
 							[this, agentIdCopy, serviceIdCopy](
 										sdl::V1_0::agentino::CServiceData serviceData,
 										QString fetchError) {
-								// This completion runs on the SubscriptionManager thread, not this
-								// component's own thread - the same issue as
-								// StartAsyncAgentReconcile's ServicesList completion (see the
-								// comment there). ApplyServicesListReconcile fires one of these
+								// The local SendModelRequestAsync helper delivers this completion
+								// on this component's thread via QFutureWatcher (the old ImtCore
+								// wrapper invoked it on the SubscriptionManager thread).
+								// ApplyServicesListReconcile fires one of these
 								// GetService requests per service in a tight loop, so several of
 								// these completions can race each other and the reconcile's own
 								// seed step across threads. ApplyServiceDataToMirror's
@@ -181,8 +180,9 @@ bool CServiceControllerProxyComp::StartAsyncServiceSync(
 								// duplicate row in the mirror (reproduced: reconciling an agent
 								// with services open left one of them duplicated in the mirror,
 								// and the duplicate's presence is exactly what then also broke its
-								// own status relay). Hop before touching the mirror, same as
-								// everywhere else in this file that mutates it from a callback.
+								// own status relay). Keep the queued hop before touching the
+								// mirror, same as everywhere else in this file that mutates it
+								// from a callback (harmless same-thread re-queue now).
 								QMetaObject::invokeMethod(
 											this,
 											[this, agentIdCopy, serviceIdCopy, serviceData, fetchError]() mutable {
@@ -220,7 +220,7 @@ bool CServiceControllerProxyComp::StartAsyncServiceSync(
 											Qt::QueuedConnection);
 							});
 
-	if (!token.IsValid()){
+	if (!dispatched){
 		errorMessage = QStringLiteral("AsyncApiClient failed to dispatch GetService");
 		return false;
 	}
@@ -293,8 +293,8 @@ bool CServiceControllerProxyComp::SyncAgentServicesInMirror(
 		}
 	}
 
-	// Reconcile is always non-blocking via TAsyncClientRequestManagerCompWrap
-	// (AsyncApiClient → SubscriptionManager IAsyncGqlClient).
+	// Reconcile is always non-blocking via the local SendModelRequestAsync helper
+	// (AsyncApiClient → SubscriptionManager IAsyncGqlClient, QFuture-based).
 	return StartAsyncAgentReconcile(agentId, errorMessage);
 }
 
@@ -325,14 +325,17 @@ bool CServiceControllerProxyComp::StartAsyncAgentReconcile(
 	}
 	AppendServicesListFields(listGqlRequest);
 
-	// Capture agentId; callback runs on SubscriptionManager thread without nested loop.
+	// Capture agentId; callback is delivered on this component's thread (QFutureWatcher)
+	// without a nested loop.
 	const QByteArray agentIdCopy = agentId;
 	CServiceControllerProxyComp* self = const_cast<CServiceControllerProxyComp*>(this);
-	imtclientgql::IAsyncGqlRequestTokenPtr token = SendModelRequestAsync<sdl::V1_0::agentino::CServiceListPayload>(
+	const bool dispatched = SendModelRequestAsync<sdl::V1_0::agentino::CServiceListPayload>(
 				listGqlRequest,
 				[self, agentIdCopy](sdl::V1_0::agentino::CServiceListPayload listPayload, QString listError) {
-					// This completion runs on the SubscriptionManager thread, not this
-					// component's own thread (see the old comment below, kept for context).
+					// Historically this completion ran on the SubscriptionManager thread, not
+					// this component's own thread (see the old comment below, kept for context);
+					// the QFuture-based helper now delivers it on this component's thread, and
+					// the queued hop below is kept as a harmless same-thread re-queue.
 					// ApplyServicesListReconcile mutates m_agentsBeingReconciled and writes
 					// ServiceManager / ServiceStatusCollection, whose change notifications
 					// cascade synchronously to observers (including AgentChangeObserver's
@@ -368,7 +371,7 @@ bool CServiceControllerProxyComp::StartAsyncAgentReconcile(
 								Qt::QueuedConnection);
 				});
 
-	if (!token.IsValid()){
+	if (!dispatched){
 		m_agentsBeingReconciled.remove(agentId);
 		errorMessage = QStringLiteral("AsyncApiClient failed to dispatch ServicesList");
 		return false;
@@ -833,7 +836,7 @@ sdl::V1_0::agentino::CServiceStatusResponse CServiceControllerProxyComp::OnStart
 	sdl::V1_0::agentino::CServiceStatusResponse retVal;
 	retVal.status = sdl::V1_0::agentino::ServiceStatus::STARTING;
 
-	imtclientgql::IAsyncGqlRequestTokenPtr token = SendModelRequestAsync<sdl::V1_0::agentino::CServiceStatusResponse>(
+	const bool startDispatched = SendModelRequestAsync<sdl::V1_0::agentino::CServiceStatusResponse>(
 				gqlRequest,
 				[this](sdl::V1_0::agentino::CServiceStatusResponse response, QString err) {
 					Q_UNUSED(response);
@@ -841,7 +844,7 @@ sdl::V1_0::agentino::CServiceStatusResponse CServiceControllerProxyComp::OnStart
 						SendErrorMessage(0, err, "CServiceControllerProxyComp");
 					}
 				});
-	if (!token.IsValid()){
+	if (!startDispatched){
 		errorMessage = QStringLiteral("AsyncApiClient failed to dispatch StartService");
 		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 		return sdl::V1_0::agentino::CServiceStatusResponse();
@@ -870,7 +873,7 @@ sdl::V1_0::agentino::CServiceStatusResponse CServiceControllerProxyComp::OnStopS
 	sdl::V1_0::agentino::CServiceStatusResponse retVal;
 	retVal.status = sdl::V1_0::agentino::ServiceStatus::STOPPING;
 
-	imtclientgql::IAsyncGqlRequestTokenPtr token = SendModelRequestAsync<sdl::V1_0::agentino::CServiceStatusResponse>(
+	const bool stopDispatched = SendModelRequestAsync<sdl::V1_0::agentino::CServiceStatusResponse>(
 				gqlRequest,
 				[this](sdl::V1_0::agentino::CServiceStatusResponse response, QString err) {
 					Q_UNUSED(response);
@@ -878,7 +881,7 @@ sdl::V1_0::agentino::CServiceStatusResponse CServiceControllerProxyComp::OnStopS
 						SendErrorMessage(0, err, "CServiceControllerProxyComp");
 					}
 				});
-	if (!token.IsValid()){
+	if (!stopDispatched){
 		errorMessage = QStringLiteral("AsyncApiClient failed to dispatch StopService");
 		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
 		return sdl::V1_0::agentino::CServiceStatusResponse();

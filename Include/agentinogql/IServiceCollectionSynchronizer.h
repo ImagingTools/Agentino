@@ -32,7 +32,7 @@ public:
 		Fetches the current data of a single service from the owning agent and
 		inserts it into (or updates it in) the server-side mirror.
 
-		**Non-blocking** (\c TAsyncClientRequestManagerCompWrap / \c IAsyncGqlClient):
+		**Non-blocking** (\c QFuture-based \c IAsyncGqlClient):
 		\c true means GetService was dispatched, not that the mirror already holds the row.
 		A blocking Wait on the WebSocket completion path deadlocks agent traffic.
 
