@@ -154,7 +154,7 @@ bool CAgentChangeObserverComp::ParseServiceStatus(
 			agentinodata::IServiceStatusInfo::ServiceStatus& status)
 {
 	// Single shared parser: the agent publishes status as I_DECLARE_ENUM names
-	// (EmitChangeSignal), as ProcessStateEnum ids (GetService / ListObjects) and as the
+	// (EmitChangeSignal), as ProcessStateEnum ids (GetService / GetObjectListFromRequest) and as the
 	// uppercase GQL wire form. Both the live push path here and the reconcile path in
 	// CServiceControllerProxyComp must interpret them identically.
 	return agentinodata::GetServiceStatusFromRepresentation(statusText, status);

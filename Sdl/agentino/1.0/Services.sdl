@@ -33,7 +33,7 @@ type ServiceItem {
 
 type ServiceListPayload{
 	items: [ServiceItem]!
-	# ListObjects returns pagesCount/totalCount; required for web fromObject() (see AgentListPayload).
+	# GetObjectListFromRequest returns pagesCount/totalCount; required for web fromObject() (see AgentListPayload).
 	notification: NotificationItem
 }
 

@@ -539,7 +539,7 @@ QJsonObject CAgentCollectionControllerComp::InsertObject(
 }
 
 
-QJsonObject CAgentCollectionControllerComp::ListObjects(
+QJsonObject CAgentCollectionControllerComp::GetObjectListFromRequest(
 			const imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
@@ -565,7 +565,7 @@ QJsonObject CAgentCollectionControllerComp::ListObjects(
 	// is actually present - RemoteCollectionView's generic CollectionRepresentation sends
 	// "selectionParams" (CreateSubCollectionInput), not the "viewParams" shape AgentListInput
 	// itself declares, so only checking "viewParams" would silently never see the sort/filter
-	// the client actually sent - same dual check as the base ListObjects (CObjectCollectionControllerCompBase.cpp).
+	// the client actually sent - same dual check as the base GetObjectListFromRequest (CObjectCollectionControllerCompBase.cpp).
 	QByteArray sortFieldId;
 	imtbase::IComplexCollectionFilter::SortingOrder sortingOrder = imtbase::IComplexCollectionFilter::SO_NO_ORDER;
 	iprm::CParamsSet filterParams;

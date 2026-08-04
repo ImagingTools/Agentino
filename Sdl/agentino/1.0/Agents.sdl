@@ -53,7 +53,7 @@ type AgentListPayload{
 	# Always the full unfiltered breakdown (independent of this response's own "status" filter),
 	# so filter buttons can label themselves ("Pending (2)") without a second round trip.
 	counts: AgentStatusCounts
-	# ListObjects always returns pagesCount/totalCount (same shape as MessageListPayload).
+	# GetObjectListFromRequest always returns pagesCount/totalCount (same shape as MessageListPayload).
 	# Required for web fromObject() — unknown object keys call createComponent() and crash if missing.
 	notification: NotificationItem
 }

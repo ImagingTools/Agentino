@@ -1952,7 +1952,7 @@ void CServiceControllerProxyComp::RemoveServiceStatuses(const QByteArrayList& se
 
 void CServiceControllerProxyComp::AppendServicesListFields(imtgql::CGqlRequest& gqlRequest)
 {
-	// Matches agent ListObjects/GetInformationIds("items") expectations.
+	// Matches agent GetObjectListFromRequest/GetInformationIds("items") expectations.
 	imtgql::CGqlFieldObject itemsFields;
 	itemsFields.InsertField("id");
 	itemsFields.InsertField("typeId");

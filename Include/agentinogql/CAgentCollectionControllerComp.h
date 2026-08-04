@@ -74,14 +74,14 @@ protected:
 				QString& errorMessage) const override;
 
 	// reimplemented (imtservergql::CObjectCollectionControllerCompBase)
-	// Full reimplementation (not a wrap of BaseClass::ListObjects, matching this codebase's own
+	// Full reimplementation (not a wrap of BaseClass::GetObjectListFromRequest, matching this codebase's own
 	// convention - e.g. CMessageCollectionControllerComp/CMirroredServiceCollectionControllerComp):
 	// "status" is computed live per agent (ComputeAgentStatus), never stored, so the generic
 	// ComplexFilter/filterModel machinery can't see it to filter on it - and for this in-memory
 	// ObjectCollection, filterModel/offset/count are inert anyway (CObjectCollectionBase's
 	// iterator ignores them). This filters by the "status" input directly and also returns a
 	// full per-bucket count breakdown for the Agents page's filter buttons.
-	virtual QJsonObject ListObjects(
+	virtual QJsonObject GetObjectListFromRequest(
 				const imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
 
@@ -92,10 +92,10 @@ private:
 	bool IsAgentApproved(const QByteArray& agentId) const;
 	// Connected/Disconnected/Undefined (Approved agent's live connection state) or
 	// Pending/Suspended/Rejected/Revoked (enrollment state overrides connection state) - shared
-	// by CreateRepresentationFromObject's "status" field and ListObjects' filter/counts.
+	// by CreateRepresentationFromObject's "status" field and GetObjectListFromRequest' filter/counts.
 	QString ComputeAgentStatus(const QByteArray& agentId) const;
-	// Comparable value for one AgentItem field, for ListObjects' own sort (the in-memory
-	// ObjectCollection this component sits on does not sort itself - see ListObjects). Covers
+	// Comparable value for one AgentItem field, for GetObjectListFromRequest' own sort (the in-memory
+	// ObjectCollection this component sits on does not sort itself - see GetObjectListFromRequest). Covers
 	// AgentHeadersDataProvider's SortableHeaderIds: name/description (String), computerName/
 	// version (String), status (String, via ComputeAgentStatus), services (Int, count),
 	// lastConnection (DateTime).

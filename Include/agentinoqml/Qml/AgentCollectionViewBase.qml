@@ -29,7 +29,7 @@ RemoteCollectionView {
 
 	// "status" is computed live server-side (connection state + enrollment state), never
 	// stored, so the generic ComplexFilter/collectionFilter machinery this view's
-	// filterMenu/FilterPanelDecorator would normally drive can't see it at all - CAgentCollectionControllerComp::ListObjects
+	// filterMenu/FilterPanelDecorator would normally drive can't see it at all - CAgentCollectionControllerComp::GetObjectListFromRequest
 	// filters directly on a plain "status" input param instead. This overrides the default
 	// dataControllerComp (see RemoteCollectionView.qml) verbatim, just adding that one param.
 	property string statusFilter: ""
@@ -79,7 +79,7 @@ RemoteCollectionView {
 			let payloadFields = Gql.GqlObject("payload");
 
 			// The server always builds the full "items" array regardless of selection (its
-			// ListObjects override doesn't gate the array itself on request fields, only the
+			// GetObjectListFromRequest override doesn't gate the array itself on request fields, only the
 			// per-item field population does) - but the client's generated fromObject() needs
 			// a well-formed item (at least one recognized field) per array entry to resolve
 			// each AgentItem via createElement(), or it throws trying to parse a bare {}. "id"
