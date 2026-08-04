@@ -37,7 +37,7 @@ bool CAgentsSubscriberProxyControllerComp::RegisterSubscription(
 
 	bool retVal = BaseClass::RegisterSubscription(subscriptionId, gqlRequest, networkRequest, errorMessage);
 	if (retVal){
-		QByteArray remoteSubscriptionId = m_subscriptionManagerCompPtr->RegisterSubscription(gqlRequest, this);
+		QByteArray remoteSubscriptionId = m_subscriptionManagerCompPtr->RegisterSubscription(gqlRequest, *this);
 		m_remoteSubscriptions.insert(remoteSubscriptionId, subscriptionId);
 	}
 
@@ -55,7 +55,7 @@ bool CAgentsSubscriberProxyControllerComp::UnregisterSubscription(const QByteArr
 	if (retVal){
 		for (auto it = m_remoteSubscriptions.constBegin(); it != m_remoteSubscriptions.constEnd(); ++it){
 			if (it.value() == subscriptionId){
-				m_subscriptionManagerCompPtr->UnregisterSubscription(it.key());
+				m_subscriptionManagerCompPtr->UnregisterSubscription(it.key(), *this);
 				m_remoteSubscriptions.remove(it.key());
 				retVal = true;
 				break;
