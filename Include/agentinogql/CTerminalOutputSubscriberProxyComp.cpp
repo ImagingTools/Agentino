@@ -120,7 +120,7 @@ bool CTerminalOutputSubscriberProxyComp::RegisterSubscription(
 	}
 
 	const imtgql::CGqlRequest agentRequest = MakeAgentSubscriptionRequest(gqlRequest);
-	const QByteArray remoteSubscriptionId = m_subscriptionManagerCompPtr->RegisterSubscription(agentRequest, this);
+	const QByteArray remoteSubscriptionId = m_subscriptionManagerCompPtr->RegisterSubscription(agentRequest, *this);
 	if (remoteSubscriptionId.isEmpty()){
 		BaseClass::UnregisterSubscription(subscriptionId);
 		errorMessage = QStringLiteral("Unable to open terminal output subscription on the agent");
@@ -160,7 +160,7 @@ bool CTerminalOutputSubscriberProxyComp::UnregisterSubscription(const QByteArray
 			if (it.value() == subscriptionId){
 				const QByteArray remoteSubscriptionId = it.key();
 				stateLocker.unlock();
-				m_subscriptionManagerCompPtr->UnregisterSubscription(remoteSubscriptionId);
+				m_subscriptionManagerCompPtr->UnregisterSubscription(remoteSubscriptionId, *this);
 				stateLocker.relock();
 				m_remoteSubscriptions.remove(remoteSubscriptionId);
 				break;
