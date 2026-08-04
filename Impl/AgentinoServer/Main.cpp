@@ -10,7 +10,7 @@
 int main(int argc, char *argv[])
 {
 #ifdef WEB_COMPILE
-	Q_INIT_RESOURCE(agentinoqmlWeb);
+	Q_INIT_RESOURCE(agentinoWeb);
 #endif
 	Q_INIT_RESOURCE(agentinoqml);
 	Q_INIT_RESOURCE(AgentinoLoc);

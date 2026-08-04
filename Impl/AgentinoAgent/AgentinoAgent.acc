@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6500" Description="ACF"/>
+            <Version Id="0" Number="6510" Description="ACF"/>
             <Version Id="1" Number="2438" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="395264" Description="Qt Framework"/>
+            <Version Id="1023" Number="395267" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -41,7 +41,7 @@
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ApplicationId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Agentino"/>
+                        <Data IsEnabled="true" Value="Agent"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ApplicationName" Type="Text" ExportId="">
                         <Data IsEnabled="true" Value="Agentino Agent"/>
