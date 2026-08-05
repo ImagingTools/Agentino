@@ -525,7 +525,7 @@ void CAgentChangeObserverComp::RegisterStatusSubscription(const QByteArray& agen
 	gqlContextPtr->SetHeaders(headers);
 	gqlAddRequest.SetGqlContext(gqlContextPtr);
 
-	QByteArray subscriptionId = m_subscriptionManagerCompPtr->RegisterSubscription(gqlAddRequest, this);
+	QByteArray subscriptionId = m_subscriptionManagerCompPtr->RegisterSubscription(gqlAddRequest, *this);
 	if (!subscriptionId.isEmpty()){
 		m_registeredAgents.insert(agentId, subscriptionId);
 	}
@@ -561,7 +561,7 @@ void CAgentChangeObserverComp::RegisterCollectionSubscription(const QByteArray& 
 	collectionContextPtr->SetHeaders(collectionHeaders);
 	gqlCollectionRequest.SetGqlContext(collectionContextPtr);
 
-	QByteArray collectionSubscriptionId = m_subscriptionManagerCompPtr->RegisterSubscription(gqlCollectionRequest, this);
+	QByteArray collectionSubscriptionId = m_subscriptionManagerCompPtr->RegisterSubscription(gqlCollectionRequest, *this);
 	if (!collectionSubscriptionId.isEmpty()){
 		m_registeredServiceCollectionAgents.insert(agentId, collectionSubscriptionId);
 	}
@@ -582,7 +582,7 @@ void CAgentChangeObserverComp::UnregisterStatusSubscription(const QByteArray& ag
 	}
 
 	if (m_registeredAgents.contains(agentId)){
-		m_subscriptionManagerCompPtr->UnregisterSubscription(m_registeredAgents[agentId]);
+		m_subscriptionManagerCompPtr->UnregisterSubscription(m_registeredAgents[agentId], *this);
 		m_registeredAgents.remove(agentId);
 	}
 }
@@ -595,7 +595,7 @@ void CAgentChangeObserverComp::UnregisterCollectionSubscription(const QByteArray
 	}
 
 	if (m_registeredServiceCollectionAgents.contains(agentId)){
-		m_subscriptionManagerCompPtr->UnregisterSubscription(m_registeredServiceCollectionAgents[agentId]);
+		m_subscriptionManagerCompPtr->UnregisterSubscription(m_registeredServiceCollectionAgents[agentId], *this);
 		m_registeredServiceCollectionAgents.remove(agentId);
 	}
 }

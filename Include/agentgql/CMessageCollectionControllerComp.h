@@ -34,7 +34,7 @@ protected:
 				const sdl::V1_0::agentino::CGetServiceLogGqlRequest& getServiceLogRequest,
 				sdl::V1_0::imtbase::CMessageItem& representationObject,
 				QString& errorMessage) const override;
-	virtual QJsonObject ListObjects(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
+	virtual QJsonObject GetObjectListFromRequest(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 	// reimplemented (icomp::CComponentBase)
 	virtual void OnComponentDestroyed() override;
 

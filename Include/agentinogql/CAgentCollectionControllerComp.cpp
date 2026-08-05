@@ -539,7 +539,7 @@ QJsonObject CAgentCollectionControllerComp::InsertObject(
 }
 
 
-QJsonObject CAgentCollectionControllerComp::ListObjects(
+QJsonObject CAgentCollectionControllerComp::GetObjectListFromRequest(
 			const imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {

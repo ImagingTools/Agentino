@@ -94,7 +94,7 @@ bool CMessageCollectionControllerComp::CreateRepresentationFromObject(
 }
 
 
-QJsonObject CMessageCollectionControllerComp::ListObjects(
+QJsonObject CMessageCollectionControllerComp::GetObjectListFromRequest(
 	const imtgql::CGqlRequest& gqlRequest,
 	QString &errorMessage) const
 {

@@ -448,7 +448,7 @@ bool CMirroredServiceCollectionControllerComp::SetupGqlItem(
 }
 
 
-QJsonObject CMirroredServiceCollectionControllerComp::ListObjects(
+QJsonObject CMirroredServiceCollectionControllerComp::GetObjectListFromRequest(
 			const imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {

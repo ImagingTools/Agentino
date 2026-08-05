@@ -81,7 +81,7 @@ protected:
 	// ObjectCollection, filterModel/offset/count are inert anyway (CObjectCollectionBase's
 	// iterator ignores them). This filters by the "status" input directly and also returns a
 	// full per-bucket count breakdown for the Agents page's filter buttons.
-	virtual QJsonObject ListObjects(
+	virtual QJsonObject GetObjectListFromRequest(
 				const imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
 
