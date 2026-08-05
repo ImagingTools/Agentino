@@ -21,7 +21,6 @@ Item {
 
         Component.onCompleted: {
             designProvider.setDesignSchema("Light");
-            application.firstModelsInit();
 
             Style.topRightPanelDecorator = topRightPanelDecoratorComp;
         }

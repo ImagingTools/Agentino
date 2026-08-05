@@ -28,6 +28,9 @@
                     <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/ClientId2"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="DatabaseConnectionChecker" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="DatabaseEngine"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="DatabaseEngine"/>
                     </AttributeInfo>
@@ -60,6 +63,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="SuperuserProvider" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="SuperuserProvider"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TerminalSessionManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="TerminalController/TerminalSessionManager"/>
@@ -378,6 +384,18 @@
                 <AttributeInfoMap>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="SuperuserProvider" PackageId="ImtAuthDbPck" ComponentId="SuperuserProvider">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="SuperuserId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="su"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="UserCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/UserRepository"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>

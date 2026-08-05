@@ -2,8 +2,8 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6435" Description="ACF"/>
-            <Version Id="1" Number="2410" Description="ACF-Solutions"/>
+            <Version Id="0" Number="6500" Description="ACF"/>
+            <Version Id="1" Number="2438" Description="ACF-Solutions"/>
             <Version Id="1023" Number="395264" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
@@ -15,15 +15,6 @@
                 <AttributeInfoMap>
                     <AttributeInfo Id="ApiClient" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ApiClient"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TypeIds" Type="Id[]" ExportId="">
-                        <Data IsEnabled="true">
-                            <Values>
-                                <Value>Role</Value>
-                                <Value>User</Value>
-                                <Value>Group</Value>
-                            </Values>
-                        </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
@@ -125,6 +116,15 @@
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TypeIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>Role</Value>
+                                <Value>User</Value>
+                                <Value>Group</Value>
+                            </Values>
+                        </Data>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -246,6 +246,9 @@
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="DatabaseConnectionChecker" Type="Reference" ExportId="DatabaseConnectionChecker">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="DatabaseEngine" Type="Reference" ExportId="DatabaseEngine">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -274,6 +277,9 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="ServerConnectionInterface">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="SuperuserProvider" Type="Reference" ExportId="SuperuserProvider">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
@@ -362,7 +368,7 @@
                                 <Value>AvailableConnections</Value>
                                 <Value>LoadPlugin</Value>
                                 <Value>SetOutputConnection</Value>
-								<Value>ClearServiceLog</Value>
+                                <Value>ClearServiceLog</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
