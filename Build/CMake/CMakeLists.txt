@@ -14,8 +14,8 @@ if(NOT DEFINED WEB_COMPILE)
 	set(WEB_COMPILE ON CACHE BOOL "Build whith web compatibility")
 endif()
 
-if(NOT DEFINED BUILDDIR)
-	set(BUILDDIR "${CMAKE_CURRENT_LIST_DIR}/../../..")
+if(NOT DEFINED AGENTINODIR_BUILD)
+	set(AGENTINODIR_BUILD "${CMAKE_CURRENT_LIST_DIR}/../..")
 endif()
 
 if(NOT DEFINED IMTCOREDIR)
@@ -37,7 +37,7 @@ set(INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/../../Include")
 set(IMPL_DIR "${CMAKE_CURRENT_LIST_DIR}/../../Impl")
 set(SDL_DIR "${CMAKE_CURRENT_LIST_DIR}/../../Sdl")
 
-set(AUX_INCLUDE_DIR "${BUILDDIR}/Agentino/AuxInclude/${TARGETNAME}/GeneratedFiles")
+set(AUX_INCLUDE_DIR "${AGENTINODIR_BUILD}/AuxInclude/${TARGETNAME}/GeneratedFiles")
 
 include_directories("${AUX_INCLUDE_DIR}/../")
 include_directories("${AUX_INCLUDE_DIR}/")
