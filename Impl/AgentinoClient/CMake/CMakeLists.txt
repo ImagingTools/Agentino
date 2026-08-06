@@ -25,15 +25,6 @@ include(${IMTCOREDIR}/Config/CMake/WebCompiler.cmake)
 include(${ACFDIR}/Config/CMake/CustomBuild.cmake)
 include(${ACFDIR}/Config/CMake/ApplicationConfig.cmake)
 
-target_link_libraries(${PROJECT_NAME} imtrest imtlicgui imtlicgql imtclientgql imtbasesdl imtgql imtauthdb imtdb imtbase imtapp imtfile imtcom iser imtchat imtchatdb imtdeskdb)
-target_link_libraries(${PROJECT_NAME} i2d idoc imtqml imtstyle imtauthgui imtauthgql imtstylecontrolsqml imtgui imtguigql imtlic imtauth imtauthsdl imtappsdl imtcolorsdl imtserverapp imt2dsdl)
-target_link_libraries(${PROJECT_NAME} ImtCoreLoc AgentinoLoc AcfLoc AcfSlnLoc)
-target_link_libraries(${PROJECT_NAME} agentinodata agentinogql agentgql agentinoqml agentinosdl)
-target_link_libraries(${PROJECT_NAME} imtcontrolsqml imtdocguiqml imtcolguiqml imtguiqml imtguigqlqml imtauthguiqml imtlicguiqml)
-target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Quick Qt${QT_VERSION_MAJOR}::WebSockets)
-target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Qml Qt${QT_VERSION_MAJOR}::Widgets)
-
-
 include(${ACFDIR}/Config/CMake/AcfQt.cmake)
 include(${ACFDIR}/Config/CMake/AcfStd.cmake)
 include(${IMTCOREDIR}/Config/CMake/OpenSSL.cmake)

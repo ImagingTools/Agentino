@@ -1,12 +1,7 @@
 # ---------------------------------------------------------------------------
 # Clean, target-based inter-library dependency graph for Agentino.
 #
-# This mirrors the approach introduced for the ACF foundation (Acf) in
-# Config/CMake/AcfLibraryDependencies.cmake, for AcfSln in
-# Config/CMake/AcfSlnLibraryDependencies.cmake, for IAcf in
-# Config/CMake/IAcfLibraryDependencies.cmake, for ImtCore in
-# Config/CMake/ImtCoreLibraryDependencies.cmake and for IotPlatform in
-# Config/CMake/IotPlatformLibraryDependencies.cmake: instead of relying on the
+# Instead of relying on the
 # final executable/package link to resolve symbols and on a hand-tuned build
 # order (the add_dependencies()/inline target_link_libraries() spread across the
 # per-library CMake files), the dependencies between the Agentino libraries - and
@@ -67,8 +62,7 @@ endfunction()
 
 # ImtCore's SDL base library only carries the imtgql usage requirement for
 # consumers that opt into it. Agentino's SDL is GraphQL-oriented, so expose
-# imtgql through imtbasesdl for every Agentino library that builds on the SDL
-# (mirrors IotPlatformLibraryDependencies.cmake).
+# imtgql through imtbasesdl for every Agentino library that builds on the SDL.
 agentino_declare_library_dependencies(ImtCore::imtbasesdl	LINK_SCOPE INTERFACE	ImtCore::imtgql)
 
 
@@ -87,3 +81,41 @@ endif()
 
 # --- Arxc-generated static libraries ----------------------------------------
 agentino_declare_library_dependencies(AgentinoLoc		LINK_SCOPE PUBLIC	Acf::icomp)
+
+
+# --- Packages ---------------------------------------------------------------
+agentino_declare_library_dependencies(AgentinoDataPck	LINK_SCOPE PRIVATE	agentinogql ImtCore::imtguigql ImtCore::imtgui)
+agentino_declare_library_dependencies(AgentinoGqlPck	LINK_SCOPE PRIVATE	agentgql agentinogql ImtCore::imtserverapp)
+agentino_declare_library_dependencies(AgentGqlPck	LINK_SCOPE PRIVATE	agentgql agentinodata ImtCore::imtserverapp)
+
+
+# --- Applications -----------------------------------------------------------
+# Agent (client/agent runtime).
+agentino_declare_library_dependencies(AgentinoAgent	LINK_SCOPE PRIVATE
+	agentinoqml agentinogql agentgql
+	AgentinoLoc ImtCore::ImtCoreLoc Acf::AcfLoc AcfSln::AcfSlnLoc AcfSln::iauth AcfSln::iservice
+	ImtCore::imtserverapp ImtCore::imt2dsdl ImtCore::imtlicgql ImtCore::imtauthgql ImtCore::imtauthdb
+	ImtCore::imtchatdb ImtCore::imtdeskdb ImtCore::imtlog
+	ImtCore::imtcontrolsqml ImtCore::imtstylecontrolsqml ImtCore::imtguiqml ImtCore::imtguigqlqml
+	ImtCore::imtauthguiqml ImtCore::imtcolguiqml ImtCore::imtdocguiqml ImtCore::imtlicguiqml
+	Qt${QT_VERSION_MAJOR}::WebSockets Qt${QT_VERSION_MAJOR}::Quick Qt${QT_VERSION_MAJOR}::Sql Qt${QT_VERSION_MAJOR}::Widgets)
+
+# Server (server/console component).
+agentino_declare_library_dependencies(AgentinoServer	LINK_SCOPE PRIVATE
+	agentinoqml agentinogql agentgql
+	AgentinoLoc ImtCore::ImtCoreLoc Acf::AcfLoc AcfSln::AcfSlnLoc AcfSln::iauth AcfSln::iservice Acf::iprm Acf::idoc
+	ImtCore::imtserverapp ImtCore::imt2dsdl ImtCore::imtlicgql ImtCore::imtauthgql ImtCore::imtauthdb
+	ImtCore::imtchatdb ImtCore::imtdeskdb ImtCore::imtlog
+	ImtCore::imtcontrolsqml ImtCore::imtstylecontrolsqml ImtCore::imtguiqml ImtCore::imtguigqlqml
+	ImtCore::imtauthguiqml ImtCore::imtcolguiqml ImtCore::imtdocguiqml ImtCore::imtlicguiqml
+	Qt${QT_VERSION_MAJOR}::WebSockets Qt${QT_VERSION_MAJOR}::Sql Qt${QT_VERSION_MAJOR}::Quick Qt${QT_VERSION_MAJOR}::Widgets)
+
+# Web/desktop client.
+agentino_declare_library_dependencies(AgentinoClient	LINK_SCOPE PRIVATE
+	agentinoqml agentinogql agentgql
+	AgentinoLoc ImtCore::ImtCoreLoc Acf::AcfLoc AcfSln::AcfSlnLoc Acf::iser Acf::i2d Acf::idoc
+	ImtCore::imtserverapp ImtCore::imt2dsdl ImtCore::imtlicgql ImtCore::imtauthgql ImtCore::imtauthdb
+	ImtCore::imtchatdb ImtCore::imtdeskdb
+	ImtCore::imtcontrolsqml ImtCore::imtstylecontrolsqml ImtCore::imtguiqml ImtCore::imtguigqlqml
+	ImtCore::imtauthguiqml ImtCore::imtcolguiqml ImtCore::imtdocguiqml ImtCore::imtlicguiqml
+	Qt${QT_VERSION_MAJOR}::Quick Qt${QT_VERSION_MAJOR}::WebSockets Qt${QT_VERSION_MAJOR}::Qml Qt${QT_VERSION_MAJOR}::Widgets)
