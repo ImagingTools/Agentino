@@ -8,7 +8,7 @@ if(QT_VERSION_MAJOR EQUAL 6)
 	target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Core5Compat)
 endif()
 
-set(buildwebdir ${BUILDDIR}/Agentino/AuxInclude/Web/Agentino)
+set(buildwebdir ${AGENTINODIR_BUILD}/AuxInclude/Web/Agentino)
 
 #copy html from to
 list(APPEND webdirs ${PROJECT_SOURCE_DIR}/../Resources/html)
@@ -62,8 +62,8 @@ if(DEFINED WEB_COMPILE AND WEB_COMPILE)
 
 		list(APPEND envvar "IMTCOREDIR_BUILD=${IMTCOREDIR_BUILD}")
 		list(APPEND envvar "IMTCOREDIR=${IMTCOREDIR}")
-		list(APPEND envvar "BUILD_FOLDER=${CMAKE_BINARY_DIR}")
-		list(APPEND envvar "AGENTINODIR=${CMAKE_BINARY_DIR}")
+		list(APPEND envvar "BUILD_FOLDER=${AGENTINODIR_BUILD}")
+		# list(APPEND envvar "AGENTINODIR=${CMAKE_BINARY_DIR}")
 
 		jq_compile_web(
 			"${webdirs}"
@@ -79,7 +79,7 @@ if(DEFINED WEB_COMPILE AND WEB_COMPILE)
 		set(resname "agent")
 		set(dataroot "/Agent/Views/")
 		set(startqml "${PROJECT_SOURCE_DIR}/../Qml/AgentWeb.qml")
-		set(buildwebdir ${BUILDDIR}/Agentino/AuxInclude/Web/Agent)
+		set(buildwebdir ${AGENTINODIR_BUILD}/AuxInclude/Web/Agent)
 
 		jq_compile_web(
 			"${webdirs}"
