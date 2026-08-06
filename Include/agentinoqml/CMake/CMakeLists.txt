@@ -60,6 +60,11 @@ if(DEFINED WEB_COMPILE AND WEB_COMPILE)
 		set(dataroot "/Agentino/Views/")
 		set(startqml "${PROJECT_SOURCE_DIR}/../Qml/AgentinoWeb.qml")
 
+		list(APPEND envvar "IMTCOREDIR_BUILD=${IMTCOREDIR_BUILD}")
+		list(APPEND envvar "IMTCOREDIR=${IMTCOREDIR}")
+		list(APPEND envvar "BUILD_FOLDER=${CMAKE_BINARY_DIR}")
+		list(APPEND envvar "AGENTINODIR=${CMAKE_BINARY_DIR}")
+
 		jq_compile_web(
 			"${webdirs}"
 			"${buildwebdir}"
@@ -68,22 +73,24 @@ if(DEFINED WEB_COMPILE AND WEB_COMPILE)
 			"${appicon}"
 			"${dataroot}"
 			"${startqml}"
+			"${envvar}"
 		)
 
-	set(resname "agent")
-	set(dataroot "/Agent/Views/")
-	set(startqml "${PROJECT_SOURCE_DIR}/../Qml/AgentWeb.qml")
-	set(buildwebdir ${BUILDDIR}/Agentino/AuxInclude/Web/Agent)
+		set(resname "agent")
+		set(dataroot "/Agent/Views/")
+		set(startqml "${PROJECT_SOURCE_DIR}/../Qml/AgentWeb.qml")
+		set(buildwebdir ${BUILDDIR}/Agentino/AuxInclude/Web/Agent)
 
-	jq_compile_web(
-		"${webdirs}"
-		"${buildwebdir}"
-		"${resname}"
-		"${inputjs}"
-		"${appicon}"
-		"${dataroot}"
-		"${startqml}"
-	)
+		jq_compile_web(
+			"${webdirs}"
+			"${buildwebdir}"
+			"${resname}"
+			"${inputjs}"
+			"${appicon}"
+			"${dataroot}"
+			"${startqml}"
+			"${envvar}"
+		)
 	else()
 		jqml_compile_web2(
 			"${webdirs}"

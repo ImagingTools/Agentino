@@ -157,6 +157,7 @@ class AgentinoConan(ConanFile):
         tc.variables['CMAKE_POLICY_DEFAULT_CMP0063'] = 'NEW'
         tc.variables['CMAKE_VISIBILITY_INLINES_HIDDEN'] = True
         tc.variables['CMAKE_CXX_VISIBILITY_PRESET'] = 'hidden'
+        tc.variables['USE_NEW_WEB'] = True
         tc.generate()
 
         env = Environment()
