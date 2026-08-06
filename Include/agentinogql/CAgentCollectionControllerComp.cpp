@@ -539,7 +539,7 @@ QJsonObject CAgentCollectionControllerComp::InsertObject(
 }
 
 
-QJsonObject CAgentCollectionControllerComp::ListObjects(
+QJsonObject CAgentCollectionControllerComp::GetObjectListFromRequest(
 			const imtgql::CGqlRequest& gqlRequest,
 			QString& errorMessage) const
 {
@@ -556,16 +556,6 @@ QJsonObject CAgentCollectionControllerComp::ListObjects(
 		requestedStatus = inputParamsPtr->GetParamArgumentValue("status").toByteArray();
 	}
 
-	// Header-click sorting (Table -> collectionFilter -> filterModel) - the in-memory
-	// ObjectCollection this component sits on (imtbase::CObjectCollectionComp, wired in
-	// Repositories.acc) never applies filterModel/sorting itself (CObjectCollectionBase::
-	// CreateObjectCollectionIterator ignores its selectionParamsPtr/offset/count entirely -
-	// unlike DB-backed collections that sort at the query level), so this reimplementation
-	// sorts explicitly. PrepareFilters is fed from whichever of "viewParams"/"selectionParams"
-	// is actually present - RemoteCollectionView's generic CollectionRepresentation sends
-	// "selectionParams" (CreateSubCollectionInput), not the "viewParams" shape AgentListInput
-	// itself declares, so only checking "viewParams" would silently never see the sort/filter
-	// the client actually sent - same dual check as the base ListObjects (CObjectCollectionControllerCompBase.cpp).
 	QByteArray sortFieldId;
 	imtbase::IComplexCollectionFilter::SortingOrder sortingOrder = imtbase::IComplexCollectionFilter::SO_NO_ORDER;
 	iprm::CParamsSet filterParams;
@@ -613,10 +603,6 @@ QJsonObject CAgentCollectionControllerComp::ListObjects(
 	int countRejected = 0;
 	int countRevoked = 0;
 
-	// Item JSON is built while the iterator is positioned at each element (SetupGqlItemWithContext
-	// needs a live IObjectCollectionIterator*, and this in-memory collection has no way to seek
-	// to an arbitrary id afterwards) - sorting then just reorders matchedAgentIds and the final
-	// array is assembled from this map, instead of re-iterating per sorted position.
 	QHash<QByteArray, QJsonObject> itemsByAgentId;
 	QByteArrayList matchedAgentIds;
 
@@ -865,9 +851,6 @@ bool CAgentCollectionControllerComp::UpdateServiceStatusFromAgent(const QByteArr
 
 void CAgentCollectionControllerComp::OnTimeout()
 {
-	// Prevent re-entrancy while SendModelRequest pumps the local event loop.
-	// New AgentAdd entries stay in m_connectedAgents and are drained by this loop
-	// or by a subsequent single-shot timer start after we leave.
 	if (m_timeoutRunning){
 		return;
 	}

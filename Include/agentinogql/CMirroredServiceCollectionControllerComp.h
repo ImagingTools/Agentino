@@ -68,7 +68,7 @@ protected:
 				QJsonObject& itemObj,
 				const QByteArray& collectionId,
 				QString& errorMessage) const override;
-	virtual QJsonObject ListObjects(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
+	virtual QJsonObject GetObjectListFromRequest(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const override;
 
 private:
 	/**

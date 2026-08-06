@@ -94,7 +94,7 @@ bool CMessageCollectionControllerComp::CreateRepresentationFromObject(
 }
 
 
-QJsonObject CMessageCollectionControllerComp::ListObjects(
+QJsonObject CMessageCollectionControllerComp::GetObjectListFromRequest(
 	const imtgql::CGqlRequest& gqlRequest,
 	QString &errorMessage) const
 {
@@ -203,11 +203,6 @@ istd::TSharedInterfacePtr<imtbase::IObjectCollection> CMessageCollectionControll
 
 	QMutexLocker pluginMapLocker(&m_pluginMapMutex);
 
-	// Reuse the collection already opened for this service instead of asking the plug-in's
-	// factory to create a new instance (e.g. re-opening a SQLite connection) on every call -
-	// this method is called once per row (from CreateRepresentationFromObject()) in addition
-	// to once from ListObjects(), so recreating the collection here previously reopened the
-	// underlying storage for every single log line.
 	MessageCollectionMap::const_iterator cachedIt = m_messageCollectionMap.constFind(serviceId);
 	if (cachedIt != m_messageCollectionMap.constEnd() && cachedIt.value().IsValid()){
 		return cachedIt.value();
