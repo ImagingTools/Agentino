@@ -613,6 +613,10 @@ QJsonObject CAgentCollectionControllerComp::GetObjectListFromRequest(
 	int countRejected = 0;
 	int countRevoked = 0;
 
+	// Item JSON is built while the iterator is positioned at each element (SetupGqlItemWithContext
+	// needs a live IObjectCollectionIterator*, and this in-memory collection has no way to seek
+	// to an arbitrary id afterwards) - sorting then just reorders matchedAgentIds and the final
+	// array is assembled from this map, instead of re-iterating per sorted position.
 	QHash<QByteArray, QJsonObject> itemsByAgentId;
 	QByteArrayList matchedAgentIds;
 
@@ -861,6 +865,9 @@ bool CAgentCollectionControllerComp::UpdateServiceStatusFromAgent(const QByteArr
 
 void CAgentCollectionControllerComp::OnTimeout()
 {
+	// Prevent re-entrancy while SendModelRequest pumps the local event loop.
+	// New AgentAdd entries stay in m_connectedAgents and are drained by this loop
+	// or by a subsequent single-shot timer start after we leave.
 	if (m_timeoutRunning){
 		return;
 	}
@@ -949,4 +956,5 @@ void CAgentCollectionControllerComp::OnTimeout()
 
 
 } // namespace agentinogql
+
 
