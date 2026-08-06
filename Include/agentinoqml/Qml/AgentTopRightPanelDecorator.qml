@@ -1,6 +1,7 @@
 import QtQuick 2.12
 import imtauthgui 1.0
 import imtgui 1.0
+import imtqmlutils 1.0
 import imtcontrols 1.0
 
 DecoratorBase {
