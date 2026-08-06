@@ -1,7 +1,7 @@
 {
     "includes": [
         "${IMTCOREDIR}/Qml/web/imtcore.json",
-        "${BUILD_FOLDER}/AuxInclude/Qt6_VC17_x64/GeneratedFiles/agentinosdl/SDL/1.0/QML/generation_info.json"
+        "${BUILD_FOLDER}/AuxInclude/${TARGETNAME}/GeneratedFiles/agentinosdl/SDL/1.0/QML/generation_info.json"
     ],
     "dirs": [
     ]
