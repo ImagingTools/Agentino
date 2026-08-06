@@ -41,11 +41,6 @@ protected:
 	virtual istd::TSharedInterfacePtr<imtbase::IObjectCollection> GetMessageCollection(const QByteArray& serviceId, QString& errorMessage) const;
 
 private:
-	// Caches the collection opened for a given service ('m_pluginMap' only caches the loaded
-	// plug-in/factory). Without this, GetMessageCollection() - called once per row from
-	// CreateRepresentationFromObject() in addition to once from ListObjects() - would call
-	// the plug-in factory's CreateInstance() again for every single log row, re-opening the
-	// underlying storage (e.g. a SQLite connection) each time.
 	typedef QMap<QByteArray, istd::TSharedInterfacePtr<imtbase::IObjectCollection>> MessageCollectionMap;
 	mutable MessageCollectionMap m_messageCollectionMap;
 };
