@@ -287,4 +287,3 @@ istd::TSharedInterfacePtr<imtbase::IObjectCollection> CMessageCollectionControll
 
 } // namespace agentgql
 
-
