@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5439" Description="ACF"/>
-            <Version Id="1" Number="2270" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="395267" Description="Qt Framework"/>
+            <Version Id="0" Number="5439" Description="ACF" />
+            <Version Id="1" Number="2270" Description="ACF-Solutions" />
+            <Version Id="1023" Number="395267" Description="Qt Framework" />
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -12,35 +12,35 @@
     <ElementsList>
         <Element Id="CheckPermissionOr" PackageId="ImtAuthPck" ComponentId="CheckPermissionOr">
             <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap/>
+                <AttributeInfoMap />
             </Data>
         </Element>
         <Element Id="PageData" PackageId="" ComponentId="PageData">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="AgentMessageObjectCollection" Type="Reference" ExportId="AgentMessageObjectCollection">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="false" />
                     </AttributeInfo>
                     <AttributeInfo Id="AgentinoConnectionInterface" Type="Reference" ExportId="AgentinoConnectionInterface">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="false" />
                     </AttributeInfo>
                     <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="ClientIdParam">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="false" />
                     </AttributeInfo>
                     <AttributeInfo Id="Login" Type="Reference" ExportId="Login">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="false" />
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceController" Type="Reference" ExportId="ServiceController">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="false" />
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceRepository" Type="Reference" ExportId="ServiceRepository">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="false" />
                     </AttributeInfo>
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="TopologyCollection">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="false" />
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="false" />
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -58,10 +58,10 @@
                         </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="false" />
                     </AttributeInfo>
                     <AttributeInfo Id="ShowComponentId" Type="Boolean" ExportId="">
-                        <Data IsEnabled="true" Value="true"/>
+                        <Data IsEnabled="true" Value="true" />
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -92,7 +92,7 @@
                         </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="false" />
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -101,7 +101,7 @@
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="false" />
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -110,19 +110,19 @@
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="CommandPermissionsProvider" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="PagesPermissions"/>
+                        <Data IsEnabled="true" Value="PagesPermissions" />
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="false" />
                     </AttributeInfo>
                     <AttributeInfo Id="ObjectId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Pages"/>
+                        <Data IsEnabled="true" Value="Pages" />
                     </AttributeInfo>
                     <AttributeInfo Id="PermissionChecker" Type="Reference" ExportId="">
-                        <Data IsEnabled="false" Value="CheckPermissionOr"/>
+                        <Data IsEnabled="false" Value="CheckPermissionOr" />
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="false" />
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -138,19 +138,19 @@
                         </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="DataModel" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="Pages"/>
+                        <Data IsEnabled="true" Value="Pages" />
                     </AttributeInfo>
                     <AttributeInfo Id="EnableVerbose" Type="Boolean" ExportId="EnableVerbose">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="false" />
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="false" />
                     </AttributeInfo>
                     <AttributeInfo Id="RepresentationController" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="PagesRepresentation"/>
+                        <Data IsEnabled="true" Value="PagesRepresentation" />
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="false" />
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -159,19 +159,19 @@
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="IconPath" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="Icons/Settings"/>
+                        <Data IsEnabled="true" Value="Icons/Settings" />
                     </AttributeInfo>
                     <AttributeInfo Id="Id" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="AgentSettings"/>
+                        <Data IsEnabled="true" Value="AgentSettings" />
                     </AttributeInfo>
                     <AttributeInfo Id="Name" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="Settings"/>
+                        <Data IsEnabled="true" Value="Settings" />
                     </AttributeInfo>
                     <AttributeInfo Id="PageQmlItem" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="../../AgentSettings.qml"/>
+                        <Data IsEnabled="true" Value="../../AgentSettings.qml" />
                     </AttributeInfo>
                     <AttributeInfo Id="StartQmlItem" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value=""/>
+                        <Data IsEnabled="true" Value="" />
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -180,19 +180,19 @@
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="IconPath" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="Icons/Production"/>
+                        <Data IsEnabled="true" Value="Icons/Production" />
                     </AttributeInfo>
                     <AttributeInfo Id="Id" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Topology"/>
+                        <Data IsEnabled="true" Value="Topology" />
                     </AttributeInfo>
                     <AttributeInfo Id="Name" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="Topology"/>
+                        <Data IsEnabled="true" Value="Topology" />
                     </AttributeInfo>
                     <AttributeInfo Id="PageQmlItem" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="qrc:/qml/imtdocgui/MultiDocWorkspacePageView.qml"/>
+                        <Data IsEnabled="true" Value="qrc:/qml/imtdocgui/Pages/MultiDocWorkspacePageView.qml" />
                     </AttributeInfo>
                     <AttributeInfo Id="StartQmlItem" Type="Text" ExportId="">
-                        <Data IsEnabled="true" Value="qrc:/qml/TopologyPage.qml"/>
+                        <Data IsEnabled="true" Value="qrc:/qml/TopologyPage.qml" />
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -206,13 +206,13 @@
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="AgentinoConnectionInterface" Type="Reference" ExportId="AgentinoConnectionInterface">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="Login" Type="Reference" ExportId="Login">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
@@ -221,16 +221,16 @@
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="AgentMessageObjectCollection" Type="Reference" ExportId="AgentMessageObjectCollection">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServiceRepository" Type="Reference" ExportId="ServiceRepository">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
@@ -239,40 +239,40 @@
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="ClientIdParam">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServiceController" Type="Reference" ExportId="ServiceController">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServiceRepository" Type="Reference" ExportId="ServiceRepository">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="TopologyCollection">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
                 </ElementsList>
-                <EmbeddedRegistriesList/>
-                <ExportedInterfaces/>
+                <EmbeddedRegistriesList />
+                <ExportedInterfaces />
                 <ExportedComponents>
-                    <Component ExportedId="AgentSettingsPage" ComponentId="AgentSettingsPage"/>
-                    <Component ExportedId="LogData" ComponentId="LogData"/>
-                    <Component ExportedId="ServiceCollectionController" ComponentId="ServicesPage/ServiceCollectionController"/>
-                    <Component ExportedId="ServicesPage" ComponentId="ServicesPage"/>
+                    <Component ExportedId="AgentSettingsPage" ComponentId="AgentSettingsPage" />
+                    <Component ExportedId="LogData" ComponentId="LogData" />
+                    <Component ExportedId="ServiceCollectionController" ComponentId="ServicesPage/ServiceCollectionController" />
+                    <Component ExportedId="ServicesPage" ComponentId="ServicesPage" />
                 </ExportedComponents>
             </Data>
         </EmbeddedRegistry>
@@ -283,7 +283,7 @@
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandId" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="Devices"/>
+                                    <Data IsEnabled="true" Value="Devices" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
                                     <Data IsEnabled="false">
@@ -297,7 +297,7 @@
                                     </Data>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
@@ -316,12 +316,12 @@
                         </Data>
                     </Element>
                 </ElementsList>
-                <EmbeddedRegistriesList/>
+                <EmbeddedRegistriesList />
                 <ExportedInterfaces>
-                    <Interface InterfaceId="imtserverapp::ICommandPermissionsProvider" ComponentId="PagePermissions"/>
-                    <Interface InterfaceId="istd::IPolymorphic" ComponentId="PagePermissions"/>
+                    <Interface InterfaceId="imtserverapp::ICommandPermissionsProvider" ComponentId="PagePermissions" />
+                    <Interface InterfaceId="istd::IPolymorphic" ComponentId="PagePermissions" />
                 </ExportedInterfaces>
-                <ExportedComponents/>
+                <ExportedComponents />
             </Data>
         </EmbeddedRegistry>
         <EmbeddedRegistry Id="Repositories">
@@ -331,35 +331,35 @@
                         <Data IsEnabled="true" Flags="1">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="DefaultPath" Type="String" ExportId="">
-                                    <Data IsEnabled="true" Value="ServicesSettings.xml"/>
+                                    <Data IsEnabled="true" Value="ServicesSettings.xml" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="LocationType" Type="Integer" ExportId="">
-                                    <Data IsEnabled="true" Value="105"/>
+                                    <Data IsEnabled="true" Value="105" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="Object" Type="Reference" ExportId="">
-                                    <Data IsEnabled="true" Value="ServiceCollection"/>
+                                    <Data IsEnabled="true" Value="ServiceCollection" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="RuntimeStatus" Type="Reference" ExportId="RuntimeStatus">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="StoreOnChange" Type="Boolean" ExportId="">
-                                    <Data IsEnabled="true" Value="true"/>
+                                    <Data IsEnabled="true" Value="true" />
                                 </AttributeInfo>
                                 <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
-                                    <Data IsEnabled="false"/>
+                                    <Data IsEnabled="false" />
                                 </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
                     <Element Id="RepresentationService" PackageId="AgentinoDataPck" ComponentId="ServiceInfo">
                         <Data IsEnabled="true" Flags="2">
-                            <AttributeInfoMap/>
+                            <AttributeInfoMap />
                         </Data>
                     </Element>
                     <Element Id="ServiceCollection" PackageId="ImtCorePck" ComponentId="ObjectCollection">
@@ -383,20 +383,20 @@
                         </Data>
                     </Element>
                 </ElementsList>
-                <EmbeddedRegistriesList/>
-                <ExportedInterfaces/>
+                <EmbeddedRegistriesList />
+                <ExportedInterfaces />
                 <ExportedComponents>
-                    <Component ExportedId="ServiceCollection" ComponentId="ServiceCollection"/>
+                    <Component ExportedId="ServiceCollection" ComponentId="ServiceCollection" />
                 </ExportedComponents>
             </Data>
         </EmbeddedRegistry>
     </EmbeddedRegistriesList>
     <ExportedInterfaces>
-        <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="PagesDemultiplexer"/>
-        <Interface InterfaceId="istd::IPolymorphic" ComponentId="PagesDemultiplexer"/>
+        <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="PagesDemultiplexer" />
+        <Interface InterfaceId="istd::IPolymorphic" ComponentId="PagesDemultiplexer" />
     </ExportedInterfaces>
     <ExportedComponents>
-        <Component ExportedId="ServiceCollectionController" ComponentId="PageData/ServiceCollectionController"/>
-        <Component ExportedId="ServiceCollection" ComponentId="Repositories/ServiceCollection"/>
+        <Component ExportedId="ServiceCollectionController" ComponentId="PageData/ServiceCollectionController" />
+        <Component ExportedId="ServiceCollection" ComponentId="Repositories/ServiceCollection" />
     </ExportedComponents>
 </Acf>
