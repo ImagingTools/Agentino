@@ -49,7 +49,7 @@ set(QML_IMPORT_PATH ${QML_IMPORT_DIRS}
 	FORCE
 )
 
-option(USE_NEW_WEB "Use new web compilation (jq_compile_web)" OFF)
+option(USE_NEW_WEB "Use new web compilation (jq_compile_web)" ON)
 
 if(DEFINED WEB_COMPILE AND WEB_COMPILE)
 	add_compile_definitions(WEB_COMPILE)
