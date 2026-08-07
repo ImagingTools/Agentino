@@ -71,8 +71,8 @@ agentino_declare_library_dependencies(agentinosdl		LINK_SCOPE PUBLIC	ImtCore::im
 
 # --- Libraries --------------------------------------------------------------
 agentino_declare_library_dependencies(agentinodata		LINK_SCOPE PUBLIC	agentinosdl ImtCore::imtservice)
-agentino_declare_library_dependencies(agentinogql		LINK_SCOPE PUBLIC	agentinodata Qt${QT_VERSION_MAJOR}::WebSockets)
-agentino_declare_library_dependencies(agentgql			LINK_SCOPE PUBLIC	agentinosdl ImtCore::imtclientgql ImtCore::imtguigql ImtCore::imtgui ImtCore::imtauth ImtCore::imtservice Qt${QT_VERSION_MAJOR}::WebSockets)
+agentino_declare_library_dependencies(agentinogql		LINK_SCOPE PUBLIC	agentinodata)
+agentino_declare_library_dependencies(agentgql			LINK_SCOPE PUBLIC	agentinosdl ImtCore::imtguigql ImtCore::imtgui)
 
 # --- QML web-resource libraries ---------------------------------------------
 if(QT_VERSION_MAJOR EQUAL 6)
@@ -85,40 +85,37 @@ agentino_declare_library_dependencies(AgentinoLoc		LINK_SCOPE PUBLIC	Acf::icomp)
 
 # --- Packages ---------------------------------------------------------------
 agentino_declare_library_dependencies(AgentinoDataPck	LINK_SCOPE PRIVATE	agentinogql ImtCore::imtguigql ImtCore::imtgui)
-agentino_declare_library_dependencies(AgentinoGqlPck	LINK_SCOPE PRIVATE	agentgql agentinogql ImtCore::imtserverapp)
-agentino_declare_library_dependencies(AgentGqlPck	LINK_SCOPE PRIVATE	agentgql agentinodata ImtCore::imtserverapp)
+agentino_declare_library_dependencies(AgentinoGqlPck	LINK_SCOPE PRIVATE	agentgql agentinogql)
+agentino_declare_library_dependencies(AgentGqlPck	LINK_SCOPE PRIVATE	agentgql agentinodata)
 
 
 # --- Applications -----------------------------------------------------------
 # Agent (client/agent runtime).
 agentino_declare_library_dependencies(AgentinoAgent	LINK_SCOPE PRIVATE
 	agentinoqml agentinogql agentgql
-	AgentinoLoc ImtCore::ImtCoreLoc Acf::AcfLoc AcfSln::AcfSlnLoc AcfSln::iauth AcfSln::iservice
+	AgentinoLoc ImtCore::ImtCoreLoc Acf::AcfLoc AcfSln::AcfSlnLoc AcfSln::iservice
 	ImtCore::imtserverapp ImtCore::imt2dsdl ImtCore::imtlicgql ImtCore::imtauthgql ImtCore::imtauthdb
 	ImtCore::imtchatdb ImtCore::imtdeskdb ImtCore::imtlog
 	ImtCore::imtcontrolsqml ImtCore::imtstylecontrolsqml ImtCore::imtguiqml ImtCore::imtguigqlqml
-	ImtCore::imtauthguiqml ImtCore::imtcolguiqml ImtCore::imtdocguiqml ImtCore::imtlicguiqml
-	Qt${QT_VERSION_MAJOR}::WebSockets Qt${QT_VERSION_MAJOR}::Quick Qt${QT_VERSION_MAJOR}::Sql Qt${QT_VERSION_MAJOR}::Widgets)
+	ImtCore::imtauthguiqml ImtCore::imtcolguiqml ImtCore::imtdocguiqml ImtCore::imtlicguiqml)
 
 # Server (server/console component).
 agentino_declare_library_dependencies(AgentinoServer	LINK_SCOPE PRIVATE
 	agentinoqml agentinogql agentgql
-	AgentinoLoc ImtCore::ImtCoreLoc Acf::AcfLoc AcfSln::AcfSlnLoc AcfSln::iauth AcfSln::iservice Acf::iprm Acf::idoc
+	AgentinoLoc ImtCore::ImtCoreLoc Acf::AcfLoc AcfSln::AcfSlnLoc AcfSln::iservice
 	ImtCore::imtserverapp ImtCore::imt2dsdl ImtCore::imtlicgql ImtCore::imtauthgql ImtCore::imtauthdb
 	ImtCore::imtchatdb ImtCore::imtdeskdb ImtCore::imtlog
 	ImtCore::imtcontrolsqml ImtCore::imtstylecontrolsqml ImtCore::imtguiqml ImtCore::imtguigqlqml
-	ImtCore::imtauthguiqml ImtCore::imtcolguiqml ImtCore::imtdocguiqml ImtCore::imtlicguiqml
-	Qt${QT_VERSION_MAJOR}::WebSockets Qt${QT_VERSION_MAJOR}::Sql Qt${QT_VERSION_MAJOR}::Quick Qt${QT_VERSION_MAJOR}::Widgets)
+	ImtCore::imtauthguiqml ImtCore::imtcolguiqml ImtCore::imtdocguiqml ImtCore::imtlicguiqml)
 
 # Web/desktop client.
 agentino_declare_library_dependencies(AgentinoClient	LINK_SCOPE PRIVATE
 	agentinoqml agentinogql agentgql
-	AgentinoLoc ImtCore::ImtCoreLoc Acf::AcfLoc AcfSln::AcfSlnLoc Acf::iser Acf::i2d Acf::idoc
+	AgentinoLoc ImtCore::ImtCoreLoc Acf::AcfLoc AcfSln::AcfSlnLoc
 	ImtCore::imtserverapp ImtCore::imt2dsdl ImtCore::imtlicgql ImtCore::imtauthgql ImtCore::imtauthdb
 	ImtCore::imtchatdb ImtCore::imtdeskdb
 	ImtCore::imtcontrolsqml ImtCore::imtstylecontrolsqml ImtCore::imtguiqml ImtCore::imtguigqlqml
-	ImtCore::imtauthguiqml ImtCore::imtcolguiqml ImtCore::imtdocguiqml ImtCore::imtlicguiqml
-	Qt${QT_VERSION_MAJOR}::Quick Qt${QT_VERSION_MAJOR}::WebSockets Qt${QT_VERSION_MAJOR}::Qml Qt${QT_VERSION_MAJOR}::Widgets)
+	ImtCore::imtauthguiqml ImtCore::imtcolguiqml ImtCore::imtdocguiqml ImtCore::imtlicguiqml)
 
 # Combined client/server single-binary variant. imtserverapp and the agent*/agentino* libraries
 # transitively pull the imtbase/imtgui/imtqml/imtdb/imtrest/imtstyle/imtauth/imtlic/... core.
@@ -126,7 +123,5 @@ agentino_declare_library_dependencies(AgentinoClientServer	LINK_SCOPE PRIVATE
 	agentinoqml agentinogql agentgql
 	AgentinoLoc ImtCore::ImtCoreLoc
 	ImtCore::imtserverapp ImtCore::imtlicgql ImtCore::imtlicgui ImtCore::imtauthgql ImtCore::imtauthdb
-	ImtCore::imtclientgql ImtCore::imtgql ImtCore::imtguigql
 	ImtCore::imtcontrolsqml ImtCore::imtstylecontrolsqml ImtCore::imtguiqml ImtCore::imtguigqlqml
-	ImtCore::imtauthguiqml ImtCore::imtcolguiqml ImtCore::imtdocguiqml ImtCore::imtlicguiqml
-	Qt${QT_VERSION_MAJOR}::WebSockets Qt${QT_VERSION_MAJOR}::Quick)
+	ImtCore::imtauthguiqml ImtCore::imtcolguiqml ImtCore::imtdocguiqml ImtCore::imtlicguiqml)
