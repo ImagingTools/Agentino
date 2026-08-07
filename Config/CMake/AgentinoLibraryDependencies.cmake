@@ -119,3 +119,14 @@ agentino_declare_library_dependencies(AgentinoClient	LINK_SCOPE PRIVATE
 	ImtCore::imtcontrolsqml ImtCore::imtstylecontrolsqml ImtCore::imtguiqml ImtCore::imtguigqlqml
 	ImtCore::imtauthguiqml ImtCore::imtcolguiqml ImtCore::imtdocguiqml ImtCore::imtlicguiqml
 	Qt${QT_VERSION_MAJOR}::Quick Qt${QT_VERSION_MAJOR}::WebSockets Qt${QT_VERSION_MAJOR}::Qml Qt${QT_VERSION_MAJOR}::Widgets)
+
+# Combined client/server single-binary variant. imtserverapp and the agent*/agentino* libraries
+# transitively pull the imtbase/imtgui/imtqml/imtdb/imtrest/imtstyle/imtauth/imtlic/... core.
+agentino_declare_library_dependencies(AgentinoClientServer	LINK_SCOPE PRIVATE
+	agentinoqml agentinogql agentgql
+	AgentinoLoc ImtCore::ImtCoreLoc
+	ImtCore::imtserverapp ImtCore::imtlicgql ImtCore::imtlicgui ImtCore::imtauthgql ImtCore::imtauthdb
+	ImtCore::imtclientgql ImtCore::imtgql ImtCore::imtguigql
+	ImtCore::imtcontrolsqml ImtCore::imtstylecontrolsqml ImtCore::imtguiqml ImtCore::imtguigqlqml
+	ImtCore::imtauthguiqml ImtCore::imtcolguiqml ImtCore::imtdocguiqml ImtCore::imtlicguiqml
+	Qt${QT_VERSION_MAJOR}::WebSockets Qt${QT_VERSION_MAJOR}::Quick)
