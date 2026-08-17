@@ -36,9 +36,30 @@ if(DEFINED WEB_COMPILE AND  WEB_COMPILE)
 	add_compile_definitions(WEB_COMPILE)
 endif()
 
+if(DEFINED USE_NEW_WEB AND USE_NEW_WEB)
+	add_compile_definitions(AGENTINO_USE_NEW_WEB)
+endif()
+
 
 include(${ACFDIR}/Config/CMake/AcfStdGui.cmake)
 include(${ACFDIR}/Config/CMake/AcfStd.cmake)
+
+
+agentino_declare_library_dependencies(${PROJECT_NAME} LINK_SCOPE PRIVATE
+	agentinoqml
+	agentinogql
+	agentgql
+	AgentinoLoc
+	ImtCore::ImtCoreLoc
+	ImtCore::imtcontrolsqml
+	ImtCore::imtstylecontrolsqml
+	ImtCore::imtguiqml
+	ImtCore::imtguigqlqml
+	ImtCore::imtauthguiqml
+	ImtCore::imtcolguiqml
+	ImtCore::imtdocguiqml
+	ImtCore::imtlicguiqml
+)
 
 
 

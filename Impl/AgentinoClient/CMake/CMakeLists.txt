@@ -40,3 +40,23 @@ if(WIN32)
 	windeploy(${PROJECT_NAME} "${listOptions}" "${files}")
 	unset(listOptions)
 endif()
+
+agentino_declare_library_dependencies(${PROJECT_NAME} LINK_SCOPE PRIVATE
+	agentinoqml 
+	agentinogql 
+	agentgql
+	AgentinoLoc 
+	ImtCore::ImtCoreLoc
+	ImtCore::imt2dsdl 
+	ImtCore::imtauthdb
+	ImtCore::imtchatdb 
+	ImtCore::imtdeskdb
+	ImtCore::imtcontrolsqml 
+	ImtCore::imtstylecontrolsqml 
+	ImtCore::imtguiqml 
+	ImtCore::imtguigqlqml
+	ImtCore::imtauthguiqml 
+	ImtCore::imtcolguiqml 
+	ImtCore::imtdocguiqml 
+	ImtCore::imtlicguiqml
+)

@@ -24,41 +24,51 @@
 # dependencies; transitive dependencies propagate automatically through the graph.
 # Do not add a dependency that is already reachable through another listed target.
 #
-# Included once, centrally, from Build/CMake/CMakeLists.txt after all library
-# targets have been created.
+# Included centrally from Build/CMake/CMakeLists.txt.
+# When AGENTINO_DECLARE_DEPENDENCIES_HELPER_ONLY is ON, only the helper
+# function is defined (for per-target CMakeLists). The full dependency
+# declarations are applied by a later include, after all library targets
+# have been created.
 # ---------------------------------------------------------------------------
 
 # Declare the dependencies of an Agentino library, ignoring any entry whose
 # target does not exist in the current configuration (for example feature-gated
 # libraries, or ImtCore::/Acf::/AcfSln::/IAcf:: targets that are not available
 # because the legacy shim is used instead of find_package).
-function(agentino_declare_library_dependencies target)
-	cmake_parse_arguments(ARG "" "LINK_SCOPE" "" ${ARGN})
+if(NOT COMMAND agentino_declare_library_dependencies)
+	function(agentino_declare_library_dependencies target)
+		cmake_parse_arguments(ARG "" "LINK_SCOPE" "" ${ARGN})
 
-	if(NOT ARG_LINK_SCOPE)
-		set(ARG_LINK_SCOPE ${ACF_LIBRARY_LINK_SCOPE})
-	endif()
-
-	if(NOT TARGET ${target})
-		return()
-	endif()
-
-	# The only entry whose *target* is an ImtCore:: name is the imtbasesdl->imtgql
-	# usage-requirement augmentation, needed solely for the imported
-	# find_package(ImtCore) target. In a unified in-tree build ImtCore::imtbasesdl is
-	# an ALIAS: target_link_libraries() is illegal on it, and augmenting the real
-	# target injects a dependency cycle through the Qt autogen targets. Skip aliases.
-	get_target_property(_agentino_aliased ${target} ALIASED_TARGET)
-	if(_agentino_aliased)
-		return()
-	endif()
-
-	foreach(dependency IN LISTS ARG_UNPARSED_ARGUMENTS)
-		if(TARGET ${dependency})
-			target_link_libraries(${target} ${ARG_LINK_SCOPE} ${dependency})
+		if(NOT ARG_LINK_SCOPE)
+			set(ARG_LINK_SCOPE ${ACF_LIBRARY_LINK_SCOPE})
 		endif()
-	endforeach()
-endfunction()
+
+		if(NOT TARGET ${target})
+			return()
+		endif()
+
+		# The only entry whose *target* is an ImtCore:: name is the imtbasesdl->imtgql
+		# usage-requirement augmentation, needed solely for the imported
+		# find_package(ImtCore) target. In a unified in-tree build ImtCore::imtbasesdl is
+		# an ALIAS: target_link_libraries() is illegal on it, and augmenting the real
+		# target injects a dependency cycle through the Qt autogen targets. Skip aliases.
+		get_target_property(_agentino_aliased ${target} ALIASED_TARGET)
+		if(_agentino_aliased)
+			return()
+		endif()
+
+		foreach(dependency IN LISTS ARG_UNPARSED_ARGUMENTS)
+			if(TARGET ${dependency})
+				target_link_libraries(${target} ${ARG_LINK_SCOPE} ${dependency})
+			endif()
+		endforeach()
+	endfunction()
+endif()
+
+# Allow early include from Build/CMake/CMakeLists.txt to expose helper only.
+if(AGENTINO_DECLARE_DEPENDENCIES_HELPER_ONLY)
+	return()
+endif()
 
 # ImtCore's SDL base library only carries the imtgql usage requirement for
 # consumers that opt into it. Agentino's SDL is GraphQL-oriented, so expose
@@ -72,7 +82,7 @@ agentino_declare_library_dependencies(agentinosdl		LINK_SCOPE PUBLIC	ImtCore::im
 # --- Libraries --------------------------------------------------------------
 agentino_declare_library_dependencies(agentinodata		LINK_SCOPE PUBLIC	agentinosdl ImtCore::imtservice)
 agentino_declare_library_dependencies(agentinogql		LINK_SCOPE PUBLIC	agentinodata)
-agentino_declare_library_dependencies(agentgql			LINK_SCOPE PUBLIC	agentinosdl ImtCore::imtguigql ImtCore::imtgui)
+agentino_declare_library_dependencies(agentgql			LINK_SCOPE PUBLIC	agentinosdl ImtCore::imtguigql)
 
 # --- QML web-resource libraries ---------------------------------------------
 if(QT_VERSION_MAJOR EQUAL 6)
@@ -81,47 +91,3 @@ endif()
 
 # --- Arxc-generated static libraries ----------------------------------------
 agentino_declare_library_dependencies(AgentinoLoc		LINK_SCOPE PUBLIC	Acf::icomp)
-
-
-# --- Packages ---------------------------------------------------------------
-agentino_declare_library_dependencies(AgentinoDataPck	LINK_SCOPE PRIVATE	agentinogql ImtCore::imtguigql ImtCore::imtgui)
-agentino_declare_library_dependencies(AgentinoGqlPck	LINK_SCOPE PRIVATE	agentgql agentinogql)
-agentino_declare_library_dependencies(AgentGqlPck	LINK_SCOPE PRIVATE	agentgql agentinodata)
-
-
-# --- Applications -----------------------------------------------------------
-# Agent (client/agent runtime).
-agentino_declare_library_dependencies(AgentinoAgent	LINK_SCOPE PRIVATE
-	agentinoqml agentinogql agentgql
-	AgentinoLoc ImtCore::ImtCoreLoc Acf::AcfLoc AcfSln::AcfSlnLoc AcfSln::iservice
-	ImtCore::imtserverapp ImtCore::imt2dsdl ImtCore::imtlicgql ImtCore::imtauthgql ImtCore::imtauthdb
-	ImtCore::imtchatdb ImtCore::imtdeskdb ImtCore::imtlog
-	ImtCore::imtcontrolsqml ImtCore::imtstylecontrolsqml ImtCore::imtguiqml ImtCore::imtguigqlqml
-	ImtCore::imtauthguiqml ImtCore::imtcolguiqml ImtCore::imtdocguiqml ImtCore::imtlicguiqml)
-
-# Server (server/console component).
-agentino_declare_library_dependencies(AgentinoServer	LINK_SCOPE PRIVATE
-	agentinoqml agentinogql agentgql
-	AgentinoLoc ImtCore::ImtCoreLoc Acf::AcfLoc AcfSln::AcfSlnLoc AcfSln::iservice
-	ImtCore::imtserverapp ImtCore::imt2dsdl ImtCore::imtlicgql ImtCore::imtauthgql ImtCore::imtauthdb
-	ImtCore::imtchatdb ImtCore::imtdeskdb ImtCore::imtlog
-	ImtCore::imtcontrolsqml ImtCore::imtstylecontrolsqml ImtCore::imtguiqml ImtCore::imtguigqlqml
-	ImtCore::imtauthguiqml ImtCore::imtcolguiqml ImtCore::imtdocguiqml ImtCore::imtlicguiqml)
-
-# Web/desktop client.
-agentino_declare_library_dependencies(AgentinoClient	LINK_SCOPE PRIVATE
-	agentinoqml agentinogql agentgql
-	AgentinoLoc ImtCore::ImtCoreLoc Acf::AcfLoc AcfSln::AcfSlnLoc
-	ImtCore::imtserverapp ImtCore::imt2dsdl ImtCore::imtlicgql ImtCore::imtauthgql ImtCore::imtauthdb
-	ImtCore::imtchatdb ImtCore::imtdeskdb
-	ImtCore::imtcontrolsqml ImtCore::imtstylecontrolsqml ImtCore::imtguiqml ImtCore::imtguigqlqml
-	ImtCore::imtauthguiqml ImtCore::imtcolguiqml ImtCore::imtdocguiqml ImtCore::imtlicguiqml)
-
-# Combined client/server single-binary variant. imtserverapp and the agent*/agentino* libraries
-# transitively pull the imtbase/imtgui/imtqml/imtdb/imtrest/imtstyle/imtauth/imtlic/... core.
-agentino_declare_library_dependencies(AgentinoClientServer	LINK_SCOPE PRIVATE
-	agentinoqml agentinogql agentgql
-	AgentinoLoc ImtCore::ImtCoreLoc
-	ImtCore::imtserverapp ImtCore::imtlicgql ImtCore::imtlicgui ImtCore::imtauthgql ImtCore::imtauthdb
-	ImtCore::imtcontrolsqml ImtCore::imtstylecontrolsqml ImtCore::imtguiqml ImtCore::imtguigqlqml
-	ImtCore::imtauthguiqml ImtCore::imtcolguiqml ImtCore::imtdocguiqml ImtCore::imtlicguiqml)

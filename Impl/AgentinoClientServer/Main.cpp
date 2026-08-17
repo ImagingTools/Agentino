@@ -16,10 +16,14 @@
 #include <GeneratedFiles/AgentinoClientServer/CAgentinoClientServer.h>
 
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 #ifdef WEB_COMPILE
+#ifdef AGENTINO_USE_NEW_WEB
 	Q_INIT_RESOURCE(agentinoWeb);
+#else
+	Q_INIT_RESOURCE(agentinoqmlWeb);
+#endif
 #endif
 	Q_INIT_RESOURCE(imtstyle);
 	Q_INIT_RESOURCE(imtstylecontrolsqml);
@@ -42,7 +46,7 @@ int main(int argc, char *argv[])
 
 	imtstyle::CImtStyle* imtStylePtr = imtstyle::CImtStyle::GetInstance();
 	Q_ASSERT(imtStylePtr != nullptr);
-	
+
 	CAgentinoClientServer instance;
 
 	qmlRegisterType<imtbase::CTreeItemModel>("Acf", 1, 0, "TreeItemModel");
@@ -59,11 +63,9 @@ int main(int argc, char *argv[])
 #endif
 
 	ibase::IApplication* applicationPtr = instance.GetInterface<ibase::IApplication>();
-	if (applicationPtr != nullptr){
+	if (applicationPtr != nullptr) {
 		return applicationPtr->Execute(argc, argv);
 	}
 
 	return -1;
 }
-
-

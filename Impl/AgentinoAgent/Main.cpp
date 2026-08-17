@@ -8,10 +8,14 @@
 #include "../AgentinoServer/AgentinoFeatures.h"
 
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 #ifdef WEB_COMPILE
+#ifdef AGENTINO_USE_NEW_WEB
 	Q_INIT_RESOURCE(agentWeb);
+#else
+	Q_INIT_RESOURCE(agentinoqmlWeb);
+#endif
 #endif
 	Q_INIT_RESOURCE(imtstyle);
 	Q_INIT_RESOURCE(imtstylecontrolsqml);

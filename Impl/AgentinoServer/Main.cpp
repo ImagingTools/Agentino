@@ -7,10 +7,14 @@
 #include "AgentinoFeatures.h"
 
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 #ifdef WEB_COMPILE
+#ifdef AGENTINO_USE_NEW_WEB
 	Q_INIT_RESOURCE(agentinoWeb);
+#else
+	Q_INIT_RESOURCE(agentinoqmlWeb);
+#endif
 #endif
 	Q_INIT_RESOURCE(agentinoqml);
 	Q_INIT_RESOURCE(AgentinoLoc);
@@ -20,5 +24,3 @@ int main(int argc, char *argv[])
 
 	return ProductFeatureRun<CAgentinoServer, DefaultImtCoreQmlInitializer, agentino::FillProduct>(argc, argv);
 }
-
-

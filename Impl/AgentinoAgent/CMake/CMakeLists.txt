@@ -30,6 +30,10 @@ if(DEFINED WEB_COMPILE AND WEB_COMPILE)
 	add_compile_definitions(WEB_COMPILE)
 endif()
 
+if(DEFINED USE_NEW_WEB AND USE_NEW_WEB)
+	add_compile_definitions(AGENTINO_USE_NEW_WEB)
+endif()
+
 if(WIN32)
 	list(APPEND listOptions "--qmldir=${IMTCOREDIR}/Qml")
 	set(files \"${AUX_INCLUDE_DIR}/../../../Bin/${CMAKE_BUILD_TYPE}_${TARGETNAME}/${PROJECT_NAME}.exe\")
@@ -41,3 +45,26 @@ endif()
 
 ADD_DEFINITIONS(-DUNICODE)
 ADD_DEFINITIONS(-D_UNICODE)
+
+agentino_declare_library_dependencies(${PROJECT_NAME} LINK_SCOPE PRIVATE
+	agentinoqml
+	agentinogql
+	agentgql
+	AgentinoLoc
+	ImtCore::ImtCoreLoc
+	AcfSln::iservice
+	ImtCore::imt2dsdl
+	ImtCore::imtauthgql
+	ImtCore::imtauthdb
+	ImtCore::imtchatdb
+	ImtCore::imtdeskdb
+	ImtCore::imtlog
+	ImtCore::imtcontrolsqml
+	ImtCore::imtstylecontrolsqml
+	ImtCore::imtguiqml
+	ImtCore::imtguigqlqml
+	ImtCore::imtauthguiqml
+	ImtCore::imtcolguiqml
+	ImtCore::imtdocguiqml
+	ImtCore::imtlicguiqml
+)
