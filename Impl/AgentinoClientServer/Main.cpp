@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 // Qt includes
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QStyleFactory>
-
-// ACF includes
-#include <ibase/IApplication.h>
 
 // ImtCore includes
-#include <imtstyle/CImtStyle.h>
+#include <imtcore/CApplicationRunner.h>
+#include <imtcore/CImtCoreAuthInitializer.h>
+#include <imtcore/CImtCoreBaseInitializer.h>
+#include <imtcore/CImtCoreLocalizationInitializer.h>
+#include <imtcore/CImtCoreStyleInitializer.h>
 #include <imtbase/CTreeItemModel.h>
 #include <imtqml/CGqlModel.h>
 #include <imtqml/CRemoteFileController.h>
@@ -16,7 +16,7 @@
 #include <GeneratedFiles/AgentinoClientServer/CAgentinoClientServer.h>
 
 
-int main(int argc, char* argv[])
+static void InitializeAgentinoClientServerResources()
 {
 #ifdef WEB_COMPILE
 #ifdef AGENTINO_USE_NEW_WEB
@@ -25,27 +25,28 @@ int main(int argc, char* argv[])
 	Q_INIT_RESOURCE(agentinoqmlWeb);
 #endif
 #endif
-	Q_INIT_RESOURCE(imtstyle);
-	Q_INIT_RESOURCE(imtstylecontrolsqml);
-	Q_INIT_RESOURCE(imtauthguiqml);
-	Q_INIT_RESOURCE(imtguigqlqml);
-	Q_INIT_RESOURCE(imtcontrolsqml);
-	Q_INIT_RESOURCE(imtgui);
-	Q_INIT_RESOURCE(imtguiqml);
-	Q_INIT_RESOURCE(imtdocguiqml);
-	Q_INIT_RESOURCE(imtcolguiqml);
 	Q_INIT_RESOURCE(agentinoqml);
-	Q_INIT_RESOURCE(ImtCoreLoc);
 	Q_INIT_RESOURCE(AgentinoLoc);
-	Q_INIT_RESOURCE(imtauthguiTheme);
-	Q_INIT_RESOURCE(imtguiTheme);
 	Q_INIT_RESOURCE(imtlicguiqml);
-	Q_INIT_RESOURCE(imtbase);
 
+	ImtCoreInitLocalizationResources();
+	ImtCoreInitBaseResources();
+
+	ImtCoreInitStyleResources();
+	ImtCoreInitAuthStyleResources();
+
+	ImtCoreInitQmlApplicationCoreResources();
+	ImtCoreInitQmlDocumentManagementResources();
+	ImtCoreInitAuthQmlResources();
+
+	InitializeImtCoreStyle();
+}
+
+
+int main(int argc, char* argv[])
+{
 	QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-
-	imtstyle::CImtStyle* imtStylePtr = imtstyle::CImtStyle::GetInstance();
-	Q_ASSERT(imtStylePtr != nullptr);
+	InitializeAgentinoClientServerResources();
 
 	CAgentinoClientServer instance;
 
@@ -62,10 +63,5 @@ int main(int argc, char* argv[])
 	qmlRegisterModule("Qt5Compat.GraphicalEffects", 6, 0);
 #endif
 
-	ibase::IApplication* applicationPtr = instance.GetInterface<ibase::IApplication>();
-	if (applicationPtr != nullptr) {
-		return applicationPtr->Execute(argc, argv);
-	}
-
-	return -1;
+	return imtcore::CApplicationRunner::Run(argc, argv, instance);
 }

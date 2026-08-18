@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 // ImtCore includes
-#include <imtlic/Init.h>
+#include <imtcore/CApplicationRunner.h>
+#include <imtcore/CImtCoreAuthInitializer.h>
+#include <imtcore/CImtCoreBaseInitializer.h>
+#include <imtcore/CImtCoreDeskInitializer.h>
+#include <imtcore/CImtCoreLocalizationInitializer.h>
+#include <imtcore/CImtCoreStyleInitializer.h>
+#include <imtlic/IProductInfo.h>
 #include <GeneratedFiles/AgentinoAgent/CAgentinoAgent.h>
 
 // Same product feature tree as AgentinoServer so Topology GetCommands permission
@@ -8,32 +14,47 @@
 #include "../AgentinoServer/AgentinoFeatures.h"
 
 
-int main(int argc, char* argv[])
+class CAgentinoAgentResourceInitializer
 {
+public:
+	static void Init()
+	{
 #ifdef WEB_COMPILE
 #ifdef AGENTINO_USE_NEW_WEB
-	Q_INIT_RESOURCE(agentWeb);
+		Q_INIT_RESOURCE(agentWeb);
 #else
-	Q_INIT_RESOURCE(agentinoqmlWeb);
+		Q_INIT_RESOURCE(agentinoqmlWeb);
 #endif
 #endif
-	Q_INIT_RESOURCE(imtstyle);
-	Q_INIT_RESOURCE(imtstylecontrolsqml);
-	Q_INIT_RESOURCE(imtauthguiqml);
-	Q_INIT_RESOURCE(imtguigqlqml);
-	Q_INIT_RESOURCE(imtcontrolsqml);
-	Q_INIT_RESOURCE(imtgui);
-	Q_INIT_RESOURCE(imtguiqml);
-	Q_INIT_RESOURCE(imtdocguiqml);
-	Q_INIT_RESOURCE(imtcolguiqml);
-	Q_INIT_RESOURCE(agentinoqml);
-	Q_INIT_RESOURCE(ImtCoreLoc);
-	// Q_INIT_RESOURCE(AgentinoLoc);
-	Q_INIT_RESOURCE(imtauthguiTheme);
-	Q_INIT_RESOURCE(imtguiTheme);
-	Q_INIT_RESOURCE(imtdb);
-	Q_INIT_RESOURCE(imtauthdb);
-	Q_INIT_RESOURCE(imtbase);
+		Q_INIT_RESOURCE(agentinoqml);
+		Q_INIT_RESOURCE(imtlicguiqml);
 
-	return ProductFeatureRun<CAgentinoAgent, DefaultImtCoreQmlInitializer, agentino::FillProduct>(argc, argv);
+		ImtCoreInitLocalizationResources();
+		ImtCoreInitBaseResources();
+		ImtCoreInitAuthSqlResources();
+		ImtCoreInitDeskSqlResources();
+
+		ImtCoreInitStyleResources();
+		ImtCoreInitAuthStyleResources();
+
+		ImtCoreInitQmlApplicationCoreResources();
+		ImtCoreInitQmlDocumentManagementResources();
+		ImtCoreInitAuthQmlResources();
+
+		InitializeImtCoreStyle();
+	}
+};
+
+
+int main(int argc, char* argv[])
+{
+	CAgentinoAgentResourceInitializer::Init();
+
+	CAgentinoAgent instance;
+	auto* productInfoPtr = instance.GetInterface<imtlic::IProductInfo>();
+	if (productInfoPtr != nullptr) {
+		agentino::FillProduct(*productInfoPtr);
+	}
+
+	return imtcore::CApplicationRunner::Run(argc, argv, instance);
 }
