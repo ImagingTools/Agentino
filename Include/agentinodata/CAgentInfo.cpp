@@ -119,7 +119,7 @@ bool CAgentInfo::Serialize(iser::IArchive &archive)
 	// nested Services from AgentCollection.xml into a temporary collection and discard.
 	iser::CArchiveTag servicesTag("Services", "Services", iser::CArchiveTag::TT_GROUP);
 	retVal = retVal && archive.BeginTag(servicesTag);
-	if (!archive.IsStoring()) {
+	if (!archive.IsStoring()){
 		imod::TModelWrap<imtbase::CObjectCollection> legacyServices;
 		typedef istd::TSingleFactory<istd::IChangeable, agentinodata::CIdentifiableServiceInfo> FactoryServiceImpl;
 		legacyServices.RegisterFactory<FactoryServiceImpl>("ServiceInfo");

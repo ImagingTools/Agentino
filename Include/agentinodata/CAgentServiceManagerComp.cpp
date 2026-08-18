@@ -41,7 +41,7 @@ void CAgentServiceManagerComp::OnComponentDestroyed()
 
 bool CAgentServiceManagerComp::AgentExists(const QByteArray& agentId) const
 {
-	if (!m_agentCollectionCompPtr.IsValid() || agentId.isEmpty()) {
+	if (!m_agentCollectionCompPtr.IsValid() || agentId.isEmpty()){
 		return false;
 	}
 	return m_agentCollectionCompPtr->GetElementIds().contains(agentId);
@@ -50,10 +50,10 @@ bool CAgentServiceManagerComp::AgentExists(const QByteArray& agentId) const
 
 imtbase::IObjectCollection* CAgentServiceManagerComp::EnsureServiceCollection(const QByteArray& agentId) const
 {
-	if (agentId.isEmpty() || !AgentExists(agentId)) {
+	if (agentId.isEmpty() || !AgentExists(agentId)){
 		return nullptr;
 	}
-	if (!m_mirrors.contains(agentId) || m_mirrors[agentId].collection == nullptr) {
+	if (!m_mirrors.contains(agentId) || m_mirrors[agentId].collection == nullptr){
 		auto* coll = new imod::TModelWrap<imtbase::CObjectCollection>();
 		InitServiceCollection(*coll);
 		Mirror mirror;
@@ -72,11 +72,11 @@ imtbase::IObjectCollection* CAgentServiceManagerComp::GetServiceCollection(const
 
 void CAgentServiceManagerComp::EvictAgent(const QByteArray& agentId)
 {
-	if (!m_mirrors.contains(agentId)) {
+	if (!m_mirrors.contains(agentId)){
 		return;
 	}
 	Mirror mirror = m_mirrors.take(agentId);
-	if (mirror.collection != nullptr) {
+	if (mirror.collection != nullptr){
 		mirror.collection->ResetData();
 		delete mirror.collection;
 	}
@@ -91,7 +91,7 @@ bool CAgentServiceManagerComp::AddService(
 			const QString& serviceDescription)
 {
 	imtbase::IObjectCollection* serviceCollectionPtr = EnsureServiceCollection(agentId);
-	if (serviceCollectionPtr == nullptr) {
+	if (serviceCollectionPtr == nullptr){
 		return false;
 	}
 	const QByteArray objectId = serviceCollectionPtr->InsertNewObject(
@@ -100,12 +100,12 @@ bool CAgentServiceManagerComp::AddService(
 				serviceDescription,
 				&serviceInfo,
 				serviceId);
-	if (objectId.isEmpty()) {
+	if (objectId.isEmpty()){
 		// InsertNewObject now atomically rejects a colliding id (duplicate guard in
 		// CObjectCollectionBase). When a concurrent AddService for the same service already
 		// created the row, converge by updating it in place rather than failing - otherwise
 		// this reconcile's data for the service would be silently lost.
-		if (serviceCollectionPtr->GetElementIds().contains(serviceId)) {
+		if (serviceCollectionPtr->GetElementIds().contains(serviceId)){
 			return SetService(agentId, serviceId, serviceInfo, serviceName, serviceDescription, false);
 		}
 		return false;
@@ -123,11 +123,11 @@ bool CAgentServiceManagerComp::RemoveServices(
 			const imtbase::ICollectionInfo::Ids& serviceIds)
 {
 	imtbase::IObjectCollection* serviceCollectionPtr = EnsureServiceCollection(agentId);
-	if (serviceCollectionPtr == nullptr) {
+	if (serviceCollectionPtr == nullptr){
 		return false;
 	}
 	const bool result = serviceCollectionPtr->RemoveElements(serviceIds);
-	if (result) {
+	if (result){
 		for (const QByteArray& id : serviceIds) {
 			ChangeSet changeSet(CF_SERVICE_REMOVED);
 			changeSet.SetChangeInfo("agentid", agentId);
@@ -148,15 +148,15 @@ bool CAgentServiceManagerComp::SetService(
 			bool beQuiet)
 {
 	imtbase::IObjectCollection* serviceCollectionPtr = EnsureServiceCollection(agentId);
-	if (serviceCollectionPtr == nullptr) {
+	if (serviceCollectionPtr == nullptr){
 		return false;
 	}
-	if (!serviceCollectionPtr->SetObjectData(serviceId, serviceInfo)) {
+	if (!serviceCollectionPtr->SetObjectData(serviceId, serviceInfo)){
 		return false;
 	}
 	serviceCollectionPtr->SetElementName(serviceId, serviceName);
 	serviceCollectionPtr->SetElementDescription(serviceId, serviceDescription);
-	if (!beQuiet) {
+	if (!beQuiet){
 		ChangeSet changeSet(CF_SERVICE_UPDATED);
 		changeSet.SetChangeInfo("agentid", agentId);
 		changeSet.SetChangeInfo("serviceid", serviceId);
@@ -169,7 +169,7 @@ bool CAgentServiceManagerComp::SetService(
 bool CAgentServiceManagerComp::ServiceExists(const QByteArray& agentId, const QByteArray& serviceId) const
 {
 	imtbase::IObjectCollection* serviceCollectionPtr = EnsureServiceCollection(agentId);
-	if (serviceCollectionPtr == nullptr) {
+	if (serviceCollectionPtr == nullptr){
 		return false;
 	}
 	return serviceCollectionPtr->GetElementIds().contains(serviceId);
@@ -179,15 +179,15 @@ bool CAgentServiceManagerComp::ServiceExists(const QByteArray& agentId, const QB
 IServiceInfo* CAgentServiceManagerComp::GetService(const QByteArray& agentId, const QByteArray& serviceId) const
 {
 	imtbase::IObjectCollection* serviceCollectionPtr = EnsureServiceCollection(agentId);
-	if (serviceCollectionPtr == nullptr) {
+	if (serviceCollectionPtr == nullptr){
 		return nullptr;
 	}
 	imtbase::IObjectCollection::DataPtr dataPtr;
-	if (!serviceCollectionPtr->GetObjectData(serviceId, dataPtr)) {
+	if (!serviceCollectionPtr->GetObjectData(serviceId, dataPtr)){
 		return nullptr;
 	}
 	istd::TUniqueInterfacePtr<IServiceInfo> serviceInfoPtr;
-	if (!serviceInfoPtr.MoveCastedPtr(dataPtr->CloneMe())) {
+	if (!serviceInfoPtr.MoveCastedPtr(dataPtr->CloneMe())){
 		return nullptr;
 	}
 	return serviceInfoPtr.PopInterfacePtr();

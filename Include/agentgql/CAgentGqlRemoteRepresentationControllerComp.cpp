@@ -62,18 +62,18 @@ QJsonObject CAgentGqlRemoteRepresentationControllerComp::CreateInternalResponse(
 	if (connectionCollectionPtr.IsValid()){
 		const imtbase::ICollectionInfo* collectionInfo = static_cast<const imtbase::ICollectionInfo*>(connectionCollectionPtr->GetServerConnectionList());
 		const imtbase::IObjectCollection* objectCollection = dynamic_cast<const imtbase::IObjectCollection*>(collectionInfo);
-		if (objectCollection != nullptr) {
+		if (objectCollection != nullptr){
 			imtbase::ICollectionInfo::Ids ids = collectionInfo->GetElementIds();
 			for (const QByteArray& id : ids) {
 				const imtservice::IServiceConnectionInfo* connectionParamPtr = connectionCollectionPtr->GetConnectionMetaInfo(id);
-				if (connectionParamPtr == nullptr) {
+				if (connectionParamPtr == nullptr){
 					continue;
 				}
 
-				if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT) {
+				if (connectionParamPtr->GetConnectionType() == imtservice::IServiceConnectionInfo::CT_INPUT){
 					serviceTypeName = connectionCollectionPtr->GetServiceTypeId().toUtf8();
 					const imtcom::IServerConnectionInterface& serverConnectionInterface = connectionParamPtr->GetDefaultInterface();
-					if (serverConnectionInterface.GetUrl(imtcom::IServerConnectionInterface::PT_HTTP, url)) {
+					if (serverConnectionInterface.GetUrl(imtcom::IServerConnectionInterface::PT_HTTP, url)){
 						break;
 					}
 				}
@@ -87,9 +87,9 @@ QJsonObject CAgentGqlRemoteRepresentationControllerComp::CreateInternalResponse(
 
 	imtclientgql::IGqlClient::GqlRequestPtr clientRequestPtr;
 	clientRequestPtr.MoveCastedPtr(gqlRequestPtr->CloneMe());
-	if (clientRequestPtr.IsValid()) {
+	if (clientRequestPtr.IsValid()){
 		imtclientgql::IGqlClient::GqlResponsePtr responsePtr = m_apiClientCompPtr->SendRequest(clientRequestPtr, &urlParam);
-		if (responsePtr.IsValid()) {
+		if (responsePtr.IsValid()){
 			return CreateJsonObjectFromResponse(gqlRequest.GetCommandId(), *responsePtr);
 		}
 	}

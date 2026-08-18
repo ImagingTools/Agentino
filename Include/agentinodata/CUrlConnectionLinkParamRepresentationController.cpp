@@ -25,51 +25,51 @@ QUrl CUrlConnectionLinkParamRepresentationController::GetDependantConnectionUrl(
 			IServiceManager* serviceManager,
 			const QByteArray& dependantId) const
 {
-	if (serviceManager == nullptr) {
+	if (serviceManager == nullptr){
 		return QUrl();
 	}
 
 	const imtbase::ICollectionInfo::Ids agentIds = agentCollection.GetElementIds();
 	for (const imtbase::ICollectionInfo::Id& agentId : agentIds) {
 		imtbase::IObjectCollection* serviceCollectionPtr = serviceManager->GetServiceCollection(agentId);
-		if (serviceCollectionPtr == nullptr) {
+		if (serviceCollectionPtr == nullptr){
 			continue;
 		}
 
 		const imtbase::ICollectionInfo::Ids serviceElementIds = serviceCollectionPtr->GetElementIds();
 		for (const imtbase::ICollectionInfo::Id& serviceElementId : serviceElementIds) {
 			imtbase::IObjectCollection::DataPtr serviceDataPtr;
-			if (!serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)) {
+			if (!serviceCollectionPtr->GetObjectData(serviceElementId, serviceDataPtr)){
 				continue;
 			}
 			IServiceInfo* serviceInfoPtr = dynamic_cast<IServiceInfo*>(serviceDataPtr.GetPtr());
-			if (serviceInfoPtr == nullptr) {
+			if (serviceInfoPtr == nullptr){
 				continue;
 			}
 
 			imtbase::IObjectCollection* connectionCollectionPtr = serviceInfoPtr->GetInputConnections();
-			if (connectionCollectionPtr == nullptr) {
+			if (connectionCollectionPtr == nullptr){
 				continue;
 			}
 
 			const imtbase::ICollectionInfo::Ids connectionElementIds = connectionCollectionPtr->GetElementIds();
 			for (const imtbase::ICollectionInfo::Id& connectionElementId : connectionElementIds) {
 				imtbase::IObjectCollection::DataPtr connectionParamDataPtr;
-				if (!connectionCollectionPtr->GetObjectData(connectionElementId, connectionParamDataPtr)) {
+				if (!connectionCollectionPtr->GetObjectData(connectionElementId, connectionParamDataPtr)){
 					continue;
 				}
 				imtservice::CUrlConnectionParam* connectionParamPtr =
 							dynamic_cast<imtservice::CUrlConnectionParam*>(connectionParamDataPtr.GetPtr());
-				if (connectionParamPtr == nullptr) {
+				if (connectionParamPtr == nullptr){
 					continue;
 				}
 
 				imtservice::IServiceConnectionParam::IncomingConnectionList incomingConnections =
 							connectionParamPtr->GetIncomingConnections();
 				for (const imtservice::IServiceConnectionParam::IncomingConnectionParam& incomingConnection : incomingConnections) {
-					if (incomingConnection.GetObjectUuid() == dependantId) {
+					if (incomingConnection.GetObjectUuid() == dependantId){
 						QUrl url;
-						if (incomingConnection.GetUrl(imtcom::IServerConnectionInterface::PT_HTTP, url)) {
+						if (incomingConnection.GetUrl(imtcom::IServerConnectionInterface::PT_HTTP, url)){
 							return url;
 						}
 					}

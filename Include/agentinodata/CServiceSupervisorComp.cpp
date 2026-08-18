@@ -31,7 +31,7 @@ namespace agentinodata
 
 bool CServiceSupervisorComp::Start(const QByteArray& serviceId, QString& errorMessage)
 {
-	if (!m_processHostCompPtr.IsValid() || !m_serviceCollectionCompPtr.IsValid()) {
+	if (!m_processHostCompPtr.IsValid() || !m_serviceCollectionCompPtr.IsValid()){
 		errorMessage = QStringLiteral("Supervisor dependencies not configured");
 		return false;
 	}
@@ -40,12 +40,12 @@ bool CServiceSupervisorComp::Start(const QByteArray& serviceId, QString& errorMe
 	CancelTimer(m_restartTimers, serviceId);
 
 	// Host already tracks a live child — align FSM, do not double-spawn.
-	if (m_processHostCompPtr->IsRunning(serviceId)) {
+	if (m_processHostCompPtr->IsRunning(serviceId)){
 		return AlignRunning(serviceId, errorMessage);
 	}
 
 	// After agent hard restart: re-attach by durable PID before spawning a duplicate.
-	if (TryAdoptFromDurableState(serviceId, errorMessage)) {
+	if (TryAdoptFromDurableState(serviceId, errorMessage)){
 		errorMessage.clear();
 		return AlignRunning(serviceId, errorMessage);
 	}
@@ -58,7 +58,7 @@ bool CServiceSupervisorComp::Start(const QByteArray& serviceId, QString& errorMe
 	{
 		IProcessHost::SpawnRequest probeRequest;
 		QString configError;
-		if (!BuildSpawnRequest(serviceId, probeRequest, configError)) {
+		if (!BuildSpawnRequest(serviceId, probeRequest, configError)){
 			errorMessage = configError;
 			return false;
 		}
@@ -68,18 +68,18 @@ bool CServiceSupervisorComp::Start(const QByteArray& serviceId, QString& errorMe
 
 	// Stuck Starting/Running without a process: recover by spawning.
 	// Fresh Start / crash-restart: transition into Starting via FSM first.
-	if (state.status == ServiceRuntimeStatus::Starting) {
+	if (state.status == ServiceRuntimeStatus::Starting){
 		// Already Starting (or stuck) — fall through to SpawnChild.
 	}
-	else if (state.status == ServiceRuntimeStatus::Running) {
+	else if (state.status == ServiceRuntimeStatus::Running){
 		// Desync: marked Running but host has no child.
 		ApplyEvent(serviceId, CServiceFsm::Event::ChildExited);
-		if (!ApplyEvent(serviceId, CServiceFsm::Event::Start)) {
+		if (!ApplyEvent(serviceId, CServiceFsm::Event::Start)){
 			errorMessage = QStringLiteral("Invalid Start transition after desync from Running");
 			return false;
 		}
 	}
-	else if (!ApplyEvent(serviceId, CServiceFsm::Event::Start)) {
+	else if (!ApplyEvent(serviceId, CServiceFsm::Event::Start)){
 		// Stopped / Crashed / Failed → Starting (incl. post-backoff crash restart).
 		errorMessage = QStringLiteral("Invalid Start transition from %1")
 					.arg(QString::fromUtf8(ServiceRuntimeStatusToString(state.status)));
@@ -92,7 +92,7 @@ bool CServiceSupervisorComp::Start(const QByteArray& serviceId, QString& errorMe
 
 bool CServiceSupervisorComp::Stop(const QByteArray& serviceId, QString& errorMessage)
 {
-	if (!m_processHostCompPtr.IsValid()) {
+	if (!m_processHostCompPtr.IsValid()){
 		errorMessage = QStringLiteral("ProcessHost not configured");
 		return false;
 	}
@@ -101,32 +101,32 @@ bool CServiceSupervisorComp::Stop(const QByteArray& serviceId, QString& errorMes
 	CancelTimer(m_healthTimers, serviceId);
 
 	ServiceRuntimeState& state = EnsureState(serviceId);
-	if (state.status == ServiceRuntimeStatus::Stopping) {
-		if (!m_processHostCompPtr->IsRunning(serviceId)) {
+	if (state.status == ServiceRuntimeStatus::Stopping){
+		if (!m_processHostCompPtr->IsRunning(serviceId)){
 			ApplyEvent(serviceId, CServiceFsm::Event::ChildExited);
 		}
 		return true;
 	}
 	if (state.status == ServiceRuntimeStatus::Stopped
 				|| state.status == ServiceRuntimeStatus::Failed) {
-		if (!m_processHostCompPtr->IsRunning(serviceId)) {
+		if (!m_processHostCompPtr->IsRunning(serviceId)){
 			return true;
 		}
 	}
 
-	if (!ApplyEvent(serviceId, CServiceFsm::Event::Stop)) {
+	if (!ApplyEvent(serviceId, CServiceFsm::Event::Stop)){
 		// Unexpected FSM state (e.g. CrashLooping Failed) — still request OS stop if child lives.
 		errorMessage = QStringLiteral("Invalid Stop transition from %1")
 					.arg(QString::fromUtf8(ServiceRuntimeStatusToString(state.status)));
-		if (!m_processHostCompPtr->IsRunning(serviceId)) {
+		if (!m_processHostCompPtr->IsRunning(serviceId)){
 			return false;
 		}
 	}
 
-	if (!m_processHostCompPtr->SignalStop(serviceId, errorMessage)) {
+	if (!m_processHostCompPtr->SignalStop(serviceId, errorMessage)){
 		// No supervised child — only mark stopped if host agrees the process is gone.
-		if (!m_processHostCompPtr->IsRunning(serviceId)) {
-			if (EnsureState(serviceId).status == ServiceRuntimeStatus::Stopping) {
+		if (!m_processHostCompPtr->IsRunning(serviceId)){
+			if (EnsureState(serviceId).status == ServiceRuntimeStatus::Stopping){
 				ApplyEvent(serviceId, CServiceFsm::Event::ChildExited);
 			}
 			return true;
@@ -136,8 +136,8 @@ bool CServiceSupervisorComp::Stop(const QByteArray& serviceId, QString& errorMes
 
 	// SignalStop may block in waitForFinished and deliver ChildExited before we return
 	// (same-thread QProcess signals). Do not arm the stop timer if already stopped.
-	if (!m_processHostCompPtr->IsRunning(serviceId)) {
-		if (EnsureState(serviceId).status == ServiceRuntimeStatus::Stopping) {
+	if (!m_processHostCompPtr->IsRunning(serviceId)){
+		if (EnsureState(serviceId).status == ServiceRuntimeStatus::Stopping){
 			ApplyEvent(serviceId, CServiceFsm::Event::ChildExited);
 		}
 		CancelTimer(m_stopTimers, serviceId);
@@ -145,7 +145,7 @@ bool CServiceSupervisorComp::Stop(const QByteArray& serviceId, QString& errorMes
 	}
 
 	QTimer* timer = m_stopTimers.value(serviceId, nullptr);
-	if (timer == nullptr) {
+	if (timer == nullptr){
 		timer = new QTimer(this);
 		timer->setSingleShot(true);
 		timer->setProperty("serviceId", serviceId);
@@ -173,7 +173,7 @@ bool CServiceSupervisorComp::StartService(const QByteArray& serviceId)
 {
 	// GQL StartService is handled on imtrest::CWorkerThread. ProcessHost / QTimer children
 	// of this supervisor live on the main thread — never touch them from the worker.
-	if (QThread::currentThread() != thread()) {
+	if (QThread::currentThread() != thread()){
 		bool ok = false;
 		const bool invoked = QMetaObject::invokeMethod(
 					this,
@@ -186,7 +186,7 @@ bool CServiceSupervisorComp::StartService(const QByteArray& serviceId)
 
 	QString error;
 	const bool started = Start(serviceId, error);
-	if (!started) {
+	if (!started){
 		SendErrorMessage(
 					0,
 					QStringLiteral("Unable to start service '%1': %2")
@@ -199,7 +199,7 @@ bool CServiceSupervisorComp::StartService(const QByteArray& serviceId)
 
 bool CServiceSupervisorComp::StopService(const QByteArray& serviceId)
 {
-	if (QThread::currentThread() != thread()) {
+	if (QThread::currentThread() != thread()){
 		bool ok = false;
 		const bool invoked = QMetaObject::invokeMethod(
 					this,
@@ -212,7 +212,7 @@ bool CServiceSupervisorComp::StopService(const QByteArray& serviceId)
 
 	QString error;
 	const bool stopped = Stop(serviceId, error);
-	if (!stopped) {
+	if (!stopped){
 		SendErrorMessage(
 					0,
 					QStringLiteral("Unable to stop service '%1': %2")
@@ -228,17 +228,17 @@ bool CServiceSupervisorComp::StopService(const QByteArray& serviceId)
 void CServiceSupervisorComp::OnComponentCreated()
 {
 	BaseClass::OnComponentCreated();
-	if (m_stopTimeoutMsAttrPtr.IsValid() && *m_stopTimeoutMsAttrPtr > 0) {
+	if (m_stopTimeoutMsAttrPtr.IsValid() && *m_stopTimeoutMsAttrPtr > 0){
 		m_stopTimeoutMs = *m_stopTimeoutMsAttrPtr;
 	}
-	if (m_stableSecondsAttrPtr.IsValid() && *m_stableSecondsAttrPtr > 0) {
+	if (m_stableSecondsAttrPtr.IsValid() && *m_stableSecondsAttrPtr > 0){
 		m_stableSeconds = *m_stableSecondsAttrPtr;
 	}
 	m_runtimeStatePath = ResolveRuntimeStatePath();
 	LoadDurableState();
 
 	CProcessHostComp* host = dynamic_cast<CProcessHostComp*>(m_processHostCompPtr.GetPtr());
-	if (host != nullptr) {
+	if (host != nullptr){
 		connect(host, &CProcessHostComp::ChildExited, this, &CServiceSupervisorComp::OnChildExited);
 		connect(host, &CProcessHostComp::ChildStarted, this, &CServiceSupervisorComp::OnChildStarted);
 		connect(host, &CProcessHostComp::ChildError, this, &CServiceSupervisorComp::OnChildError);
@@ -254,9 +254,9 @@ void CServiceSupervisorComp::OnComponentDestroyed()
 	const QList<QByteArray> ids = m_states.keys();
 	for (const QByteArray& id : ids) {
 		const ServiceRuntimeStatus st = m_states[id].status;
-		if (st == ServiceRuntimeStatus::Running || st == ServiceRuntimeStatus::Starting) {
+		if (st == ServiceRuntimeStatus::Running || st == ServiceRuntimeStatus::Starting){
 			QString err;
-			if (!Stop(id, err)) {
+			if (!Stop(id, err)){
 				SendWarningMessage(
 						0,
 						QStringLiteral("Unable to stop service '%1' during shutdown: %2")
@@ -291,7 +291,7 @@ void CServiceSupervisorComp::OnChildExited(
 	ServiceRuntimeState& state = EnsureState(serviceId);
 	const ServiceRuntimeStatus previous = state.status;
 
-	if (previous == ServiceRuntimeStatus::Stopping) {
+	if (previous == ServiceRuntimeStatus::Stopping){
 		SendInfoMessage(
 					0,
 					QStringLiteral("Service '%1' stopped")
@@ -301,7 +301,7 @@ void CServiceSupervisorComp::OnChildExited(
 		return;
 	}
 
-	if (previous == ServiceRuntimeStatus::Starting) {
+	if (previous == ServiceRuntimeStatus::Starting){
 		SendErrorMessage(
 					0,
 					QStringLiteral("Service '%1' exited while starting (exit code %2, status %3)")
@@ -313,7 +313,7 @@ void CServiceSupervisorComp::OnChildExited(
 		return;
 	}
 
-	if (previous == ServiceRuntimeStatus::Running) {
+	if (previous == ServiceRuntimeStatus::Running){
 		SendWarningMessage(
 					0,
 					QStringLiteral("Service '%1' exited unexpectedly (exit code %2, status %3)")
@@ -330,12 +330,12 @@ void CServiceSupervisorComp::OnChildExited(
 		if (m_serviceCollectionCompPtr.IsValid()
 					&& m_serviceCollectionCompPtr->GetObjectData(serviceId, dataPtr)) {
 			IServiceInfo* info = dynamic_cast<IServiceInfo*>(dataPtr.GetPtr());
-			if (info != nullptr) {
+			if (info != nullptr){
 				autoStart = info->IsAutoStart();
 			}
 		}
 
-		if (!autoStart) {
+		if (!autoStart){
 			return;
 		}
 
@@ -347,11 +347,11 @@ void CServiceSupervisorComp::OnChildExited(
 			state.restartCount = 0;
 			state.restartWindowStart = now;
 		}
-		if (state.restartCount < policy.maxRestarts) {
+		if (state.restartCount < policy.maxRestarts){
 			++state.restartCount;
 			// Remain Crashed until backoff fires → Start() does Crashed+Start → Starting + spawn.
 			QTimer* timer = m_restartTimers.value(serviceId, nullptr);
-			if (timer == nullptr) {
+			if (timer == nullptr){
 				timer = new QTimer(this);
 				timer->setSingleShot(true);
 				timer->setProperty("serviceId", serviceId);
@@ -386,14 +386,14 @@ void CServiceSupervisorComp::OnChildStarted(const QByteArray& serviceId, qint64 
 	QString unused;
 	QString program;
 	QString executable;
-	if (BuildSpawnRequest(serviceId, request, unused)) {
+	if (BuildSpawnRequest(serviceId, request, unused)){
 		program = request.program;
 	}
 	imtbase::IObjectCollection::DataPtr dataPtr;
 	if (m_serviceCollectionCompPtr.IsValid()
 				&& m_serviceCollectionCompPtr->GetObjectData(serviceId, dataPtr)) {
 		IServiceInfo* info = dynamic_cast<IServiceInfo*>(dataPtr.GetPtr());
-		if (info != nullptr) {
+		if (info != nullptr){
 			executable = QString::fromUtf8(info->GetServicePath());
 		}
 	}
@@ -410,7 +410,7 @@ void CServiceSupervisorComp::OnChildError(const QByteArray& serviceId, QString e
 			QStringLiteral("ProcessHost"));
 
 	ServiceRuntimeState& state = EnsureState(serviceId);
-	if (state.status == ServiceRuntimeStatus::Starting) {
+	if (state.status == ServiceRuntimeStatus::Starting){
 		ApplyEvent(serviceId, CServiceFsm::Event::ChildExited, ServiceFailureReason::SpawnError);
 	}
 }
@@ -419,17 +419,17 @@ void CServiceSupervisorComp::OnChildError(const QByteArray& serviceId, QString e
 void CServiceSupervisorComp::OnStopTimeout()
 {
 	QTimer* timer = qobject_cast<QTimer*>(sender());
-	if (timer == nullptr) {
+	if (timer == nullptr){
 		return;
 	}
 	const QByteArray serviceId = timer->property("serviceId").toByteArray();
 	QString error;
-	if (m_processHostCompPtr.IsValid()) {
+	if (m_processHostCompPtr.IsValid()){
 		m_processHostCompPtr->ForceKill(serviceId, error);
 	}
 
 	ServiceRuntimeState& state = EnsureState(serviceId);
-	if (state.status != ServiceRuntimeStatus::Stopping) {
+	if (state.status != ServiceRuntimeStatus::Stopping){
 		// ChildExited may already have moved Stopping → Stopped while kill ran.
 		return;
 	}
@@ -439,7 +439,7 @@ void CServiceSupervisorComp::OnStopTimeout()
 	// even though the service was no longer running.
 	const bool stillRunning = m_processHostCompPtr.IsValid()
 				&& m_processHostCompPtr->IsRunning(serviceId);
-	if (!stillRunning) {
+	if (!stillRunning){
 		ApplyEvent(serviceId, CServiceFsm::Event::ChildExited);
 		return;
 	}
@@ -451,14 +451,14 @@ void CServiceSupervisorComp::OnStopTimeout()
 void CServiceSupervisorComp::OnRestartBackoff()
 {
 	QTimer* timer = qobject_cast<QTimer*>(sender());
-	if (timer == nullptr) {
+	if (timer == nullptr){
 		return;
 	}
 	const QByteArray serviceId = timer->property("serviceId").toByteArray();
 	// Crashed → Starting (via Start event) + spawn. State was deliberately left Crashed
 	// during the backoff so this path does not hit the Starting early-return.
 	QString error;
-	if (!Start(serviceId, error)) {
+	if (!Start(serviceId, error)){
 		SendErrorMessage(
 				0,
 				QStringLiteral("Unable to restart service '%1' after crash: %2")
@@ -471,7 +471,7 @@ void CServiceSupervisorComp::OnRestartBackoff()
 void CServiceSupervisorComp::OnHealthStable()
 {
 	QTimer* timer = qobject_cast<QTimer*>(sender());
-	if (timer == nullptr) {
+	if (timer == nullptr){
 		return;
 	}
 	const QByteArray serviceId = timer->property("serviceId").toByteArray();
@@ -495,7 +495,7 @@ bool CServiceSupervisorComp::ApplyEvent(
 {
 	ServiceRuntimeState& state = EnsureState(serviceId);
 	const CServiceFsm::TransitionResult result = CServiceFsm::Apply(state.status, event);
-	if (!result.accepted) {
+	if (!result.accepted){
 		return false;
 	}
 	state.status = result.to;
@@ -513,11 +513,11 @@ bool CServiceSupervisorComp::ApplyEvent(
 
 QString CServiceSupervisorComp::GetServiceDisplayName(const QByteArray& serviceId) const
 {
-	if (m_serviceCollectionCompPtr.IsValid()) {
+	if (m_serviceCollectionCompPtr.IsValid()){
 		const QString serviceName = m_serviceCollectionCompPtr->GetElementInfo(
 					serviceId,
 					imtbase::ICollectionInfo::EIT_NAME).toString();
-		if (!serviceName.isEmpty()) {
+		if (!serviceName.isEmpty()){
 			return serviceName;
 		}
 	}
@@ -541,7 +541,7 @@ void CServiceSupervisorComp::EmitStatus(const ServiceRuntimeState& state)
 
 ServiceRuntimeState& CServiceSupervisorComp::EnsureState(const QByteArray& serviceId)
 {
-	if (!m_states.contains(serviceId)) {
+	if (!m_states.contains(serviceId)){
 		ServiceRuntimeState state;
 		state.serviceId = serviceId;
 		state.status = ServiceRuntimeStatus::Stopped;
@@ -558,12 +558,12 @@ bool CServiceSupervisorComp::BuildSpawnRequest(
 			QString& errorMessage) const
 {
 	imtbase::IObjectCollection::DataPtr dataPtr;
-	if (!m_serviceCollectionCompPtr->GetObjectData(serviceId, dataPtr)) {
+	if (!m_serviceCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
 		errorMessage = QStringLiteral("Service not found");
 		return false;
 	}
 	IServiceInfo* info = dynamic_cast<IServiceInfo*>(dataPtr.GetPtr());
-	if (info == nullptr) {
+	if (info == nullptr){
 		errorMessage = QStringLiteral("Invalid service descriptor");
 		return false;
 	}
@@ -571,10 +571,10 @@ bool CServiceSupervisorComp::BuildSpawnRequest(
 	request.serviceId = serviceId;
 	const QByteArray startScript = info->GetStartScriptPath();
 	const QByteArray path = info->GetServicePath();
-	if (!startScript.isEmpty()) {
+	if (!startScript.isEmpty()){
 		request.program = QString::fromUtf8(startScript);
 	}
-	else if (!path.isEmpty()) {
+	else if (!path.isEmpty()){
 		request.program = QString::fromUtf8(path);
 	}
 	else {
@@ -603,7 +603,7 @@ RestartPolicy CServiceSupervisorComp::PolicyFor(const QByteArray& serviceId) con
 void CServiceSupervisorComp::CancelTimer(QHash<QByteArray, QTimer*>& timers, const QByteArray& serviceId)
 {
 	QTimer* timer = timers.value(serviceId, nullptr);
-	if (timer != nullptr) {
+	if (timer != nullptr){
 		timer->stop();
 	}
 }
@@ -614,7 +614,7 @@ void CServiceSupervisorComp::ArmHealthTimer(const QByteArray& serviceId)
 	const RestartPolicy policy = PolicyFor(serviceId);
 	const int stableMs = qMax(1, policy.stableSeconds) * 1000;
 	QTimer* timer = m_healthTimers.value(serviceId, nullptr);
-	if (timer == nullptr) {
+	if (timer == nullptr){
 		timer = new QTimer(this);
 		timer->setSingleShot(true);
 		timer->setProperty("serviceId", serviceId);
@@ -628,19 +628,19 @@ void CServiceSupervisorComp::ArmHealthTimer(const QByteArray& serviceId)
 bool CServiceSupervisorComp::SpawnChild(const QByteArray& serviceId, QString& errorMessage)
 {
 	IProcessHost::SpawnRequest request;
-	if (!BuildSpawnRequest(serviceId, request, errorMessage)) {
+	if (!BuildSpawnRequest(serviceId, request, errorMessage)){
 		ApplyEvent(serviceId, CServiceFsm::Event::ChildExited, ServiceFailureReason::SpawnError);
 		return false;
 	}
 
 	qint64 pid = 0;
-	if (!m_processHostCompPtr->Spawn(request, pid, errorMessage)) {
+	if (!m_processHostCompPtr->Spawn(request, pid, errorMessage)){
 		ApplyEvent(serviceId, CServiceFsm::Event::ChildExited, ServiceFailureReason::SpawnError);
 		return false;
 	}
 
 	ServiceRuntimeState& state = EnsureState(serviceId);
-	if (pid > 0) {
+	if (pid > 0){
 		state.pid = pid;
 	}
 	state.observedAt = QDateTime::currentDateTimeUtc();
@@ -656,7 +656,7 @@ bool CServiceSupervisorComp::SpawnChild(const QByteArray& serviceId, QString& er
 	// true already means the child is OS-started (== ChildReady), so drive the transition
 	// here. If the async started() still arrives afterwards, OnChildStarted is idempotent once
 	// Running (ChildReady is rejected by the FSM; the health timer merely restarts).
-	if (pid > 0 && state.status == ServiceRuntimeStatus::Starting) {
+	if (pid > 0 && state.status == ServiceRuntimeStatus::Starting){
 		OnChildStarted(serviceId, pid);
 	}
 	return true;
@@ -666,8 +666,8 @@ bool CServiceSupervisorComp::SpawnChild(const QByteArray& serviceId, QString& er
 bool CServiceSupervisorComp::AlignRunning(const QByteArray& serviceId, QString& errorMessage)
 {
 	ServiceRuntimeState& state = EnsureState(serviceId);
-	if (state.status == ServiceRuntimeStatus::Running) {
-		if (m_processHostCompPtr.IsValid()) {
+	if (state.status == ServiceRuntimeStatus::Running){
+		if (m_processHostCompPtr.IsValid()){
 			state.pid = m_processHostCompPtr->Pid(serviceId);
 		}
 		return true;
@@ -675,20 +675,20 @@ bool CServiceSupervisorComp::AlignRunning(const QByteArray& serviceId, QString& 
 	if (state.status == ServiceRuntimeStatus::Stopped
 				|| state.status == ServiceRuntimeStatus::Crashed
 				|| state.status == ServiceRuntimeStatus::Failed) {
-		if (!ApplyEvent(serviceId, CServiceFsm::Event::Start)) {
+		if (!ApplyEvent(serviceId, CServiceFsm::Event::Start)){
 			errorMessage = QStringLiteral("Invalid Start transition while aligning Running");
 			return false;
 		}
 	}
 	state = EnsureState(serviceId);
-	if (state.status == ServiceRuntimeStatus::Starting) {
-		if (!ApplyEvent(serviceId, CServiceFsm::Event::ChildReady)) {
+	if (state.status == ServiceRuntimeStatus::Starting){
+		if (!ApplyEvent(serviceId, CServiceFsm::Event::ChildReady)){
 			errorMessage = QStringLiteral("Invalid ChildReady while aligning Running");
 			return false;
 		}
 	}
 	state = EnsureState(serviceId);
-	if (m_processHostCompPtr.IsValid()) {
+	if (m_processHostCompPtr.IsValid()){
 		state.pid = m_processHostCompPtr->Pid(serviceId);
 	}
 	ArmHealthTimer(serviceId);
@@ -698,11 +698,11 @@ bool CServiceSupervisorComp::AlignRunning(const QByteArray& serviceId, QString& 
 
 bool CServiceSupervisorComp::TryAdoptFromDurableState(const QByteArray& serviceId, QString& errorMessage)
 {
-	if (!m_processHostCompPtr.IsValid() || !m_durablePids.contains(serviceId)) {
+	if (!m_processHostCompPtr.IsValid() || !m_durablePids.contains(serviceId)){
 		return false;
 	}
 	const DurablePidEntry entry = m_durablePids.value(serviceId);
-	if (entry.pid <= 0) {
+	if (entry.pid <= 0){
 		return false;
 	}
 
@@ -710,8 +710,8 @@ bool CServiceSupervisorComp::TryAdoptFromDurableState(const QByteArray& serviceI
 	QString program = entry.program;
 	QString executable = entry.executable;
 	QString unused;
-	if (BuildSpawnRequest(serviceId, spawnReq, unused)) {
-		if (program.isEmpty()) {
+	if (BuildSpawnRequest(serviceId, spawnReq, unused)){
+		if (program.isEmpty()){
 			program = spawnReq.program;
 		}
 	}
@@ -720,7 +720,7 @@ bool CServiceSupervisorComp::TryAdoptFromDurableState(const QByteArray& serviceI
 				&& m_serviceCollectionCompPtr.IsValid()
 				&& m_serviceCollectionCompPtr->GetObjectData(serviceId, dataPtr)) {
 		IServiceInfo* info = dynamic_cast<IServiceInfo*>(dataPtr.GetPtr());
-		if (info != nullptr) {
+		if (info != nullptr){
 			executable = QString::fromUtf8(info->GetServicePath());
 		}
 	}
@@ -728,13 +728,13 @@ bool CServiceSupervisorComp::TryAdoptFromDurableState(const QByteArray& serviceI
 	// Prefer executable image (real process) over start-script path for verification.
 	const QStringList candidates = [&]() {
 		QStringList list;
-		if (!executable.isEmpty()) {
+		if (!executable.isEmpty()){
 			list << executable;
 		}
-		if (!program.isEmpty() && program != executable) {
+		if (!program.isEmpty() && program != executable){
 			list << program;
 		}
-		if (list.isEmpty()) {
+		if (list.isEmpty()){
 			list << QString(); // allow live-pid adopt without path if nothing known
 		}
 		return list;
@@ -746,13 +746,13 @@ bool CServiceSupervisorComp::TryAdoptFromDurableState(const QByteArray& serviceI
 	QString lastError;
 	for (const QString& expected : candidates) {
 		adopt.expectedProgram = expected;
-		if (m_processHostCompPtr->TryAdopt(adopt, lastError)) {
+		if (m_processHostCompPtr->TryAdopt(adopt, lastError)){
 			PersistPid(serviceId, entry.pid, program, executable);
 			errorMessage.clear();
 			return true;
 		}
 		// Failed adopt may have partially inserted — ensure clean for next candidate.
-		if (m_processHostCompPtr->IsRunning(serviceId)) {
+		if (m_processHostCompPtr->IsRunning(serviceId)){
 			// Should not happen on failure; leave as-is.
 			errorMessage.clear();
 			return true;
@@ -772,7 +772,7 @@ void CServiceSupervisorComp::PersistPid(
 			const QString& program,
 			const QString& executable)
 {
-	if (serviceId.isEmpty() || pid <= 0) {
+	if (serviceId.isEmpty() || pid <= 0){
 		return;
 	}
 	DurablePidEntry entry;
@@ -786,7 +786,7 @@ void CServiceSupervisorComp::PersistPid(
 
 void CServiceSupervisorComp::ClearPersistedPid(const QByteArray& serviceId)
 {
-	if (m_durablePids.remove(serviceId)) {
+	if (m_durablePids.remove(serviceId)){
 		SaveDurableState();
 	}
 }
@@ -797,12 +797,12 @@ void CServiceSupervisorComp::LoadDurableState()
 	m_durablePids.clear();
 	const QString path = m_runtimeStatePath.isEmpty() ? ResolveRuntimeStatePath() : m_runtimeStatePath;
 	QFile file(path);
-	if (!file.exists() || !file.open(QIODevice::ReadOnly)) {
+	if (!file.exists() || !file.open(QIODevice::ReadOnly)){
 		return;
 	}
 	const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
 	file.close();
-	if (!doc.isObject()) {
+	if (!doc.isObject()){
 		return;
 	}
 	const QJsonObject services = doc.object().value(QStringLiteral("services")).toObject();
@@ -812,7 +812,7 @@ void CServiceSupervisorComp::LoadDurableState()
 		entry.pid = obj.value(QStringLiteral("pid")).toVariant().toLongLong();
 		entry.program = obj.value(QStringLiteral("program")).toString();
 		entry.executable = obj.value(QStringLiteral("executable")).toString();
-		if (entry.pid > 0) {
+		if (entry.pid > 0){
 			m_durablePids.insert(it.key().toUtf8(), entry);
 		}
 	}
@@ -837,7 +837,7 @@ void CServiceSupervisorComp::SaveDurableState() const
 	const QFileInfo info(path);
 	QDir().mkpath(info.absolutePath());
 	QFile file(path);
-	if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)){
 		return;
 	}
 	file.write(QJsonDocument(root).toJson(QJsonDocument::Compact));
@@ -848,19 +848,19 @@ void CServiceSupervisorComp::SaveDurableState() const
 QString CServiceSupervisorComp::ResolveRuntimeStatePath() const
 {
 	QString configured;
-	if (m_runtimeStatePathAttrPtr.IsValid()) {
+	if (m_runtimeStatePathAttrPtr.IsValid()){
 		configured = *m_runtimeStatePathAttrPtr;
 	}
-	if (configured.isEmpty()) {
+	if (configured.isEmpty()){
 		configured = QStringLiteral("ServiceRuntimePids.json");
 	}
 	const QFileInfo info(configured);
-	if (info.isAbsolute()) {
+	if (info.isAbsolute()){
 		return info.absoluteFilePath();
 	}
 	// Prefer application directory (next to agent binary / ServicesSettings.xml).
 	const QString appDir = QCoreApplication::applicationDirPath();
-	if (!appDir.isEmpty()) {
+	if (!appDir.isEmpty()){
 		return QDir(appDir).filePath(configured);
 	}
 	const QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
@@ -870,15 +870,15 @@ QString CServiceSupervisorComp::ResolveRuntimeStatePath() const
 
 void CServiceSupervisorComp::RefreshTypeCatalog(const QByteArray& serviceId) const
 {
-	if (!m_typeCatalogCompPtr.IsValid() || !m_serviceCollectionCompPtr.IsValid()) {
+	if (!m_typeCatalogCompPtr.IsValid() || !m_serviceCollectionCompPtr.IsValid()){
 		return;
 	}
 	imtbase::IObjectCollection::DataPtr dataPtr;
-	if (!m_serviceCollectionCompPtr->GetObjectData(serviceId, dataPtr)) {
+	if (!m_serviceCollectionCompPtr->GetObjectData(serviceId, dataPtr)){
 		return;
 	}
 	IServiceInfo* info = dynamic_cast<IServiceInfo*>(dataPtr.GetPtr());
-	if (info == nullptr) {
+	if (info == nullptr){
 		return;
 	}
 	const QFileInfo fileInfo(QString::fromUtf8(info->GetServicePath()));
@@ -905,26 +905,26 @@ IServiceStatusInfo::ServiceStatus CServiceSupervisorComp::ToLegacyStatus(Service
 
 void CServiceSupervisorComp::AutoStartServices()
 {
-	if (!m_serviceCollectionCompPtr.IsValid()) {
+	if (!m_serviceCollectionCompPtr.IsValid()){
 		return;
 	}
 	const imtbase::ICollectionInfo::Ids ids = m_serviceCollectionCompPtr->GetElementIds();
 	for (const QByteArray& id : ids) {
 		imtbase::IObjectCollection::DataPtr dataPtr;
-		if (!m_serviceCollectionCompPtr->GetObjectData(id, dataPtr)) {
+		if (!m_serviceCollectionCompPtr->GetObjectData(id, dataPtr)){
 			continue;
 		}
 		IServiceInfo* info = dynamic_cast<IServiceInfo*>(dataPtr.GetPtr());
-		if (info == nullptr || !info->IsAutoStart()) {
+		if (info == nullptr || !info->IsAutoStart()){
 			continue;
 		}
 		// Start() adopts durable PID first (no table scan), else spawns.
 		// Skip only if host already tracks a live child after prior Start in this loop.
-		if (m_processHostCompPtr.IsValid() && m_processHostCompPtr->IsRunning(id)) {
+		if (m_processHostCompPtr.IsValid() && m_processHostCompPtr->IsRunning(id)){
 			continue;
 		}
 		QString error;
-		if (!Start(id, error)) {
+		if (!Start(id, error)){
 			SendErrorMessage(
 					0,
 					QStringLiteral("Unable to auto-start service '%1': %2")
