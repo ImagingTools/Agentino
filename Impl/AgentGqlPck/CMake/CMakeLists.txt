@@ -10,5 +10,4 @@ ADD_DEFINITIONS(-D_UNICODE)
 
 agentino_declare_library_dependencies(AgentGqlPck LINK_SCOPE PRIVATE
 	agentgql
-	agentinodata
 )

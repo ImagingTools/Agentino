@@ -58,7 +58,6 @@ agentino_declare_library_dependencies(${PROJECT_NAME} LINK_SCOPE PRIVATE
 	ImtCore::imtauthguiqml
 	ImtCore::imtcolguiqml
 	ImtCore::imtdocguiqml
-	ImtCore::imtlicguiqml
 )
 
 

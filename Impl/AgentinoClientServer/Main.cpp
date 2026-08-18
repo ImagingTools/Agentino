@@ -27,7 +27,6 @@ static void InitializeAgentinoClientServerResources()
 #endif
 	Q_INIT_RESOURCE(agentinoqml);
 	Q_INIT_RESOURCE(AgentinoLoc);
-	Q_INIT_RESOURCE(imtlicguiqml);
 
 	ImtCoreInitLocalizationResources();
 	ImtCoreInitBaseResources();

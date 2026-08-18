@@ -1,58 +1,57 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
+
+
 // ImtCore includes
 #include <imtcore/CApplicationRunner.h>
 #include <imtcore/CImtCoreAuthInitializer.h>
 #include <imtcore/CImtCoreBaseInitializer.h>
-#include <imtcore/CImtCoreDeskInitializer.h>
 #include <imtcore/CImtCoreLocalizationInitializer.h>
 #include <imtcore/CImtCoreStyleInitializer.h>
 #include <imtlic/IProductInfo.h>
+
+
+// Generated includes
 #include <GeneratedFiles/AgentinoAgent/CAgentinoAgent.h>
+
 
 // Same product feature tree as AgentinoServer so Topology GetCommands permission
 // checks can resolve ChangeService / ViewServices / …
 #include "../AgentinoServer/AgentinoFeatures.h"
 
 
-class CAgentinoAgentResourceInitializer
+static void InitializeAgentinoAgentResources()
 {
-public:
-	static void Init()
-	{
 #ifdef WEB_COMPILE
 #ifdef AGENTINO_USE_NEW_WEB
-		Q_INIT_RESOURCE(agentWeb);
+	Q_INIT_RESOURCE(agentWeb);
 #else
-		Q_INIT_RESOURCE(agentinoqmlWeb);
+	Q_INIT_RESOURCE(agentinoqmlWeb);
 #endif
 #endif
-		Q_INIT_RESOURCE(agentinoqml);
-		Q_INIT_RESOURCE(imtlicguiqml);
+	Q_INIT_RESOURCE(agentinoqml);
 
-		ImtCoreInitLocalizationResources();
-		ImtCoreInitBaseResources();
-		ImtCoreInitAuthSqlResources();
-		ImtCoreInitDeskSqlResources();
+	ImtCoreInitLocalizationResources();
+	ImtCoreInitBaseResources();
+	ImtCoreInitAuthSqlResources();
 
-		ImtCoreInitStyleResources();
-		ImtCoreInitAuthStyleResources();
+	ImtCoreInitStyleResources();
+	ImtCoreInitAuthStyleResources();
 
-		ImtCoreInitQmlApplicationCoreResources();
-		ImtCoreInitQmlDocumentManagementResources();
-		ImtCoreInitAuthQmlResources();
+	ImtCoreInitQmlApplicationCoreResources();
+	ImtCoreInitQmlDocumentManagementResources();
+	ImtCoreInitAuthQmlResources();
 
-		InitializeImtCoreStyle();
-	}
-};
+	InitializeImtCoreStyle();
+}
 
 
 int main(int argc, char* argv[])
 {
-	CAgentinoAgentResourceInitializer::Init();
+	InitializeAgentinoAgentResources();
 
 	CAgentinoAgent instance;
 	auto* productInfoPtr = instance.GetInterface<imtlic::IProductInfo>();
-	if (productInfoPtr != nullptr) {
+	if (productInfoPtr != nullptr){
 		agentino::FillProduct(*productInfoPtr);
 	}
 

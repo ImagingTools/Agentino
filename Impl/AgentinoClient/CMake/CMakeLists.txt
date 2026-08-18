@@ -42,21 +42,15 @@ if(WIN32)
 endif()
 
 agentino_declare_library_dependencies(${PROJECT_NAME} LINK_SCOPE PRIVATE
-	agentinoqml 
-	agentinogql 
-	agentgql
-	AgentinoLoc 
+	agentinoqml
+	agentinogql
+	AgentinoLoc
 	ImtCore::ImtCoreLoc
-	ImtCore::imt2dsdl 
-	ImtCore::imtauthdb
-	ImtCore::imtchatdb 
-	ImtCore::imtdeskdb
-	ImtCore::imtcontrolsqml 
-	ImtCore::imtstylecontrolsqml 
-	ImtCore::imtguiqml 
+	ImtCore::imtcontrolsqml
+	ImtCore::imtstylecontrolsqml
+	ImtCore::imtguiqml
 	ImtCore::imtguigqlqml
-	ImtCore::imtauthguiqml 
-	ImtCore::imtcolguiqml 
-	ImtCore::imtdocguiqml 
-	ImtCore::imtlicguiqml
+	ImtCore::imtauthguiqml
+	ImtCore::imtcolguiqml
+	ImtCore::imtdocguiqml
 )

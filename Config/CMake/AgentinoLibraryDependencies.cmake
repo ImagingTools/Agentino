@@ -81,8 +81,8 @@ agentino_declare_library_dependencies(agentinosdl		LINK_SCOPE PUBLIC	ImtCore::im
 
 # --- Libraries --------------------------------------------------------------
 agentino_declare_library_dependencies(agentinodata		LINK_SCOPE PUBLIC	agentinosdl ImtCore::imtservice)
-agentino_declare_library_dependencies(agentinogql		LINK_SCOPE PUBLIC	agentinodata)
-agentino_declare_library_dependencies(agentgql			LINK_SCOPE PUBLIC	agentinosdl ImtCore::imtguigql)
+agentino_declare_library_dependencies(agentgql			LINK_SCOPE PUBLIC	agentinodata agentinosdl ImtCore::imtguigql)
+agentino_declare_library_dependencies(agentinogql		LINK_SCOPE PUBLIC	agentgql agentinodata)
 
 # --- QML web-resource libraries ---------------------------------------------
 if(QT_VERSION_MAJOR EQUAL 6)

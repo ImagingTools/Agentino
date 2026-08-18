@@ -49,15 +49,12 @@ ADD_DEFINITIONS(-D_UNICODE)
 agentino_declare_library_dependencies(${PROJECT_NAME} LINK_SCOPE PRIVATE
 	agentinoqml
 	agentinogql
-	agentgql
 	AgentinoLoc
 	ImtCore::ImtCoreLoc
 	AcfSln::iservice
-	ImtCore::imt2dsdl
 	ImtCore::imtauthgql
 	ImtCore::imtauthdb
 	ImtCore::imtchatdb
-	ImtCore::imtdeskdb
 	ImtCore::imtlog
 	ImtCore::imtcontrolsqml
 	ImtCore::imtstylecontrolsqml
@@ -66,5 +63,4 @@ agentino_declare_library_dependencies(${PROJECT_NAME} LINK_SCOPE PRIVATE
 	ImtCore::imtauthguiqml
 	ImtCore::imtcolguiqml
 	ImtCore::imtdocguiqml
-	ImtCore::imtlicguiqml
 )
