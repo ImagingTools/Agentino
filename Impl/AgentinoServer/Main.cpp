@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
+
+
 // ImtCore includes
 #include <imtcore/CApplicationRunner.h>
 #include <imtcore/CImtCoreAuthInitializer.h>
+#include <imtcore/CImtCoreBaseInitializer.h>
 #include <imtcore/CImtCoreLocalizationInitializer.h>
+#include <imtcore/CImtCoreStyleInitializer.h>
 #include <imtlic/IProductInfo.h>
 
 // Agentino includes
@@ -24,7 +28,17 @@ static void InitializeAgentinoServerResources()
 	Q_INIT_RESOURCE(agentino);
 
 	ImtCoreInitLocalizationResources();
+	ImtCoreInitBaseResources();
 	ImtCoreInitAuthSqlResources();
+
+	ImtCoreInitStyleResources();
+	ImtCoreInitAuthStyleResources();
+
+	ImtCoreInitQmlApplicationCoreResources();
+	ImtCoreInitQmlDocumentManagementResources();
+	ImtCoreInitAuthQmlResources();
+
+	InitializeImtCoreStyle();
 }
 
 
