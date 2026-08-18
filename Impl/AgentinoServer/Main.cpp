@@ -3,10 +3,9 @@
 
 // ImtCore includes
 #include <imtcore/CApplicationRunner.h>
-#include <imtcore/CImtCoreAuthInitializer.h>
-#include <imtcore/CImtCoreBaseInitializer.h>
-#include <imtcore/CImtCoreLocalizationInitializer.h>
-#include <imtcore/CImtCoreStyleInitializer.h>
+#include <imtcore/CImtCoreAuthorizableServerInitializer.h>
+#include <imtcore/CImtCoreDeskInitializer.h>
+#include <imtcore/CImtCoreLicInitializer.h>
 #include <imtlic/IProductInfo.h>
 
 // Agentino includes
@@ -26,19 +25,14 @@ static void InitializeAgentinoServerResources()
 	Q_INIT_RESOURCE(agentinoqml);
 	Q_INIT_RESOURCE(AgentinoLoc);
 	Q_INIT_RESOURCE(agentino);
+	Q_INIT_RESOURCE(imtstylecontrolsqml);
 
-	ImtCoreInitLocalizationResources();
-	ImtCoreInitBaseResources();
-	ImtCoreInitAuthSqlResources();
+	ImtCoreInitDeskSqlResources();
+	InitializeImtCoreAuthorizableServer();
 
 	ImtCoreInitStyleResources();
 	ImtCoreInitAuthStyleResources();
-
-	ImtCoreInitQmlApplicationCoreResources();
-	ImtCoreInitQmlDocumentManagementResources();
-	ImtCoreInitAuthQmlResources();
-
-	InitializeImtCoreStyle();
+	ImtCoreInitLicStyleResources();
 }
 
 

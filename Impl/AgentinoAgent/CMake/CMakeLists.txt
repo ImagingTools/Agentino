@@ -55,12 +55,12 @@ agentino_declare_library_dependencies(${PROJECT_NAME} LINK_SCOPE PRIVATE
 	ImtCore::imtauthgql
 	ImtCore::imtauthdb
 	ImtCore::imtchatdb
+	ImtCore::imtdeskdb
 	ImtCore::imtlog
-	ImtCore::imtcontrolsqml
 	ImtCore::imtstylecontrolsqml
-	ImtCore::imtguiqml
-	ImtCore::imtguigqlqml
-	ImtCore::imtauthguiqml
-	ImtCore::imtcolguiqml
-	ImtCore::imtdocguiqml
+	ImtCore::imtlicgui
+	ImtCore::imtstyle
+	ImtCore::imtgui
+	ImtCore::imtguigql
+	ImtCore::imtauthgui
 )
