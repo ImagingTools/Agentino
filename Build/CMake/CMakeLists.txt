@@ -61,6 +61,32 @@ acf_define_link_scope_var(ACF_LIBRARY_LINK_SCOPE     "PUBLIC"  "Link scope used 
 acf_define_link_scope_var(ACF_PACKAGE_LINK_SCOPE     "PRIVATE" "Link scope used by package (Pck) libraries linking their dependencies")
 acf_define_link_scope_var(ACF_APPLICATION_LINK_SCOPE "PRIVATE" "Link scope used by executables linking their dependencies")
 
+# Legacy ACF compatibility: if helper CMake files still use plain
+# target_link_libraries() signatures, force plain mode in this repository too.
+set(AGENTINO_FORCE_PLAIN_TLL "AUTO" CACHE STRING "Force plain target_link_libraries signatures: AUTO|ON|OFF")
+set_property(CACHE AGENTINO_FORCE_PLAIN_TLL PROPERTY STRINGS "AUTO" "ON" "OFF")
+
+set(_agentino_force_plain_tll OFF)
+if(AGENTINO_FORCE_PLAIN_TLL STREQUAL "ON")
+	set(_agentino_force_plain_tll ON)
+elseif(AGENTINO_FORCE_PLAIN_TLL STREQUAL "AUTO")
+	set(_acf_qt_cmake "${ACFDIR}/Config/CMake/AcfQt.cmake")
+	if(EXISTS "${_acf_qt_cmake}")
+		file(READ "${_acf_qt_cmake}" _acf_qt_cmake_text)
+		string(FIND "${_acf_qt_cmake_text}" "ACF_LIBRARY_LINK_SCOPE" _acf_qt_uses_scope)
+		if(_acf_qt_uses_scope EQUAL -1)
+			set(_agentino_force_plain_tll ON)
+		endif()
+	endif()
+endif()
+
+if(_agentino_force_plain_tll)
+	set(ACF_QT_MODULE_LINK_SCOPE "" CACHE STRING "Link scope used for Qt module dependencies" FORCE)
+	set(ACF_LIBRARY_LINK_SCOPE "" CACHE STRING "Link scope used by Agentino inter-library dependencies" FORCE)
+	set(ACF_PACKAGE_LINK_SCOPE "" CACHE STRING "Link scope used by package (Pck) libraries linking their dependencies" FORCE)
+	set(ACF_APPLICATION_LINK_SCOPE "" CACHE STRING "Link scope used by executables linking their dependencies" FORCE)
+endif()
+
 # Expose dependency helper for per-target CMakeLists.
 set(AGENTINO_DECLARE_DEPENDENCIES_HELPER_ONLY ON)
 include("${CMAKE_CURRENT_LIST_DIR}/../../Config/CMake/AgentinoLibraryDependencies.cmake")
