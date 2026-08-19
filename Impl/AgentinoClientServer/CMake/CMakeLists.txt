@@ -29,7 +29,6 @@ find_package("Qt${QT_VERSION_MAJOR}" COMPONENTS Quick Qml REQUIRED)
 
 include(${ACFDIR}/Config/CMake/CustomBuild.cmake)
 include(${ACFDIR}/Config/CMake/ApplicationConfig.cmake)
-include(${ACFDIR}/Config/CMake/AcfQt.cmake)
 include(${ACFDIR}/Config/CMake/WindeployQt.cmake)
 
 if(DEFINED WEB_COMPILE AND  WEB_COMPILE)
@@ -39,11 +38,6 @@ endif()
 if(DEFINED USE_NEW_WEB AND USE_NEW_WEB)
 	add_compile_definitions(AGENTINO_USE_NEW_WEB)
 endif()
-
-
-include(${ACFDIR}/Config/CMake/AcfStdGui.cmake)
-include(${ACFDIR}/Config/CMake/AcfStd.cmake)
-
 
 agentino_declare_library_dependencies(${PROJECT_NAME} LINK_SCOPE PRIVATE
 	agentinoqml

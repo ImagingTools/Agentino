@@ -25,8 +25,6 @@ include(${IMTCOREDIR}/Config/CMake/WebCompiler.cmake)
 include(${ACFDIR}/Config/CMake/CustomBuild.cmake)
 include(${ACFDIR}/Config/CMake/ApplicationConfig.cmake)
 
-include(${ACFDIR}/Config/CMake/AcfQt.cmake)
-include(${ACFDIR}/Config/CMake/AcfStd.cmake)
 include(${IMTCOREDIR}/Config/CMake/OpenSSL.cmake)
 include(${ACFDIR}/Config/CMake/WindeployQt.cmake)
 
