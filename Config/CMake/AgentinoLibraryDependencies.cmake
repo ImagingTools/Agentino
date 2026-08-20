@@ -14,8 +14,9 @@
 # directories), so a single ImtCore:: dependency transitively provides the full
 # ImtCore, Acf, AcfSln and IAcf header search paths to the consuming library.
 #
-# Link scope is controlled via ACF_LIBRARY_LINK_SCOPE and applied through
-# acf_declare_target_dependencies() from ACF/Acf/Config/CMake/ProjectRoot.cmake.
+# Link scopes are explicit in this file (PUBLIC/PRIVATE/INTERFACE) and applied
+# through acf_declare_target_dependencies() from
+# ACF/Acf/Config/CMake/ProjectRoot.cmake.
 # The helper uses target properties to preserve modern scope semantics without
 # plain-vs-keyword target_link_libraries() conflicts.
 #
