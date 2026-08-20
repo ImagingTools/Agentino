@@ -39,7 +39,7 @@ if(WIN32)
 	unset(listOptions)
 endif()
 
-agentino_declare_library_dependencies(${PROJECT_NAME} LINK_SCOPE PRIVATE
+agentino_declare_library_dependencies(${PROJECT_NAME} ${LINK_SCOPE}
 	agentinoqml
 	agentinogql
 	AgentinoLoc

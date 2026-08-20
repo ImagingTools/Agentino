@@ -39,7 +39,7 @@ if(DEFINED USE_NEW_WEB AND USE_NEW_WEB)
 	add_compile_definitions(AGENTINO_USE_NEW_WEB)
 endif()
 
-agentino_declare_library_dependencies(${PROJECT_NAME} LINK_SCOPE PRIVATE
+agentino_declare_library_dependencies(${PROJECT_NAME} ${LINK_SCOPE}
 	agentinoqml
 	agentinogql
 	agentgql
