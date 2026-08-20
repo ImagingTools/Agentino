@@ -56,11 +56,6 @@ set(AUX_INCLUDE_DIR "${AGENTINODIR_BUILD}/AuxInclude/${TARGETNAME}/GeneratedFile
 include_directories("${AUX_INCLUDE_DIR}/../")
 include_directories("${AUX_INCLUDE_DIR}/")
 
-# Expose dependency helper for per-target CMakeLists.
-set(AGENTINO_DECLARE_DEPENDENCIES_HELPER_ONLY ON)
-include("${CMAKE_CURRENT_LIST_DIR}/../../Config/CMake/AgentinoLibraryDependencies.cmake")
-unset(AGENTINO_DECLARE_DEPENDENCIES_HELPER_ONLY)
-
 # Include
 add_subdirectory("${INCLUDE_DIR}/agentinodata/CMake" "${AUX_INCLUDE_DIR}/agentinodata")
 add_dependencies(agentinodata agentinosdl)
