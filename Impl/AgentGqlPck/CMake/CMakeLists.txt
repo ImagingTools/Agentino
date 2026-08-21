@@ -5,6 +5,6 @@ include(${ACFDIR}/Config/CMake/ComponentConfig.cmake)
 ADD_DEFINITIONS(-DUNICODE)
 ADD_DEFINITIONS(-D_UNICODE)
 
-acf_declare_target_dependencies(AgentGqlPck LINK_SCOPE PRIVATE
+target_link_libraries(AgentGqlPck PRIVATE
 	agentgql
 )

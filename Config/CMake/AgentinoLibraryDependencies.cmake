@@ -14,11 +14,8 @@
 # directories), so a single ImtCore:: dependency transitively provides the full
 # ImtCore, Acf, AcfSln and IAcf header search paths to the consuming library.
 #
-# Link scopes are explicit in this file (PUBLIC/PRIVATE/INTERFACE) and applied
-# through acf_declare_target_dependencies() from
-# ACF/Acf/Config/CMake/ProjectRoot.cmake.
-# The helper uses target properties to preserve modern scope semantics without
-# plain-vs-keyword target_link_libraries() conflicts.
+# Link scopes are explicit in this file (PUBLIC/PRIVATE/INTERFACE), and
+# dependencies are declared with direct target_link_libraries() calls.
 #
 # Dependencies are declared *minimally*: each library lists only its direct
 # dependencies; transitive dependencies propagate automatically through the graph.
@@ -31,21 +28,39 @@
 # ImtCore's SDL base library only carries the imtgql usage requirement for
 # consumers that opt into it. Agentino's SDL is GraphQL-oriented, so expose
 # imtgql through imtbasesdl for every Agentino library that builds on the SDL.
-acf_declare_target_dependencies(ImtCore::imtbasesdl	LINK_SCOPE INTERFACE	ImtCore::imtgql)
+if(TARGET ImtCore::imtbasesdl AND TARGET ImtCore::imtgql)
+	# CMake forbids target_link_libraries() on ALIAS targets.
+	get_target_property(_agentino_imtbasesdl_aliased ImtCore::imtbasesdl ALIASED_TARGET)
+	if(NOT _agentino_imtbasesdl_aliased)
+		target_link_libraries(ImtCore::imtbasesdl INTERFACE ImtCore::imtgql)
+	endif()
+endif()
 
 
 # --- SDL generated libraries ------------------------------------------------
-acf_declare_target_dependencies(agentinosdl		LINK_SCOPE PUBLIC	ImtCore::imtbasesdl)
+if(TARGET agentinosdl)
+	target_link_libraries(agentinosdl PUBLIC ImtCore::imtbasesdl)
+endif()
 
 # --- Libraries --------------------------------------------------------------
-acf_declare_target_dependencies(agentinodata		LINK_SCOPE PUBLIC	agentinosdl ImtCore::imtservice)
-acf_declare_target_dependencies(agentgql			LINK_SCOPE PUBLIC	agentinodata agentinosdl ImtCore::imtguigql Qt${QT_VERSION_MAJOR}::WebSockets)
-acf_declare_target_dependencies(agentinogql		LINK_SCOPE PUBLIC	agentgql agentinodata)
+if(TARGET agentinodata)
+	target_link_libraries(agentinodata PUBLIC agentinosdl ImtCore::imtservice)
+endif()
+if(TARGET agentgql)
+	target_link_libraries(agentgql PUBLIC agentinodata agentinosdl ImtCore::imtguigql Qt${QT_VERSION_MAJOR}::WebSockets)
+endif()
+if(TARGET agentinogql)
+	target_link_libraries(agentinogql PUBLIC agentgql agentinodata)
+endif()
 
 # --- QML web-resource libraries ---------------------------------------------
 if(QT_VERSION_MAJOR EQUAL 6)
-	acf_declare_target_dependencies(agentinoqml	LINK_SCOPE PUBLIC	Qt${QT_VERSION_MAJOR}::Core5Compat)
+	if(TARGET agentinoqml)
+		target_link_libraries(agentinoqml PUBLIC Qt${QT_VERSION_MAJOR}::Core5Compat)
+	endif()
 endif()
 
 # --- Arxc-generated static libraries ----------------------------------------
-acf_declare_target_dependencies(AgentinoLoc		LINK_SCOPE PUBLIC	Acf::icomp)
+if(TARGET AgentinoLoc)
+	target_link_libraries(AgentinoLoc PUBLIC Acf::icomp)
+endif()
