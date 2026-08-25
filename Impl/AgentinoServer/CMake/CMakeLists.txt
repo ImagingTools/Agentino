@@ -61,10 +61,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 	ImtCore::imtchatdb
 	ImtCore::imtdeskdb
 	ImtCore::imtlog
-	ImtCore::imtstylecontrolsqml
-	ImtCore::imtlicgui
-	ImtCore::imtstyle
-	ImtCore::imtgui
-	ImtCore::imtguigql
-	ImtCore::imtauthgui
 )
