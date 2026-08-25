@@ -22,9 +22,9 @@ static void InitializeAgentinoAgentResources()
 {
 #ifdef WEB_COMPILE
 #ifdef AGENTINO_USE_NEW_WEB
-	Q_INIT_RESOURCE(agentWeb);
+		Q_INIT_RESOURCE(agentWeb);
 #else
-	Q_INIT_RESOURCE(agentinoqmlWeb);
+		Q_INIT_RESOURCE(agentinoqmlWeb);
 #endif
 #endif
 	Q_INIT_RESOURCE(agentinoqml);

@@ -17,9 +17,9 @@ static void InitializeAgentinoServerResources()
 {
 #ifdef WEB_COMPILE
 #ifdef AGENTINO_USE_NEW_WEB
-	Q_INIT_RESOURCE(agentinoWeb);
+		Q_INIT_RESOURCE(agentinoWeb);
 #else
-	Q_INIT_RESOURCE(agentinoqmlWeb);
+		Q_INIT_RESOURCE(agentinoqmlWeb);
 #endif
 #endif
 	Q_INIT_RESOURCE(agentinoqml);
