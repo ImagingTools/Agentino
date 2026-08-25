@@ -39,10 +39,6 @@ if(DEFINED USE_NEW_WEB AND USE_NEW_WEB)
 	add_compile_definitions(AGENTINO_USE_NEW_WEB)
 endif()
 
-if(DEFINED USE_NEW_WEB AND USE_NEW_WEB)
-	add_compile_definitions(AGENTINO_USE_NEW_WEB)
-endif()
-
 target_link_libraries(${PROJECT_NAME} PRIVATE
 	agentinoqml
 	agentinogql
