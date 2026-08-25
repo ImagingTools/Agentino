@@ -26,7 +26,21 @@ if(NOT DEFINED SMDIR)
 	set(PUMADIR "$ENV{SMDIR}")
 endif()
 
+# Enable modern target-based architecture: find_package(ImtCore) provides ImtCore::
+# imported targets (and, transitively, Acf::/AcfSln::/IAcf::) with transitive include
+# dirs and link deps. Legacy global include_directories()/link_directories() are skipped.
+set(ACF_MODERN_CMAKE ON)
+
+# Collect Agentino libraries in their own export set. Read by acf_register_library() (from Acf).
+set(ACF_PACKAGE_NAME "Agentino")
+
 include(${IMTCOREDIR}/Config/CMake/ImtCoreEnv.cmake)
+
+# Discover the ImtCore package published by its build tree (pulls in Acf/AcfSln/IAcf).
+if(ACF_MODERN_CMAKE AND NOT TARGET ImtCore::imtbase)
+	set(ImtCore_DIR "${IMTCOREDIR_BUILD}/Lib/${CMAKE_BUILD_TYPE}_${TARGETNAME}/cmake" CACHE PATH "Path to the ImtCore build-tree CMake package")
+	find_package(ImtCore REQUIRED GLOBAL)
+endif()
 
 if(USE_FIND_PACKAGE)
 	find_program(NODE_EXE NAMES node)
@@ -41,14 +55,6 @@ set(AUX_INCLUDE_DIR "${AGENTINODIR_BUILD}/AuxInclude/${TARGETNAME}/GeneratedFile
 
 include_directories("${AUX_INCLUDE_DIR}/../")
 include_directories("${AUX_INCLUDE_DIR}/")
-
-# Keep ACF link scopes empty: this project still uses the plain
-# target_link_libraries() signature, which must not mix with the keyword
-# signature that unified builds (AcfImtDevAll) enable via the CMake cache.
-set(ACF_QT_MODULE_LINK_SCOPE "")
-set(ACF_LIBRARY_LINK_SCOPE "")
-set(ACF_PACKAGE_LINK_SCOPE "")
-set(ACF_APPLICATION_LINK_SCOPE "")
 
 # Include
 add_subdirectory("${INCLUDE_DIR}/agentinodata/CMake" "${AUX_INCLUDE_DIR}/agentinodata")
@@ -81,4 +87,8 @@ add_subdirectory("${IMPL_DIR}/AgentinoLoc/CMake" "${AUX_INCLUDE_DIR}/AgentinoLoc
 add_subdirectory("${IMPL_DIR}/AgentinoServer/CMake" "${AUX_INCLUDE_DIR}/AgentinoServer")
 add_subdirectory("${IMPL_DIR}/AgentinoClient/CMake" "${AUX_INCLUDE_DIR}/AgentinoClient")
 add_subdirectory("${IMPL_DIR}/AgentinoAgent/CMake" "${AUX_INCLUDE_DIR}/AgentinoAgent")
+
+# Declare target-based deps so include paths/link order propagate transitively across Agentino
+# libraries and onto the underlying ImtCore::/Acf::/AcfSln::/IAcf:: libraries.
+include("${CMAKE_CURRENT_LIST_DIR}/../../Config/CMake/AgentinoLibraryDependencies.cmake")
 

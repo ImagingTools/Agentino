@@ -15,23 +15,23 @@ CServiceFsm::TransitionResult CServiceFsm::Apply(ServiceRuntimeStatus from, Even
 
 	switch (from) {
 	case ServiceRuntimeStatus::Stopped:
-		if (event == Event::Start) {
+		if (event == Event::Start){
 			result.accepted = true;
 			result.to = ServiceRuntimeStatus::Starting;
 		}
 		break;
 
 	case ServiceRuntimeStatus::Starting:
-		if (event == Event::ChildReady) {
+		if (event == Event::ChildReady){
 			result.accepted = true;
 			result.to = ServiceRuntimeStatus::Running;
 		}
-		else if (event == Event::Stop) {
+		else if (event == Event::Stop){
 			// Allow cancel-during-start without bypassing the FSM.
 			result.accepted = true;
 			result.to = ServiceRuntimeStatus::Stopping;
 		}
-		else if (event == Event::ChildExited) {
+		else if (event == Event::ChildExited){
 			result.accepted = true;
 			result.to = ServiceRuntimeStatus::Failed;
 			result.reason = ServiceFailureReason::StartFailed;
@@ -39,22 +39,22 @@ CServiceFsm::TransitionResult CServiceFsm::Apply(ServiceRuntimeStatus from, Even
 		break;
 
 	case ServiceRuntimeStatus::Running:
-		if (event == Event::Stop) {
+		if (event == Event::Stop){
 			result.accepted = true;
 			result.to = ServiceRuntimeStatus::Stopping;
 		}
-		else if (event == Event::ChildExited) {
+		else if (event == Event::ChildExited){
 			result.accepted = true;
 			result.to = ServiceRuntimeStatus::Crashed;
 		}
 		break;
 
 	case ServiceRuntimeStatus::Stopping:
-		if (event == Event::ChildExited) {
+		if (event == Event::ChildExited){
 			result.accepted = true;
 			result.to = ServiceRuntimeStatus::Stopped;
 		}
-		else if (event == Event::KillTimeout) {
+		else if (event == Event::KillTimeout){
 			result.accepted = true;
 			result.to = ServiceRuntimeStatus::Failed;
 			result.reason = ServiceFailureReason::StopTimeout;
@@ -62,23 +62,23 @@ CServiceFsm::TransitionResult CServiceFsm::Apply(ServiceRuntimeStatus from, Even
 		break;
 
 	case ServiceRuntimeStatus::Crashed:
-		if (event == Event::RestartBudgetOk) {
+		if (event == Event::RestartBudgetOk){
 			result.accepted = true;
 			result.to = ServiceRuntimeStatus::Starting;
 		}
-		else if (event == Event::RestartBudgetExhausted) {
+		else if (event == Event::RestartBudgetExhausted){
 			result.accepted = true;
 			result.to = ServiceRuntimeStatus::Failed;
 			result.reason = ServiceFailureReason::CrashLooping;
 		}
-		else if (event == Event::Start) {
+		else if (event == Event::Start){
 			result.accepted = true;
 			result.to = ServiceRuntimeStatus::Starting;
 		}
 		break;
 
 	case ServiceRuntimeStatus::Failed:
-		if (event == Event::Start) {
+		if (event == Event::Start){
 			result.accepted = true;
 			result.to = ServiceRuntimeStatus::Starting;
 			result.reason = ServiceFailureReason::None;

@@ -1,35 +1,53 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
+
+
 // ImtCore includes
-#include <imtlic/Init.h>
+#include <imtcore/CApplicationRunner.h>
+#include <imtcore/CImtCoreAuthorizableServerInitializer.h>
+#include <imtcore/CImtCoreDeskInitializer.h>
+#include <imtcore/CImtCoreLicInitializer.h>
+#include <imtlic/IProductInfo.h>
+
+
+// Generated includes
 #include <GeneratedFiles/AgentinoAgent/CAgentinoAgent.h>
+
 
 // Same product feature tree as AgentinoServer so Topology GetCommands permission
 // checks can resolve ChangeService / ViewServices / …
 #include "../AgentinoServer/AgentinoFeatures.h"
 
 
-int main(int argc, char *argv[])
+static void InitializeAgentinoAgentResources()
 {
 #ifdef WEB_COMPILE
+#ifdef AGENTINO_USE_NEW_WEB
 	Q_INIT_RESOURCE(agentWeb);
+#else
+	Q_INIT_RESOURCE(agentinoqmlWeb);
 #endif
-	Q_INIT_RESOURCE(imtstyle);
-	Q_INIT_RESOURCE(imtstylecontrolsqml);
-	Q_INIT_RESOURCE(imtauthguiqml);
-	Q_INIT_RESOURCE(imtguigqlqml);
-	Q_INIT_RESOURCE(imtcontrolsqml);
-	Q_INIT_RESOURCE(imtgui);
-	Q_INIT_RESOURCE(imtguiqml);
-	Q_INIT_RESOURCE(imtdocguiqml);
-	Q_INIT_RESOURCE(imtcolguiqml);
+#endif
 	Q_INIT_RESOURCE(agentinoqml);
-	Q_INIT_RESOURCE(ImtCoreLoc);
-	// Q_INIT_RESOURCE(AgentinoLoc);
-	Q_INIT_RESOURCE(imtauthguiTheme);
-	Q_INIT_RESOURCE(imtguiTheme);
-	Q_INIT_RESOURCE(imtdb);
-	Q_INIT_RESOURCE(imtauthdb);
-	Q_INIT_RESOURCE(imtbase);
+	Q_INIT_RESOURCE(imtstylecontrolsqml);
 
-	return ProductFeatureRun<CAgentinoAgent, DefaultImtCoreQmlInitializer, agentino::FillProduct>(argc, argv);
+	ImtCoreInitDeskSqlResources();
+	InitializeImtCoreAuthorizableServer();
+
+	ImtCoreInitStyleResources();
+	ImtCoreInitAuthStyleResources();
+	ImtCoreInitLicStyleResources();
+}
+
+
+int main(int argc, char* argv[])
+{
+	InitializeAgentinoAgentResources();
+
+	CAgentinoAgent instance;
+	auto* productInfoPtr = instance.GetInterface<imtlic::IProductInfo>();
+	if (productInfoPtr != nullptr){
+		agentino::FillProduct(*productInfoPtr);
+	}
+
+	return imtcore::CApplicationRunner::Run(argc, argv, instance);
 }

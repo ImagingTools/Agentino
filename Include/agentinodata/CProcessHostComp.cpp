@@ -31,7 +31,7 @@ namespace
 void CloseNativeHandle(void*& handle)
 {
 #ifdef Q_OS_WIN
-	if (handle != nullptr) {
+	if (handle != nullptr){
 		::CloseHandle(static_cast<HANDLE>(handle));
 		handle = nullptr;
 	}
@@ -51,7 +51,7 @@ bool CProcessHostComp::Spawn(const SpawnRequest& request, qint64& pid, QString& 
 {
 	// QProcess must be created/parented on this component's thread (main). Callers from
 	// GQL workers must hop here first (CServiceSupervisorComp::StartService does).
-	if (QThread::currentThread() != thread()) {
+	if (QThread::currentThread() != thread()){
 		bool ok = false;
 		qint64 localPid = 0;
 		QString localError;
@@ -63,7 +63,7 @@ bool CProcessHostComp::Spawn(const SpawnRequest& request, qint64& pid, QString& 
 					Qt::BlockingQueuedConnection);
 		pid = localPid;
 		errorMessage = localError;
-		if (!invoked) {
+		if (!invoked){
 			errorMessage = QStringLiteral("Unable to invoke Spawn on ProcessHost thread");
 			return false;
 		}
@@ -71,14 +71,14 @@ bool CProcessHostComp::Spawn(const SpawnRequest& request, qint64& pid, QString& 
 	}
 
 	pid = 0;
-	if (request.serviceId.isEmpty() || request.program.isEmpty()) {
+	if (request.serviceId.isEmpty() || request.program.isEmpty()){
 		errorMessage = QStringLiteral("Invalid spawn request");
 		return false;
 	}
 
-	if (m_children.contains(request.serviceId)) {
+	if (m_children.contains(request.serviceId)){
 		Child& existing = m_children[request.serviceId];
-		if (ChildIsAlive(existing)) {
+		if (ChildIsAlive(existing)){
 			errorMessage = QStringLiteral("Service already has a running child");
 			return false;
 		}
@@ -87,7 +87,7 @@ bool CProcessHostComp::Spawn(const SpawnRequest& request, qint64& pid, QString& 
 
 	QProcess* process = new QProcess(this);
 	process->setProperty("serviceId", request.serviceId);
-	if (!request.workingDirectory.isEmpty()) {
+	if (!request.workingDirectory.isEmpty()){
 		process->setWorkingDirectory(request.workingDirectory);
 	}
 
@@ -106,7 +106,7 @@ bool CProcessHostComp::Spawn(const SpawnRequest& request, qint64& pid, QString& 
 	m_children.insert(request.serviceId, child);
 
 	process->start(request.program, request.arguments);
-	if (!process->waitForStarted(5000)) {
+	if (!process->waitForStarted(5000)){
 		errorMessage = process->errorString();
 		m_children.remove(request.serviceId);
 		process->disconnect(this);
@@ -123,38 +123,38 @@ bool CProcessHostComp::Spawn(const SpawnRequest& request, qint64& pid, QString& 
 
 bool CProcessHostComp::TryAdopt(const AdoptRequest& request, QString& errorMessage)
 {
-	if (request.serviceId.isEmpty() || request.pid <= 0) {
+	if (request.serviceId.isEmpty() || request.pid <= 0){
 		errorMessage = QStringLiteral("Invalid adopt request");
 		return false;
 	}
 
-	if (m_children.contains(request.serviceId) && ChildIsAlive(m_children[request.serviceId])) {
-		if (m_children[request.serviceId].pid == request.pid) {
+	if (m_children.contains(request.serviceId) && ChildIsAlive(m_children[request.serviceId])){
+		if (m_children[request.serviceId].pid == request.pid){
 			return true; // already tracking
 		}
 		errorMessage = QStringLiteral("Service already has a different running child");
 		return false;
 	}
 
-	if (m_children.contains(request.serviceId)) {
+	if (m_children.contains(request.serviceId)){
 		ClearChildEntry(request.serviceId, false);
 	}
 
-	if (!IsPidAlive(request.pid)) {
+	if (!IsPidAlive(request.pid)){
 		errorMessage = QStringLiteral("Process %1 is not running").arg(request.pid);
 		return false;
 	}
 
-	if (!request.expectedProgram.isEmpty()) {
+	if (!request.expectedProgram.isEmpty()){
 		QString imagePath;
 		QString pathError;
-		if (!QueryProcessImagePath(request.pid, imagePath, pathError)) {
+		if (!QueryProcessImagePath(request.pid, imagePath, pathError)){
 			errorMessage = pathError.isEmpty()
 						? QStringLiteral("Unable to query image path for pid %1").arg(request.pid)
 						: pathError;
 			return false;
 		}
-		if (!ImagePathMatches(imagePath, request.expectedProgram)) {
+		if (!ImagePathMatches(imagePath, request.expectedProgram)){
 			errorMessage = QStringLiteral("PID %1 image '%2' does not match expected '%3'")
 						.arg(request.pid)
 						.arg(imagePath, request.expectedProgram);
@@ -172,7 +172,7 @@ bool CProcessHostComp::TryAdopt(const AdoptRequest& request, QString& errorMessa
 				PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_TERMINATE | SYNCHRONIZE,
 				FALSE,
 				static_cast<DWORD>(request.pid));
-	if (handle == nullptr || handle == INVALID_HANDLE_VALUE) {
+	if (handle == nullptr || handle == INVALID_HANDLE_VALUE){
 		errorMessage = QStringLiteral("OpenProcess failed for pid %1 (err %2)")
 					.arg(request.pid)
 					.arg(static_cast<qulonglong>(::GetLastError()));
@@ -191,7 +191,7 @@ bool CProcessHostComp::TryAdopt(const AdoptRequest& request, QString& errorMessa
 
 bool CProcessHostComp::SignalStop(const QByteArray& serviceId, QString& errorMessage)
 {
-	if (QThread::currentThread() != thread()) {
+	if (QThread::currentThread() != thread()){
 		bool ok = false;
 		QString localError;
 		const bool invoked = QMetaObject::invokeMethod(
@@ -204,28 +204,28 @@ bool CProcessHostComp::SignalStop(const QByteArray& serviceId, QString& errorMes
 		return invoked && ok;
 	}
 
-	if (!m_children.contains(serviceId)) {
+	if (!m_children.contains(serviceId)){
 		errorMessage = QStringLiteral("No child process for service");
 		return false;
 	}
 	Child& child = m_children[serviceId];
-	if (child.adopted) {
+	if (child.adopted){
 		child.stopRequested = true;
 		return TerminateOsProcess(child, false, errorMessage);
 	}
-	if (child.process == nullptr) {
+	if (child.process == nullptr){
 		errorMessage = QStringLiteral("No child process for service");
 		return false;
 	}
-	if (child.process->state() == QProcess::NotRunning) {
+	if (child.process->state() == QProcess::NotRunning){
 		return true;
 	}
 	child.stopRequested = true;
 	// Give cooperative services a short exit window before the guaranteed kill fallback.
 	child.process->terminate();
-	if (!child.process->waitForFinished(500)) {
+	if (!child.process->waitForFinished(500)){
 		child.process->kill();
-		if (!child.process->waitForFinished(2000)) {
+		if (!child.process->waitForFinished(2000)){
 			errorMessage = QStringLiteral("Process %1 did not stop after terminate and kill")
 					.arg(child.pid);
 			return false;
@@ -237,7 +237,7 @@ bool CProcessHostComp::SignalStop(const QByteArray& serviceId, QString& errorMes
 
 bool CProcessHostComp::ForceKill(const QByteArray& serviceId, QString& errorMessage)
 {
-	if (QThread::currentThread() != thread()) {
+	if (QThread::currentThread() != thread()){
 		bool ok = false;
 		QString localError;
 		const bool invoked = QMetaObject::invokeMethod(
@@ -250,23 +250,23 @@ bool CProcessHostComp::ForceKill(const QByteArray& serviceId, QString& errorMess
 		return invoked && ok;
 	}
 
-	if (!m_children.contains(serviceId)) {
+	if (!m_children.contains(serviceId)){
 		errorMessage = QStringLiteral("No child process for service");
 		return false;
 	}
 	Child& child = m_children[serviceId];
-	if (child.adopted) {
+	if (child.adopted){
 		child.stopRequested = true;
 		return TerminateOsProcess(child, true, errorMessage);
 	}
-	if (child.process == nullptr) {
+	if (child.process == nullptr){
 		errorMessage = QStringLiteral("No child process for service");
 		return false;
 	}
-	if (child.process->state() != QProcess::NotRunning) {
+	if (child.process->state() != QProcess::NotRunning){
 		child.stopRequested = true;
 		child.process->kill();
-		if (!child.process->waitForFinished(2000)) {
+		if (!child.process->waitForFinished(2000)){
 			errorMessage = QStringLiteral("Process %1 did not stop after kill")
 					.arg(child.pid);
 			return false;
@@ -278,7 +278,7 @@ bool CProcessHostComp::ForceKill(const QByteArray& serviceId, QString& errorMess
 
 bool CProcessHostComp::IsRunning(const QByteArray& serviceId) const
 {
-	if (!m_children.contains(serviceId)) {
+	if (!m_children.contains(serviceId)){
 		return false;
 	}
 	return ChildIsAlive(m_children[serviceId]);
@@ -287,7 +287,7 @@ bool CProcessHostComp::IsRunning(const QByteArray& serviceId) const
 
 qint64 CProcessHostComp::Pid(const QByteArray& serviceId) const
 {
-	if (!m_children.contains(serviceId)) {
+	if (!m_children.contains(serviceId)){
 		return 0;
 	}
 	return m_children[serviceId].pid;
@@ -307,7 +307,7 @@ void CProcessHostComp::Release(const QByteArray& serviceId)
 void CProcessHostComp::OnComponentCreated()
 {
 	BaseClass::OnComponentCreated();
-	if (m_adoptPollMsAttrPtr.IsValid() && *m_adoptPollMsAttrPtr > 0) {
+	if (m_adoptPollMsAttrPtr.IsValid() && *m_adoptPollMsAttrPtr > 0){
 		m_adoptPollMs = *m_adoptPollMsAttrPtr;
 	}
 }
@@ -315,7 +315,7 @@ void CProcessHostComp::OnComponentCreated()
 
 void CProcessHostComp::OnComponentDestroyed()
 {
-	if (m_adoptPollTimer != nullptr) {
+	if (m_adoptPollTimer != nullptr){
 		m_adoptPollTimer->stop();
 	}
 	const QList<QByteArray> ids = m_children.keys();
@@ -333,14 +333,14 @@ void CProcessHostComp::OnComponentDestroyed()
 void CProcessHostComp::OnProcessFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
 	const QByteArray serviceId = ServiceIdForSender();
-	if (serviceId.isEmpty()) {
+	if (serviceId.isEmpty()){
 		return;
 	}
-	if (!m_children.contains(serviceId)) {
+	if (!m_children.contains(serviceId)){
 		return;
 	}
 	const bool stopRequested = m_children.value(serviceId).stopRequested;
-	if (stopRequested) {
+	if (stopRequested){
 		exitStatus = QProcess::NormalExit;
 	}
 	ClearChildEntry(serviceId, false);
@@ -351,7 +351,7 @@ void CProcessHostComp::OnProcessFinished(int exitCode, QProcess::ExitStatus exit
 void CProcessHostComp::OnProcessError(QProcess::ProcessError error)
 {
 	const QByteArray serviceId = ServiceIdForSender();
-	if (serviceId.isEmpty() || !m_children.contains(serviceId)) {
+	if (serviceId.isEmpty() || !m_children.contains(serviceId)){
 		return;
 	}
 	if (error == QProcess::Crashed
@@ -368,11 +368,11 @@ void CProcessHostComp::OnProcessError(QProcess::ProcessError error)
 void CProcessHostComp::OnProcessStarted()
 {
 	const QByteArray serviceId = ServiceIdForSender();
-	if (serviceId.isEmpty()) {
+	if (serviceId.isEmpty()){
 		return;
 	}
 	QProcess* process = qobject_cast<QProcess*>(sender());
-	if (process != nullptr && m_children.contains(serviceId)) {
+	if (process != nullptr && m_children.contains(serviceId)){
 		m_children[serviceId].pid = process->processId();
 		emit ChildStarted(serviceId, m_children[serviceId].pid);
 	}
@@ -383,7 +383,7 @@ void CProcessHostComp::OnAdoptPoll()
 {
 	QList<QByteArray> dead;
 	for (auto it = m_children.constBegin(); it != m_children.constEnd(); ++it) {
-		if (it->adopted && !ChildIsAlive(*it)) {
+		if (it->adopted && !ChildIsAlive(*it)){
 			dead.append(it.key());
 		}
 	}
@@ -398,12 +398,12 @@ void CProcessHostComp::OnAdoptPoll()
 	// Stop poll when nothing adopted remains.
 	bool anyAdopted = false;
 	for (auto it = m_children.constBegin(); it != m_children.constEnd(); ++it) {
-		if (it->adopted) {
+		if (it->adopted){
 			anyAdopted = true;
 			break;
 		}
 	}
-	if (!anyAdopted && m_adoptPollTimer != nullptr) {
+	if (!anyAdopted && m_adoptPollTimer != nullptr){
 		m_adoptPollTimer->stop();
 	}
 }
@@ -414,7 +414,7 @@ void CProcessHostComp::OnAdoptPoll()
 QByteArray CProcessHostComp::ServiceIdForSender() const
 {
 	QProcess* process = qobject_cast<QProcess*>(sender());
-	if (process == nullptr) {
+	if (process == nullptr){
 		return {};
 	}
 	return process->property("serviceId").toByteArray();
@@ -423,11 +423,11 @@ QByteArray CProcessHostComp::ServiceIdForSender() const
 
 void CProcessHostComp::EnsureAdoptPollTimer()
 {
-	if (m_adoptPollTimer == nullptr) {
+	if (m_adoptPollTimer == nullptr){
 		m_adoptPollTimer = new QTimer(this);
 		connect(m_adoptPollTimer, &QTimer::timeout, this, &CProcessHostComp::OnAdoptPoll);
 	}
-	if (!m_adoptPollTimer->isActive()) {
+	if (!m_adoptPollTimer->isActive()){
 		m_adoptPollTimer->start(qMax(200, m_adoptPollMs));
 	}
 }
@@ -435,13 +435,13 @@ void CProcessHostComp::EnsureAdoptPollTimer()
 
 void CProcessHostComp::ClearChildEntry(const QByteArray& serviceId, bool killSpawnedIfRunning)
 {
-	if (!m_children.contains(serviceId)) {
+	if (!m_children.contains(serviceId)){
 		return;
 	}
 	Child child = m_children.take(serviceId);
-	if (child.process != nullptr) {
+	if (child.process != nullptr){
 		child.process->disconnect(this);
-		if (killSpawnedIfRunning && child.process->state() != QProcess::NotRunning) {
+		if (killSpawnedIfRunning && child.process->state() != QProcess::NotRunning){
 			child.process->kill();
 			child.process->waitForFinished(1000);
 		}
@@ -453,10 +453,10 @@ void CProcessHostComp::ClearChildEntry(const QByteArray& serviceId, bool killSpa
 
 bool CProcessHostComp::ChildIsAlive(const Child& child) const
 {
-	if (child.adopted) {
+	if (child.adopted){
 		return child.pid > 0 && IsPidAlive(child.pid);
 	}
-	if (child.process == nullptr) {
+	if (child.process == nullptr){
 		return false;
 	}
 	return child.process->state() != QProcess::NotRunning;
@@ -465,18 +465,18 @@ bool CProcessHostComp::ChildIsAlive(const Child& child) const
 
 bool CProcessHostComp::TerminateOsProcess(const Child& child, bool force, QString& errorMessage) const
 {
-	if (child.pid <= 0) {
+	if (child.pid <= 0){
 		errorMessage = QStringLiteral("No pid for adopted child");
 		return false;
 	}
 #ifdef Q_OS_WIN
 	HANDLE handle = static_cast<HANDLE>(child.nativeHandle);
 	HANDLE opened = nullptr;
-	if (handle == nullptr) {
+	if (handle == nullptr){
 		opened = ::OpenProcess(PROCESS_TERMINATE | SYNCHRONIZE, FALSE, static_cast<DWORD>(child.pid));
 		handle = opened;
 	}
-	if (handle == nullptr || handle == INVALID_HANDLE_VALUE) {
+	if (handle == nullptr || handle == INVALID_HANDLE_VALUE){
 		errorMessage = QStringLiteral("Unable to open process %1 for terminate").arg(child.pid);
 		return false;
 	}
@@ -484,36 +484,36 @@ bool CProcessHostComp::TerminateOsProcess(const Child& child, bool force, QStrin
 	// a custom protocol; ForceKill and SignalStop both end the process by PID.
 	Q_UNUSED(force);
 	const BOOL ok = ::TerminateProcess(handle, 1);
-	if (!ok) {
-		if (opened != nullptr) {
+	if (!ok){
+		if (opened != nullptr){
 			::CloseHandle(opened);
 		}
 		errorMessage = QStringLiteral("TerminateProcess failed for pid %1").arg(child.pid);
 		return false;
 	}
 	const bool stopped = !force || ::WaitForSingleObject(handle, 2000) == WAIT_OBJECT_0;
-	if (opened != nullptr) {
+	if (opened != nullptr){
 		::CloseHandle(opened);
 	}
-	if (!stopped) {
+	if (!stopped){
 		errorMessage = QStringLiteral("Process %1 did not stop after TerminateProcess").arg(child.pid);
 		return false;
 	}
 	return true;
 #else
 	const int sig = force ? SIGKILL : SIGTERM;
-	if (::kill(static_cast<pid_t>(child.pid), sig) != 0) {
-		if (errno == ESRCH) {
+	if (::kill(static_cast<pid_t>(child.pid), sig) != 0){
+		if (errno == ESRCH){
 			return true;
 		}
 		errorMessage = QStringLiteral("kill(%1) failed: %2").arg(child.pid).arg(errno);
 		return false;
 	}
-	if (force) {
+	if (force){
 		for (int attempt = 0; attempt < 40 && IsPidAlive(child.pid); ++attempt) {
 			QThread::msleep(50);
 		}
-		if (IsPidAlive(child.pid)) {
+		if (IsPidAlive(child.pid)){
 			errorMessage = QStringLiteral("Process %1 did not stop after SIGKILL").arg(child.pid);
 			return false;
 		}
@@ -525,12 +525,12 @@ bool CProcessHostComp::TerminateOsProcess(const Child& child, bool force, QStrin
 
 bool CProcessHostComp::IsPidAlive(qint64 pid)
 {
-	if (pid <= 0) {
+	if (pid <= 0){
 		return false;
 	}
 #ifdef Q_OS_WIN
 	HANDLE handle = ::OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, static_cast<DWORD>(pid));
-	if (handle == nullptr || handle == INVALID_HANDLE_VALUE) {
+	if (handle == nullptr || handle == INVALID_HANDLE_VALUE){
 		return false;
 	}
 	DWORD exitCode = 0;
@@ -546,13 +546,13 @@ bool CProcessHostComp::IsPidAlive(qint64 pid)
 bool CProcessHostComp::QueryProcessImagePath(qint64 pid, QString& imagePath, QString& errorMessage)
 {
 	imagePath.clear();
-	if (pid <= 0) {
+	if (pid <= 0){
 		errorMessage = QStringLiteral("Invalid pid");
 		return false;
 	}
 #ifdef Q_OS_WIN
 	HANDLE handle = ::OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, static_cast<DWORD>(pid));
-	if (handle == nullptr || handle == INVALID_HANDLE_VALUE) {
+	if (handle == nullptr || handle == INVALID_HANDLE_VALUE){
 		errorMessage = QStringLiteral("OpenProcess(query) failed for pid %1").arg(pid);
 		return false;
 	}
@@ -560,7 +560,7 @@ bool CProcessHostComp::QueryProcessImagePath(qint64 pid, QString& imagePath, QSt
 	DWORD size = static_cast<DWORD>(sizeof(buffer) / sizeof(buffer[0]));
 	const BOOL ok = ::QueryFullProcessImageNameW(handle, 0, buffer, &size);
 	::CloseHandle(handle);
-	if (!ok) {
+	if (!ok){
 		errorMessage = QStringLiteral("QueryFullProcessImageName failed for pid %1").arg(pid);
 		return false;
 	}
@@ -569,11 +569,11 @@ bool CProcessHostComp::QueryProcessImagePath(qint64 pid, QString& imagePath, QSt
 #else
 	const QString link = QStringLiteral("/proc/%1/exe").arg(pid);
 	const QByteArray target = QFile::symLinkTarget(link).toUtf8();
-	if (target.isEmpty()) {
+	if (target.isEmpty()){
 		// Fallback: readlink
 		char buf[4096];
 		const ssize_t n = ::readlink(link.toUtf8().constData(), buf, sizeof(buf) - 1);
-		if (n <= 0) {
+		if (n <= 0){
 			errorMessage = QStringLiteral("Unable to resolve %1").arg(link);
 			return false;
 		}
@@ -589,14 +589,14 @@ bool CProcessHostComp::QueryProcessImagePath(qint64 pid, QString& imagePath, QSt
 
 bool CProcessHostComp::ImagePathMatches(const QString& actualPath, const QString& expectedProgram)
 {
-	if (expectedProgram.isEmpty()) {
+	if (expectedProgram.isEmpty()){
 		return true;
 	}
 	const QFileInfo actualInfo(actualPath);
 	const QFileInfo expectedInfo(expectedProgram);
 	const QString actualCanon = actualInfo.canonicalFilePath();
 	const QString expectedCanon = expectedInfo.canonicalFilePath();
-	if (!actualCanon.isEmpty() && !expectedCanon.isEmpty()) {
+	if (!actualCanon.isEmpty() && !expectedCanon.isEmpty()){
 		return QString::compare(actualCanon, expectedCanon, Qt::CaseInsensitive) == 0;
 	}
 	// Basename fallback (path moved / not fully resolvable).

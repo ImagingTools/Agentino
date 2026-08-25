@@ -1,12 +1,18 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
+
+
 // ImtCore includes
-#include <imtbase/Init.h>
+#include <imtcore/CApplicationRunner.h>
+#include <imtcore/CImtCoreAuthInitializer.h>
+#include <imtcore/CImtCoreBaseInitializer.h>
+#include <imtcore/CImtCoreLocalizationInitializer.h>
+#include <imtcore/CImtCoreStyleInitializer.h>
 
 // Agentino includes
 #include <GeneratedFiles/AgentinoClient/CAgentinoClient.h>
 
 
-int main(int argc, char *argv[])
+static void InitializeAgentinoClientResources()
 {
 	Q_INIT_RESOURCE(AgentinoLoc);
 	Q_INIT_RESOURCE(agentinoqml);
@@ -15,9 +21,25 @@ int main(int argc, char *argv[])
 	Q_INIT_RESOURCE(agentinoTopologySdl);
 	Q_INIT_RESOURCE(agentinoEnrollmentSdl);
 	Q_INIT_RESOURCE(agentino);
-	Q_INIT_RESOURCE(imtbase);
 
-	return Run<CAgentinoClient, DefaultImtCoreQmlInitializer>(argc, argv);
+	ImtCoreInitLocalizationResources();
+	ImtCoreInitBaseResources();
+
+	ImtCoreInitStyleResources();
+	ImtCoreInitAuthStyleResources();
+
+	ImtCoreInitQmlApplicationCoreResources();
+	ImtCoreInitQmlDocumentManagementResources();
+	ImtCoreInitAuthQmlResources();
+
+	InitializeImtCoreStyle();
 }
 
 
+int main(int argc, char* argv[])
+{
+	InitializeAgentinoClientResources();
+
+	CAgentinoClient instance;
+	return imtcore::CApplicationRunner::Run(argc, argv, instance);
+}

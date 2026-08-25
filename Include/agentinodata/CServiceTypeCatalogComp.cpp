@@ -23,12 +23,12 @@ bool CServiceTypeCatalogComp::EnsureTypeLoaded(
 			QString& errorMessage)
 {
 	const QByteArray key = typeId.isEmpty() ? executableBaseName.toUtf8() : typeId;
-	if (key.isEmpty()) {
+	if (key.isEmpty()){
 		errorMessage = QStringLiteral("Empty type id");
 		return false;
 	}
 
-	if (m_types.contains(key) && m_types[key].capability.loaded) {
+	if (m_types.contains(key) && m_types[key].capability.loaded){
 		return true;
 	}
 
@@ -36,7 +36,7 @@ bool CServiceTypeCatalogComp::EnsureTypeLoaded(
 	entry.capability.typeId = key;
 	entry.capability.pluginName = executableBaseName + QStringLiteral("Settings");
 
-	if (pluginDirectory.isEmpty() || !QDir(pluginDirectory).exists()) {
+	if (pluginDirectory.isEmpty() || !QDir(pluginDirectory).exists()){
 		entry.capability.loaded = false;
 		entry.capability.lastError = QStringLiteral("Plugin directory missing: %1").arg(pluginDirectory);
 		m_types.insert(key, entry);
@@ -49,7 +49,7 @@ bool CServiceTypeCatalogComp::EnsureTypeLoaded(
 				IMT_DESTROY_PLUGIN_INSTANCE_FUNCTION_NAME(ServiceSettingsCatalog),
 				nullptr));
 
-	if (!entry.manager->LoadPluginDirectory(pluginDirectory, "plugin", "ServiceSettings")) {
+	if (!entry.manager->LoadPluginDirectory(pluginDirectory, "plugin", "ServiceSettings")){
 		entry.capability.loaded = false;
 		entry.capability.lastError = QStringLiteral("Failed to load plugins from %1").arg(pluginDirectory);
 		m_types.insert(key, entry);
@@ -62,15 +62,15 @@ bool CServiceTypeCatalogComp::EnsureTypeLoaded(
 	bool matched = false;
 	for (int i = 0; i < entry.manager->m_plugins.count(); ++i) {
 		imtservice::IConnectionCollectionPlugin* plugin = entry.manager->m_plugins[i].pluginPtr;
-		if (plugin == nullptr || plugin->GetPluginName() != expectedName) {
+		if (plugin == nullptr || plugin->GetPluginName() != expectedName){
 			continue;
 		}
 		const imtservice::IConnectionCollectionPlugin::IConnectionCollectionFactory* factory =
 					plugin->GetConnectionCollectionFactory();
-		if (factory != nullptr) {
+		if (factory != nullptr){
 			istd::TUniqueInterfacePtr<imtservice::IConnectionCollection> collection =
 						factory->CreateInstance();
-			if (collection.IsValid()) {
+			if (collection.IsValid()){
 				entry.capability.version = collection->GetServiceVersion();
 			}
 		}
@@ -78,7 +78,7 @@ bool CServiceTypeCatalogComp::EnsureTypeLoaded(
 		break;
 	}
 
-	if (!matched) {
+	if (!matched){
 		// Keep managers loaded; capability still useful for discovery failures
 		entry.capability.lastError = QStringLiteral("No plugin named %1").arg(expectedName);
 		entry.capability.loaded = false;
@@ -103,7 +103,7 @@ QStringList CServiceTypeCatalogComp::LoadedTypeIds() const
 {
 	QStringList ids;
 	for (auto it = m_types.constBegin(); it != m_types.constEnd(); ++it) {
-		if (it.value().capability.loaded) {
+		if (it.value().capability.loaded){
 			ids.append(QString::fromUtf8(it.key()));
 		}
 	}

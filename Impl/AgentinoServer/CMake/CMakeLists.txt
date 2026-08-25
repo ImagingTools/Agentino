@@ -19,27 +19,16 @@ endif()
 include(${ACFDIR}/Config/CMake/CustomBuild.cmake)
 include(${ACFDIR}/Config/CMake/ApplicationConfig.cmake)
 
-target_link_libraries(${PROJECT_NAME} AgentinoLoc ImtCoreLoc AcfLoc AcfSlnLoc)
-target_link_libraries(${PROJECT_NAME} agentinosdl imtauthsdl imtappsdl imtbasesdl imtcolorsdl imt2dsdl)
-target_link_libraries(${PROJECT_NAME} agentinoqml agentinogql agentgql agentinodata)
-target_link_libraries(${PROJECT_NAME} imtqml imtstyle imtauthgui imtauthgql imtstylecontrolsqml imtgui imtguigql imtlic imtauth imtcrypt)
-target_link_libraries(${PROJECT_NAME} imtcol imtstylecontrolsqml imtcontrolsqml imtdocguiqml imtcolguiqml imtguiqml imtguigqlqml imtauthguiqml imtlicguiqml imtservergql imtserverapp)
-target_link_libraries(${PROJECT_NAME} imtrest imtlicgui imtlicgql imtclientgql imtgql imtauthdb imtdb imtbase imtapp imtfile imtlog imtcom imtcol imtmail imtchat imtchatdb imtdeskdb)
-target_link_libraries(${PROJECT_NAME} iauth iservice iprm idoc)
-target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::WebSockets)
-target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Sql)
-target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Quick)
-target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Widgets)
-
-include(${ACFDIR}/Config/CMake/AcfQt.cmake)
-include(${ACFDIR}/Config/CMake/AcfStdGui.cmake)
-include(${ACFDIR}/Config/CMake/AcfStd.cmake)
 include(${IMTCOREDIR}/Config/CMake/OpenSSL.cmake)
 include(${IMTCOREDIR}/Config/CMake/Quazip.cmake)
 include(${ACFDIR}/Config/CMake/WindeployQt.cmake)
 
 if(DEFINED WEB_COMPILE AND WEB_COMPILE)
 	add_compile_definitions(WEB_COMPILE)
+endif()
+
+if(DEFINED USE_NEW_WEB AND USE_NEW_WEB)
+	add_compile_definitions(AGENTINO_USE_NEW_WEB)
 endif()
 
 
@@ -59,3 +48,23 @@ endif()
 
 ADD_DEFINITIONS(-DUNICODE)
 ADD_DEFINITIONS(-D_UNICODE)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE
+	agentinoqml
+	agentinogql
+	agentgql
+	AgentinoLoc
+	ImtCore::ImtCoreLoc
+	AcfSln::iservice
+	ImtCore::imtauthgql
+	ImtCore::imtauthdb
+	ImtCore::imtchatdb
+	ImtCore::imtdeskdb
+	ImtCore::imtlog
+	ImtCore::imtstylecontrolsqml
+	ImtCore::imtlicgui
+	ImtCore::imtstyle
+	ImtCore::imtgui
+	ImtCore::imtguigql
+	ImtCore::imtauthgui
+)

@@ -29,24 +29,30 @@ find_package("Qt${QT_VERSION_MAJOR}" COMPONENTS Quick Qml REQUIRED)
 
 include(${ACFDIR}/Config/CMake/CustomBuild.cmake)
 include(${ACFDIR}/Config/CMake/ApplicationConfig.cmake)
-include(${ACFDIR}/Config/CMake/AcfQt.cmake)
 include(${ACFDIR}/Config/CMake/WindeployQt.cmake)
 
 if(DEFINED WEB_COMPILE AND  WEB_COMPILE)
 	add_compile_definitions(WEB_COMPILE)
 endif()
 
+if(DEFINED USE_NEW_WEB AND USE_NEW_WEB)
+	add_compile_definitions(AGENTINO_USE_NEW_WEB)
+endif()
 
-target_link_libraries(${PROJECT_NAME} imtqml  imtstyle imtauthgui imtauthgql imtstylecontrolsqml imtgui imtguigql imtlic imtauth imtserverapp)
-target_link_libraries(${PROJECT_NAME} imtrest imtlicgui imtlicgql imtclientgql imtgql imtauthdb imtdb imtbase imtapp imtfile)
-target_link_libraries(${PROJECT_NAME} ImtCoreLoc AgentinoLoc)
-target_link_libraries(${PROJECT_NAME} agentinoqml agentinodata agentinogql agentgql)
-target_link_libraries(${PROJECT_NAME} imtcontrolsqml imtdocguiqml imtcolguiqml imtguiqml imtguigqlqml imtauthguiqml imtlicguiqml)
-target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::WebSockets)
-target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Quick)
-
-include(${ACFDIR}/Config/CMake/AcfStdGui.cmake)
-include(${ACFDIR}/Config/CMake/AcfStd.cmake)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+	agentinoqml
+	agentinogql
+	agentgql
+	AgentinoLoc
+	ImtCore::ImtCoreLoc
+	ImtCore::imtcontrolsqml
+	ImtCore::imtstylecontrolsqml
+	ImtCore::imtguiqml
+	ImtCore::imtguigqlqml
+	ImtCore::imtauthguiqml
+	ImtCore::imtcolguiqml
+	ImtCore::imtdocguiqml
+)
 
 
 
