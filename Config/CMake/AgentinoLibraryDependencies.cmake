@@ -24,8 +24,11 @@
 # dependencies; transitive dependencies propagate automatically through the graph.
 # Do not add a dependency that is already reachable through another listed target.
 #
-# Included once, centrally, from Build/CMake/CMakeLists.txt after all library
-# targets have been created.
+# Included centrally from Build/CMake/CMakeLists.txt.
+# When AGENTINO_DECLARE_DEPENDENCIES_HELPER_ONLY is ON, only the helper
+# function is defined (for per-target CMakeLists). The full dependency
+# declarations are applied by a later include, after all library targets
+# have been created.
 # ---------------------------------------------------------------------------
 
 # --- SDL generated libraries ------------------------------------------------
