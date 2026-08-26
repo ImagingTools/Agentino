@@ -30,8 +30,9 @@ include(${ACFDIR}/Config/CMake/DeployQt.cmake)
 
 message(VERBOSE "PROJECT_BINARY_DIR ${IMTCOREDIR}/Bin/web")
 
-# replace using deploy_qt
-deploy_qt(TARGET ${PROJECT_NAME} OPTIONS "--qmldir=${IMTCOREDIR}/Qml")
+if(WIN32)
+	deploy_qt(TARGET ${PROJECT_NAME} OPTIONS "--qmldir=${IMTCOREDIR}/Qml")
+endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
 	agentinoqml
