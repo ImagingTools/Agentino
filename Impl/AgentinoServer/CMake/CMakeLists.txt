@@ -31,8 +31,9 @@ if(DEFINED USE_NEW_WEB AND USE_NEW_WEB)
 	add_compile_definitions(AGENTINO_USE_NEW_WEB)
 endif()
 
-# replace using deploy_qt
-deploy_qt(TARGET ${PROJECT_NAME} OPTIONS "--qmldir=${IMTCOREDIR}/Qml")
+if(WIN32)
+	deploy_qt(TARGET ${PROJECT_NAME} OPTIONS "--qmldir=${IMTCOREDIR}/Qml")
+endif()
 
 if(APPLE)
 	file(COPY ${PROJECT_SOURCE_DIR}/../../../Build/Migrations DESTINATION ${PROJECT_SOURCE_DIR}/../../../Bin/${CMAKE_BUILD_TYPE}_${TARGETNAME}/${PROJECT_NAME}.app/Contents/MacOS)
