@@ -18,7 +18,7 @@ if(WIN32)
 endif()
 
 if(APPLE)
-	set(CMAKE_MACOSX_BUNDLE "on")
+	set(CMAKE_MACOSX_BUNDLE ON)
 endif()
 
 include(${IMTCOREDIR}/Config/CMake/WebCompiler.cmake)
@@ -30,9 +30,8 @@ include(${ACFDIR}/Config/CMake/DeployQt.cmake)
 
 message(VERBOSE "PROJECT_BINARY_DIR ${IMTCOREDIR}/Bin/web")
 
-if(WIN32)
-	deploy_qt(TARGET ${PROJECT_NAME} OPTIONS "--qmldir=${IMTCOREDIR}/Qml")
-endif()
+set(DEPLOY_QT_QML_DIRS "${IMTCOREDIR}/Qml")
+deploy_qt(TARGET ${PROJECT_NAME})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
 	agentinoqml

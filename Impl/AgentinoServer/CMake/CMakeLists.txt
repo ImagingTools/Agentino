@@ -13,7 +13,7 @@ if(WIN32)
 endif()
 
 if(APPLE)
-	set(CMAKE_MACOSX_BUNDLE "on")
+	set(CMAKE_MACOSX_BUNDLE ON)
 endif()
 
 include(${ACFDIR}/Config/CMake/CustomBuild.cmake)
@@ -31,9 +31,10 @@ if(DEFINED USE_NEW_WEB AND USE_NEW_WEB)
 	add_compile_definitions(AGENTINO_USE_NEW_WEB)
 endif()
 
-if(WIN32)
-	deploy_qt(TARGET ${PROJECT_NAME} OPTIONS "--qmldir=${IMTCOREDIR}/Qml")
-endif()
+
+set(DEPLOY_QT_QML_DIRS "${IMTCOREDIR}/Qml")
+deploy_qt(TARGET ${PROJECT_NAME})
+
 
 if(APPLE)
 	file(COPY ${PROJECT_SOURCE_DIR}/../../../Build/Migrations DESTINATION ${PROJECT_SOURCE_DIR}/../../../Bin/${CMAKE_BUILD_TYPE}_${TARGETNAME}/${PROJECT_NAME}.app/Contents/MacOS)
