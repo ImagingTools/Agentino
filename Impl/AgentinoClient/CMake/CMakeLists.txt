@@ -26,18 +26,12 @@ include(${ACFDIR}/Config/CMake/CustomBuild.cmake)
 include(${ACFDIR}/Config/CMake/ApplicationConfig.cmake)
 
 include(${IMTCOREDIR}/Config/CMake/OpenSSL.cmake)
-include(${ACFDIR}/Config/CMake/WindeployQt.cmake)
+include(${ACFDIR}/Config/CMake/DeployQt.cmake)
 
 message(VERBOSE "PROJECT_BINARY_DIR ${IMTCOREDIR}/Bin/web")
 
-
-if(WIN32)
-	list(APPEND listOptions "--qmldir=${IMTCOREDIR}/Qml")
-	set(files \"${AUX_INCLUDE_DIR}/../../../Bin/${CMAKE_BUILD_TYPE}_${TARGETNAME}/${PROJECT_NAME}.exe\")
-
-	windeploy(${PROJECT_NAME} "${listOptions}" "${files}")
-	unset(listOptions)
-endif()
+# replace using deploy_qt
+deploy_qt(TARGET ${PROJECT_NAME} OPTIONS "--qmldir=${IMTCOREDIR}/Qml")
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
 	agentinoqml
