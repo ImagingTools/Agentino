@@ -21,7 +21,7 @@ include(${ACFDIR}/Config/CMake/ApplicationConfig.cmake)
 
 include(${IMTCOREDIR}/Config/CMake/OpenSSL.cmake)
 include(${IMTCOREDIR}/Config/CMake/Quazip.cmake)
-include(${ACFDIR}/Config/CMake/WindeployQt.cmake)
+include(${ACFDIR}/Config/CMake/DeployQt.cmake)
 
 if(DEFINED WEB_COMPILE AND WEB_COMPILE)
 	add_compile_definitions(WEB_COMPILE)
@@ -31,13 +31,8 @@ if(DEFINED USE_NEW_WEB AND USE_NEW_WEB)
 	add_compile_definitions(AGENTINO_USE_NEW_WEB)
 endif()
 
-if(WIN32)
-	list(APPEND listOptions "--qmldir=${IMTCOREDIR}/Qml")
-	set(files \"${AUX_INCLUDE_DIR}/../../../Bin/${CMAKE_BUILD_TYPE}_${TARGETNAME}/${PROJECT_NAME}.exe\")
-
-	windeploy(${PROJECT_NAME} "${listOptions}" "${files}")
-	unset(listOptions)
-endif()
+# replace using deploy_qt
+deploy_qt(TARGET ${PROJECT_NAME} OPTIONS "--qmldir=${IMTCOREDIR}/Qml")
 
 
 ADD_DEFINITIONS(-DUNICODE)
