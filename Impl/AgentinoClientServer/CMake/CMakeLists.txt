@@ -29,7 +29,7 @@ find_package("Qt${QT_VERSION_MAJOR}" COMPONENTS Quick Qml REQUIRED)
 
 include(${ACFDIR}/Config/CMake/CustomBuild.cmake)
 include(${ACFDIR}/Config/CMake/ApplicationConfig.cmake)
-include(${ACFDIR}/Config/CMake/WindeployQt.cmake)
+include(${ACFDIR}/Config/CMake/DeployQt.cmake)
 
 if(DEFINED WEB_COMPILE AND  WEB_COMPILE)
 	add_compile_definitions(WEB_COMPILE)
@@ -38,6 +38,10 @@ endif()
 if(DEFINED USE_NEW_WEB AND USE_NEW_WEB)
 	add_compile_definitions(AGENTINO_USE_NEW_WEB)
 endif()
+
+set(DEPLOY_QT_QML_DIRS "${IMTCOREDIR}/Qml")
+deploy_qt(TARGET ${PROJECT_NAME})
+unset(DEPLOY_QT_QML_DIRS)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
 	agentinoqml
