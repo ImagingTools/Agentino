@@ -85,8 +85,10 @@ add_dependencies(AgentinoDataPck agentinodata)
 add_subdirectory("${IMPL_DIR}/AgentinoLoc/CMake" "${AUX_INCLUDE_DIR}/AgentinoLoc")
 
 add_subdirectory("${IMPL_DIR}/AgentinoServer/CMake" "${AUX_INCLUDE_DIR}/AgentinoServer")
+add_subdirectory("${IMPL_DIR}/AgentinoServerTest/CMake" "${AUX_INCLUDE_DIR}/AgentinoServerTest")
 add_subdirectory("${IMPL_DIR}/AgentinoClient/CMake" "${AUX_INCLUDE_DIR}/AgentinoClient")
 add_subdirectory("${IMPL_DIR}/AgentinoAgent/CMake" "${AUX_INCLUDE_DIR}/AgentinoAgent")
+add_subdirectory("${IMPL_DIR}/AgentinoAgentTest/CMake" "${AUX_INCLUDE_DIR}/AgentinoAgentTest")
 
 # Declare target-based deps so include paths/link order propagate transitively across Agentino
 # libraries and onto the underlying ImtCore::/Acf::/AcfSln::/IAcf:: libraries.

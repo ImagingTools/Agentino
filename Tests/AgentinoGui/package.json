@@ -1,0 +1,16 @@
+{
+  "name": "agentino-gui-tests",
+  "private": true,
+  "description": "Agentino Qt/QML GUI end-to-end tests (Playwright). objectName-driven, page-object based, built on imtcore-gui-testkit.",
+  "scripts": {
+    "test": "playwright test",
+    "test:list": "playwright test --list",
+    "test:update": "playwright test --update-snapshots",
+    "test:su": "playwright test --project=su",
+    "test:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "imtcore-gui-testkit": "file:../../../ImtCore/Tests/GuiTestKit"
+  }
+}
