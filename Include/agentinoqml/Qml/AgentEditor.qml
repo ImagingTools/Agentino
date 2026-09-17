@@ -270,6 +270,10 @@ DocumentViewBase {
 				CustomTextField {
 					id: nameInput
 
+					// Test instrumentation: CustomTextField carries no objectName of its own, so this
+					// field would otherwise be unaddressable. Inert.
+					objectName: "AgentNameInput"
+
 					width: parent.width
 					height: Style.itemSizeM
 
@@ -294,6 +298,9 @@ DocumentViewBase {
 
 				CustomTextField {
 					id: descriptionInput
+
+					// Test instrumentation: same reasoning as AgentNameInput above. Inert.
+					objectName: "AgentDescriptionInput"
 
 					width: parent.width
 					height: Style.itemSizeM
@@ -326,6 +333,11 @@ DocumentViewBase {
 						id: switchVerboseMessage
 						anchors.verticalCenter: parent.verticalCenter
 
+						// Test instrumentation: SwitchCustom's own default objectName ( "SwitchButton")
+						// is shared by every switch on the page; give this one a distinct name so it can
+						// be addressed directly (not nested under a wrapper). Inert.
+						objectName: "AgentVerboseMessageSwitch"
+
 						backgroundColor: "#D4D4D4"
 						onCheckedChanged: {
 							agentEditorContainer.doUpdateModel()
@@ -350,6 +362,9 @@ DocumentViewBase {
 
 					ComboBox {
 						id: tracingLevelInput
+						// Test instrumentation: overrides ComboBox's generic default objectName
+						// ("ComboBox"), which every combo on the page would otherwise share. Inert.
+						objectName: "AgentTracingLevelCombo"
 						anchors.verticalCenter: parent.verticalCenter
 						height: Style.itemSizeM * 0.75
 						width: Style.itemSizeL

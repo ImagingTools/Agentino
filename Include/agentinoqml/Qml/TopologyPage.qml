@@ -399,6 +399,11 @@ ViewBase {
 	
 	SchemeView {
 		id: scheme
+
+		// Test instrumentation: SchemeView carries no objectName of its own, so the diagram would
+		// otherwise be unaddressable. Inert.
+		objectName: "TopologySchemeView"
+
 		maximumObjectWidth: 360
 		objectFontSize: Style.fontSizeXL
 		objectSecondaryFontSize: Style.fontSizeS

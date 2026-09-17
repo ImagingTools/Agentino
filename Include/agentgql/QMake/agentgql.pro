@@ -6,5 +6,5 @@ include($(IMTCOREDIR)/Config/QMake/ImtCore.pri)
 
 INCLUDEPATH += $$AUXINCLUDEPATH/GeneratedFiles
 
-LIBS += -L../../../Lib/$$COMPILER_DIR  -limtguigql -limtbase -limtauth -limtgui -limtwidgets -limtlic -lagentinosdl
+LIBS += -L../../../Lib/$$COMPILER_DIR  -limtguigql -limtbase -limtauth -limtaccount -limtgui -limtwidgets -limtlic -lagentinosdl
 

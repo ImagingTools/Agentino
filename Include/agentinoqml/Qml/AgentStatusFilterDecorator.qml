@@ -94,6 +94,9 @@ DecoratorBase {
 		Button {
 			id: allFilter;
 
+			// Test instrumentation: the base Button.qml auto-derives objectName from `text`, which here
+			// includes a live count ("All (3)") and so is not a stable locator. Inert otherwise.
+			objectName: "AgentStatusAllFilter"
 			anchors.verticalCenter: parent.verticalCenter;
 			checkable: true
 			checked: true
@@ -107,6 +110,8 @@ DecoratorBase {
 		Button {
 			id: pendingFilter;
 
+			// Test instrumentation: see allFilter's comment above. Inert otherwise.
+			objectName: "AgentStatusPendingFilter"
 			anchors.verticalCenter: parent.verticalCenter;
 			checkable: true
 			text: mainItem.labelFor("Pending", qsTr("Pending"))
@@ -119,6 +124,8 @@ DecoratorBase {
 		Button {
 			id: approvedFilter;
 
+			// Test instrumentation: see allFilter's comment above. Inert otherwise.
+			objectName: "AgentStatusApprovedFilter"
 			anchors.verticalCenter: parent.verticalCenter;
 			checkable: true
 			text: mainItem.labelFor("Approved", qsTr("Approved"))
@@ -131,6 +138,8 @@ DecoratorBase {
 		Button {
 			id: suspendedFilter;
 
+			// Test instrumentation: see allFilter's comment above. Inert otherwise.
+			objectName: "AgentStatusSuspendedFilter"
 			anchors.verticalCenter: parent.verticalCenter;
 			checkable: true
 			text: mainItem.labelFor("Suspended", qsTr("Suspended"))
@@ -143,6 +152,8 @@ DecoratorBase {
 		Button {
 			id: rejectedFilter;
 
+			// Test instrumentation: see allFilter's comment above. Inert otherwise.
+			objectName: "AgentStatusRejectedFilter"
 			anchors.verticalCenter: parent.verticalCenter;
 			checkable: true
 			text: mainItem.labelFor("Rejected", qsTr("Rejected"))
@@ -155,6 +166,8 @@ DecoratorBase {
 		Button {
 			id: revokedFilter;
 
+			// Test instrumentation: see allFilter's comment above. Inert otherwise.
+			objectName: "AgentStatusRevokedFilter"
 			anchors.verticalCenter: parent.verticalCenter;
 			checkable: true
 			text: mainItem.labelFor("Revoked", qsTr("Revoked"))
