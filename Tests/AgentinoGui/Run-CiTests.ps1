@@ -390,13 +390,37 @@ function Install-PlaywrightIfNeeded {
         }
 
         Write-Step "Ensuring Playwright's Chromium browser is installed"
-        Push-Location $ScriptDir
-        try {
-            & npx playwright install chromium 2>&1 | Out-Host
-            if ($LASTEXITCODE -ne 0) { throw "playwright install failed (exit $LASTEXITCODE)" }
+
+        # Skip the download entirely when a browser is already cached. That is not just a speed-up: a
+        # build agent behind a proxy can reach the npm registry and still not reach
+        # cdn.playwright.dev, which fails the whole step after four 30s timeouts. Seeding the cache
+        # once on such an agent then makes every later run work offline.
+        $browsersRoot = if ($env:PLAYWRIGHT_BROWSERS_PATH) { $env:PLAYWRIGHT_BROWSERS_PATH } else { Join-Path $env:LOCALAPPDATA "ms-playwright" }
+        $cached = @(Get-ChildItem -Path $browsersRoot -Directory -Filter "chromium*" -ErrorAction SilentlyContinue)
+        if ($cached.Count -gt 0) {
+            Write-Host "Chromium already present in $browsersRoot ($($cached[0].Name)) - skipping download"
         }
-        finally {
-            Pop-Location
+        else {
+            # The default per-request timeout is 30s, which a slow or throttled link loses to.
+            if (-not $env:PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT) { $env:PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT = "180000" }
+            Push-Location $ScriptDir
+            try {
+                & npx playwright install chromium 2>&1 | Out-Host
+                if ($LASTEXITCODE -ne 0) {
+                    throw @"
+playwright install failed (exit $LASTEXITCODE) and no Chromium was found in $browsersRoot.
+This agent could not download the browser from cdn.playwright.dev. Fix it once, on the agent, in any
+of these ways:
+  - allow cdn.playwright.dev through the proxy/firewall, or
+  - run 'npx playwright install chromium' there by hand while it does have access, or
+  - point PLAYWRIGHT_BROWSERS_PATH at a directory that already holds a chromium-* build.
+Once a browser is cached this step stops downloading anything at all.
+"@
+                }
+            }
+            finally {
+                Pop-Location
+            }
         }
     }
     finally {
