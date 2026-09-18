@@ -49,7 +49,9 @@ param(
     ),
     [string]$ScriptDir = (Join-Path $RepoRoot "Tests\AgentinoGui"),
 
-    [string]$BuildConfig = "Debug_Qt6_VC17_x64",
+    # Release, matching TeamCity (which builds only Release) and the other suites' CI scripts. Locally:
+    # -BuildConfig Debug_Qt6_VC17_x64.
+    [string]$BuildConfig = "Release_Qt6_VC17_x64",
 
     [string]$AgentinoServerExePath = "",
     [string]$AgentinoAgentExePath = "",
