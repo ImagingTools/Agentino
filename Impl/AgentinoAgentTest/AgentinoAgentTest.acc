@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Acf>
+    <AcfHeader>
+        <VersionInfos>
+            <Version Id="0" Number="6560" Description="ACF"/>
+            <Version Id="1" Number="2449" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="395264" Description="Qt Framework"/>
+        </VersionInfos>
+    </AcfHeader>
+    <Description>Agentino agent test application</Description>
+    <Keywords>Test Console Agent</Keywords>
+    <ElementsList>
+        <Element Id="AgentServer" PackageId="AgentinoAgentVoce" ComponentId="AgentServer">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="AgentMessageObjectCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Application/LogDatabase"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="AgentinoServerHttpPort" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="17111"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="AgentinoServerWebSocketPort" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="17112"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Application/ApplicationInfo"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DefaultHttpPort" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="17222"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DefaultPath" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="Agentino/Agentino Agent/AgentinoAgentTestSettings.xml"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DefaultWebSocketPort" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="17223"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Application/Log"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="LogPath" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Application/LogFilePath"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="MessageSqlRepository" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Application/LogDatabase"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RuntimeStatus" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Application/RuntimeStatus"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="VersionInfo"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="Application" PackageId="ImtCoreVoce" ComponentId="ConsoleApplicationSqlLogFramework">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ApplicationId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="AgentinoAgentTest"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ApplicationName" Type="Text" ExportId="">
+                        <Data IsEnabled="true" Value="Agentino Agent Test"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ApplicationType" Type="Text" ExportId="">
+                        <Data IsEnabled="true" Value="Server"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="CompanyName" Type="Text" ExportId="">
+                        <Data IsEnabled="true" Value="ImagingTools"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ComponentsToInitialize" Type="Reference[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>AgentServer</Value>
+                                <Value>AgentServer/Preferences</Value>
+                                <Value>AgentServer/AutoPersistence</Value>
+                                <Value>AgentServer/ServiceCollection</Value>
+                                <Value>AgentServer/AgentRegistrationClient</Value>
+                                <Value>AgentServer/AgentServiceCollectionSyncClient</Value>
+                                <Value>AgentServer/ProcessHost</Value>
+                                <Value>AgentServer/ServiceTypeCatalog</Value>
+                                <Value>AgentServer/ServiceController</Value>
+                                <Value>AgentServer/TerminalSessionManager</Value>
+                                <Value>AgentServer/HttpServerFramework</Value>
+                                <Value>AgentServer/WebSocketServerFramework</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="LogLocationType" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="105"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="LogPath" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="Agentino/Agentino Agent/AgentinoAgentTestLog.txt"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="MainVersionId" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="2022"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ProductName" Type="Text" ExportId="">
+                        <Data IsEnabled="true" Value="Agentino"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="SqlLogFilePath" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="Agentino/Agentino Agent/AgentinoAgentTestLog.sqlite"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="VersionInfo"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="VersionInfo" PackageId="AgentinoVoce" ComponentId="VersionInfo">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap/>
+            </Data>
+        </Element>
+    </ElementsList>
+    <EmbeddedRegistriesList>
+        <EmbeddedRegistry Id="ServerSettings">
+            <Data Description="" Keywords="">
+                <ElementsList>
+                    <Element Id="AgentinoConnectionInterface" PackageId="ImtComPck" ComponentId="ServerConnectionInterfaceParam">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="DefaultHost" Type="String" ExportId="">
+                                    <Data IsEnabled="true" Value="localhost"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="DefaultHttpPort" Type="Integer" ExportId="">
+                                    <Data IsEnabled="true" Value="17111"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="DefaultWebSocketPort" Type="Integer" ExportId="">
+                                    <Data IsEnabled="true" Value="17112"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                </ElementsList>
+                <EmbeddedRegistriesList/>
+                <ExportedInterfaces/>
+                <ExportedComponents/>
+            </Data>
+        </EmbeddedRegistry>
+    </EmbeddedRegistriesList>
+    <ExportedInterfaces>
+        <Interface InterfaceId="ibase::IApplication" ComponentId="Application"/>
+    </ExportedInterfaces>
+    <ExportedComponents/>
+</Acf>

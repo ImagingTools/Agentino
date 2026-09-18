@@ -619,6 +619,9 @@ DocumentViewBase {
 						
 						TextInputElementView {
 							id: nameInput
+							// Test instrumentation: distinguishes this field from AgentEditor's own
+							// "Name" field when both editors are open as sibling tabs. Inert.
+							objectName: "ServiceNameInput"
 							controlWidth: serviceEditorContainer.getEditorControlWidth(nameInput)
 							name: qsTr("Name")
 							description: qsTr("Identifies the service in lists, topology, and editor tabs")
@@ -641,6 +644,8 @@ DocumentViewBase {
 						
 						TextInputElementView {
 							id: descriptionInput
+							// Test instrumentation: same reasoning as ServiceNameInput above. Inert.
+							objectName: "ServiceDescriptionInput"
 							controlWidth: serviceEditorContainer.getEditorControlWidth(descriptionInput)
 							name: qsTr("Description")
 							description: qsTr("Explains the service purpose and is shown in service views")
@@ -655,6 +660,8 @@ DocumentViewBase {
 						
 						ServerPathPickerElementView {
 							id: pathInput
+							// Test instrumentation: same reasoning as ServiceNameInput above. Inert.
+							objectName: "ServicePathInput"
 							controlWidth: serviceEditorContainer.getEditorControlWidth(pathInput)
 							name: qsTr("Path")
 							description: qsTr("Executable path used to start the service and detect its running process")
@@ -694,6 +701,8 @@ DocumentViewBase {
 						
 						TextInputElementView {
 							id: argumentsInput
+							// Test instrumentation: same reasoning as ServiceNameInput above. Inert.
+							objectName: "ServiceArgumentsInput"
 							controlWidth: serviceEditorContainer.getEditorControlWidth(argumentsInput)
 							name: qsTr("Arguments")
 							description: qsTr("Command-line arguments passed to the service executable")
@@ -919,6 +928,20 @@ DocumentViewBase {
 								width: inputListView.width
 								readOnly: serviceEditorContainer.readOnly
 								controlWidth: serviceEditorContainer.getEditorControlWidth(inputConnectionEditor.hostInput)
+
+								// Test instrumentation: ServerConnectionParamElementView (ImtCore, shared) sets
+								// no objectName on its own fields; assign one to each field imperatively (its
+								// aliases aren't grouped properties, so dot-path binding syntax isn't available
+								// here). This collapses to a single, generic name across every input-connection
+								// row if there is more than one, but a service normally has exactly one input
+								// connection (its own listen socket), so this is the common case addressed
+								// directly rather than scoped per-row. Inert.
+								Component.onCompleted: {
+									inputConnectionEditor.hostInput.objectName = "InputConnectionHostInput";
+									inputConnectionEditor.httpPortInput.objectName = "InputConnectionHttpPortInput";
+									inputConnectionEditor.wsPortInput.objectName = "InputConnectionWsPortInput";
+									inputConnectionEditor.isSecureSwitch.objectName = "InputConnectionSecureSwitch";
+								}
 
 								onParamsChanged: {
 									serviceEditorContainer.doUpdateModel()
@@ -1350,6 +1373,8 @@ DocumentViewBase {
 
 							TableElementView {
 								id: outTable
+								// Test instrumentation: TableElementView has no objectName of its own. Inert.
+								objectName: "OutputConnectionsTable"
 								controlWidth: serviceEditorContainer.getEditorControlWidth(outTable)
 								name: qsTr("Available Connections")
 								// Tell an empty list apart from a failed match: a service type nobody
@@ -1649,6 +1674,8 @@ DocumentViewBase {
 							
 							SwitchElementView {
 								id: switchAutoStart
+								// Test instrumentation: SwitchElementView has no objectName of its own. Inert.
+								objectName: "ServiceAutostartSwitch"
 								controlWidth: serviceEditorContainer.getEditorControlWidth(switchAutoStart)
 								name: qsTr("Autostart (") + (switchAutoStart.checked ? qsTr("on") : qsTr("off")) + ")"
 								description: qsTr("Starts the service automatically when the Agent starts")
@@ -1659,6 +1686,9 @@ DocumentViewBase {
 							
 							SwitchElementView {
 								id: switchVerboseMessage
+								// Test instrumentation: distinguishes this from AgentEditor's own verbose
+								// switch when both editors are open as sibling tabs. Inert.
+								objectName: "ServiceVerboseMessageSwitch"
 								controlWidth: serviceEditorContainer.getEditorControlWidth(switchVerboseMessage)
 								name: qsTr("Verbose Message")
 								description: qsTr("Enables service tracing messages at the selected level")
@@ -1669,6 +1699,9 @@ DocumentViewBase {
 							
 							ComboBoxElementView {
 								id: tracingLevelInput
+								// Test instrumentation: distinguishes this from AgentEditor's own tracing
+								// combo when both editors are open as sibling tabs. Inert.
+								objectName: "ServiceTracingLevelCombo"
 								controlWidth: serviceEditorContainer.getEditorControlWidth(tracingLevelInput)
 								name: qsTr("Tracing level")
 								description: qsTr("Controls the amount of diagnostic information produced by the service")
@@ -1707,6 +1740,8 @@ DocumentViewBase {
 							
 							SwitchElementView {
 								id: startScriptChecked
+								// Test instrumentation: SwitchElementView has no objectName of its own. Inert.
+								objectName: "ServiceStartScriptSwitch"
 								controlWidth: serviceEditorContainer.getEditorControlWidth(startScriptChecked)
 								name: qsTr("Start script")
 								description: qsTr("Uses a custom script when starting the service")
@@ -1717,6 +1752,8 @@ DocumentViewBase {
 							
 							ServerPathPickerElementView {
 								id: startScriptInput
+								// Test instrumentation: same reasoning as ServiceStartScriptSwitch above. Inert.
+								objectName: "ServiceStartScriptPathInput"
 								controlWidth: serviceEditorContainer.getEditorControlWidth(startScriptInput)
 								visible: startScriptChecked.checked
 								placeHolderText: serviceEditorContainer.pathBrowsePlaceHolder(true)
@@ -1739,6 +1776,8 @@ DocumentViewBase {
 							
 							SwitchElementView {
 								id: stopScriptChecked
+								// Test instrumentation: SwitchElementView has no objectName of its own. Inert.
+								objectName: "ServiceStopScriptSwitch"
 								controlWidth: serviceEditorContainer.getEditorControlWidth(stopScriptChecked)
 								name: qsTr("Stop script")
 								description: qsTr("Uses a custom script when stopping the service")
@@ -1749,6 +1788,8 @@ DocumentViewBase {
 							
 							ServerPathPickerElementView {
 								id: stopScriptInput
+								// Test instrumentation: same reasoning as ServiceStopScriptSwitch above. Inert.
+								objectName: "ServiceStopScriptPathInput"
 								controlWidth: serviceEditorContainer.getEditorControlWidth(stopScriptInput)
 								visible: stopScriptChecked.checked
 								placeHolderText: serviceEditorContainer.pathBrowsePlaceHolder(true)
@@ -2084,7 +2125,6 @@ DocumentViewBase {
 							AdministrationView {
 								anchors.fill: parent;
 								productId: serviceEditorContainer.serviceTypeId;
-								documentManager: singleDocumentWorkspaceView.documentManager;
 								
 								function getHeaders(){
 									return administrationViewItem.getHeaders();

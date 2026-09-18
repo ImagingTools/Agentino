@@ -138,6 +138,10 @@ ViewBase {
                     Text {
                         id: statusText;
 
+                        // Test instrumentation: lets a test read the connection status text (Connected/
+                        // Disconnected/Unknown/Checking) without relying on colour. Inert.
+                        objectName: "AgentConnectionStatusText";
+
                         anchors.left: loading.visible ? loading.right : statusIcon.right;
                         anchors.leftMargin: Style.marginXS
                         anchors.right: parent.right;
@@ -159,6 +163,9 @@ ViewBase {
 
                     TextFieldWithTitle {
                         id: agentinoUrlInput;
+
+                        // Test instrumentation: TextFieldWithTitle carries no objectName of its own. Inert.
+                        objectName: "AgentinoUrlInput";
 
                         width: parent.width -button.width - button.anchors.leftMargin;
 
