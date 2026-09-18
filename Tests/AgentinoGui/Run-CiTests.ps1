@@ -53,6 +53,23 @@ param(
     # -BuildConfig Debug_Qt6_VC17_x64.
     [string]$BuildConfig = "Release_Qt6_VC17_x64",
 
+    # Playwright drives the Chrome INSTALLED ON THE MACHINE, rather than downloading its own Chromium.
+    #
+    # This is the browser this suite is pinned to, not a fallback: the build agent cannot reach
+    # cdn.playwright.dev (the connection is refused within seconds, so no timeout helps), and it runs
+    # as SYSTEM, so hand-seeding a cache into a user profile would not be visible to it either. An
+    # installed Chrome needs no download and tracks the same release Playwright pins - measured
+    # 153.0.8010.48 against Playwright's 153.0.8010.12.
+    #
+    # It has to be the DEFAULT rather than a CI-only flag, because the screenshot baselines are
+    # generated with it: a different browser shifts font antialiasing by ~100px per shot and would fail
+    # every screenshot. "msedge" also works if a machine has no Chrome; "" goes back to Playwright's
+    # own Chromium. Changing this means regenerating the baselines.
+    #
+    # NB: unlike Edge, Chrome is not guaranteed to be present on a Windows box - the build agent needs
+    # it installed.
+    [string]$BrowserChannel = "chrome",
+
     [string]$AgentinoServerExePath = "",
     [string]$AgentinoAgentExePath = "",
 
@@ -391,6 +408,15 @@ function Install-PlaywrightIfNeeded {
 
         Write-Step "Ensuring Playwright's Chromium browser is installed"
 
+        # A channel means "use a browser already installed on this machine" - nothing to download at
+        # all. That is the answer for an agent that can reach the npm registry but not
+        # cdn.playwright.dev; msedge is on every Windows box and tracks the same Chromium release.
+        if ($BrowserChannel) {
+            $env:PLAYWRIGHT_BROWSER_CHANNEL = $BrowserChannel
+            Write-Host "Using the installed '$BrowserChannel' browser - skipping Playwright's browser download"
+            return
+        }
+
         # Skip the download entirely when a browser is already cached. That is not just a speed-up: a
         # build agent behind a proxy can reach the npm registry and still not reach
         # cdn.playwright.dev, which fails the whole step after four 30s timeouts. Seeding the cache
@@ -409,11 +435,18 @@ function Install-PlaywrightIfNeeded {
                 if ($LASTEXITCODE -ne 0) {
                     throw @"
 playwright install failed (exit $LASTEXITCODE) and no Chromium was found in $browsersRoot.
-This agent could not download the browser from cdn.playwright.dev. Fix it once, on the agent, in any
-of these ways:
-  - allow cdn.playwright.dev through the proxy/firewall, or
-  - run 'npx playwright install chromium' there by hand while it does have access, or
-  - point PLAYWRIGHT_BROWSERS_PATH at a directory that already holds a chromium-* build.
+This agent cannot reach cdn.playwright.dev - the connection is refused within seconds, so raising the
+timeout does not help. Fix it once, on the agent, in any of these ways:
+  - pass -BrowserChannel chrome (or msedge) to drive a browser already installed on the machine and
+    download NOTHING. Cheapest fix, but it renders ~100px differently from Playwright's bundled
+    Chromium, so the screenshot baselines have to be regenerated with it and everyone then has to
+    use the same one;
+  - allow cdn.playwright.dev through the proxy/firewall;
+  - run 'npx playwright install chromium' on the agent while it does have access. Mind the profile:
+    the path above is the SYSTEM account's, because the build agent runs as SYSTEM - installing as
+    your own user puts the browser somewhere this step will never look;
+  - point PLAYWRIGHT_BROWSERS_PATH at a machine-wide directory holding a chromium-* build, which
+    sidesteps the profile problem entirely.
 Once a browser is cached this step stops downloading anything at all.
 "@
                 }
@@ -494,6 +527,7 @@ function Invoke-PlaywrightSuite {
             Remove-Item Env:\AGENTINO_PUMA_SERVICE_PATH -ErrorAction SilentlyContinue
             Remove-Item Env:\PLAYWRIGHT_OUTPUT_ROOT -ErrorAction SilentlyContinue
             Remove-Item Env:\PLAYWRIGHT_OUTPUT_PHASE -ErrorAction SilentlyContinue
+            Remove-Item Env:\PLAYWRIGHT_BROWSER_CHANNEL -ErrorAction SilentlyContinue
         }
     }
     finally {
