@@ -40,7 +40,10 @@ test.describe('Agents / editor', () => {
   // machine's computer name. Unmasked, each baseline would only ever match the machine that generated
   // it. AgentNameInput on the General page is masked for the same reason.
   test.describe('subpage screenshots', () => {
-    const TAB_MASK = { path: ['Tab1'] };
+    // fixedWidth, not the tab's own width: the tab is only as wide as the name inside it, so a
+    // longer machine name makes the MASK wider and the baseline fails on that boundary alone
+    // (measured: 146px for "LAPTOP", 279px for "b035a0a.online-server.cloud" on the build agent).
+    const TAB_MASK = { path: ['Tab1'], fixedWidth: 420 };
 
     test('General', async ({ page }) => {
       const editor = await openApprovedAgentEditor(page);

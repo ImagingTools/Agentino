@@ -111,7 +111,9 @@ test.describe('Services / editor (read-only)', () => {
   // Every shot masks Tab1, the document tab: its label is the AGENT's name, which is the machine's
   // computer name ("LAPTOP" here). Unmasked it would make every baseline in this file specific to the
   // machine that generated it and fail on any other, CI included.
-  const TAB_MASK = { path: ['Tab1'] };
+  // fixedWidth for the same reason as in agents.editor.test.js: a tight mask is only as wide as the
+  // name it covers, so a longer machine name moves the mask's own edge and fails the shot.
+  const TAB_MASK = { path: ['Tab1'], fixedWidth: 420 };
 
   test('screenshot: Information', async () => {
     await service.openInformation();

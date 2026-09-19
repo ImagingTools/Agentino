@@ -28,7 +28,12 @@ const { CollectionPage } = require('imtcore-gui-testkit/pages/CollectionPage');
 // column flipped between "Connected" and "Disconnected" - but that was the bug (an empty ClientId; see
 // Run-CiTests.ps1), not a property of the column. With the agent routed, an approved agent reads
 // "Connected" for the whole run, so masking it would only hide a regression of exactly that bug.
-const MASK_COLUMNS = ['lastConnection'];
+// "version" is the agent's own build number, which moves with every rebuild (1.0.0.549 -> 1.0.0.556
+// between two runs here), so it is masked for the same reason lastConnection is.
+// "name" and "computerName" both hold the machine's own name ("LAPTOP" here,
+// "b035a0a.online-server.cloud" on the build agent), so they are masked too - without that this
+// baseline only ever matches the machine that generated it.
+const MASK_COLUMNS = ['lastConnection', 'version', 'name', 'computerName'];
 
 const STATUS_FILTERS = {
   all: 'AgentStatusAllFilter',
