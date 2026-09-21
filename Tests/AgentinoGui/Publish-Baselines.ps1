@@ -24,7 +24,16 @@ param(
 
     # A token with push rights. Empty means "not configured" and this script then exits quietly -
     # the baselines are still published as a build artifact either way.
+    #
+    # It cannot be taken from the VCS root, though an equivalent token already lives there. TeamCity
+    # hands a build the root's url, username, branch and authMethod, but deliberately NOT its
+    # secure:password - verified against a real build's resulting-properties. So this is its own
+    # password parameter, defined once per project and inherited by the configs.
     [string]$Token = $env:GUI_BASELINE_TOKEN,
+
+    # GitHub ignores the user name when the password is a token, so the default suits it. Named
+    # explicitly for hosts that do care, and so the URL reads as what it is.
+    [string]$Username = $(if ($env:GUI_BASELINE_USER) { $env:GUI_BASELINE_USER } else { "x-access-token" }),
 
     [string]$BaseBranch = "main",
     [string]$BuildNumber = $(if ($env:BUILD_NUMBER) { $env:BUILD_NUMBER } else { Get-Date -Format "yyyyMMdd-HHmmss" }),
@@ -86,7 +95,7 @@ $($changed.Count) file(s) changed.
     $owner = $Matches[1]
     $repo = $Matches[2]
     # The token goes in the URL for this one push only, never into the stored remote.
-    $authUrl = "https://x-access-token:$Token@github.com/$owner/$repo.git"
+    $authUrl = "https://${Username}:$Token@github.com/$owner/$repo.git"
     & git push $authUrl "${branch}:${branch}"
     if ($LASTEXITCODE -ne 0) { throw "git push failed (exit $LASTEXITCODE)" }
 
