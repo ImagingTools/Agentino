@@ -90,7 +90,9 @@ try {
     }
 
     $summary = Join-Path $outFull "SUMMARY.txt"
-    Set-Content -Path $summary -Value $lines -Encoding UTF8
+    # WriteAllLines, not Set-Content -Encoding UTF8: Windows PowerShell writes a BOM for that, which
+    # shows up as stray characters at the top of the file.
+    [System.IO.File]::WriteAllLines($summary, $lines)
 
     Write-Host ""
     foreach ($l in $lines) { Write-Host $l }
