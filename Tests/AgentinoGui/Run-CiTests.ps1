@@ -53,22 +53,21 @@ param(
     # -BuildConfig Debug_Qt6_VC17_x64.
     [string]$BuildConfig = "Release_Qt6_VC17_x64",
 
-    # Playwright drives the Chrome INSTALLED ON THE MACHINE, rather than downloading its own Chromium.
+    # Playwright's OWN Chromium, not a browser installed on the machine. Empty on purpose.
     #
-    # This is the browser this suite is pinned to, not a fallback: the build agent cannot reach
-    # cdn.playwright.dev (the connection is refused within seconds, so no timeout helps), and it runs
-    # as SYSTEM, so hand-seeding a cache into a user profile would not be visible to it either. An
-    # installed Chrome needs no download and tracks the same release Playwright pins - measured
-    # 153.0.8010.48 against Playwright's 153.0.8010.12.
+    # Screenshot baselines are only stable if the browser is PINNED, and the bundled Chromium is the
+    # only one that is: it moves with the Playwright dependency, so only when someone upgrades it
+    # deliberately. An installed Chrome auto-updates on its own schedule and the machines drift -
+    # measured 2026-09-21, the build agent had reached Chrome 154 while the developer box was still
+    # on 153, which put 16 Lisa screenshots 101-191px apart on text rasterisation alone, on pages
+    # that are visually identical.
     #
-    # It has to be the DEFAULT rather than a CI-only flag, because the screenshot baselines are
-    # generated with it: a different browser shifts font antialiasing by ~100px per shot and would fail
-    # every screenshot. "msedge" also works if a machine has no Chrome; "" goes back to Playwright's
-    # own Chromium. Changing this means regenerating the baselines.
+    # The cost is that the agent cannot reach cdn.playwright.dev, so its cache has to be seeded by
+    # hand ONCE - and it runs as SYSTEM, so the cache belongs in
+    # C:Windowssystem32configsystemprofileAppDataLocalms-playwright, not a user profile.
     #
-    # NB: unlike Edge, Chrome is not guaranteed to be present on a Windows box - the build agent needs
-    # it installed.
-    [string]$BrowserChannel = "chrome",
+    # Pass "chrome" or "msedge" to drive an installed browser instead; that needs its own baselines.
+    [string]$BrowserChannel = "",
 
     [string]$AgentinoServerExePath = "",
     [string]$AgentinoAgentExePath = "",
@@ -422,9 +421,25 @@ function Install-PlaywrightIfNeeded {
         # cdn.playwright.dev, which fails the whole step after four 30s timeouts. Seeding the cache
         # once on such an agent then makes every later run work offline.
         $browsersRoot = if ($env:PLAYWRIGHT_BROWSERS_PATH) { $env:PLAYWRIGHT_BROWSERS_PATH } else { Join-Path $env:LOCALAPPDATA "ms-playwright" }
-        $cached = @(Get-ChildItem -Path $browsersRoot -Directory -Filter "chromium*" -ErrorAction SilentlyContinue)
-        if ($cached.Count -gt 0) {
-            Write-Host "Chromium already present in $browsersRoot ($($cached[0].Name)) - skipping download"
+        # Ask Playwright which build IT wants rather than accepting any chromium-* directory: a stale
+        # build satisfies a loose check, the download is skipped, and the run dies later with
+        # "Executable doesn't exist at ...chromium-<pinned>". That bites hardest on an agent whose
+        # cache was seeded by hand. --dry-run is local, needs no network, and names the headless
+        # shell as well as the browser.
+        $wanted = @()
+        Push-Location $ScriptDir
+        try {
+            $wanted = @(& npx playwright install chromium --dry-run 2>&1 |
+                Select-String -Pattern 'Install location:' |
+                ForEach-Object { ($_.Line -replace '^.*Install location:s*', '').Trim() } |
+                Where-Object { $_ -match 'chromium' })
+        }
+        finally { Pop-Location }
+
+        $missing = @($wanted | Where-Object { -not (Test-Path $_) })
+        if ($wanted.Count -gt 0 -and $missing.Count -eq 0) {
+            $names = ($wanted | ForEach-Object { Split-Path $_ -Leaf }) -join ', '
+            Write-Host "Chromium already present in $browsersRoot ($names) - skipping download"
         }
         else {
             # The default per-request timeout is 30s, which a slow or throttled link loses to.
