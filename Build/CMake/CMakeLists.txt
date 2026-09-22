@@ -2,14 +2,6 @@ cmake_minimum_required(VERSION 3.26)
 
 project(AgentinoAll)
 
-if(NOT DEFINED QT_VERSION_MAJOR)
-	find_package(QT NAMES Qt6 Qt5 COMPONENTS Core)
-	find_package("Qt${QT_VERSION_MAJOR}" COMPONENTS Core Widgets QuickWidgets Core Gui Xml Network Svg Sql WebSockets Qml Concurrent QuickControls2 PrintSupport REQUIRED)
-	if(QT_VERSION_MAJOR EQUAL 6)
-		find_package("Qt${QT_VERSION_MAJOR}" COMPONENTS Core5Compat REQUIRED)
-	endif()
-endif()
-
 if(NOT DEFINED WEB_COMPILE)
 	set(WEB_COMPILE ON CACHE BOOL "Build whith web compatibility")
 endif()
@@ -35,6 +27,11 @@ set(ACF_MODERN_CMAKE ON)
 set(ACF_PACKAGE_NAME "Agentino")
 
 include(${IMTCOREDIR}/Config/CMake/ImtCoreEnv.cmake)
+
+find_package("Qt${QT_VERSION_MAJOR}" COMPONENTS Core Widgets QuickWidgets Core Gui Xml Network Svg Sql WebSockets Qml Concurrent QuickControls2 PrintSupport REQUIRED)
+if(QT_VERSION_MAJOR EQUAL 6)
+	find_package("Qt${QT_VERSION_MAJOR}" COMPONENTS Core5Compat REQUIRED)
+endif()
 
 # Discover the ImtCore package published by its build tree (pulls in Acf/AcfSln/IAcf).
 if(ACF_MODERN_CMAKE AND NOT TARGET ImtCore::imtbase)
