@@ -491,6 +491,9 @@
                     <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/AgentinoServerConnectionInterface"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="SslConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/FileBasedSslConfiguration"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
                     </AttributeInfo>
@@ -800,6 +803,18 @@
         <EmbeddedRegistry Id="WebSocketClient">
             <Data Description="" Keywords="">
                 <ElementsList>
+                    <Element Id="SslConfigurationManager" PackageId="ImtComPck" ComponentId="SslConfigurationManager">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
                     <Element Id="WebSocketClient" PackageId="ImtClientGqlPck" ComponentId="WebSocketClient">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
@@ -835,6 +850,9 @@
                                 </AttributeInfo>
                                 <AttributeInfo Id="SslConfiguration" Type="Reference" ExportId="SslConfiguration">
                                     <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="SslConfigurationManager" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="SslConfigurationManager"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
                                     <Data IsEnabled="false"/>
