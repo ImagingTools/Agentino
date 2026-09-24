@@ -6,11 +6,11 @@ import imtcontrols 1.0
 import imtauthgui 1.0
 
 ApplicationMain{
-    id: window;
-    useWebSocketSubscription: true
-    canRecoveryPassword: false;
-    authorizationServerConnected: true;
+	id: window;
+	useWebSocketSubscription: true
+	canRecoveryPassword: false;
+	authorizationServerConnected: true;
 
-    property var agentinoBackend: AgentinoBackend {}
+	property var agentinoBackend: AgentinoBackend {}
 }
 
