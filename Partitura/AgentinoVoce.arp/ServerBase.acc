@@ -211,8 +211,8 @@
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
-                        <Data IsEnabled="false"/>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -946,6 +946,7 @@
         <Component ExportedId="ServerSettings" ComponentId="ServerSettings"/>
         <Component ExportedId="ServerSettingsFileAutoPersistence" ComponentId="ServerSettings/AutoPersistence"/>
         <Component ExportedId="ServiceManager" ComponentId="Repositories/AgentServiceManager"/>
+        <Component ExportedId="TracingConfiguration" ComponentId="ServerSettings/TracingConfiguration"/>
         <Component ExportedId="WebSocketServerFramework" ComponentId="WebSocketServerFramework"/>
     </ExportedComponents>
 </Acf>

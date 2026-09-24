@@ -337,6 +337,12 @@
         <Element Id="ServerSettings" PackageId="AgentinoAgentVoce" ComponentId="AgentSettings">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="AgentinoServerHttpPort" Type="Integer" ExportId="AgentinoServerHttpPort">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="AgentinoServerWebSocketPort" Type="Integer" ExportId="AgentinoServerWebSocketPort">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -911,6 +917,7 @@
         <Component ExportedId="ServiceController" ComponentId="ServiceController"/>
         <Component ExportedId="ServiceTypeCatalog" ComponentId="ServiceTypeCatalog"/>
         <Component ExportedId="TerminalSessionManager" ComponentId="TerminalController/TerminalSessionManager"/>
+        <Component ExportedId="TracingConfiguration" ComponentId="ServerSettings/TracingConfiguration"/>
         <Component ExportedId="WebSocketServerFramework" ComponentId="WebSocketServerFramework"/>
     </ExportedComponents>
 </Acf>

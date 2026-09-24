@@ -55,10 +55,10 @@
         <Element Id="AgentinoServer" PackageId="ImtHttpServerVoce" ComponentId="ServerConnectionParams">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
-                    <AttributeInfo Id="DefaultHttpPort" Type="Integer" ExportId="DefaultHttpPort">
+                    <AttributeInfo Id="DefaultHttpPort" Type="Integer" ExportId="AgentinoServerHttpPort">
                         <Data IsEnabled="true" Value="7111"/>
                     </AttributeInfo>
-                    <AttributeInfo Id="DefaultWebSocketPort" Type="Integer" ExportId="DefaultWebSocketPort">
+                    <AttributeInfo Id="DefaultWebSocketPort" Type="Integer" ExportId="AgentinoServerWebSocketPort">
                         <Data IsEnabled="true" Value="7112"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ParametersId" Type="Id[]" ExportId="">
