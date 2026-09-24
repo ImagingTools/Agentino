@@ -28,20 +28,22 @@
 # targets have been created.
 # ---------------------------------------------------------------------------
 
+declare_target_dependencies(ImtCore::imtbasesdl		LINK_SCOPE INTERFACE	ImtCore::imtgql)
+
 # --- SDL generated libraries ------------------------------------------------
 # Agentino's SDL is GraphQL-oriented, so keep imtgql explicit on the local SDL
 # root instead of mutating ImtCore::imtbasesdl from a downstream repository.
-declare_target_dependencies(agentinosdl		LINK_SCOPE PUBLIC	ImtCore::imtbasesdl ImtCore::imtgql)
+declare_target_dependencies(agentinosdl				LINK_SCOPE PUBLIC	ImtCore::imtbasesdl ImtCore::imtgql)
 
 # --- Libraries --------------------------------------------------------------
-declare_target_dependencies(agentinodata		LINK_SCOPE PUBLIC	agentinosdl ImtCore::imtservice)
-declare_target_dependencies(agentgql			LINK_SCOPE PUBLIC	agentinodata agentinosdl ImtCore::imtguigql Qt${QT_VERSION_MAJOR}::WebSockets)
-declare_target_dependencies(agentinogql		LINK_SCOPE PUBLIC	agentgql agentinodata)
+declare_target_dependencies(agentinodata			LINK_SCOPE PUBLIC	agentinosdl ImtCore::imtservice)
+declare_target_dependencies(agentgql				LINK_SCOPE PUBLIC	agentinodata agentinosdl ImtCore::imtguigql Qt${QT_VERSION_MAJOR}::WebSockets)
+declare_target_dependencies(agentinogql				LINK_SCOPE PUBLIC	agentgql agentinodata)
 
 # --- QML web-resource libraries ---------------------------------------------
 if(QT_VERSION_MAJOR EQUAL 6)
-	declare_target_dependencies(agentinoqml	LINK_SCOPE PUBLIC	Qt${QT_VERSION_MAJOR}::Core5Compat)
+	declare_target_dependencies(agentinoqml			LINK_SCOPE PUBLIC	Qt${QT_VERSION_MAJOR}::Core5Compat)
 endif()
 
 # --- Arxc-generated static libraries ----------------------------------------
-declare_target_dependencies(AgentinoLoc		LINK_SCOPE PUBLIC	Acf::icomp)
+declare_target_dependencies(AgentinoLoc				LINK_SCOPE PUBLIC	Acf::icomp)

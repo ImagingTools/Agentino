@@ -2,86 +2,69 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6560" Description="ACF"/>
+            <Version Id="0" Number="6556" Description="ACF"/>
             <Version Id="1" Number="2449" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="395264" Description="Qt Framework"/>
+            <Version Id="1023" Number="396034" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
     <Keywords></Keywords>
     <ElementsList>
-        <Element Id="Agent" PackageId="BasePck" ComponentId="ComposedParamsSet">
+        <Element Id="ConnectionCollection" PackageId="ImtServicePck" ComponentId="ConnectionCollection">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
-                    <AttributeInfo Id="Parameters" Type="Reference[]" ExportId="">
+                    <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ConnectionDescriptions" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>ClientId</Value>
+                                <Value>Server connectivity</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
-                    <AttributeInfo Id="ParametersId" Type="Id[]" ExportId="">
+                    <AttributeInfo Id="ConnectionNames" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>ClientId</Value>
+                                <Value>Agentino connection interface</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
-                    <AttributeInfo Id="TypeId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Default"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="AgentinoConnectionInterface" PackageId="ImtComPck" ComponentId="ServerConnectionInterfaceParam">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="DefaultHost" Type="String" ExportId="">
-                        <Data IsEnabled="true" Value="localhost"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DefaultHttpPort" Type="Integer" ExportId="AgentinoServerHttpPort">
-                        <Data IsEnabled="true" Value="7111"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="DefaultWebSocketPort" Type="Integer" ExportId="AgentinoServerWebSocketPort">
-                        <Data IsEnabled="true" Value="7112"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="AgentinoServer" PackageId="BasePck" ComponentId="ComposedParamsSet">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="Parameters" Type="Reference[]" ExportId="">
+                    <AttributeInfo Id="ConnectionServiceTypeIds" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>AgentinoConnectionInterface</Value>
+                                <Value>AgentinoServer</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
-                    <AttributeInfo Id="ParametersId" Type="Id[]" ExportId="">
+                    <AttributeInfo Id="ConnectionTypes" Type="Integer[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>AgentinoWebSocketUrl</Value>
+                                <Value>0</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
-                    <AttributeInfo Id="TypeId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Default"/>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
                     </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="ClientId" PackageId="BasePck" ComponentId="TextParam">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="DefaultText" Type="Text" ExportId="AgentId">
-                        <Data IsEnabled="true" Value=""/>
+                    <AttributeInfo Id="ServerInterfaces" Type="Reference[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>Server/ServerConnectionInterface</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceTypeId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="Agentino"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="LoggingParams/TracingConfiguration"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
         </Element>
         <Element Id="FileAutoPersistence" PackageId="ImtCoreVoce" ComponentId="FileAutoPersistence">
-            <Data IsEnabled="true" Flags="0">
+            <Data IsEnabled="true" Flags="1">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                         <Data IsEnabled="false"/>
@@ -110,13 +93,18 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="Name" PackageId="BasePck" ComponentId="TextParam">
+        <Element Id="FileBasedSslConfiguration" PackageId="ImtComVoce" ComponentId="FileBasedSslConfiguration">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
-                    <AttributeInfo Id="DefaultText" Type="Text" ExportId="AgentName">
-                        <Data IsEnabled="true" Value=""/>
+                    <AttributeInfo Id="EnableSsl" Type="Boolean" ExportId="EnableSsl">
+                        <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="LoggingParams" PackageId="ImtCoreVoce" ComponentId="LoggingParams">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap/>
             </Data>
         </Element>
         <Element Id="Preferences" PackageId="BasePck" ComponentId="ComposedParamsSet">
@@ -125,18 +113,18 @@
                     <AttributeInfo Id="Parameters" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>Agent</Value>
-                                <Value>AgentinoServer</Value>
-                                <Value>ServerConnectionParams</Value>
+                                <Value>Server</Value>
+                                <Value>LoggingParams</Value>
+                                <Value>FileBasedSslConfiguration</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
                     <AttributeInfo Id="ParametersId" Type="Id[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>Agent</Value>
                                 <Value>AgentinoServer</Value>
-                                <Value>AgentServer</Value>
+                                <Value>Log</Value>
+                                <Value>SslConfiguration</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -146,40 +134,14 @@
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServerConnectionInterface" PackageId="ImtComPck" ComponentId="ServerConnectionInterfaceParam">
+        <Element Id="Server" PackageId="ImtHttpServerVoce" ComponentId="ServerConnectionParams">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
-                    <AttributeInfo Id="DefaultHost" Type="String" ExportId="">
-                        <Data IsEnabled="true" Value="localhost"/>
-                    </AttributeInfo>
                     <AttributeInfo Id="DefaultHttpPort" Type="Integer" ExportId="DefaultHttpPort">
-                        <Data IsEnabled="false"/>
+                        <Data IsEnabled="true" Value="7111"/>
                     </AttributeInfo>
                     <AttributeInfo Id="DefaultWebSocketPort" Type="Integer" ExportId="DefaultWebSocketPort">
-                        <Data IsEnabled="false"/>
-                    </AttributeInfo>
-                </AttributeInfoMap>
-            </Data>
-        </Element>
-        <Element Id="ServerConnectionParams" PackageId="BasePck" ComponentId="ComposedParamsSet">
-            <Data IsEnabled="true" Flags="0">
-                <AttributeInfoMap>
-                    <AttributeInfo Id="Parameters" Type="Reference[]" ExportId="">
-                        <Data IsEnabled="true">
-                            <Values>
-                                <Value>ServerConnectionInterface</Value>
-                            </Values>
-                        </Data>
-                    </AttributeInfo>
-                    <AttributeInfo Id="ParametersId" Type="Id[]" ExportId="">
-                        <Data IsEnabled="true">
-                            <Values>
-                                <Value>ServerConnectionInterface</Value>
-                            </Values>
-                        </Data>
-                    </AttributeInfo>
-                    <AttributeInfo Id="TypeId" Type="Id" ExportId="">
-                        <Data IsEnabled="true" Value="Default"/>
+                        <Data IsEnabled="true" Value="7112"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -189,15 +151,14 @@
     <ExportedInterfaces>
         <Interface InterfaceId="imod::IModel" ComponentId="Preferences"/>
         <Interface InterfaceId="iprm::IParamsSet" ComponentId="Preferences"/>
-        <Interface InterfaceId="iprm::ITextParam" ComponentId="ClientId"/>
         <Interface InterfaceId="iser::ISerializable" ComponentId="Preferences"/>
         <Interface InterfaceId="istd::IChangeable" ComponentId="Preferences"/>
     </ExportedInterfaces>
     <ExportedComponents>
-        <Component ExportedId="AgentinoConnectionInterface" ComponentId="AgentinoConnectionInterface"/>
         <Component ExportedId="AutoPersistence" ComponentId="FileAutoPersistence/AutoPersistence"/>
-        <Component ExportedId="ClientId2" ComponentId="ClientId"/>
+        <Component ExportedId="FileBasedSslConfiguration" ComponentId="FileBasedSslConfiguration"/>
         <Component ExportedId="Preferences" ComponentId="Preferences"/>
-        <Component ExportedId="ServerConnectionInterface" ComponentId="ServerConnectionInterface"/>
+        <Component ExportedId="ServerConnectionInterface" ComponentId="Server/ServerConnectionInterface"/>
+        <Component ExportedId="TracingConfiguration" ComponentId="LoggingParams/TracingConfiguration"/>
     </ExportedComponents>
 </Acf>

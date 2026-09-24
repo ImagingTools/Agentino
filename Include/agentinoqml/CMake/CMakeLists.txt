@@ -1,22 +1,23 @@
 project(agentinoqml LANGUAGES CXX)
 
-include(${IMTCOREDIR}/Config/CMake/WebCompiler.cmake)
+
 include(${ACFDIR}/Config/CMake/StaticConfig.cmake)
+include(${IMTCOREDIR}/Config/CMake/WebCompiler.cmake)
 include(${IMTCOREDIR}/Config/CMake/ImtSdlConfig.cmake)
 
 set(buildwebdir ${AGENTINODIR_BUILD}/AuxInclude/Web/Agentino)
 
-#copy html from to
+# html
 list(APPEND webdirs ${PROJECT_SOURCE_DIR}/../Resources/html)
 list(APPEND webdirs ${buildwebdir}/Resources)
 
-# copy qml from to
+# QML
 list(APPEND webdirs ${PROJECT_SOURCE_DIR}/../Qml)
 list(APPEND webdirs ${buildwebdir}/src)
 
-# copy base qml sources from to
 getImtCoreQmlWebDirs(webdirs "${buildwebdir}")
 
+# SDL
 list(APPEND webdirs ${AUX_INCLUDE_DIR}/agentinodata/Ddl/Qml/agentino)
 list(APPEND webdirs ${buildwebdir}/src/agentino)
 
@@ -32,7 +33,7 @@ list(APPEND webdirs ${buildwebdir}/src/agentinoTopologySdl)
 list(APPEND webdirs ${AUX_INCLUDE_DIR}/agentinosdl/SDL/1.0/QML/agentinoEnrollmentSdl)
 list(APPEND webdirs ${buildwebdir}/src/agentinoEnrollmentSdl)
 
-# copy Translations from to
+# Translations
 list(APPEND webdirs ${PROJECT_SOURCE_DIR}/../../../Impl/AgentinoLoc/Translations)
 list(APPEND webdirs ${buildwebdir}/Resources/Translations)
 
@@ -45,21 +46,27 @@ set(QML_IMPORT_PATH ${QML_IMPORT_DIRS}
 	FORCE
 )
 
-option(USE_NEW_WEB "Use new web compilation (jq_compile_web)" ON)
-
-if(DEFINED WEB_COMPILE AND WEB_COMPILE)
+if(WEB_COMPILE)
 	add_compile_definitions(WEB_COMPILE)
 	set(resname "agentino")
-	if(USE_NEW_WEB)
+
+	if(NOT USE_NEW_WEB)
+		jqml_compile_web2(
+			"${webdirs}"
+			"${buildwebdir}"
+			"${resname}"
+			"${sdldependency}"
+		)
+	else()
+		# Server
 		set(inputjs "${PROJECT_SOURCE_DIR}/../agentino.json")
 		set(appicon "../Icons/AgentinoIcon.svg")
 		set(dataroot "/Agentino/Views/")
 		set(startqml "${PROJECT_SOURCE_DIR}/../Qml/AgentinoWeb.qml")
 
-		list(APPEND envvar "IMTCOREDIR_BUILD=${IMTCOREDIR_BUILD}")
 		list(APPEND envvar "IMTCOREDIR=${IMTCOREDIR}")
+		list(APPEND envvar "IMTCOREDIR_BUILD=${IMTCOREDIR_BUILD}")
 		list(APPEND envvar "BUILD_FOLDER=${AGENTINODIR_BUILD}")
-		# list(APPEND envvar "AGENTINODIR=${CMAKE_BINARY_DIR}")
 
 		jq_compile_web(
 			"${webdirs}"
@@ -72,6 +79,7 @@ if(DEFINED WEB_COMPILE AND WEB_COMPILE)
 			"${envvar}"
 		)
 
+		# Agent
 		set(resname "agent")
 		set(dataroot "/Agent/Views/")
 		set(startqml "${PROJECT_SOURCE_DIR}/../Qml/AgentWeb.qml")
@@ -86,13 +94,6 @@ if(DEFINED WEB_COMPILE AND WEB_COMPILE)
 			"${dataroot}"
 			"${startqml}"
 			"${envvar}"
-		)
-	else()
-		jqml_compile_web2(
-			"${webdirs}"
-			"${buildwebdir}"
-			"${resname}"
-			"${sdldependency}"
 		)
 	endif()
 endif()

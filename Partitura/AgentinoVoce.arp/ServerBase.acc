@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6560" Description="ACF"/>
+            <Version Id="0" Number="6556" Description="ACF"/>
             <Version Id="1" Number="2449" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="395264" Description="Qt Framework"/>
+            <Version Id="1023" Number="396034" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -42,6 +42,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="SubscriptionManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketServerFramework"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -124,6 +127,9 @@
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="AgentinoLocalization"/>
                     </AttributeInfo>
@@ -184,6 +190,9 @@
                     <AttributeInfo Id="SlaveJwtSessionController" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="JwtSessionController"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="UserCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/UserRepository"/>
                     </AttributeInfo>
@@ -220,6 +229,9 @@
                     <AttributeInfo Id="RuntimeStatus" Type="Reference" ExportId="RuntimeStatus">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -246,6 +258,12 @@
                     <AttributeInfo Id="ServerInterface" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/ServerConnectionInterface"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="SslConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/FileBasedSslConfiguration"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
+                    </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
         </Element>
@@ -254,6 +272,9 @@
                 <AttributeInfoMap>
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="DefaultPath" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="Agentino/Agentino Server/key.xml"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
@@ -297,6 +318,9 @@
                     <AttributeInfo Id="RuntimeStatus" Type="Reference" ExportId="RuntimeStatus">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -313,13 +337,13 @@
                         <Data IsEnabled="true" Value="7111"/>
                     </AttributeInfo>
                     <AttributeInfo Id="DefaultPath" Type="String" ExportId="DefaultPath">
-                        <Data IsEnabled="true" Value="Agentino/Agentino Server/AgentinoServerSettings.xml"/>
+                        <Data IsEnabled="true" Value="AgentinoServerSettings.xml"/>
                     </AttributeInfo>
                     <AttributeInfo Id="DefaultWebSocketPort" Type="Integer" ExportId="DefaultWebSocketPort">
                         <Data IsEnabled="true" Value="7112"/>
                     </AttributeInfo>
                     <AttributeInfo Id="LocationType" Type="Integer" ExportId="">
-                        <Data IsEnabled="true" Value="104"/>
+                        <Data IsEnabled="true" Value="105"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
@@ -376,6 +400,9 @@
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="AgentinoLocalization"/>
                     </AttributeInfo>
@@ -403,6 +430,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceStatusCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceStatusCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -497,8 +527,14 @@
                     <AttributeInfo Id="RequestHandler" Type="Factory" ExportId="">
                         <Data IsEnabled="true" Value="AgentinoHandlers"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="SslConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/FileBasedSslConfiguration"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="StartWebSocketServerOnCreate" Type="Boolean" ExportId="">
                         <Data IsEnabled="true" Value="true"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
                     </AttributeInfo>
                     <AttributeInfo Id="WebServerConnectionInterface" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/ServerConnectionInterface"/>
@@ -516,9 +552,6 @@
                             <AttributeInfoMap>
                                 <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                                     <Data IsEnabled="false"/>
-                                </AttributeInfo>
-                                <AttributeInfo Id="AutoCreateDatabase" Type="Integer" ExportId="">
-                                    <Data IsEnabled="true" Value="2"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="DatabaseSqlFilePath" Type="String" ExportId="">
                                     <Data IsEnabled="true" Value="agentino.sqlite"/>
@@ -551,7 +584,7 @@
                                     <Data IsEnabled="true" Value="MigrationFilePath"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="To" Type="Integer" ExportId="">
-                                    <Data IsEnabled="true" Value="4"/>
+                                    <Data IsEnabled="true" Value="-1"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
                                     <Data IsEnabled="false"/>
@@ -618,6 +651,9 @@
                                 <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
@@ -640,15 +676,15 @@
                                 <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
                     <Element Id="AgentSubscriberProxyController" PackageId="AgentinoGqlPck" ComponentId="AgentsSubscriberProxyController">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
-                                <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
-                                    <Data IsEnabled="false"/>
-                                </AttributeInfo>
                                 <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
@@ -665,6 +701,9 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="SubscriptionManager" Type="Reference" ExportId="SubscriptionManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>
@@ -690,6 +729,9 @@
                                 <AttributeInfo Id="SubscriptionManager" Type="Reference" ExportId="SubscriptionManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
@@ -712,6 +754,9 @@
                                 <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
@@ -732,6 +777,9 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>
@@ -759,6 +807,9 @@
                                 <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="ServiceCompositeInfo">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
@@ -781,6 +832,9 @@
                                 <AttributeInfo Id="SubscriptionManager" Type="Reference" ExportId="SubscriptionManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
@@ -801,6 +855,9 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>
@@ -847,6 +904,9 @@
                                 <AttributeInfo Id="RequestManager" Type="Reference" ExportId="RequestManager">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
                     </Element>
@@ -877,13 +937,14 @@
     <ExportedComponents>
         <Component ExportedId="AgentChangeObserver" ComponentId="AgentChangeObserver"/>
         <Component ExportedId="AgentCollection" ComponentId="Repositories/AgentCollection"/>
+        <Component ExportedId="AgentCollectionFileAutoPersistence" ComponentId="Repositories/AutoPersistence"/>
         <Component ExportedId="AgentServiceManager" ComponentId="Repositories/AgentServiceManager"/>
         <Component ExportedId="AgentinoLocalization" ComponentId="AgentinoLocalization"/>
-        <Component ExportedId="AutoPersistence" ComponentId="Repositories/AutoPersistence"/>
         <Component ExportedId="DatabaseEngine" ComponentId="DatabaseEngine"/>
         <Component ExportedId="EnrollmentFileAutoPersistence" ComponentId="EnrollmentManager/EnrollmentFileAutoPersistence"/>
         <Component ExportedId="HttpServerFramework" ComponentId="HttpServerFramework"/>
         <Component ExportedId="ServerSettings" ComponentId="ServerSettings"/>
+        <Component ExportedId="ServerSettingsFileAutoPersistence" ComponentId="ServerSettings/AutoPersistence"/>
         <Component ExportedId="ServiceManager" ComponentId="Repositories/AgentServiceManager"/>
         <Component ExportedId="WebSocketServerFramework" ComponentId="WebSocketServerFramework"/>
     </ExportedComponents>
