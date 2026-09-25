@@ -77,6 +77,7 @@ private:
 	void EnsureAdoptPollTimer();
 	void ClearChildEntry(const QByteArray& serviceId, bool killSpawnedIfRunning);
 	bool ChildIsAlive(const Child& child) const;
+	bool TerminateSpawnedProcess(Child& child, bool force, QString& errorMessage) const;
 	bool TerminateOsProcess(const Child& child, bool force, QString& errorMessage) const;
 
 	static bool IsPidAlive(qint64 pid);

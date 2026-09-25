@@ -105,6 +105,15 @@ bool CProcessHostComp::Spawn(const SpawnRequest& request, qint64& pid, QString& 
 	child.adopted = false;
 	m_children.insert(request.serviceId, child);
 
+#ifndef Q_OS_WIN
+	// Make the spawned process its own session/process-group leader, so a start
+	// script or service that forks a background worker without detaching itself
+	// stays in the same group and can be killed together with it later.
+	process->setChildProcessModifier([](){
+		::setsid();
+	});
+#endif
+
 	process->start(request.program, request.arguments);
 	if (!process->waitForStarted(5000)){
 		errorMessage = process->errorString();
@@ -217,21 +226,7 @@ bool CProcessHostComp::SignalStop(const QByteArray& serviceId, QString& errorMes
 		errorMessage = QStringLiteral("No child process for service");
 		return false;
 	}
-	if (child.process->state() == QProcess::NotRunning){
-		return true;
-	}
-	child.stopRequested = true;
-	// Give cooperative services a short exit window before the guaranteed kill fallback.
-	child.process->terminate();
-	if (!child.process->waitForFinished(500)){
-		child.process->kill();
-		if (!child.process->waitForFinished(2000)){
-			errorMessage = QStringLiteral("Process %1 did not stop after terminate and kill")
-					.arg(child.pid);
-			return false;
-		}
-	}
-	return true;
+	return TerminateSpawnedProcess(child, false, errorMessage);
 }
 
 
@@ -263,16 +258,7 @@ bool CProcessHostComp::ForceKill(const QByteArray& serviceId, QString& errorMess
 		errorMessage = QStringLiteral("No child process for service");
 		return false;
 	}
-	if (child.process->state() != QProcess::NotRunning){
-		child.stopRequested = true;
-		child.process->kill();
-		if (!child.process->waitForFinished(2000)){
-			errorMessage = QStringLiteral("Process %1 did not stop after kill")
-					.arg(child.pid);
-			return false;
-		}
-	}
-	return true;
+	return TerminateSpawnedProcess(child, true, errorMessage);
 }
 
 
@@ -442,7 +428,19 @@ void CProcessHostComp::ClearChildEntry(const QByteArray& serviceId, bool killSpa
 	if (child.process != nullptr){
 		child.process->disconnect(this);
 		if (killSpawnedIfRunning && child.process->state() != QProcess::NotRunning){
+#ifdef Q_OS_WIN
 			child.process->kill();
+#else
+			if (child.pid > 0){
+				// Kill the whole process group: see TerminateSpawnedProcess.
+				::kill(static_cast<pid_t>(-child.pid), SIGKILL);
+			}
+			else {
+				// PID not recorded yet (race with Spawn() still starting) - kill(0, ...)
+				// would hit our own process group, so signal just this process instead.
+				child.process->kill();
+			}
+#endif
 			child.process->waitForFinished(1000);
 		}
 		child.process->deleteLater();
@@ -460,6 +458,78 @@ bool CProcessHostComp::ChildIsAlive(const Child& child) const
 		return false;
 	}
 	return child.process->state() != QProcess::NotRunning;
+}
+
+
+bool CProcessHostComp::TerminateSpawnedProcess(Child& child, bool force, QString& errorMessage) const
+{
+	if (child.process == nullptr){
+		errorMessage = QStringLiteral("No child process for service");
+		return false;
+	}
+	if (child.process->state() == QProcess::NotRunning){
+		return true;
+	}
+	child.stopRequested = true;
+#ifdef Q_OS_WIN
+	if (force){
+		child.process->kill();
+	}
+	else {
+		// Give cooperative services a short exit window before the guaranteed kill fallback.
+		child.process->terminate();
+	}
+	if (!child.process->waitForFinished(force ? 2000 : 500)){
+		if (force){
+			errorMessage = QStringLiteral("Process %1 did not stop after kill").arg(child.pid);
+			return false;
+		}
+		child.process->kill();
+		if (!child.process->waitForFinished(2000)){
+			errorMessage = QStringLiteral("Process %1 did not stop after terminate and kill").arg(child.pid);
+			return false;
+		}
+	}
+	return true;
+#else
+	// Signal the whole process group, not just the tracked pid: the process was
+	// started as its own session/group leader (setsid in Spawn's child-process
+	// modifier), so a start script or service that forks a background worker
+	// without detaching itself is still in the same group and dies with it.
+	// child.pid can still be 0 here if this races with Spawn() before the pid is
+	// recorded - kill(0, ...) would hit our own process group, so fall back to
+	// signalling just this process in that case.
+	if (child.pid > 0){
+		const pid_t groupId = static_cast<pid_t>(-child.pid);
+		if (::kill(groupId, force ? SIGKILL : SIGTERM) != 0 && errno != ESRCH){
+			errorMessage = QStringLiteral("kill(%1) failed: %2").arg(groupId).arg(errno);
+			return false;
+		}
+	}
+	else if (force){
+		child.process->kill();
+	}
+	else {
+		child.process->terminate();
+	}
+	if (!child.process->waitForFinished(force ? 2000 : 500)){
+		if (force){
+			errorMessage = QStringLiteral("Process %1 did not stop after kill").arg(child.pid);
+			return false;
+		}
+		if (child.pid > 0){
+			::kill(static_cast<pid_t>(-child.pid), SIGKILL);
+		}
+		else {
+			child.process->kill();
+		}
+		if (!child.process->waitForFinished(2000)){
+			errorMessage = QStringLiteral("Process %1 did not stop after terminate and kill").arg(child.pid);
+			return false;
+		}
+	}
+	return true;
+#endif
 }
 
 
@@ -502,7 +572,14 @@ bool CProcessHostComp::TerminateOsProcess(const Child& child, bool force, QStrin
 	return true;
 #else
 	const int sig = force ? SIGKILL : SIGTERM;
-	if (::kill(static_cast<pid_t>(child.pid), sig) != 0){
+	const pid_t targetPid = static_cast<pid_t>(child.pid);
+	// Only signal the whole process group when the pid is actually its own group's
+	// leader (true for durable PIDs recorded from processes we spawned, which are
+	// made session leaders via setsid()); otherwise fall back to signalling just the
+	// pid so an unrelated process group is never touched.
+	const pid_t groupId = ::getpgid(targetPid);
+	const pid_t killTarget = (groupId != -1 && groupId == targetPid) ? -targetPid : targetPid;
+	if (::kill(killTarget, sig) != 0){
 		if (errno == ESRCH){
 			return true;
 		}
