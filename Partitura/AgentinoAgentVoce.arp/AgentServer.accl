@@ -2,40 +2,40 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6560" Description="ACF"/>
+            <Version Id="0" Number="6556" Description="ACF"/>
             <Version Id="1" Number="2449" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="395264" Description="Qt Framework"/>
+            <Version Id="1023" Number="396034" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
-        <Element ComponentName="AgentHandlers" X="500" Y="325" Note=""/>
-        <Element ComponentName="AgentRegistrationClient" X="175" Y="650" Note=""/>
-        <Element ComponentName="AgentServiceCollectionSyncClient" X="1025" Y="125" Note=""/>
-        <Element ComponentName="AgentSubscribers" X="975" Y="600" Note=""/>
-        <Element ComponentName="AgentinoLocalization" X="200" Y="75" Note=""/>
-        <Element ComponentName="AuthenticationManager" X="450" Y="750" Note=""/>
-        <Element ComponentName="DatabaseEngine" X="475" Y="175" Note=""/>
-        <Element ComponentName="FeatureContainer" X="1050" Y="300" Note=""/>
-        <Element ComponentName="HttpServerFramework" X="350" Y="450" Note=""/>
-        <Element ComponentName="JwtSessionController" X="1050" Y="775" Note=""/>
-        <Element ComponentName="ProcessHost" X="1050" Y="475" Note=""/>
-        <Element ComponentName="Repositories" X="750" Y="225" Note=""/>
-        <Element ComponentName="ServerSettings" X="125" Y="350" Note=""/>
-        <Element ComponentName="ServiceCollectionProvider" X="700" Y="50" Note=""/>
-        <Element ComponentName="ServiceController" X="825" Y="375" Note=""/>
-        <Element ComponentName="ServiceTypeCatalog" X="1050" Y="400" Note=""/>
-        <Element ComponentName="SuperuserProvider" X="1025" Y="225" Note=""/>
-        <Element ComponentName="TerminalController" X="250" Y="275" Note=""/>
+        <Element ComponentName="AgentHandlers" X="625" Y="225" Note=""/>
+        <Element ComponentName="AgentRegistrationClient" X="125" Y="775" Note=""/>
+        <Element ComponentName="AgentServiceCollectionSyncClient" X="550" Y="775" Note=""/>
+        <Element ComponentName="AgentSubscribers" X="975" Y="675" Note=""/>
+        <Element ComponentName="AgentinoLocalization" X="450" Y="425" Note=""/>
+        <Element ComponentName="AuthenticationManager" X="1050" Y="100" Note=""/>
+        <Element ComponentName="DatabaseEngine" X="725" Y="500" Note=""/>
+        <Element ComponentName="FeatureContainer" X="450" Y="325" Note=""/>
+        <Element ComponentName="HttpServerFramework" X="650" Y="50" Note=""/>
+        <Element ComponentName="JwtSessionController" X="1075" Y="200" Note=""/>
+        <Element ComponentName="ProcessHost" X="1075" Y="575" Note=""/>
+        <Element ComponentName="Repositories" X="800" Y="350" Note=""/>
+        <Element ComponentName="ServerSettings" X="125" Y="400" Note=""/>
+        <Element ComponentName="ServiceCollectionProvider" X="1000" Y="775" Note=""/>
+        <Element ComponentName="ServiceController" X="1075" Y="425" Note=""/>
+        <Element ComponentName="ServiceTypeCatalog" X="1075" Y="500" Note=""/>
+        <Element ComponentName="SuperuserProvider" X="1075" Y="325" Note=""/>
+        <Element ComponentName="TerminalController" X="125" Y="650" Note=""/>
         <Element ComponentName="WebSocketClient" X="600" Y="625" Note=""/>
-        <Element ComponentName="WebSocketServerFramework" X="725" Y="475" Note=""/>
+        <Element ComponentName="WebSocketServerFramework" X="300" Y="125" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="ServiceCollectionController">
+        <EmbededRegistry Id="WebSocketClient">
             <PositionMap>
-                <Element ComponentName="CheckPermissionOr" X="650" Y="450" Note=""/>
-                <Element ComponentName="CollectionHeadersProvider" X="250" Y="275" Note=""/>
-                <Element ComponentName="RepresentationService" X="625" Y="125" Note=""/>
-                <Element ComponentName="ServiceCollectionController" X="650" Y="275" Note=""/>
+                <Element ComponentName="SslConfigurationManager" X="525" Y="350" Note=""/>
+                <Element ComponentName="WebSocketClient" X="325" Y="200" Note=""/>
+                <Element ComponentName="WebSocketServlet" X="325" Y="500" Note=""/>
+                <Element ComponentName="WorkerManager" X="725" Y="200" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
@@ -51,11 +51,12 @@
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
-        <EmbededRegistry Id="WebSocketClient">
+        <EmbededRegistry Id="ServiceCollectionController">
             <PositionMap>
-                <Element ComponentName="WebSocketClient" X="325" Y="200" Note=""/>
-                <Element ComponentName="WebSocketServlet" X="325" Y="500" Note=""/>
-                <Element ComponentName="WorkerManager" X="725" Y="200" Note=""/>
+                <Element ComponentName="CheckPermissionOr" X="650" Y="450" Note=""/>
+                <Element ComponentName="CollectionHeadersProvider" X="250" Y="275" Note=""/>
+                <Element ComponentName="RepresentationService" X="625" Y="125" Note=""/>
+                <Element ComponentName="ServiceCollectionController" X="650" Y="275" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

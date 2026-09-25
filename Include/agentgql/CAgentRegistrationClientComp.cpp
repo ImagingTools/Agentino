@@ -6,6 +6,7 @@
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtCore/QSysInfo>
+#include <QtCore/QUrl>
 #include <QtNetwork/QHostInfo>
 
 // ImtCore includes
@@ -79,15 +80,17 @@ void CAgentRegistrationClientComp::Announce()
 
 	// This agent's own advertised address, as configured (see ServerConnectionInterface in
 	// ServerSettings.acc) - never hardcoded, since it differs per deployment and per agent.
-	const QString host = m_serverConnectionInterfaceCompPtr->GetHost();
-	const int httpPort = m_serverConnectionInterfaceCompPtr->GetPort(imtcom::IServerConnectionInterface::PT_HTTP);
-	const int wsPort = m_serverConnectionInterfaceCompPtr->GetPort(imtcom::IServerConnectionInterface::PT_WEBSOCKET);
+	// GetUrl() picks http/ws vs. https/wss from the interface's CF_SECURE flag.
+	QUrl httpUrl;
+	m_serverConnectionInterfaceCompPtr->GetUrl(imtcom::IServerConnectionInterface::PT_HTTP, httpUrl);
+	QUrl webSocketUrl;
+	m_serverConnectionInterfaceCompPtr->GetUrl(imtcom::IServerConnectionInterface::PT_WEBSOCKET, webSocketUrl);
 
 	QJsonObject item;
 	item.insert("name", name);
 	item.insert("computerName", name);
-	item.insert("httpUrl", QStringLiteral("http://%1:%2").arg(host).arg(httpPort));
-	item.insert("webSocketUrl", QStringLiteral("http://%1:%2").arg(host).arg(wsPort));
+	item.insert("httpUrl", httpUrl.toString());
+	item.insert("webSocketUrl", webSocketUrl.toString());
 	item.insert("version", version);
 	item.insert("os", QSysInfo::prettyProductName());
 

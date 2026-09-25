@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="5423" Description="ACF"/>
-            <Version Id="1" Number="2252" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="395264" Description="Qt Framework"/>
+            <Version Id="0" Number="6556" Description="ACF"/>
+            <Version Id="1" Number="2449" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="396034" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
@@ -19,12 +19,6 @@
         <Element ComponentName="ServiceCommands" X="1075" Y="150" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
-        <EmbededRegistry Id="AgentCommands">
-            <PositionMap>
-                <Element ComponentName="StandardDocumentCommandsController" X="575" Y="350" Note=""/>
-            </PositionMap>
-            <EmbeddedRegistries/>
-        </EmbededRegistry>
         <EmbededRegistry Id="ServiceCommands">
             <PositionMap>
                 <Element ComponentName="CheckPermissionOr" X="700" Y="225" Note=""/>
@@ -44,11 +38,22 @@
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>
+        <EmbededRegistry Id="AgentCommands">
+            <PositionMap>
+                <Element ComponentName="StandardDocumentCommandsController" X="575" Y="350" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
         <EmbededRegistry Id="ServiceCollectionCommands">
             <PositionMap>
+                <Element ComponentName="Approve" X="450" Y="300" Note=""/>
                 <Element ComponentName="CommandsController" X="550" Y="75" Note=""/>
-                <Element ComponentName="Services" X="600" Y="225" Note=""/>
-                <Element ComponentName="StandardCollectionCommands" X="225" Y="200" Note=""/>
+                <Element ComponentName="Reject" X="450" Y="425" Note=""/>
+                <Element ComponentName="Reset" X="800" Y="575" Note=""/>
+                <Element ComponentName="Resume" X="800" Y="300" Note=""/>
+                <Element ComponentName="Revoke" X="450" Y="575" Note=""/>
+                <Element ComponentName="StandardCollectionCommands" X="175" Y="300" Note=""/>
+                <Element ComponentName="Suspend" X="800" Y="450" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
         </EmbededRegistry>

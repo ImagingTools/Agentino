@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6560" Description="ACF"/>
+            <Version Id="0" Number="6556" Description="ACF"/>
             <Version Id="1" Number="2449" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="395264" Description="Qt Framework"/>
+            <Version Id="1023" Number="396034" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -28,7 +28,8 @@
                     <AttributeInfo Id="ComponentsToInitialize" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
-                                <Value>Server/AutoPersistence</Value>
+                                <Value>Server/AgentCollectionFileAutoPersistence</Value>
+                                <Value>Server/EnrollmentFileAutoPersistence</Value>
                                 <Value>Server</Value>
                                 <Value>Server/AgentCollection</Value>
                                 <Value>Server/DatabaseEngine</Value>
@@ -36,7 +37,6 @@
                                 <Value>Server/HttpServerFramework</Value>
                                 <Value>Server/WebSocketServerFramework</Value>
                                 <Value>Server/AgentChangeObserver</Value>
-                                <Value>Server/EnrollmentFileAutoPersistence</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

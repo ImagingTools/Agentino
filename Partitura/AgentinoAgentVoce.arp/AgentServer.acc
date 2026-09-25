@@ -2,9 +2,9 @@
 <Acf>
     <AcfHeader>
         <VersionInfos>
-            <Version Id="0" Number="6560" Description="ACF"/>
+            <Version Id="0" Number="6556" Description="ACF"/>
             <Version Id="1" Number="2449" Description="ACF-Solutions"/>
-            <Version Id="1023" Number="395264" Description="Qt Framework"/>
+            <Version Id="1023" Number="396034" Description="Qt Framework"/>
         </VersionInfos>
     </AcfHeader>
     <Description></Description>
@@ -17,7 +17,7 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="AgentinoConnectionInterface" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings/AgentinoConnectionInterface"/>
+                        <Data IsEnabled="true" Value="ServerSettings/AgentinoServerConnectionInterface"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
                         <Data IsEnabled="false"/>
@@ -26,7 +26,7 @@
                         <Data IsEnabled="true" Value="AuthenticationManager"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings/ClientId2"/>
+                        <Data IsEnabled="true" Value="ServerSettings/ClientId"/>
                     </AttributeInfo>
                     <AttributeInfo Id="DatabaseConnectionChecker" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="DatabaseEngine"/>
@@ -73,6 +73,9 @@
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="AgentinoLocalization"/>
                     </AttributeInfo>
@@ -107,7 +110,7 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings/ClientId2"/>
+                        <Data IsEnabled="true" Value="ServerSettings/ClientId"/>
                     </AttributeInfo>
                     <AttributeInfo Id="GqlClient" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketClient"/>
@@ -117,6 +120,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/ServerConnectionInterface"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
                     </AttributeInfo>
                     <AttributeInfo Id="WebLoginStatus" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketClient"/>
@@ -128,7 +134,7 @@
             <Data IsEnabled="true" Flags="1">
                 <AttributeInfoMap>
                     <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings/ClientId2"/>
+                        <Data IsEnabled="true" Value="ServerSettings/ClientId"/>
                     </AttributeInfo>
                     <AttributeInfo Id="GqlClient" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketClient"/>
@@ -138,6 +144,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -168,6 +177,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="TopologyCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/TopologyCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
                     </AttributeInfo>
                     <AttributeInfo Id="WebSocketClient" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketClient"/>
@@ -206,6 +218,9 @@
                     <AttributeInfo Id="SlaveJwtSessionController" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="JwtSessionController"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="UserCollection" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/UserRepository"/>
                     </AttributeInfo>
@@ -226,6 +241,9 @@
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -249,6 +267,12 @@
                     </AttributeInfo>
                     <AttributeInfo Id="ServerInterface" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/ServerConnectionInterface"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="SslConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/FileBasedSslConfiguration"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -280,6 +304,9 @@
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
+                    </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
         </Element>
@@ -298,13 +325,16 @@
                     <AttributeInfo Id="RuntimeStatus" Type="Reference" ExportId="RuntimeStatus">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
         </Element>
-        <Element Id="ServerSettings" PackageId="AgentinoVoce" ComponentId="ServerSettings">
+        <Element Id="ServerSettings" PackageId="AgentinoAgentVoce" ComponentId="AgentSettings">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
                     <AttributeInfo Id="AgentinoServerHttpPort" Type="Integer" ExportId="AgentinoServerHttpPort">
@@ -317,16 +347,13 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="DefaultHttpPort" Type="Integer" ExportId="DefaultHttpPort">
-                        <Data IsEnabled="true" Value="7222"/>
+                        <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="DefaultPath" Type="String" ExportId="DefaultPath">
-                        <Data IsEnabled="true" Value="Agentino/Agentino Agent/AgentinoAgentSettings.xml"/>
+                        <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="DefaultWebSocketPort" Type="Integer" ExportId="DefaultWebSocketPort">
-                        <Data IsEnabled="true" Value="7223"/>
-                    </AttributeInfo>
-                    <AttributeInfo Id="LocationType" Type="Integer" ExportId="">
-                        <Data IsEnabled="true" Value="104"/>
+                        <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
@@ -352,8 +379,14 @@
                     <AttributeInfo Id="ServiceRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
+                        <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -382,6 +415,9 @@
                     <AttributeInfo Id="StopTimeoutMs" Type="Integer" ExportId="">
                         <Data IsEnabled="true" Value="10000"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
+                    </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
         </Element>
@@ -390,6 +426,9 @@
                 <AttributeInfoMap>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
@@ -422,7 +461,7 @@
                         <Data IsEnabled="true" Value="AuthenticationManager"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings/ClientId2"/>
+                        <Data IsEnabled="true" Value="ServerSettings/ClientId"/>
                     </AttributeInfo>
                     <AttributeInfo Id="GqlSubscriberControllers" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
@@ -446,8 +485,17 @@
                     <AttributeInfo Id="RequestHandler" Type="Factory" ExportId="">
                         <Data IsEnabled="true" Value="AgentHandlers"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="RuntimeStatus" Type="Reference" ExportId="RuntimeStatus">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="ServerSettings/AgentinoConnectionInterface"/>
+                        <Data IsEnabled="true" Value="ServerSettings/AgentinoServerConnectionInterface"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="SslConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/FileBasedSslConfiguration"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
                     </AttributeInfo>
                     <AttributeInfo Id="WebSocketProtocolEngine" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="WebSocketServerFramework"/>
@@ -480,6 +528,12 @@
                     </AttributeInfo>
                     <AttributeInfo Id="RequestHandler" Type="Factory" ExportId="">
                         <Data IsEnabled="true" Value="AgentHandlers"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="SslConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/FileBasedSslConfiguration"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
                     </AttributeInfo>
                     <AttributeInfo Id="WebServerConnectionInterface" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/ServerConnectionInterface"/>
@@ -611,6 +665,9 @@
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
@@ -623,7 +680,6 @@
                     <Interface InterfaceId="istd::IPolymorphic" ComponentId="FileAutoPersistence/AutoPersistence"/>
                 </ExportedInterfaces>
                 <ExportedComponents>
-                    <Component ExportedId="FileAutoPersistence" ComponentId="FileAutoPersistence"/>
                     <Component ExportedId="RoleRepository" ComponentId="UserLocalRepositories/RoleRepository"/>
                     <Component ExportedId="ServiceCollection" ComponentId="ServiceCollection"/>
                     <Component ExportedId="ServiceCollectionAutoPersistence" ComponentId="FileAutoPersistence/AutoPersistence"/>
@@ -723,7 +779,13 @@
                                 <AttributeInfo Id="ServiceFactory" Type="Factory" ExportId="">
                                     <Data IsEnabled="true" Value="RepresentationService"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>
@@ -741,6 +803,18 @@
         <EmbeddedRegistry Id="WebSocketClient">
             <Data Description="" Keywords="">
                 <ElementsList>
+                    <Element Id="SslConfigurationManager" PackageId="ImtComPck" ComponentId="SslConfigurationManager">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
                     <Element Id="WebSocketClient" PackageId="ImtClientGqlPck" ComponentId="WebSocketClient">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
@@ -773,6 +847,15 @@
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServerRequestHandler" Type="Reference" ExportId="">
                                     <Data IsEnabled="true" Value="WebSocketServlet"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="SslConfiguration" Type="Reference" ExportId="SslConfiguration">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="SslConfigurationManager" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="SslConfigurationManager"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
                                 </AttributeInfo>
                             </AttributeInfoMap>
                         </Data>
@@ -852,6 +935,7 @@
         <Component ExportedId="ServiceController" ComponentId="ServiceController"/>
         <Component ExportedId="ServiceTypeCatalog" ComponentId="ServiceTypeCatalog"/>
         <Component ExportedId="TerminalSessionManager" ComponentId="TerminalController/TerminalSessionManager"/>
+        <Component ExportedId="TracingConfiguration" ComponentId="ServerSettings/TracingConfiguration"/>
         <Component ExportedId="WebSocketServerFramework" ComponentId="WebSocketServerFramework"/>
     </ExportedComponents>
 </Acf>

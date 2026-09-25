@@ -3,30 +3,31 @@ import Acf 1.0
 import com.imtcore.imtqml 1.0
 
 Item {
-    id: window;
+	id: window;
 
-    anchors.fill: parent;
+	anchors.fill: parent;
 
-    Component {
-        id: topRightPanelDecoratorComp;
-        AgentTopRightPanelDecorator {}
-    }
+	Component {
+		id: topRightPanelDecoratorComp;
+		AgentTopRightPanelDecorator {}
+	}
 
-    AgentinoMain {
-        id: application;
+	AgentinoMain {
+		id: application;
 
-        anchors.fill: parent;
+		anchors.fill: parent;
 
-        serverReady: true
+		serverReady: true
+		useWebSocketProxy: true
 
-        Component.onCompleted: {
-            designProvider.setDesignSchema("Light");
+		Component.onCompleted: {
+			designProvider.setDesignSchema("Light");
 
-            Style.topRightPanelDecorator = topRightPanelDecoratorComp;
-        }
+			Style.topRightPanelDecorator = topRightPanelDecoratorComp;
+		}
 
-        function getServerUrl(){
-            return context.location;
-        }
-    }
+		function getServerUrl(){
+			return context.location;
+		}
+	}
 }

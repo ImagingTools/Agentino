@@ -3,24 +3,24 @@ import Acf 1.0
 import com.imtcore.imtqml 1.0
 
 Item {
-    id: window;
+	id: window;
 
-    anchors.fill: parent;
+	anchors.fill: parent;
 
-    AgentinoMain {
-        id: application;
+	AgentinoMain {
+		id: application;
 
-        anchors.fill: parent;
+		anchors.fill: parent;
 
-        serverReady: true
+		serverReady: true
 
-        Component.onCompleted: {
-            designProvider.setDesignSchema("Light");
-            context.application = ["ImtCore", "Agentino"];
-        }
+		Component.onCompleted: {
+			designProvider.setDesignSchema("Light");
+			context.application = ["ImtCore", "Agentino"];
+		}
 
-        function getServerUrl(){
-            return context.location;
-        }
-    }
+		function getServerUrl(){
+			return context.location;
+		}
+	}
 }
