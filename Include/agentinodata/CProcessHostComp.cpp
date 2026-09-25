@@ -431,8 +431,15 @@ void CProcessHostComp::ClearChildEntry(const QByteArray& serviceId, bool killSpa
 #ifdef Q_OS_WIN
 			child.process->kill();
 #else
-			// Kill the whole process group: see TerminateSpawnedProcess.
-			::kill(static_cast<pid_t>(-child.pid), SIGKILL);
+			if (child.pid > 0){
+				// Kill the whole process group: see TerminateSpawnedProcess.
+				::kill(static_cast<pid_t>(-child.pid), SIGKILL);
+			}
+			else {
+				// PID not recorded yet (race with Spawn() still starting) - kill(0, ...)
+				// would hit our own process group, so signal just this process instead.
+				child.process->kill();
+			}
 #endif
 			child.process->waitForFinished(1000);
 		}
@@ -489,17 +496,33 @@ bool CProcessHostComp::TerminateSpawnedProcess(Child& child, bool force, QString
 	// started as its own session/group leader (setsid in Spawn's child-process
 	// modifier), so a start script or service that forks a background worker
 	// without detaching itself is still in the same group and dies with it.
-	const pid_t groupId = static_cast<pid_t>(-child.pid);
-	if (::kill(groupId, force ? SIGKILL : SIGTERM) != 0 && errno != ESRCH){
-		errorMessage = QStringLiteral("kill(%1) failed: %2").arg(groupId).arg(errno);
-		return false;
+	// child.pid can still be 0 here if this races with Spawn() before the pid is
+	// recorded - kill(0, ...) would hit our own process group, so fall back to
+	// signalling just this process in that case.
+	if (child.pid > 0){
+		const pid_t groupId = static_cast<pid_t>(-child.pid);
+		if (::kill(groupId, force ? SIGKILL : SIGTERM) != 0 && errno != ESRCH){
+			errorMessage = QStringLiteral("kill(%1) failed: %2").arg(groupId).arg(errno);
+			return false;
+		}
+	}
+	else if (force){
+		child.process->kill();
+	}
+	else {
+		child.process->terminate();
 	}
 	if (!child.process->waitForFinished(force ? 2000 : 500)){
 		if (force){
 			errorMessage = QStringLiteral("Process %1 did not stop after kill").arg(child.pid);
 			return false;
 		}
-		::kill(groupId, SIGKILL);
+		if (child.pid > 0){
+			::kill(static_cast<pid_t>(-child.pid), SIGKILL);
+		}
+		else {
+			child.process->kill();
+		}
 		if (!child.process->waitForFinished(2000)){
 			errorMessage = QStringLiteral("Process %1 did not stop after terminate and kill").arg(child.pid);
 			return false;
