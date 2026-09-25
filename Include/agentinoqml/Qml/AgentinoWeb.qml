@@ -14,6 +14,7 @@ Window {
 		anchors.fill: parent;
 
 		serverReady: true
+		useWebSocketProxy: true
 
 		Component.onCompleted: {
 			designProvider.setDesignSchema("Light");
