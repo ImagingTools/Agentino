@@ -207,14 +207,15 @@ function Start-AgentinoTestServer {
 
 function Initialize-AgentinoTestAgentSettings {
     # NOT next to the exe. The agent's settings component is ifile::CSystemLocationComp with
-    # LocationType 104 = SL_SHARED_COMPANY_DIRECTORY, which on Windows resolves to
-    # "C:/Users/Public/<CompanyName>" (CompanyName is "ImagingTools", from the .acc's Application
-    # element) - so this is the ONLY path the agent reads, and a file written anywhere else is
+    # LocationType 105 = SL_SHARED_APPDATA_DIRECTORY, which on Windows resolves to
+    # "C:/Users/Public/<CompanyName>/<ProductName>/<ApplicationName>" ("ImagingTools/Agentino/
+    # Agentino Agent Test", from the .acc's Application element; see AgentSettings.acc and the
+    # DefaultPath in AgentinoAgentTest.acc) - so this is the ONLY path the agent reads, and a file written anywhere else is
     # silently ignored. FileAutoPersistence loads it at startup and it OVERRIDES the ports compiled
     # into AgentinoAgentTest.acc, which is how a stale file pinned the agent to 7111/7112 while the
     # test server listened on 17111/17112 and nothing ever enrolled.
     $companyDirectory = Join-Path $env:PUBLIC "ImagingTools"
-    $settingsPath = Join-Path $companyDirectory "Agentino\Agentino Agent\AgentinoAgentTestSettings.xml"
+    $settingsPath = Join-Path $companyDirectory "Agentino\Agentino Agent Test\AgentinoAgentTestSettings.xml"
     $settingsDirectory = Split-Path -Parent $settingsPath
     New-Item -ItemType Directory -Path $settingsDirectory -Force | Out-Null
 
