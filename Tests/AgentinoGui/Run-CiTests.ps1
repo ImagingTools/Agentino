@@ -180,15 +180,19 @@ function Reset-AgentinoTestState {
         (Join-Path $companyDirectory "Agentino Server Test\agentino.sqlite"),
         (Join-Path $companyDirectory "Agentino Server Test\AgentCollection.xml"),
         (Join-Path $companyDirectory "Agentino Server Test\TopologyCollection.xml"),
-        (Join-Path $companyDirectory "Agentino Server\AgentEnrollment.xml"),
+        (Join-Path $companyDirectory "Agentino Server Test\AgentEnrollment.xml"),
+        # DefaultPath in AgentinoServerTest.acc still carries the old "Agentino/Agentino Server/" prefix.
+        (Join-Path $companyDirectory "Agentino Server Test\Agentino\Agentino Server\AgentinoServerTestSettings.xml"),
         (Join-Path $companyDirectory "Agentino Agent Test\ServicesSettings.xml"),
         (Join-Path $companyDirectory "Agentino Agent Test\TopologyCollection.xml")
     )
     foreach ($item in $staleItems) {
         if (-not (Test-Path $item)) { continue }
-        Copy-Item -Path $item -Destination (Join-Path $backupDirectory (Split-Path -Leaf $item)) -Force -ErrorAction SilentlyContinue
+        $label = $item.Substring($companyDirectory.Length + 1)
+        $backupName = $label -replace '[\\ ]', '_'
+        Copy-Item -Path $item -Destination (Join-Path $backupDirectory $backupName) -Force -ErrorAction SilentlyContinue
         Remove-Item -Path $item -Force -ErrorAction SilentlyContinue
-        Write-Host "  reset $(Split-Path -Leaf $item)"
+        Write-Host "  reset $label"
     }
     Write-Host "Previous contents backed up to $backupDirectory"
 }
