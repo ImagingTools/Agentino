@@ -1,33 +1,26 @@
 TARGET = agentinoqml
 
 include($(ACFDIR)/Config/QMake/GeneralConfig.pri)
-include($(IMTCOREDIR)/Config/QMake/QmlControls.pri)
+include($(IMTCOREDIR)/Config/QMake/WebCompiler.pri)
 
 INCLUDEPATH += $$AUXINCLUDEPATH/GeneratedFiles
 
 buildwebdir = $$PWD/../../../Bin/web
 
-imtcoredir = $(IMTCOREDIR)
+imtcoredir = $$(IMTCOREDIR)
 
-prepareWebQml($$buildwebdir)
+# root of the build tree, used by agentino.json (BUILD_FOLDER) to locate generation_info.json of the generated SDL QML modules
+buildfolder = $$clean_path($$OUT_PWD/../../..)
+win32{
+	buildfolder ~= s,/,\\,g
+	WEB_COMMAND = set \"BUILD_FOLDER=$$buildfolder\"
+}
+else{
+	WEB_COMMAND = export BUILD_FOLDER=$$shell_quote($$buildfolder)
+}
 
-# copy project qml from to
-copyToWebDir($$PWD/../Qml/, $$buildwebdir/src)
-copyToWebDir($$PWD/../Resources/html/, $$buildwebdir/Resources)
-
-# copy translations
-copyToWebDir($$PWD/../../../Impl/AgentinoLoc/Translations/, $$buildwebdir/Resources/Translations)
-copyToWebDir($$imtcoredir/Impl/ImtCoreLoc/Translations/, $$buildwebdir/Resources/Translations)
-
-copyToWebDir($$imtcoredir/Include/imtstylecontrolsqml/Qml/Fonts/, $$buildwebdir/Resources)
-copyToWebDir($$imtcoredir/Include/imtstylecontrolsqml/Qml/Acf/, $$buildwebdir/src/Acf)
-
-copyToWebDir($$imtcoredir/../Agentino/$$AUXINCLUDEDIR/GeneratedFiles/agentinodata/Ddl/Qml/agentino, $$buildwebdir/src/agentino)
-copyToWebDir($$imtcoredir/../Agentino/$$AUXINCLUDEDIR/GeneratedFiles/agentinosdl/SDL/1.0/QML/agentinoAgentsSdl, $$buildwebdir/src/agentinoAgentsSdl)
-copyToWebDir($$imtcoredir/../Agentino/$$AUXINCLUDEDIR/GeneratedFiles/agentinosdl/SDL/1.0/QML/agentinoServicesSdl, $$buildwebdir/src/agentinoServicesSdl)
-copyToWebDir($$imtcoredir/../Agentino/$$AUXINCLUDEDIR/GeneratedFiles/agentinosdl/SDL/1.0/QML/agentinoTopologySdl, $$buildwebdir/src/agentinoTopologySdl)
-
-compyleWeb($$buildwebdir, "agentino")
+# compile web application with the JQML v3 compiler, QML sources are taken from the directories listed in agentino.json
+jqCompileWeb($$buildwebdir, $$PWD/../agentino.json, $$PWD/../Qml/AgentinoWeb.qml, "/Agentino/Views/", "../Icons/AgentinoIcon.svg", $$PWD/../../../Impl/AgentinoLoc/Translations $$imtcoredir/Impl/ImtCoreLoc/Translations)
 
 GENERATED_RESOURCES = $$_PRO_FILE_PWD_/../empty
 
