@@ -2,6 +2,12 @@
 #pragma once
 
 
+// imtbase/TPluginManager.h includes <windows.h>: keep it lean, otherwise DDEML macros
+// (e.g. ST_CONNECTED) leak into the package registry and break other headers there.
+#if defined(_WIN32) && !defined(WIN32_LEAN_AND_MEAN)
+#	define WIN32_LEAN_AND_MEAN
+#endif
+
 // Qt includes
 #include <QtCore/QMutex>
 

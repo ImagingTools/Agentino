@@ -21,19 +21,9 @@
 #endif
 
 #if defined(AGENTINO_TERMINAL_WIN)
-#	ifndef WIN32_LEAN_AND_MEAN
-#		define WIN32_LEAN_AND_MEAN
-#	endif
-	// ConPTY (CreatePseudoConsole etc.) is only declared for Windows 10+; match what
-	// Qt's own qt_windows.h would set, in case this header is included before any Qt
-	// header that pulls it in first.
-#	ifndef WINVER
-#		define WINVER 0x0A00
-#	endif
-#	ifndef _WIN32_WINNT
-#		define _WIN32_WINNT 0x0A00
-#	endif
-#	include <windows.h>
+	// <windows.h> is intentionally not included here: this header is pulled into the
+	// package headers and its macros (e.g. DDEML's ST_CONNECTED) would break other
+	// headers of the same translation unit. Win32 handles are kept as opaque Qt::HANDLE.
 #	include <QtCore/QThread>
 #	include <QtCore/QWinEventNotifier>
 #else
@@ -66,7 +56,7 @@ class CTerminalPtyReaderThread: public QThread
 {
 	Q_OBJECT
 public:
-	explicit CTerminalPtyReaderThread(HANDLE pipeReadHandle, QObject* parentPtr = nullptr);
+	explicit CTerminalPtyReaderThread(Qt::HANDLE pipeReadHandle, QObject* parentPtr = nullptr);
 
 Q_SIGNALS:
 	void DataRead(const QByteArray& data);
@@ -77,7 +67,7 @@ protected:
 	virtual void run() override;
 
 private:
-	HANDLE m_pipeReadHandle;
+	Qt::HANDLE m_pipeReadHandle;
 };
 
 #endif // Q_OS_WIN
@@ -172,10 +162,10 @@ private:
 		bool outputFlushScheduled = false;
 
 #if defined(AGENTINO_TERMINAL_WIN)
-		HPCON hPC = nullptr;
-		PROCESS_INFORMATION processInfo{};
-		HANDLE pipeInWrite = nullptr;   // agent -> child stdin
-		HANDLE pipeOutRead = nullptr;   // child stdout/stderr -> agent
+		Qt::HANDLE hPC = nullptr;           // HPCON
+		Qt::HANDLE processHandle = nullptr;
+		Qt::HANDLE pipeInWrite = nullptr;   // agent -> child stdin
+		Qt::HANDLE pipeOutRead = nullptr;   // child stdout/stderr -> agent
 		istd::TDelPtr<CTerminalPtyReaderThread> readerThreadPtr;
 		istd::TDelPtr<QWinEventNotifier> exitNotifierPtr;
 		// Both must be true before the session is finalized as finished - the reader
