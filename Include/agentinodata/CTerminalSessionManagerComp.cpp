@@ -15,6 +15,17 @@
 #include <istd/CChangeNotifier.h>
 
 #if defined(Q_OS_WIN)
+#	ifndef WIN32_LEAN_AND_MEAN
+#		define WIN32_LEAN_AND_MEAN
+#	endif
+	// ConPTY (CreatePseudoConsole etc.) is only declared for Windows 10+.
+#	ifndef WINVER
+#		define WINVER 0x0A00
+#	endif
+#	ifndef _WIN32_WINNT
+#		define _WIN32_WINNT 0x0A00
+#	endif
+#	include <windows.h>
 #	include <cstdlib>
 #else
 #	include <errno.h>
@@ -40,7 +51,7 @@ namespace agentinodata
 
 // public methods (CTerminalPtyReaderThread)
 
-CTerminalPtyReaderThread::CTerminalPtyReaderThread(HANDLE pipeReadHandle, QObject* parentPtr)
+CTerminalPtyReaderThread::CTerminalPtyReaderThread(Qt::HANDLE pipeReadHandle, QObject* parentPtr)
 	:QThread(parentPtr)
 	,m_pipeReadHandle(pipeReadHandle)
 {
@@ -500,7 +511,7 @@ QByteArray CTerminalSessionManagerComp::OpenSessionOnOwnThread(ShellType shellTy
 	sessionPtr->shellType = shellType;
 	sessionPtr->lastActivity = QDateTime::currentDateTimeUtc();
 	sessionPtr->hPC = hPC;
-	sessionPtr->processInfo = processInfo;
+	sessionPtr->processHandle = processInfo.hProcess;
 	sessionPtr->pipeInWrite = pipeInWrite;
 	sessionPtr->pipeOutRead = pipeOutRead;
 
@@ -547,7 +558,7 @@ QByteArray CTerminalSessionManagerComp::OpenSessionOnOwnThread(ShellType shellTy
 		}
 		liveSessionPtr->exitNotifierPtr->setEnabled(false);
 		DWORD winExitCode = 0;
-		::GetExitCodeProcess(liveSessionPtr->processInfo.hProcess, &winExitCode);
+		::GetExitCodeProcess(liveSessionPtr->processHandle, &winExitCode);
 		liveSessionPtr->processExited = true;
 		liveSessionPtr->exitCode = int(winExitCode);
 		FinalizeIfDone(sessionId, *liveSessionPtr, int(winExitCode));
@@ -592,15 +603,15 @@ void CTerminalSessionManagerComp::RemoveSession(const QByteArray& sessionId)
 		sessionPtr->readerThreadPtr.SetPtr(nullptr);
 	}
 
-	if (sessionPtr->processInfo.hProcess != nullptr){
+	if (sessionPtr->processHandle != nullptr){
 		DWORD winExitCode = STILL_ACTIVE;
-		::GetExitCodeProcess(sessionPtr->processInfo.hProcess, &winExitCode);
+		::GetExitCodeProcess(sessionPtr->processHandle, &winExitCode);
 		if (winExitCode == STILL_ACTIVE){
 			// ConPTY teardown above did not end it in time - hard fallback.
-			::TerminateProcess(sessionPtr->processInfo.hProcess, 1);
+			::TerminateProcess(sessionPtr->processHandle, 1);
 		}
-		::CloseHandle(sessionPtr->processInfo.hProcess);
-		sessionPtr->processInfo.hProcess = nullptr;
+		::CloseHandle(sessionPtr->processHandle);
+		sessionPtr->processHandle = nullptr;
 	}
 
 	delete sessionPtr;
