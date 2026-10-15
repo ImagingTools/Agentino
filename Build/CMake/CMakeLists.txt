@@ -34,6 +34,12 @@ if(USE_FIND_PACKAGE)
 	message("NODE_EXE found: ${NODE_EXE}")
 endif()
 
+# Exclude rarely used Windows APIs (DDEML etc.) from <windows.h>: its macros, e.g. ST_CONNECTED,
+# clash with identifiers in ImtCore headers that end up in the same generated registry file.
+if(WIN32)
+	add_compile_definitions(WIN32_LEAN_AND_MEAN)
+endif()
+
 set(INCLUDE_DIR		"${AGENTINODIR}/Include")
 set(IMPL_DIR		"${AGENTINODIR}/Impl")
 set(SDL_DIR			"${AGENTINODIR}/Sdl")
