@@ -68,7 +68,8 @@ public:
 		MI_AGENT_COLLECTION = 0,
 		MI_AGENT_STATUS_COLLECTION,
 		MI_LOGIN_STATUS,
-		MI_SERVICE_STATUS_COLLECTION
+		MI_SERVICE_STATUS_COLLECTION,
+		MI_ENROLLMENT
 	};
 
 	I_BEGIN_COMPONENT(CAgentChangeObserverComp);
@@ -88,6 +89,8 @@ public:
 		I_ASSIGN_TO(m_serviceStatusModelCompPtr, m_serviceStatusCollectionCompPtr, false);
 		I_ASSIGN(m_serviceSynchronizerCompPtr, "ServiceSynchronizer", "Refreshes the mirror on agent service-collection changes", false, "ServiceSynchronizer");
 		I_ASSIGN(m_enrollmentControllerCompPtr, "EnrollmentController", "Live-path gate: only Approved agents ingest", false, "EnrollmentStore");
+		// An agent approved while connected gets its live subscriptions only from this notification.
+		I_ASSIGN_TO(m_enrollmentModelCompPtr, m_enrollmentControllerCompPtr, false);
 		// Absorbed from CAgentConnectionObserverComp: the same component now also reacts to
 		// agent WS connect/disconnect (single agent-change observer).
 		I_ASSIGN(m_loginStatusProviderCompPtr, "LoginStatusProvider", "Agent WS connection status (connect/disconnect)", false, "LoginStatusProvider");
@@ -191,6 +194,7 @@ private:
 	I_REF(imtclientgql::IGqlClient, m_gqlClientCompPtr);
 	I_REF(IServiceCollectionSynchronizer, m_serviceSynchronizerCompPtr);
 	I_REF(IEnrollmentController, m_enrollmentControllerCompPtr);
+	I_REF(imod::IModel, m_enrollmentModelCompPtr);
 	I_REF(imtcom::IConnectionStatusProvider, m_loginStatusProviderCompPtr);
 	I_REF(imod::IModel, m_loginStatusModelCompPtr);
 	I_REF(agentinodata::IServiceManager, m_serviceManagerCompPtr);

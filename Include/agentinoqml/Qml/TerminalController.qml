@@ -27,6 +27,9 @@ QtObject {
 	// nextSequence reaches them, so output is always applied in order exactly once; see
 	// applyOutputPayload/drainPendingChunks.
 	property var pendingChunks: ({});
+	// Keystrokes typed while the previous SendTerminalRawInput is still in flight.
+	property string pendingRawInput: "";
+	property bool rawInputInFlight: false;
 	property bool busy: false;
 	readonly property bool requestInFlight: shellTypesRequest.state === "Loading"
 									|| openRequest.state === "Loading"
@@ -105,7 +108,24 @@ QtObject {
 		if (root.sessionId.length === 0 || root.connectionLost || root.closeInFlight || data.length === 0){
 			return;
 		}
+		// Parallel requests reach the agent in any order, so keystrokes go one request at a time.
+		root.pendingRawInput += data;
+		root.flushRawInput();
+	}
+
+	function flushRawInput(){
+		if (root.rawInputInFlight || root.pendingRawInput.length === 0 || root.sessionId.length === 0){
+			return;
+		}
+		let data = root.pendingRawInput;
+		root.pendingRawInput = "";
+		root.rawInputInFlight = true;
 		rawInputRequest.send({"sessionId": root.sessionId, "data": data});
+	}
+
+	function finishRawInput(){
+		root.rawInputInFlight = false;
+		root.flushRawInput();
 	}
 
 	function interruptSession(){
@@ -436,6 +456,8 @@ QtObject {
 		root.sessionId = "";
 		root.nextSequence = 0;
 		root.pendingChunks = ({});
+		root.pendingRawInput = "";
+		root.rawInputInFlight = false;
 		root.sessionClosed(exitCode);
 	}
 
@@ -579,10 +601,12 @@ QtObject {
 			if (data.containsKey("accepted") && data.getData("accepted") !== true){
 				root.errorOccurred(qsTr("The agent rejected terminal input."));
 			}
+			root.finishRawInput();
 		}
 
 		function onError(message, type){
 			root.errorOccurred(message);
+			root.finishRawInput();
 		}
 	}
 

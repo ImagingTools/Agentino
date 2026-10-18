@@ -711,6 +711,17 @@ void CAgentChangeObserverComp::OnModelChanged(int modelId, const istd::IChangeab
 		return;
 	}
 
+	if (modelId == MI_ENROLLMENT){
+		// Approve/revoke arrive on a GQL worker; subscriptions are (un)registered on this thread.
+		QMetaObject::invokeMethod(
+					this,
+					[this]() {
+						RefreshSubscriptionsFromAgentCollection(false);
+					},
+					Qt::QueuedConnection);
+		return;
+	}
+
 	if (modelId == MI_AGENT_STATUS_COLLECTION){
 		// Agent went online/offline — re-open live subscriptions while the WS is up.
 		if (!m_agentStatusCollectionCompPtr.IsValid()){
@@ -784,6 +795,10 @@ void CAgentChangeObserverComp::OnComponentCreated()
 	// subscribers always hear about it - see the ModelId enum / class doc comment.
 	if (m_serviceStatusModelCompPtr.IsValid()){
 		RegisterModel(m_serviceStatusModelCompPtr.GetPtr(), MI_SERVICE_STATUS_COLLECTION);
+	}
+
+	if (m_enrollmentModelCompPtr.IsValid()){
+		RegisterModel(m_enrollmentModelCompPtr.GetPtr(), MI_ENROLLMENT);
 	}
 
 	// Agents already present in the mirror (DB load / already connected).

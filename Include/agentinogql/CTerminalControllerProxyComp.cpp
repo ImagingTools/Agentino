@@ -15,6 +15,10 @@ namespace agentinogql
 {
 
 
+QMutex CTerminalControllerProxyComp::s_sessionOwnersMutex;
+QMap<QByteArray, QByteArray> CTerminalControllerProxyComp::s_sessionOwners;
+
+
 // protected methods
 
 // reimplemented (sdl::V1_0::agentino::CTerminalGqlHandlerCompBase)
@@ -49,8 +53,8 @@ sdl::V1_0::agentino::CTerminalOutputResponse CTerminalControllerProxyComp::OnGet
 	if (retVal.running.HasValue() && !retVal.running.GetValue()){
 		const QByteArray sessionId = ExtractSessionId(gqlRequest);
 		if (!sessionId.isEmpty()){
-			QMutexLocker locker(&m_sessionOwnersMutex);
-			m_sessionOwners.remove(sessionId);
+			QMutexLocker locker(&s_sessionOwnersMutex);
+			s_sessionOwners.remove(sessionId);
 		}
 	}
 
@@ -71,8 +75,8 @@ sdl::V1_0::agentino::COpenTerminalSessionResponse CTerminalControllerProxyComp::
 	// against this entry (CheckSessionOwnership).
 	if (errorMessage.isEmpty() && retVal.sessionId.HasValue() && !retVal.sessionId.GetValue().isEmpty()){
 		const QByteArray userId = ExtractUserId(gqlRequest);
-		QMutexLocker locker(&m_sessionOwnersMutex);
-		m_sessionOwners.insert(retVal.sessionId.GetValue(), userId);
+		QMutexLocker locker(&s_sessionOwnersMutex);
+		s_sessionOwners.insert(retVal.sessionId.GetValue(), userId);
 	}
 
 	return retVal;
@@ -158,8 +162,8 @@ sdl::V1_0::agentino::CCloseTerminalSessionResponse CTerminalControllerProxyComp:
 	// forgetSession on a CloseTerminalSession error) - forget the owner now, not later.
 	const QByteArray sessionId = ExtractSessionId(gqlRequest);
 	if (!sessionId.isEmpty()){
-		QMutexLocker locker(&m_sessionOwnersMutex);
-		m_sessionOwners.remove(sessionId);
+		QMutexLocker locker(&s_sessionOwnersMutex);
+		s_sessionOwners.remove(sessionId);
 	}
 
 	return retVal;
@@ -226,10 +230,10 @@ bool CTerminalControllerProxyComp::CheckSessionOwnership(
 
 	const QByteArray callerUserId = ExtractUserId(gqlRequest);
 
-	QMutexLocker locker(&m_sessionOwnersMutex);
+	QMutexLocker locker(&s_sessionOwnersMutex);
 
-	const auto it = m_sessionOwners.constFind(sessionId);
-	if (it == m_sessionOwners.constEnd()){
+	const auto it = s_sessionOwners.constFind(sessionId);
+	if (it == s_sessionOwners.constEnd()){
 		// Fail-closed: a sessionId this instance never recorded (already closed, evicted,
 		// or from before a server restart) must be refused, not merely warned about - the
 		// alternative is indistinguishable from "anyone who guesses/logs a sessionId can

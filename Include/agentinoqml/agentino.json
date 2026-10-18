@@ -4,5 +4,6 @@
         "${BUILD_FOLDER}/AuxInclude/${TARGETNAME}/GeneratedFiles/agentinosdl/SDL/1.0/QML/generation_info.json"
     ],
     "dirs": [
+        "${BUILD_FOLDER}/AuxInclude/${TARGETNAME}/GeneratedFiles/agentinodata/Ddl/Qml/agentino"
     ]
 }

@@ -101,6 +101,11 @@ DocumentViewBase {
 	SubscriptionClient {
 		id: agentLogSubscriptionClient
 		gqlCommandId: "OnAgentLogCollectionChanged"
+		autoSubscribe: false
+
+		function getHeaders(){
+			return {"clientid": agentEditorContainer.documentId}
+		}
 
 		onMessageReceived: {
 			if (multiPageView.currentIndex !== multiPageView.getIndexById("Log")){
@@ -125,6 +130,7 @@ DocumentViewBase {
 			ensureServicesPage()
 			ensureLogPage()
 			ensureTerminalPage()
+			agentLogSubscriptionClient.registerSubscription()
 		}
 	}
 

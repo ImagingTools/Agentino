@@ -102,8 +102,10 @@ private:
 	bool CheckSessionOwnership(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const;
 
 private:
-	mutable QMutex m_sessionOwnersMutex;
-	mutable QMap<QByteArray, QByteArray> m_sessionOwners; // sessionId -> owning userId
+	// Shared by all instances: each request-handler worker owns an instance of this
+	// component, and a session opened through one is used through the others.
+	static QMutex s_sessionOwnersMutex;
+	static QMap<QByteArray, QByteArray> s_sessionOwners; // sessionId -> owning userId
 };
 
 

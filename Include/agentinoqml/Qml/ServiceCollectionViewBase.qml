@@ -60,7 +60,7 @@ RemoteCollectionView {
 	}
 	
 	onVisibleChanged: {
-		if (visible && table.elements.getItemsCount() !== 0){
+		if (visible && root.table.elements && root.table.elements.getItemsCount() !== 0){
 			root.doUpdateGui();
 		}
 	}

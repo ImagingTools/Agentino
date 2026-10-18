@@ -64,6 +64,7 @@ Item {
 	property int gridRows: 24;
 	property int cursorRow: 0;
 	property int cursorCol: 0;
+	property bool wrapPending: false;
 	property bool cursorVisible: true;
 	property int scrollTop: 0;
 	property int scrollBottom: 23;
@@ -78,15 +79,15 @@ Item {
 	// (\x1b[?1049h/l, \x1b[?47h/l) so it is not misread across two chunks.
 	property string routerPendingPartial: "";
 
-	// ── Primary-screen live line (raw keyboard passthrough) ─────────────────
-	// With raw passthrough every keystroke round-trips to the shell, which echoes it and
-	// edits the current command line in place (backspace, \r rewrite for Tab-completion /
-	// history recall). The scrollback model is append-only and cannot show in-place edits,
-	// so the still-unterminated last line is held here and rendered live (below the
-	// committed scrollback, with a cursor block) instead of being appended as fragments;
-	// it is committed to the scrollback only when its terminating newline arrives.
-	property string primaryBuffer: "";
+	// ── Primary screen ──────────────────────────────────────────────────────
+	// The pty (ConPTY on Windows) addresses the visible screen with cursor moves and
+	// repaints all of it after a resize, so the primary screen runs through the same grid
+	// emulator as the alternate one. Rows scrolled off its top are committed to the
+	// scrollback; the visible rows are rendered below it (currentLineHtml).
 	property string currentLineHtml: "";
+	property string committedPlain: "";
+	// Primary grid state kept while a full-screen app owns the alternate screen.
+	property var savedPrimaryScreen: null;
 
 	// ── ANSI / HTML helpers ─────────────────────────────────────────────────
 
@@ -239,6 +240,7 @@ Item {
 		root.scrollBottom = root.gridRows - 1;
 		root.cursorRow = 0;
 		root.cursorCol = 0;
+		root.wrapPending = false;
 		root.cursorVisible = true;
 		root.savedCursorForDECSC = null;
 		let grid = [];
@@ -256,13 +258,53 @@ Item {
 		if (columns === root.gridCols && rows === root.gridRows){
 			return;
 		}
-		root.resetGrid(columns, rows);
+		if (root.altScreenActive){
+			root.resetGrid(columns, rows);
+			return;
+		}
+		// The pty repaints the primary screen after the resize; keeping the old rows
+		// until then avoids a blank flash.
+		root.resizeGridKeepingContent(columns, rows);
+		root.updatePrimaryScreen();
+	}
+
+	function resizeGridKeepingContent(cols, rows){
+		let newCols = Math.max(1, cols);
+		let newRows = Math.max(1, rows);
+		let grid = [];
+		for (let r = 0; r < newRows; ++r){
+			let row = root.makeBlankRow(newCols, root.currentGridColor());
+			let old = root.screenGrid[r];
+			if (old){
+				for (let c = 0; c < newCols && c < old.length; ++c){
+					row[c] = old[c];
+				}
+			}
+			grid.push(row);
+		}
+		root.screenGrid = grid;
+		root.gridCols = newCols;
+		root.gridRows = newRows;
+		root.scrollTop = 0;
+		root.scrollBottom = newRows - 1;
+		root.cursorRow = Math.min(root.cursorRow, newRows - 1);
+		root.cursorCol = Math.min(root.cursorCol, newCols - 1);
+		root.wrapPending = false;
+		root.screenVersion++;
 	}
 
 	function enterAltScreen(){
 		if (root.altScreenActive){
 			return;
 		}
+		root.savedPrimaryScreen = {
+			grid: root.screenGrid,
+			cols: root.gridCols,
+			rows: root.gridRows,
+			cursorRow: root.cursorRow,
+			cursorCol: root.cursorCol,
+			sgr: root.altSgrState
+		};
 		root.altScreenActive = true;
 		root.altSgrState = {color: null, bold: false};
 		root.altPendingPartial = "";
@@ -275,7 +317,23 @@ Item {
 			return;
 		}
 		root.altScreenActive = false;
-		root.screenVersion++;
+		let saved = root.savedPrimaryScreen;
+		root.savedPrimaryScreen = null;
+		if (saved !== null){
+			let cols = root.gridCols;
+			let rows = root.gridRows;
+			root.screenGrid = saved.grid;
+			root.gridCols = saved.cols;
+			root.gridRows = saved.rows;
+			root.cursorRow = saved.cursorRow;
+			root.cursorCol = saved.cursorCol;
+			root.altSgrState = saved.sgr;
+			root.resizeGridKeepingContent(cols, rows);
+		}
+		else{
+			root.resetGrid(root.gridCols, root.gridRows);
+		}
+		root.updatePrimaryScreen();
 		if (controller.running && !controller.connectionLost){
 			inputField.forceActiveFocus();
 		}
@@ -335,6 +393,9 @@ Item {
 	}
 
 	function scrollGridUp(){
+		if (!root.altScreenActive && root.scrollTop === 0){
+			root.commitGridRow(root.screenGrid[0]);
+		}
 		let blank = root.makeBlankRow(root.gridCols, root.currentGridColor());
 		root.screenGrid.splice(root.scrollTop, 1);
 		root.screenGrid.splice(root.scrollBottom, 0, blank);
@@ -355,17 +416,26 @@ Item {
 		}
 	}
 
+	// Deferred wrap as in VT100: a character written into the last column leaves the cursor
+	// there and the next printable character wraps; an exactly full line followed by CR LF
+	// must not produce an extra blank row.
 	function gridPutChar(ch){
+		if (root.wrapPending){
+			root.wrapPending = false;
+			root.cursorCol = 0;
+			root.moveCursorDownWithScroll();
+		}
 		if (root.cursorRow >= 0 && root.cursorRow < root.gridRows){
 			let row = root.screenGrid[root.cursorRow];
 			if (row && root.cursorCol >= 0 && root.cursorCol < root.gridCols){
 				row[root.cursorCol] = {ch: ch, color: root.currentGridColor(), bold: root.altSgrState.bold};
 			}
 		}
-		root.cursorCol++;
-		if (root.cursorCol >= root.gridCols){
-			root.cursorCol = 0;
-			root.moveCursorDownWithScroll();
+		if (root.cursorCol >= root.gridCols - 1){
+			root.wrapPending = true;
+		}
+		else{
+			root.cursorCol++;
 		}
 	}
 
@@ -461,6 +531,9 @@ Item {
 	// (mouse reporting, bracketed paste, etc.) are recognized-and-ignored, same
 	// policy as ansiToHtml uses for the scrollback log.
 	function handleCsiSequence(paramsStr, finalByte){
+		if (finalByte !== "m"){
+			root.wrapPending = false;
+		}
 		let isPrivate = paramsStr.indexOf("?") === 0;
 		let cleanParams = isPrivate ? paramsStr.substring(1) : paramsStr;
 		let parts = cleanParams.length > 0 ? cleanParams.split(";") : [];
@@ -540,6 +613,13 @@ Item {
 			break;
 		case "m":
 			root.applySgrToState(nums, root.altSgrState);
+			break;
+		case "t":
+			// ConPTY announces the size its following repaint is drawn for; a newer local
+			// resize may still be in flight, so the grid follows the pty here.
+			if (nums.length >= 3 && nums[0] === 8 && nums[1] > 0 && nums[2] > 0){
+				root.resizeGridKeepingContent(nums[2], nums[1]);
+			}
 			break;
 		default:
 			break;
@@ -631,20 +711,24 @@ Item {
 				}
 			}
 			else if (ch === "\r"){
+				root.wrapPending = false;
 				root.cursorCol = 0;
 				i++;
 			}
 			else if (ch === "\n"){
+				root.wrapPending = false;
 				root.moveCursorDownWithScroll();
 				i++;
 			}
 			else if (ch === "\b"){
+				root.wrapPending = false;
 				if (root.cursorCol > 0){
 					root.cursorCol--;
 				}
 				i++;
 			}
 			else if (ch === "\t"){
+				root.wrapPending = false;
 				root.cursorCol = Math.min(root.gridCols - 1, (Math.floor(root.cursorCol / 8) + 1) * 8);
 				i++;
 			}
@@ -799,10 +883,11 @@ Item {
 		outputModel.clear();
 		root.plainLog = "";
 		root.richLog = "";
-		root.primaryBuffer = "";
+		root.committedPlain = "";
 		root.currentLineHtml = "";
 		root.startupOutputPhase = true;
 		root.altScreenActive = false;
+		root.savedPrimaryScreen = null;
 		root.routerPendingPartial = "";
 		root.altPendingPartial = "";
 		root.altSgrState = {color: null, bold: false};
@@ -821,77 +906,151 @@ Item {
 		let streamId = stream !== undefined ? stream : "STDOUT";
 
 		if (streamId === "SYSTEM"){
-			root.appendScrollbackText(text, streamId);
+			// Our own message goes below whatever the shell has drawn so far.
+			if (!root.altScreenActive){
+				root.flushPrimaryScreen();
+			}
+			root.appendScrollbackText(text.endsWith("\n") ? text : text + "\n", streamId);
+			root.updatePrimaryScreen();
 			return;
-		}
-
-		root.plainLog += text;
-		if (root.plainLog.length > root.maxOutputLength){
-			root.plainLog = root.plainLog.substring(root.plainLog.length - root.maxOutputLength);
 		}
 
 		root.routeTerminalBytes(root.routerPendingPartial + text, streamId);
 		root.routerPendingPartial = "";
 	}
 
-	// Primary-screen VT stream: accumulate until a newline terminates one or more lines,
-	// commit those (resolved) to the scrollback, and keep the trailing unterminated line as
-	// the live line. Command output (lines ending in \n) still renders exactly as before;
-	// only the interactive prompt+typing line is now shown live.
 	function feedPrimary(text, streamId){
-		root.primaryBuffer += text;
+		root.feedAltScreenData(text);
+		root.updatePrimaryScreen();
+	}
 
-		let nl = root.primaryBuffer.lastIndexOf("\n");
-		if (nl >= 0){
-			let completed = root.primaryBuffer.substring(0, nl);
-			root.primaryBuffer = root.primaryBuffer.substring(nl + 1);
-
-			let lines = completed.split("\n");
-			let out = "";
-			for (let k = 0; k < lines.length; ++k){
-				out += root.resolvePrimaryLine(lines[k]) + "\n";
+	// Index of the last primary row worth showing: the cursor row or a later non-blank one.
+	function lastPrimaryRow(){
+		let last = root.cursorRow;
+		for (let r = root.gridRows - 1; r > last; --r){
+			if (root.lastUsedColumn(root.screenGrid[r]) >= 0){
+				return r;
 			}
-			root.appendScrollbackText(out, streamId);
 		}
+		return last;
+	}
 
-		root.currentLineHtml = root.renderLiveLine(root.primaryBuffer, streamId);
+	function lastUsedColumn(row){
+		if (!row){
+			return -1;
+		}
+		for (let c = row.length - 1; c >= 0; --c){
+			if (row[c].ch !== " "){
+				return c;
+			}
+		}
+		return -1;
+	}
+
+	// One grid row as rich text without trailing blanks; cursorCol >= 0 draws the block cursor.
+	function primaryRowHtml(row, cursorCol){
+		let end = Math.max(root.lastUsedColumn(row), cursorCol);
+		let inner = "";
+		let curColor = null;
+		let curBold = null;
+		let spanOpen = false;
+		for (let c = 0; c <= end; ++c){
+			let cell = row[c] ? row[c] : {ch: " ", color: root.streamColor("STDOUT"), bold: false};
+			let isCursorCell = c === cursorCol;
+			if (cell.color !== curColor || cell.bold !== curBold || isCursorCell){
+				if (spanOpen){
+					inner += "</span>";
+				}
+				let style = "color:" + cell.color;
+				if (cell.bold){
+					style += ";font-weight:bold";
+				}
+				if (isCursorCell){
+					style += ";background-color:" + Style.textSelectedColor + ";color:#ffffff";
+				}
+				inner += "<span style=\"" + style + "\">";
+				spanOpen = true;
+				curColor = isCursorCell ? null : cell.color;
+				curBold = isCursorCell ? null : cell.bold;
+			}
+			inner += root.htmlEscape(cell.ch);
+		}
+		if (spanOpen){
+			inner += "</span>";
+		}
+		return inner;
+	}
+
+	function primaryRowText(row){
+		let end = root.lastUsedColumn(row);
+		let text = "";
+		for (let c = 0; c <= end; ++c){
+			text += row[c].ch;
+		}
+		return text;
+	}
+
+	function updatePrimaryScreen(){
+		let showCursor = root.cursorVisible && controller.running && !controller.connectionLost;
+		let last = root.lastPrimaryRow();
+		let html = "";
+		let plain = "";
+		for (let r = 0; r <= last; ++r){
+			let row = root.screenGrid[r];
+			if (r > 0){
+				html += "<br/>";
+				plain += "\n";
+			}
+			html += root.primaryRowHtml(row, showCursor && r === root.cursorRow ? root.cursorCol : -1);
+			plain += root.primaryRowText(row);
+		}
+		if (plain.trim().length === 0 && !showCursor){
+			html = "";
+			plain = "";
+		}
+		root.currentLineHtml = html;
+		root.plainLog = root.committedPlain + plain;
 		scrollToEndTimer.restart();
 	}
 
-	// Collapses one raw line's in-place edits to the text finally visible on it: take only
-	// what follows the last carriage return (cmd rewrites a line as "\r<new content>"), drop
-	// non-SGR escape sequences (cursor moves, erase-line, OSC titles) while keeping SGR
-	// colour codes, then fold backspaces. Good enough for typing echo, backspace and
-	// Tab/history line-rewrites without a full cell-grid emulator.
-	function resolvePrimaryLine(raw){
-		let s = String(raw);
-		let cr = s.lastIndexOf("\r");
-		if (cr >= 0){
-			s = s.substring(cr + 1);
+	function commitGridRow(row){
+		let text = root.primaryRowText(row);
+		if (root.startupOutputPhase && text.trim().length === 0){
+			return;
 		}
-		s = s.replace(/\x1b\][^\x07]*(?:\x07|\x1b\\)/g, "");
-		s = s.replace(/\x1b\[[0-9;?]*[A-Za-ln-z]/g, "");
-
-		let result = "";
-		for (let i = 0; i < s.length; ++i){
-			if (s[i] === "\b"){
-				result = result.slice(0, -1);
-			}
-			else{
-				result += s[i];
-			}
-		}
-		return result;
+		root.appendScrollbackLine(root.primaryRowHtml(row, -1) + "<br/>", text + "\n");
 	}
 
-	function renderLiveLine(raw, streamId){
-		let resolved = root.resolvePrimaryLine(raw);
-		let html = resolved.length > 0 ? root.ansiToHtml(resolved, root.streamColor(streamId)) : "";
-		if (!controller.running || controller.connectionLost){
-			return html;
+	// Moves everything drawn on the primary screen into the scrollback and homes the cursor.
+	function flushPrimaryScreen(){
+		let last = root.lastPrimaryRow();
+		let hasContent = last > 0 || root.lastUsedColumn(root.screenGrid[0]) >= 0;
+		if (!hasContent){
+			return;
 		}
-		// Trailing block cursor so the caret is visible where the shell expects input.
-		return html + "<span style=\"background-color:" + Style.textSelectedColor + ";color:#ffffff\"> </span>";
+		for (let r = 0; r <= last; ++r){
+			root.commitGridRow(root.screenGrid[r]);
+		}
+		root.resetGrid(root.gridCols, root.gridRows);
+	}
+
+	function appendScrollbackLine(html, plain){
+		outputModel.append({"html": html});
+		root.richLog += html;
+		root.committedPlain += plain;
+		if (root.committedPlain.length > root.maxOutputLength){
+			root.committedPlain = root.committedPlain.substring(root.committedPlain.length - root.maxOutputLength);
+		}
+
+		if (outputModel.count > root.maxOutputLines){
+			while (outputModel.count > root.maxOutputLines){
+				outputModel.remove(0);
+			}
+			root.richLog = "";
+			for (let index = 0; index < outputModel.count; ++index){
+				root.richLog += outputModel.get(index).html;
+			}
+		}
 	}
 
 	function appendScrollbackText(text, streamId){
@@ -915,24 +1074,16 @@ Item {
 			if (display.length === 0){
 				continue;
 			}
-			let html = root.ansiToHtml(display, color);
-			outputModel.append({"html": html});
-			root.richLog += html;
-		}
-
-		let trimmed = false;
-		while (outputModel.count > root.maxOutputLines){
-			outputModel.remove(0);
-			trimmed = true;
-		}
-		if (trimmed){
-			root.richLog = "";
-			for (let index = 0; index < outputModel.count; ++index){
-				root.richLog += outputModel.get(index).html;
-			}
+			root.appendScrollbackLine(root.ansiToHtml(display, color), root.visibleText(display));
 		}
 
 		scrollToEndTimer.restart();
+	}
+
+	function visibleText(text){
+		return String(text)
+					.replace(/\x1b\[[0-9;?]*[A-Za-z]/g, "")
+					.replace(/\x1b\][^\x07]*(?:\x07|\x1b\\)/g, "");
 	}
 
 	function startSession(){
@@ -1212,8 +1363,12 @@ Item {
 		if (!controller.running || root.charWidth <= 0 || root.charHeight <= 0){
 			return;
 		}
-		let columns = Math.max(1, Math.floor(outputFlickable.width / root.charWidth));
-		let rows = Math.max(1, Math.floor(outputFlickable.height / root.charHeight));
+		let columns = Math.floor(outputFlickable.width / root.charWidth);
+		let rows = Math.floor(outputFlickable.height / root.charHeight);
+		// Not laid out yet: a one-row pty would scroll everything through a single line.
+		if (columns < 2 || rows < 2){
+			return;
+		}
 		root.applyLocalGridSize(columns, rows);
 		controller.resizeSession(columns, rows);
 	}
@@ -1238,9 +1393,11 @@ Item {
 	// Metrics of the output font, used to convert the panel's pixel size into a
 	// character grid for ResizeTerminalSession. The QML FontMetrics type has no
 	// JQML web-build implementation, so width/height are measured instead via a
-	// hidden monospace Text probe and its contentWidth/contentHeight - both are
-	// backed by JQApplication.TextController.measureTextFast in the web build,
-	// so this works identically there and in the native QML build.
+	// hidden Text probe and its contentWidth/contentHeight - both are backed by
+	// JQApplication.TextController.measureTextFast in the web build, so this works
+	// identically there and in the native QML build. The output font is proportional:
+	// the probe holds typical shell text, since a too narrow grid breaks lines early
+	// while a too wide one only wraps them visually.
 	readonly property int sizeMetricsProbeLength: 20;
 	readonly property real charWidth: sizeMetricsProbe.contentWidth / root.sizeMetricsProbeLength;
 	readonly property real charHeight: sizeMetricsProbe.contentHeight;
@@ -1248,7 +1405,7 @@ Item {
 	Text {
 		id: sizeMetricsProbe;
 		visible: false;
-		text: "MMMMMMMMMMMMMMMMMMMM";
+		text: "D:/Work/dir_name.txt";
 		wrapMode: Text.NoWrap;
 		font.family: Style.fontFamily
 		font.pixelSize: Style.fontSizeM;

@@ -155,6 +155,7 @@ GateDecision CEnrollmentStoreComp::Admit(
 		}
 
 		recordOut = record;
+		lock.unlock();
 		istd::CChangeNotifier notifier(this);
 		Q_UNUSED(notifier);
 
@@ -219,6 +220,8 @@ bool CEnrollmentStoreComp::SetStatus(
 		return false;
 	}
 
+	// Observers read the store back, and m_mutex is not recursive.
+	lock.unlock();
 	istd::CChangeNotifier notifier(this);
 	Q_UNUSED(notifier);
 

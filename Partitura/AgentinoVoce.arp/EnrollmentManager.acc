@@ -85,6 +85,7 @@
     <ExportedInterfaces>
         <Interface InterfaceId="agentinogql::IEnrollmentController" ComponentId="EnrollmentStore"/>
         <Interface InterfaceId="agentinogql::IEnrollmentGate" ComponentId="EnrollmentStore"/>
+        <Interface InterfaceId="imod::IModel" ComponentId="EnrollmentStore"/>
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="EnrollmentFileAutoPersistence/AutoPersistence"/>
     </ExportedInterfaces>
     <ExportedComponents>
