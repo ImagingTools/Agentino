@@ -16,7 +16,34 @@ namespace agentinogql
 
 
 QMutex CTerminalControllerProxyComp::s_sessionOwnersMutex;
-QMap<QByteArray, QByteArray> CTerminalControllerProxyComp::s_sessionOwners;
+QMap<QByteArray, CTerminalControllerProxyComp::SessionOwner> CTerminalControllerProxyComp::s_sessionOwners;
+
+
+// public static methods
+
+void CTerminalControllerProxyComp::ReleaseSessionOwnership(const QByteArray& sessionId)
+{
+	if (sessionId.isEmpty()){
+		return;
+	}
+
+	QMutexLocker locker(&s_sessionOwnersMutex);
+	s_sessionOwners.remove(sessionId);
+}
+
+
+void CTerminalControllerProxyComp::TouchSessionOwnership(const QByteArray& sessionId)
+{
+	if (sessionId.isEmpty()){
+		return;
+	}
+
+	QMutexLocker locker(&s_sessionOwnersMutex);
+	const auto it = s_sessionOwners.find(sessionId);
+	if (it != s_sessionOwners.end()){
+		it->lastActivity = QDateTime::currentDateTimeUtc();
+	}
+}
 
 
 // protected methods
@@ -51,11 +78,7 @@ sdl::V1_0::agentino::CTerminalOutputResponse CTerminalControllerProxyComp::OnGet
 	// its own idle timeout), so this ownership entry can be forgotten instead of sitting
 	// around forever - the same sessionId will never legitimately reappear.
 	if (retVal.running.HasValue() && !retVal.running.GetValue()){
-		const QByteArray sessionId = ExtractSessionId(gqlRequest);
-		if (!sessionId.isEmpty()){
-			QMutexLocker locker(&s_sessionOwnersMutex);
-			s_sessionOwners.remove(sessionId);
-		}
+		ReleaseSessionOwnership(ExtractSessionId(gqlRequest));
 	}
 
 	return retVal;
@@ -74,9 +97,13 @@ sdl::V1_0::agentino::COpenTerminalSessionResponse CTerminalControllerProxyComp::
 	// opened it) may be its owner - every later command against this sessionId is checked
 	// against this entry (CheckSessionOwnership).
 	if (errorMessage.isEmpty() && retVal.sessionId.HasValue() && !retVal.sessionId.GetValue().isEmpty()){
-		const QByteArray userId = ExtractUserId(gqlRequest);
+		SessionOwner owner;
+		owner.userId = ExtractUserId(gqlRequest);
+		owner.lastActivity = QDateTime::currentDateTimeUtc();
+
 		QMutexLocker locker(&s_sessionOwnersMutex);
-		s_sessionOwners.insert(retVal.sessionId.GetValue(), userId);
+		PruneExpiredSessionOwnersLocked(owner.lastActivity);
+		s_sessionOwners.insert(retVal.sessionId.GetValue(), owner);
 	}
 
 	return retVal;
@@ -160,11 +187,7 @@ sdl::V1_0::agentino::CCloseTerminalSessionResponse CTerminalControllerProxyComp:
 	// The caller is explicitly done with this sessionId either way (even an agent-side
 	// close failure is treated as closed client-side, same as TerminalController.qml's own
 	// forgetSession on a CloseTerminalSession error) - forget the owner now, not later.
-	const QByteArray sessionId = ExtractSessionId(gqlRequest);
-	if (!sessionId.isEmpty()){
-		QMutexLocker locker(&s_sessionOwnersMutex);
-		s_sessionOwners.remove(sessionId);
-	}
+	ReleaseSessionOwnership(ExtractSessionId(gqlRequest));
 
 	return retVal;
 }
@@ -230,10 +253,14 @@ bool CTerminalControllerProxyComp::CheckSessionOwnership(
 
 	const QByteArray callerUserId = ExtractUserId(gqlRequest);
 
+	const QDateTime now = QDateTime::currentDateTimeUtc();
+
 	QMutexLocker locker(&s_sessionOwnersMutex);
 
-	const auto it = s_sessionOwners.constFind(sessionId);
-	if (it == s_sessionOwners.constEnd()){
+	PruneExpiredSessionOwnersLocked(now);
+
+	const auto it = s_sessionOwners.find(sessionId);
+	if (it == s_sessionOwners.end()){
 		// Fail-closed: a sessionId this instance never recorded (already closed, evicted,
 		// or from before a server restart) must be refused, not merely warned about - the
 		// alternative is indistinguishable from "anyone who guesses/logs a sessionId can
@@ -243,13 +270,28 @@ bool CTerminalControllerProxyComp::CheckSessionOwnership(
 		return false;
 	}
 
-	if (it.value() != callerUserId){
+	if (it->userId != callerUserId){
 		errorMessage = QStringLiteral("This terminal session belongs to another user");
 
 		return false;
 	}
 
+	it->lastActivity = now;
+
 	return true;
+}
+
+
+void CTerminalControllerProxyComp::PruneExpiredSessionOwnersLocked(const QDateTime& now)
+{
+	for (auto it = s_sessionOwners.begin(); it != s_sessionOwners.end();){
+		if (it->lastActivity.secsTo(now) > SessionOwnerTtlSeconds){
+			it = s_sessionOwners.erase(it);
+		}
+		else{
+			++it;
+		}
+	}
 }
 
 
