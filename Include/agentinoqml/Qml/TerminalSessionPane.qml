@@ -978,7 +978,7 @@ Item {
 		if (spanOpen){
 			inner += "</span>";
 		}
-		return inner;
+		return "<span style=\"white-space:pre\">" + inner + "</span>";
 	}
 
 	function primaryRowText(row){
