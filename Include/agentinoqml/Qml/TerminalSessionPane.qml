@@ -1395,9 +1395,11 @@ Item {
 	// JQML web-build implementation, so width/height are measured instead via a
 	// hidden Text probe and its contentWidth/contentHeight - both are backed by
 	// JQApplication.TextController.measureTextFast in the web build, so this works
-	// identically there and in the native QML build. The output font is proportional:
-	// the probe holds typical shell text, since a too narrow grid breaks lines early
-	// while a too wide one only wraps them visually.
+	// identically there and in the native QML build. The output font is proportional,
+	// so the probe uses the widest glyph: an average-width probe would report more
+	// columns than wide output actually fits, and rows would wrap or clip before the
+	// pty's row boundary, desynchronising cursor positioning and full-screen layouts.
+	// Keep this conservative unless the output and grid switch to a monospace font.
 	readonly property int sizeMetricsProbeLength: 20;
 	readonly property real charWidth: sizeMetricsProbe.contentWidth / root.sizeMetricsProbeLength;
 	readonly property real charHeight: sizeMetricsProbe.contentHeight;
@@ -1405,7 +1407,7 @@ Item {
 	Text {
 		id: sizeMetricsProbe;
 		visible: false;
-		text: "D:/Work/dir_name.txt";
+		text: "MMMMMMMMMMMMMMMMMMMM";
 		wrapMode: Text.NoWrap;
 		font.family: Style.fontFamily
 		font.pixelSize: Style.fontSizeM;
