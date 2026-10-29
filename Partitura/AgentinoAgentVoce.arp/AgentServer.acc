@@ -38,7 +38,7 @@
                         <Data IsEnabled="true" Value="FeatureContainer"/>
                     </AttributeInfo>
                     <AttributeInfo Id="JwtSessionController" Type="Reference" ExportId="">
-                        <Data IsEnabled="true" Value="JwtSessionController"/>
+                        <Data IsEnabled="true" Value="AuthenticationManager"/>
                     </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
