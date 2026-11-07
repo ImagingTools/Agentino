@@ -550,8 +550,10 @@ ViewBase {
 		anchors.right: parent.right;
 		anchors.top: parent.top;
 		anchors.bottom: parent.bottom;
-		
-		width: 250;
+
+		// Takes room only for a selected service, so the scheme gets the whole page otherwise
+		width: scheme.selectedService !== "" ? 250 : 0;
+		visible: scheme.selectedService !== "";
 
 		Component.onCompleted: {
 			registerViewDelegate("ExternPaths", metaInfoViewExternPathsDelegateComp)
