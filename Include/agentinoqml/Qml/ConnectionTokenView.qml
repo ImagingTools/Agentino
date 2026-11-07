@@ -95,7 +95,8 @@ ElementView {
 		}
 
 		let issuedAt = Qt.formatDateTime(new Date(tokenView.token.issuedAt), "yyyy-MM-dd HH:mm")
-		let text = qsTr("%1 permissions at %2, issued %3").arg(tokenView.token.scopes.length).arg(tokenView.token.receiverProductId).arg(issuedAt)
+		let count = tokenView.token.scopes.length
+		let text = (count === 1 ? qsTr("1 permission at %2, issued %3") : qsTr("%1 permissions at %2, issued %3").arg(count)).arg(tokenView.token.receiverProductId).arg(issuedAt)
 		if (tokenView.restartRequired){
 			text = text + ". " + qsTr("Restart the service to use the new token.")
 		}
