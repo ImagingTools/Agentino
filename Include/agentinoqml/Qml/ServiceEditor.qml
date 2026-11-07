@@ -395,6 +395,18 @@ DocumentViewBase {
 		operationDescription = inProgress ? description : ""
 	}
 	
+	function isBlockingUpdateModel(){
+		return serviceEditorContainer.internal__ ? serviceEditorContainer.internal__.blockingUpdateModel : false
+	}
+
+	// Fills a page without writing its half-filled fields back into the service; the previous blocking stays
+	function updatePageGui(pageItem){
+		let wasBlocking = serviceEditorContainer.isBlockingUpdateModel()
+		serviceEditorContainer.setBlockingUpdateModel(true)
+		pageItem.updateGui()
+		serviceEditorContainer.setBlockingUpdateModel(wasBlocking)
+	}
+
 	// Only the pages already built are refreshed; the others are filled when they load (see onPageLoaded)
 	function updateGui(){
 		let item = multiPageView.getPageById("Information")
@@ -500,7 +512,7 @@ DocumentViewBase {
 
 		onPageLoaded: {
 			if (serviceEditorContainer.serviceData && typeof pageItem.updateGui === "function"){
-				pageItem.updateGui()
+				serviceEditorContainer.updatePageGui(pageItem)
 			}
 		}
 
@@ -941,6 +953,7 @@ DocumentViewBase {
 								// (still holding their previous/default values) straight back into
 								// model.item.m_connectionParam, clobbering the very port values this
 								// same updateGui() is about to read for the next property.
+								let wasBlocking = serviceEditorContainer.isBlockingUpdateModel()
 								serviceEditorContainer.setBlockingUpdateModel(true)
 								if (model.item.m_connectionParam){
 									inputConnectionEditor.host = model.item.m_connectionParam.m_host
@@ -948,7 +961,7 @@ DocumentViewBase {
 									inputConnectionEditor.wsPort = model.item.m_connectionParam.m_wsPort
 									inputConnectionEditor.isSecure = model.item.m_connectionParam.m_isSecure
 								}
-								serviceEditorContainer.setBlockingUpdateModel(false)
+								serviceEditorContainer.setBlockingUpdateModel(wasBlocking)
 								if (model.item.m_externConnectionList){
 									let values = []
 									for (let i = 0; i < model.item.m_externConnectionList.count; i++){
@@ -1377,7 +1390,7 @@ DocumentViewBase {
 									function onCheckedItemsChanged(){
 										// While restoring checks from model (or from a just-confirmed
 										// response), do not re-fire from the table's own check/uncheck.
-										if (serviceEditorContainer.internal__ && serviceEditorContainer.internal__.blockingUpdateModel){
+										if (serviceEditorContainer.isBlockingUpdateModel()){
 											return
 										}
 										if (!model.item){
@@ -1440,7 +1453,8 @@ DocumentViewBase {
 								connectionId: model.item ? "" + model.item.m_id : ""
 								transportComp: serviceEditorContainer.connectionTokenTransportComp
 								headersProvider: serviceEditorContainer
-								serviceRunning: serviceEditorContainer.serviceRunning
+								// A starting process has read its environment already
+								serviceRunning: serviceEditorContainer.serviceRunning || serviceEditorContainer.serviceStatus === ServiceStatus.s_Starting
 							}
 
 							// One candidate row, or null when the list is not loaded / index is stale.
@@ -1489,8 +1503,7 @@ DocumentViewBase {
 								if (!outTable.table){
 									return
 								}
-								let wasBlocking = serviceEditorContainer.internal__
-											? serviceEditorContainer.internal__.blockingUpdateModel : false
+								let wasBlocking = serviceEditorContainer.isBlockingUpdateModel()
 								serviceEditorContainer.setBlockingUpdateModel(true)
 								outTable.table.elements = outputDelegate.availableConnections
 								serviceEditorContainer.setBlockingUpdateModel(wasBlocking)
@@ -1505,8 +1518,7 @@ DocumentViewBase {
 								// nested inside an outer guarded refresh (e.g. doUpdateGui()'s own
 								// blockingUpdateModel=true) — clearing to false unconditionally would
 								// re-open that outer guard before it is done.
-								let wasBlocking = serviceEditorContainer.internal__
-											? serviceEditorContainer.internal__.blockingUpdateModel : false
+								let wasBlocking = serviceEditorContainer.isBlockingUpdateModel()
 								serviceEditorContainer.setBlockingUpdateModel(true)
 
 								let dependantId = ""
@@ -1576,8 +1588,7 @@ DocumentViewBase {
 
 					// Each assignment below fires onXxxChanged -> doUpdateModel(), which would write the
 					// fields not refreshed yet (e.g. an empty script path) back into serviceData.
-					let wasBlocking = serviceEditorContainer.internal__
-								? serviceEditorContainer.internal__.blockingUpdateModel : false
+					let wasBlocking = serviceEditorContainer.isBlockingUpdateModel()
 					serviceEditorContainer.setBlockingUpdateModel(true)
 
 					switchAutoStart.checked = serviceEditorContainer.serviceData.m_isAutoStart
