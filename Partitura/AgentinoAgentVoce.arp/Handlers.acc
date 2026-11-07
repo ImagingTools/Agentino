@@ -264,6 +264,7 @@
                                 <Value>AgentPages</Value>
                                 <Value>ServiceController</Value>
                                 <Value>TerminalController</Value>
+                                <Value>ConnectionTokenController</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -413,6 +414,18 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="ConnectionTokenController" PackageId="AgentGqlPck" ComponentId="AgentConnectionTokenController">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TokenStore" Type="Reference" ExportId="ConnectionTokenStore">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                 </AttributeInfoMap>

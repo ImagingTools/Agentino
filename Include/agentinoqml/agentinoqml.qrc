@@ -15,6 +15,8 @@
 	<file alias="AgentCollectionViewBase.qml">Qml/AgentCollectionViewBase.qml</file>
 	<file alias="AgentinoCollectionTableStyle.qml">Qml/AgentinoCollectionTableStyle.qml</file>
 	<file alias="ServiceEditor.qml">Qml/ServiceEditor.qml</file>
+	<file alias="ConnectionTokenTransport.qml">Qml/ConnectionTokenTransport.qml</file>
+	<file alias="ConnectionTokenView.qml">Qml/ConnectionTokenView.qml</file>
 	<file alias="ServiceEditorTransport.qml">Qml/ServiceEditorTransport.qml</file>
 	<file alias="ServiceEditorWrap.qml">Qml/ServiceEditorWrap.qml</file>
 	<file alias="ServiceValidator.qml">Qml/ServiceValidator.qml</file>

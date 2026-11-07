@@ -4,6 +4,7 @@
 
 // Qt includes
 #include <QtCore/QByteArray>
+#include <QtCore/QHash>
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 
@@ -35,6 +36,11 @@ public:
 		QString program;
 		QStringList arguments;
 		QString workingDirectory;
+
+		/**
+			Variables added to the environment of the agent.
+		*/
+		QHash<QString, QString> environment;
 	};
 
 	struct AdoptRequest

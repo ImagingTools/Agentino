@@ -100,6 +100,9 @@
                     <AttributeInfo Id="VersionInfo" Type="Reference" ExportId="VersionInfo">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ConnectionTokenStore" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ConnectionTokenStore"/>
+                    </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
         </Element>
@@ -418,6 +421,9 @@
                     <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="EnvironmentProvider" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ConnectionTokenStore"/>
+                    </AttributeInfo>
                 </AttributeInfoMap>
             </Data>
         </Element>
@@ -539,6 +545,53 @@
                         <Data IsEnabled="true" Value="ServerSettings/ServerConnectionInterface"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="ConnectionTokenFile" PackageId="FilePck" ComponentId="RelativeFileNameParam">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="DefaultPath" Type="String" ExportId="">
+                        <Data IsEnabled="true" Value="ConnectionTokens.json"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="PathType" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="1"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ReferencePath" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ConnectionTokenLocation"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="ConnectionTokenLocation" PackageId="FilePck" ComponentId="SystemLocation">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ApplicationInfo" Type="Reference" ExportId="ApplicationInfo">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="LocationType" Type="Integer" ExportId="">
+                        <Data IsEnabled="true" Value="105"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="ConnectionTokenStore" PackageId="AgentinoDataPck" ComponentId="ConnectionTokenStore">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="FilePath" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ConnectionTokenFile"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="SecretProtector" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="SecretProtector"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="SecretProtector" PackageId="ImtCryptPck" ComponentId="SystemSecretProtector">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap/>
             </Data>
         </Element>
     </ElementsList>

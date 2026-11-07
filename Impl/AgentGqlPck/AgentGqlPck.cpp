@@ -85,6 +85,11 @@ I_EXPORT_COMPONENT(
 			"Agent Local Topology Controller");
 
 I_EXPORT_COMPONENT(
+			AgentConnectionTokenController,
+			"Tokens of the output connections of the services of this agent",
+			"Agent Connection Token Controller");
+
+I_EXPORT_COMPONENT(
 			AgentRemoteVisualStatusController,
 			"Agent remote visual status controller",
 			"Agent Remote Visual Status Controller");

@@ -20,6 +20,14 @@ ServiceEditor {
 		headersProvider: serviceEditor
 	}
 
+	connectionTokenTransportComp: serviceEditor.remoteAgentBrowse ? connectionTokenTransportComponent : null
+
+	Component {
+		id: connectionTokenTransportComponent
+
+		ConnectionTokenTransport {}
+	}
+
 	onLoadPlugin: {
 		serviceEditor.pluginLoaded = false
 		serviceEditor.pluginLoading = true

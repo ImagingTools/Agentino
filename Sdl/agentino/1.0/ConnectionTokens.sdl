@@ -1,0 +1,80 @@
+schema {
+	query: Query
+	mutation: Mutation
+	namespace: agentino
+	version: 1.0
+}
+
+import {
+	"../../../../ImtCore/Sdl/imtbase/1.0/ImtBaseTypes.sdl"
+	"../../../../ImtCore/Sdl/imtauth/1.0/Permissions.sdl"
+}
+
+# The token an output connection of a service holds at the server it connects to.
+# The server issues it for itself; its value stays on the agent of the service.
+type ConnectionToken {
+	tokenId: ID!
+	receiverProductId: ID!
+	scopes: [ID]
+	issuedAt: String
+}
+
+input ConnectionTokenInput {
+	serviceId: ID!
+	connectionId: ID!
+}
+
+type ConnectionTokenState {
+	# Missing when the connection holds no token.
+	token: ConnectionToken
+}
+
+input ConnectionTokenCatalogInput {
+	serviceId: ID!
+	connectionId: ID!
+	# A superuser of the server the connection goes to; nothing of it is kept.
+	login: String!
+	password: String!
+}
+
+type ConnectionTokenCatalog {
+	# The session at the server for the following changes of the token.
+	sessionToken: ID!
+	receiverProductId: ID!
+	groups: [PermissionGroup]
+	requiredPermissions: [ID]
+	token: ConnectionToken
+}
+
+input SetConnectionTokenInput {
+	serviceId: ID!
+	connectionId: ID!
+	sessionToken: ID!
+	scopes: [ID]
+}
+
+type SetConnectionTokenPayload {
+	token: ConnectionToken
+	# A new token reaches the service at its next start.
+	restartRequired: Boolean
+}
+
+input RevokeConnectionTokenInput {
+	serviceId: ID!
+	connectionId: ID!
+	sessionToken: ID!
+}
+
+type RevokeConnectionTokenPayload {
+	success: Boolean!
+}
+
+type Query {
+	GetConnectionToken (input: ConnectionTokenInput): ConnectionTokenState!
+	GetConnectionTokenCatalog (input: ConnectionTokenCatalogInput): ConnectionTokenCatalog!
+}
+
+type Mutation {
+	SetConnectionToken (input: SetConnectionTokenInput): SetConnectionTokenPayload!
+	RevokeConnectionToken (input: RevokeConnectionTokenInput): RevokeConnectionTokenPayload!
+}

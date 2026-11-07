@@ -587,6 +587,9 @@ bool CServiceSupervisorComp::BuildSpawnRequest(
 		request.arguments.append(QString::fromUtf8(arg));
 	}
 	request.workingDirectory = QFileInfo(request.program).absolutePath();
+	if (m_environmentProviderCompPtr.IsValid()){
+		request.environment = m_environmentProviderCompPtr->GetServiceEnvironment(serviceId);
+	}
 	return true;
 }
 

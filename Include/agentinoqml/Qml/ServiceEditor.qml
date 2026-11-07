@@ -25,6 +25,9 @@ DocumentViewBase {
 	// Agent app has no Agents page → path browse hits local FileSystemController, clientId not required.
 	property bool remoteAgentBrowse: false
 
+	// Creates the transport of the token of an output connection; set where tokens can be managed (the Agentino server)
+	property Component connectionTokenTransportComp: null
+
 	// Browse enabled when local (agent app) or when a target agent id is known (server app).
 	property bool pathBrowseEnabled: !serviceEditorContainer.remoteAgentBrowse
 		|| serviceEditorContainer.clientId !== ""
@@ -1458,6 +1461,17 @@ DocumentViewBase {
 										}
 									}
 								}
+							}
+
+							// The server at the other end issues the token: managed from the Agentino server only
+							ConnectionTokenView {
+								id: tokenView
+								controlWidth: serviceEditorContainer.getEditorControlWidth(tokenView)
+								visible: serviceEditorContainer.connectionTokenTransportComp !== null && outputDelegate.currentDependantConnectionId !== ""
+								serviceId: serviceEditorContainer.serviceData ? "" + serviceEditorContainer.serviceData.m_id : ""
+								connectionId: model.item ? "" + model.item.m_id : ""
+								transportComp: serviceEditorContainer.connectionTokenTransportComp
+								headersProvider: serviceEditorContainer
 							}
 
 							// One candidate row, or null when the list is not loaded / index is stale.
