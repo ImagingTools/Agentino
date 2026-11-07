@@ -48,10 +48,11 @@ QtObject {
 		root.setRequestSender.send(root.setInput)
 	}
 
-	function revokeToken(serviceId, connectionId, sessionToken){
+	function revokeToken(serviceId, connectionId, login, password){
 		root.revokeInput.m_serviceId = "" + serviceId
 		root.revokeInput.m_connectionId = "" + connectionId
-		root.revokeInput.m_sessionToken = sessionToken
+		root.revokeInput.m_login = login
+		root.revokeInput.m_password = password
 		root.revokeRequestSender.send(root.revokeInput)
 	}
 
@@ -66,47 +67,6 @@ QtObject {
 			"scopes": Array.isArray(token.m_scopes) ? token.m_scopes : [],
 			"issuedAt": token.m_issuedAt ? String(token.m_issuedAt) : ""
 		}
-	}
-
-	function toGroups(groupsList){
-		let result = []
-		if (!groupsList){
-			return result
-		}
-
-		for (let gi = 0; gi < groupsList.count; ++gi){
-			let group = groupsList.get(gi).item
-			if (!group){
-				continue
-			}
-
-			let groupObj = {
-				"groupId": group.m_groupId ? String(group.m_groupId) : "",
-				"groupName": group.m_groupName ? String(group.m_groupName) : "",
-				"entries": []
-			}
-
-			let entries = group.m_entries
-			if (entries){
-				for (let ei = 0; ei < entries.count; ++ei){
-					let entry = entries.get(ei).item
-					if (!entry){
-						continue
-					}
-
-					groupObj.entries.push({
-						"permissionId": entry.m_permissionId ? String(entry.m_permissionId) : "",
-						"displayName": entry.m_displayName ? String(entry.m_displayName) : "",
-						"description": entry.m_description ? String(entry.m_description) : "",
-						"requirements": Array.isArray(entry.m_requirements) ? entry.m_requirements : []
-					})
-				}
-			}
-
-			result.push(groupObj)
-		}
-
-		return result
 	}
 
 	property ConnectionTokenInput tokenInput: ConnectionTokenInput {}
@@ -142,7 +102,7 @@ QtObject {
 					root.catalogReceived({
 						"sessionToken": String(m_sessionToken),
 						"receiverProductId": String(m_receiverProductId),
-						"groups": root.toGroups(m_groups),
+						"groups": PermissionGroups.toFlatArray(m_groups),
 						"requiredPermissions": Array.isArray(m_requiredPermissions) ? m_requiredPermissions : [],
 						"token": root.toToken(m_token)
 					})

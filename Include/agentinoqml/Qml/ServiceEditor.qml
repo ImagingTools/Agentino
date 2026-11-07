@@ -1452,7 +1452,6 @@ DocumentViewBase {
 								serviceId: serviceEditorContainer.serviceData ? "" + serviceEditorContainer.serviceData.m_id : ""
 								connectionId: model.item ? "" + model.item.m_id : ""
 								transportComp: serviceEditorContainer.connectionTokenTransportComp
-								headersProvider: serviceEditorContainer
 								// A starting process has read its environment already
 								serviceRunning: serviceEditorContainer.serviceRunning || serviceEditorContainer.serviceStatus === ServiceStatus.s_Starting
 							}

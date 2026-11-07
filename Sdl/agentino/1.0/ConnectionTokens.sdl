@@ -59,10 +59,12 @@ type SetConnectionTokenPayload {
 	restartRequired: Boolean
 }
 
+# The superuser of the receiving server revokes the token there.
 input RevokeConnectionTokenInput {
 	serviceId: ID!
 	connectionId: ID!
-	sessionToken: ID!
+	login: String!
+	password: String!
 }
 
 type RevokeConnectionTokenPayload {

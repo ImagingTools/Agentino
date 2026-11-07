@@ -19,7 +19,6 @@ ElementView {
 
 	// Creates the transport of this view; set by the editor
 	property Component transportComp: null
-	property var headersProvider: null
 
 	property var transport: null
 	property var token: null
@@ -61,7 +60,6 @@ ElementView {
 		}
 
 		tokenView.transport = tokenView.transportComp.createObject(tokenView)
-		tokenView.transport.headersProvider = tokenView.headersProvider
 		tokenView.transport.requestToken(tokenView.serviceId, tokenView.connectionId)
 	}
 
@@ -73,12 +71,6 @@ ElementView {
 		}
 
 		function onCatalogReceived(catalog){
-			if (tokenView.pendingAction === "revoke"){
-				tokenView.transport.revokeToken(tokenView.serviceId, tokenView.connectionId, catalog.sessionToken)
-
-				return
-			}
-
 			tokenView.busy = false
 			ModalDialogManager.openDialog(permissionsDialogComp, {"catalog": catalog})
 		}
@@ -175,7 +167,12 @@ ElementView {
 					return
 
 				tokenView.busy = true
-				tokenView.transport.requestCatalog(tokenView.serviceId, tokenView.connectionId, signInDialog.login, signInDialog.password)
+				if (tokenView.pendingAction === "revoke"){
+					tokenView.transport.revokeToken(tokenView.serviceId, tokenView.connectionId, signInDialog.login, signInDialog.password)
+				}
+				else{
+					tokenView.transport.requestCatalog(tokenView.serviceId, tokenView.connectionId, signInDialog.login, signInDialog.password)
+				}
 			}
 
 			Component.onCompleted: {
@@ -252,21 +249,15 @@ ElementView {
 				permissionsDialog.updatePermissions()
 			}
 
-			// The permissions every token holds are checked and locked
 			function updatePermissions(){
 				if (!permissionsDialog.permissionsView || !permissionsDialog.catalog){
 					return
 				}
 
-				permissionsDialog.permissionsView.rebuildFromFlatArray(permissionsDialog.catalog.groups)
-				permissionsDialog.permissionsView.applySelection(permissionsDialog.catalog.token ? permissionsDialog.catalog.token.scopes : [])
-
-				let locked = {}
-				let required = permissionsDialog.catalog.requiredPermissions
-				for (let i = 0; i < required.length; ++i){
-					locked[required[i]] = qsTr("Every token for this server holds it")
-				}
-				permissionsDialog.permissionsView.setLockedPermissions(locked)
+				permissionsDialog.permissionsView.setPermissions(
+							permissionsDialog.catalog.groups,
+							permissionsDialog.catalog.requiredPermissions,
+							permissionsDialog.catalog.token ? permissionsDialog.catalog.token.scopes : [])
 			}
 
 			onFinished: {
@@ -274,7 +265,7 @@ ElementView {
 					return
 
 				tokenView.busy = true
-				tokenView.transport.setToken(tokenView.serviceId, tokenView.connectionId, permissionsDialog.catalog.sessionToken, permissionsDialog.permissionsView.getCheckedIds(false))
+				tokenView.transport.setToken(tokenView.serviceId, tokenView.connectionId, permissionsDialog.catalog.sessionToken, permissionsDialog.permissionsView.getCheckedIds())
 			}
 
 			Component.onCompleted: {
@@ -302,7 +293,9 @@ ElementView {
 						text: permissionsDialog.catalog ? qsTr("Server accepting the token: %1").arg(permissionsDialog.catalog.receiverProductId) : ""
 					}
 
-					Rectangle {
+					ServerTokenPermissionsView {
+						id: permissionsView
+						tableObjectName: "ConnectionTokenPermissionsView"
 						anchors.top: receiverText.bottom
 						anchors.topMargin: Style.marginM
 						anchors.bottom: parent.bottom
@@ -310,24 +303,6 @@ ElementView {
 						anchors.leftMargin: Style.marginXL
 						anchors.right: parent.right
 						anchors.rightMargin: Style.marginXL
-						color: Style.baseColor
-						border.width: 1
-						border.color: Style.borderColor
-						radius: Style.radiusM
-						clip: true
-
-						PermissionsTableView {
-							id: permissionsView
-							objectName: "ConnectionTokenPermissionsView"
-							anchors.fill: parent
-							anchors.leftMargin: Style.marginM
-							anchors.rightMargin: Style.marginM
-							anchors.topMargin: Style.marginXS
-							anchors.bottomMargin: Style.marginS
-							controlPanelTopMargin: Style.marginS
-							treeTopMargin: Style.marginXS
-							treeBottomMargin: Style.marginS
-						}
 					}
 				}
 			}

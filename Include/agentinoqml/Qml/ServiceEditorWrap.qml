@@ -25,7 +25,9 @@ ServiceEditor {
 	Component {
 		id: connectionTokenTransportComponent
 
-		ConnectionTokenTransport {}
+		ConnectionTokenTransport {
+			headersProvider: serviceEditor
+		}
 	}
 
 	onLoadPlugin: {
