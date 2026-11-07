@@ -355,12 +355,7 @@ DocumentViewBase {
 		settingsFileExists = exists;
 		settingsPath = path;
 		settingsContent = content;
-		let index = multiPageView.getIndexById("Settings");
-		if (index < 0){
-			return;
-		}
-		multiPageView.ensurePageLoaded(index);
-		let item = multiPageView.getPageByIndex(index);
+		let item = multiPageView.getPageById("Settings");
 		if (item){
 			item.updateGui();
 		}
@@ -400,70 +395,32 @@ DocumentViewBase {
 		operationDescription = inProgress ? description : ""
 	}
 	
+	// Only the pages already built are refreshed; the others are filled when they load (see onPageLoaded)
 	function updateGui(){
-		let idx = multiPageView.getIndexById("Information");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateGui();
-		}
-		idx = multiPageView.getIndexById("Options");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateGui();
-		}
-		idx = multiPageView.getIndexById("Server");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateGui();
-		}
-		idx = multiPageView.getIndexById("OutputConnections");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateGui();
-		}
-		idx = multiPageView.getIndexById("Settings");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateGui();
-		}
+		let item = multiPageView.getPageById("Information")
+		if (item) item.updateGui()
+		item = multiPageView.getPageById("Options")
+		if (item) item.updateGui()
+		item = multiPageView.getPageById("Server")
+		if (item) item.updateGui()
+		item = multiPageView.getPageById("OutputConnections")
+		if (item) item.updateGui()
+		item = multiPageView.getPageById("Settings")
+		if (item) item.updateGui()
 	}
-	
+
+	// A page not built yet holds no edits
 	function updateModel(){
-		let idx = multiPageView.getIndexById("Information");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateModel();
-		}
-		idx = multiPageView.getIndexById("Options");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateModel();
-		}
-		idx = multiPageView.getIndexById("Server");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateModel();
-		}
-		idx = multiPageView.getIndexById("OutputConnections");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateModel();
-		}
-		idx = multiPageView.getIndexById("Settings");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateModel();
-		}
+		let item = multiPageView.getPageById("Information")
+		if (item) item.updateModel()
+		item = multiPageView.getPageById("Options")
+		if (item) item.updateModel()
+		item = multiPageView.getPageById("Server")
+		if (item) item.updateModel()
+		item = multiPageView.getPageById("OutputConnections")
+		if (item) item.updateModel()
+		item = multiPageView.getPageById("Settings")
+		if (item) item.updateModel()
 	}
 	
 	Rectangle {
@@ -540,6 +497,12 @@ DocumentViewBase {
 		id: multiPageView
 		anchors.fill: parent
 		panelWidth: Style.sizeHintXXS
+
+		onPageLoaded: {
+			if (serviceEditorContainer.serviceData && typeof pageItem.updateGui === "function"){
+				pageItem.updateGui()
+			}
+		}
 
 		function addServicePages() {
 			multiPageView.clear()
