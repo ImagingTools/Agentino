@@ -27,6 +27,15 @@ ElementView {
 	property bool restartRequired: false
 	property bool busy: false
 
+	// A stopped service reads the token at its next start, so only a running one needs a restart
+	property bool serviceRunning: false
+
+	onServiceRunningChanged: {
+		if (!tokenView.serviceRunning){
+			tokenView.restartRequired = false
+		}
+	}
+
 	// What the sign-in at the server is for: "set" or "revoke"
 	property string pendingAction: ""
 
@@ -61,13 +70,13 @@ ElementView {
 		function onTokenChanged(token, restartRequired){
 			tokenView.busy = false
 			tokenView.token = token
-			tokenView.restartRequired = tokenView.restartRequired || restartRequired
+			tokenView.restartRequired = tokenView.serviceRunning && (tokenView.restartRequired || restartRequired)
 		}
 
 		function onTokenRevoked(){
 			tokenView.busy = false
 			tokenView.token = null
-			tokenView.restartRequired = true
+			tokenView.restartRequired = false
 		}
 
 		function onFailed(message){
@@ -85,7 +94,8 @@ ElementView {
 			return qsTr("No token: the server at the other end refuses this service")
 		}
 
-		let text = qsTr("%1 permissions at %2, issued %3").arg(tokenView.token.scopes.length).arg(tokenView.token.receiverProductId).arg(tokenView.token.issuedAt)
+		let issuedAt = Qt.formatDateTime(new Date(tokenView.token.issuedAt), "yyyy-MM-dd HH:mm")
+		let text = qsTr("%1 permissions at %2, issued %3").arg(tokenView.token.scopes.length).arg(tokenView.token.receiverProductId).arg(issuedAt)
 		if (tokenView.restartRequired){
 			text = text + ". " + qsTr("Restart the service to use the new token.")
 		}
@@ -157,7 +167,7 @@ ElementView {
 			contentComp: Component {
 				Item {
 					width: signInDialog.width
-					height: signInContent.height
+					height: signInContent.height + 2 * Style.marginL
 
 					Column {
 						id: signInContent

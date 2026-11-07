@@ -209,6 +209,9 @@ DocumentViewBase {
 	property bool isNewService: true
 	property string serviceStatus: ""
 	readonly property bool serviceRunning: serviceStatus === ServiceStatus.s_Running
+	// ServiceStatusModel state: unlike serviceStatus it tells a failed service from an unknown one
+	property string serviceState: ""
+	readonly property bool serviceFailed: serviceStatusModel.isFailed(serviceState)
 	property bool operationInProgress: false
 	property string operationDescription: ""
 	property bool serviceIsDirty: false
@@ -286,6 +289,7 @@ DocumentViewBase {
 
 	function setServiceStatus(status){
 		serviceStatus = normalizeServiceStatus(status)
+		serviceState = serviceStatusModel.normalize(status)
 	}
 
 	// isNewService must reflect whether the document has actually been persisted via
@@ -471,7 +475,8 @@ DocumentViewBase {
 				(serviceEditorContainer.serviceStatus === ServiceStatus.s_Running ? qsTr("Running") :
 					(serviceEditorContainer.serviceStatus === ServiceStatus.s_Starting ? qsTr("Starting") :
 						(serviceEditorContainer.serviceStatus === ServiceStatus.s_Stopping ? qsTr("Stopping") :
-							(serviceEditorContainer.serviceStatus === ServiceStatus.s_NotRunning ? qsTr("Stopped") : qsTr("Unknown"))))))
+							(serviceEditorContainer.serviceStatus === ServiceStatus.s_NotRunning ? qsTr("Stopped") :
+									(serviceEditorContainer.serviceFailed ? qsTr("Failed") : qsTr("Unknown")))))))
 		anchors.top: parent.top
 		anchors.right: parent.right
 		anchors.topMargin: Style.marginXL
@@ -491,7 +496,7 @@ DocumentViewBase {
 						// Undefined (agent offline / not yet known) is not an error like a crashed/
 						// failed service - it's neutral "we don't know", so it gets a neutral gray
 						// instead of the same red used for a real failure.
-						(serviceEditorContainer.serviceStatus === ServiceStatus.s_Undefined ? Style.subtitleColor : Style.errorColor))))
+						(serviceEditorContainer.serviceStatus === ServiceStatus.s_Undefined && !serviceEditorContainer.serviceFailed ? Style.subtitleColor : Style.errorColor))))
 		border.width: 1
 		z: 100
 		
@@ -515,7 +520,7 @@ DocumentViewBase {
 				radius: 5
 				anchors.verticalCenter: parent.verticalCenter
 				color: serviceEditorContainer.serviceRunning ? Style.greenColor :
-					(serviceEditorContainer.serviceStatus === ServiceStatus.s_Undefined ? Style.subtitleColor : Style.errorColor)
+					(serviceEditorContainer.serviceStatus === ServiceStatus.s_Undefined && !serviceEditorContainer.serviceFailed ? Style.subtitleColor : Style.errorColor)
 				visible: !serviceEditorContainer.isNewService && !serviceEditorContainer.operationInProgress
 			}
 			
@@ -1472,6 +1477,7 @@ DocumentViewBase {
 								connectionId: model.item ? "" + model.item.m_id : ""
 								transportComp: serviceEditorContainer.connectionTokenTransportComp
 								headersProvider: serviceEditorContainer
+								serviceRunning: serviceEditorContainer.serviceRunning
 							}
 
 							// One candidate row, or null when the list is not loaded / index is stale.
@@ -1605,6 +1611,12 @@ DocumentViewBase {
 						return
 					}
 
+					// Each assignment below fires onXxxChanged -> doUpdateModel(), which would write the
+					// fields not refreshed yet (e.g. an empty script path) back into serviceData.
+					let wasBlocking = serviceEditorContainer.internal__
+								? serviceEditorContainer.internal__.blockingUpdateModel : false
+					serviceEditorContainer.setBlockingUpdateModel(true)
+
 					switchAutoStart.checked = serviceEditorContainer.serviceData.m_isAutoStart
 					
 					if (serviceEditorContainer.serviceData.m_tracingLevel > -1){
@@ -1632,6 +1644,8 @@ DocumentViewBase {
 					else{
 						stopScriptChecked.checked = false
 					}
+
+					serviceEditorContainer.setBlockingUpdateModel(wasBlocking)
 				}
 				
 				function updateModel(){

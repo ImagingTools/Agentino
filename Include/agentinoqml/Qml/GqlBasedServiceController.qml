@@ -30,15 +30,13 @@ ServiceController {
 
 	function normalizeServiceStatus(status){
 		// Map through single ServiceStatusModel then back to SDL enum tokens.
-		// unknown/failed/crashed stay s_Undefined so Start/Stop stay disabled.
+		// unknown becomes s_Undefined; a failure has no token and passes as is, so it can still be restarted.
 		let n = serviceStatusModel.normalize(status)
 		if (n === serviceStatusModel.running) return ServiceStatus.s_Running
 		if (n === serviceStatusModel.starting) return ServiceStatus.s_Starting
 		if (n === serviceStatusModel.stopping) return ServiceStatus.s_Stopping
 		if (n === serviceStatusModel.stopped) return ServiceStatus.s_NotRunning
-		if (n === serviceStatusModel.unknown
-					|| n === serviceStatusModel.failed
-					|| n === serviceStatusModel.crashed)
+		if (n === serviceStatusModel.unknown)
 			return ServiceStatus.s_Undefined
 		return status
 	}
