@@ -422,6 +422,15 @@
         <Element Id="ConnectionTokenController" PackageId="AgentGqlPck" ComponentId="AgentConnectionTokenController">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>GetAgentConnectionToken</Value>
+                                <Value>StoreAgentConnectionToken</Value>
+                                <Value>RemoveAgentConnectionToken</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>

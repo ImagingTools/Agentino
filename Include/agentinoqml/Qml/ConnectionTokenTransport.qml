@@ -1,5 +1,4 @@
 import QtQuick 2.0
-import Acf 1.0
 import imtguigql 1.0
 import agentinoConnectionTokensSdl 1.0
 
@@ -186,6 +185,12 @@ QtObject {
 		sdlObjectComp: Component {
 			RevokeConnectionTokenPayload {
 				onFinished: {
+					if (m_success !== true){
+						root.failed(qsTr("The token was not revoked"))
+
+						return
+					}
+
 					root.tokenRevoked()
 				}
 			}

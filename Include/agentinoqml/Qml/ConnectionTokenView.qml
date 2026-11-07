@@ -1,6 +1,5 @@
 import QtQuick 2.0
 import Acf 1.0
-import com.imtcore.imtqml 1.0
 import imtgui 1.0
 import imtcontrols 1.0
 import imtauthgui 1.0
@@ -39,8 +38,25 @@ ElementView {
 	// What the sign-in at the server is for: "set" or "revoke"
 	property string pendingAction: ""
 
+	// The token is read once the row is shown for a linked connection
 	Component.onCompleted: {
-		if (!tokenView.transportComp){
+		tokenView.requestTokenIfShown()
+	}
+
+	onVisibleChanged: {
+		tokenView.requestTokenIfShown()
+	}
+
+	onConnectionIdChanged: {
+		tokenView.requestTokenIfShown()
+	}
+
+	onServiceIdChanged: {
+		tokenView.requestTokenIfShown()
+	}
+
+	function requestTokenIfShown(){
+		if (tokenView.transport || !tokenView.transportComp || !tokenView.visible || tokenView.serviceId === "" || tokenView.connectionId === ""){
 			return
 		}
 
@@ -76,7 +92,8 @@ ElementView {
 		function onTokenRevoked(){
 			tokenView.busy = false
 			tokenView.token = null
-			tokenView.restartRequired = false
+			// The running process keeps the revoked token until it is restarted
+			tokenView.restartRequired = tokenView.serviceRunning
 		}
 
 		function onFailed(message){
@@ -91,7 +108,9 @@ ElementView {
 		}
 
 		if (!tokenView.token){
-			return qsTr("No token: the server at the other end refuses this service")
+			let noTokenText = qsTr("No token: the server at the other end refuses this service")
+
+			return tokenView.restartRequired ? noTokenText + ". " + qsTr("Restart the service to stop using the revoked token.") : noTokenText
 		}
 
 		let issuedAt = Qt.formatDateTime(new Date(tokenView.token.issuedAt), "yyyy-MM-dd HH:mm")
@@ -308,8 +327,6 @@ ElementView {
 							controlPanelTopMargin: Style.marginS
 							treeTopMargin: Style.marginXS
 							treeBottomMargin: Style.marginS
-							readOnly: false
-							showControlPanel: true
 						}
 					}
 				}

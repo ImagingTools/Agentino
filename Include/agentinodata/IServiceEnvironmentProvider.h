@@ -9,6 +9,9 @@
 // ACF includes
 #include <istd/IPolymorphic.h>
 
+// Agentino includes
+#include <agentinodata/IServiceInfo.h>
+
 
 namespace agentinodata
 {
@@ -22,7 +25,7 @@ class IServiceEnvironmentProvider: virtual public istd::IPolymorphic
 public:
 	typedef QHash<QString, QString> Environment;
 
-	virtual Environment GetServiceEnvironment(const QByteArray& serviceId) const = 0;
+	virtual Environment GetServiceEnvironment(const QByteArray& serviceId, IServiceInfo& serviceInfo) const = 0;
 };
 
 

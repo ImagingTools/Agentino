@@ -24,7 +24,7 @@ namespace agentinodata
 
 /**
 	The tokens of the output connections in a file readable by the account of the agent only, their values protected.
-	A service gets each of its tokens in the environment variable the server of the token is read from.
+	A service gets the tokens of its linked output connections, each in the environment variable the server of the token is read from.
 */
 class CConnectionTokenStoreComp:
 			public ilog::CLoggerComponentBase,
@@ -47,7 +47,7 @@ public:
 	virtual bool RemoveToken(const QByteArray& serviceId, const QByteArray& connectionId) override;
 
 	// reimplemented (IServiceEnvironmentProvider)
-	virtual Environment GetServiceEnvironment(const QByteArray& serviceId) const override;
+	virtual Environment GetServiceEnvironment(const QByteArray& serviceId, IServiceInfo& serviceInfo) const override;
 
 private:
 	/**

@@ -235,7 +235,7 @@ DocumentViewBase {
 
 	function normalizeServiceStatus(status){
 		if (serviceStatusModel !== null) {
-			// unknown/failed/crashed → s_Undefined (Start/Stop disabled when agent offline).
+			// unknown/failed/crashed → s_Undefined; whether it can be started comes from serviceState
 			let n = serviceStatusModel.normalize(status)
 			if (n === serviceStatusModel.running) return ServiceStatus.s_Running
 			if (n === serviceStatusModel.starting) return ServiceStatus.s_Starting

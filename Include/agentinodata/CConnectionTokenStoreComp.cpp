@@ -12,6 +12,7 @@
 
 // ImtCore includes
 #include <imtclientgql/IServerCredentialProvider.h>
+#include <imtservice/IServiceConnectionLinkParam.h>
 
 
 namespace agentinodata
@@ -128,15 +129,35 @@ bool CConnectionTokenStoreComp::RemoveToken(const QByteArray& serviceId, const Q
 
 // reimplemented (IServiceEnvironmentProvider)
 
-IServiceEnvironmentProvider::Environment CConnectionTokenStoreComp::GetServiceEnvironment(const QByteArray& serviceId) const
+IServiceEnvironmentProvider::Environment CConnectionTokenStoreComp::GetServiceEnvironment(const QByteArray& serviceId, IServiceInfo& serviceInfo) const
 {
 	QMutexLocker locker(&m_mutex);
 
 	Environment environment;
+	QHash<QByteArray, QDateTime> issuedAtOfReceivers;
 
+	const imtbase::IObjectCollection* connectionsPtr = serviceInfo.GetDependantServiceConnections();
 	const QJsonObject serviceObject = GetTokens().value(QString::fromUtf8(serviceId)).toObject();
 	for (auto it = serviceObject.constBegin(); it != serviceObject.constEnd(); ++it){
+		// The token of an unlinked or removed connection stays with the agent
+		imtbase::IObjectCollection::DataPtr connectionDataPtr;
+		const auto* linkPtr = connectionsPtr != nullptr && connectionsPtr->GetObjectData(it.key().toUtf8(), connectionDataPtr)
+					? dynamic_cast<const imtservice::IServiceConnectionLinkParam*>(connectionDataPtr.GetPtr()) : nullptr;
+		if (linkPtr == nullptr || linkPtr->GetDependantServiceConnectionId().isEmpty()){
+			continue;
+		}
+
 		const QJsonObject tokenObject = it.value().toObject();
+		const IConnectionTokenStore::TokenInfo tokenInfo = ReadTokenInfo(tokenObject);
+
+		// A service reads one token per receiver: the latest one wins
+		const auto issuedAtIter = issuedAtOfReceivers.constFind(tokenInfo.receiverProductId);
+		if (issuedAtIter != issuedAtOfReceivers.constEnd()){
+			SendWarningMessage(0, QStringLiteral("Service '%1' has several tokens for '%2', the latest one is used").arg(QString::fromUtf8(serviceId), QString::fromUtf8(tokenInfo.receiverProductId)), "CConnectionTokenStoreComp");
+			if (*issuedAtIter >= tokenInfo.issuedAt){
+				continue;
+			}
+		}
 
 		QByteArray value;
 		if (!m_secretProtectorCompPtr->Unprotect(QByteArray::fromBase64(tokenObject.value(s_valueKey).toString().toLatin1()), value)){
@@ -145,8 +166,8 @@ IServiceEnvironmentProvider::Environment CConnectionTokenStoreComp::GetServiceEn
 			continue;
 		}
 
-		const QByteArray receiverProductId = tokenObject.value(s_receiverKey).toString().toUtf8();
-		environment.insert(QString::fromUtf8(imtclientgql::GetServerCredentialVariableName(receiverProductId)), QString::fromUtf8(value));
+		issuedAtOfReceivers.insert(tokenInfo.receiverProductId, tokenInfo.issuedAt);
+		environment.insert(QString::fromUtf8(imtclientgql::GetServerCredentialVariableName(tokenInfo.receiverProductId)), QString::fromUtf8(value));
 	}
 
 	return environment;

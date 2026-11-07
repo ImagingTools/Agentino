@@ -38,7 +38,7 @@ public:
 		QString workingDirectory;
 
 		/**
-			Variables added to the environment of the agent.
+			Variables added to the environment of the started process, on top of the agent's.
 		*/
 		QHash<QString, QString> environment;
 	};
