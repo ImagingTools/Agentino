@@ -13,6 +13,9 @@
 #include <imtgql/CGqlContext.h>
 #include <imtservice/IServiceConnectionLinkParam.h>
 
+// Agentino includes
+#include <agentinodata/ServiceEndpointId.h>
+
 
 namespace agentinogql
 {
@@ -56,7 +59,17 @@ sdl::V1_0::agentino::CConnectionTokenState CConnectionTokenControllerComp::OnGet
 	connection.serviceId = *arguments.input->serviceId;
 	connection.connectionId = *arguments.input->connectionId;
 
-	GetStoredToken(connection, response, errorMessage);
+	if (!GetStoredToken(connection, response, errorMessage)){
+		return response;
+	}
+
+	// Whether a token can be issued here, and why not
+	Connection target;
+	QString refusal;
+	response.canIssue = FindConnection(gqlRequest, connection.serviceId, connection.connectionId, target, refusal) && CheckReceiver(target, refusal);
+	if (!refusal.isEmpty()){
+		response.cannotIssueReason = refusal;
+	}
 
 	return response;
 }
@@ -81,7 +94,7 @@ sdl::V1_0::agentino::CConnectionTokenCatalog CConnectionTokenControllerComp::OnG
 	}
 
 	Connection connection;
-	if (!FindConnection(gqlRequest, *arguments.input->serviceId, *arguments.input->connectionId, connection, errorMessage)){
+	if (!FindConnection(gqlRequest, *arguments.input->serviceId, *arguments.input->connectionId, connection, errorMessage) || !CheckReceiver(connection, errorMessage)){
 		return response;
 	}
 
@@ -277,7 +290,7 @@ bool CConnectionTokenControllerComp::ChangeToken(
 			QString& errorMessage) const
 {
 	Connection connection;
-	if (!FindConnection(gqlRequest, session.serviceId, session.connectionId, connection, errorMessage)){
+	if (!FindConnection(gqlRequest, session.serviceId, session.connectionId, connection, errorMessage) || !CheckReceiver(connection, errorMessage)){
 		return false;
 	}
 
@@ -338,6 +351,31 @@ bool CConnectionTokenControllerComp::ChangeToken(
 }
 
 
+bool CConnectionTokenControllerComp::CheckReceiver(const Connection& connection, QString& errorMessage) const
+{
+	QByteArray serviceId;
+	QByteArray connectionId;
+	const QByteArray agentId = agentinodata::ServiceEndpointId::Parse(connection.receiverEndpointId, serviceId, connectionId)
+				? m_serviceManagerCompPtr->FindServiceAgent(serviceId)
+				: QByteArray();
+	if (agentId.isEmpty()){
+		errorMessage = QStringLiteral("The server the connection goes to is not known: its agent is not connected");
+
+		return false;
+	}
+
+	// Only a service whose plugin declares the input receives server tokens
+	istd::TDelPtr<agentinodata::IServiceInfo> receiverPtr(m_serviceManagerCompPtr->GetService(agentId, serviceId));
+	if (!receiverPtr.IsValid() || !receiverPtr->IsServerTokenReceiver(connectionId)){
+		errorMessage = QStringLiteral("The server the connection goes to does not receive server tokens");
+
+		return false;
+	}
+
+	return true;
+}
+
+
 bool CConnectionTokenControllerComp::FindConnection(
 			const ::imtgql::CGqlRequest& gqlRequest,
 			const QByteArray& serviceId,
@@ -371,6 +409,8 @@ bool CConnectionTokenControllerComp::FindConnection(
 
 		return false;
 	}
+
+	connection.receiverEndpointId = linkPtr->GetDependantServiceConnectionId();
 
 	// The servers of the products answer GraphQL under their product ID
 	connection.server.productId = linkPtr->GetServiceTypeId();

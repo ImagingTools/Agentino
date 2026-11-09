@@ -48,7 +48,7 @@ function accepted(command, checks){
 
 // The commands of the connection tokens; the service and the connection do not have to exist for the access checks
 const commands = {
-	GetConnectionToken: 'query GetConnectionToken { GetConnectionToken(input: { serviceId: "ct-service", connectionId: "ct-connection" }) { token { tokenId } } }',
+	GetConnectionToken: 'query GetConnectionToken { GetConnectionToken(input: { serviceId: "ct-service", connectionId: "ct-connection" }) { token { tokenId } canIssue cannotIssueReason } }',
 	GetConnectionTokenCatalog: 'query GetConnectionTokenCatalog { GetConnectionTokenCatalog(input: { serviceId: "ct-service", connectionId: "ct-connection", password: "any" }) { signInId } }',
 	SetConnectionToken: 'mutation SetConnectionToken { SetConnectionToken(input: { serviceId: "ct-service", connectionId: "ct-connection", signInId: "ct-sign-in", scopes: [] }) { restartRequired } }',
 	RevokeConnectionToken: 'mutation RevokeConnectionToken { RevokeConnectionToken(input: { serviceId: "ct-service", connectionId: "ct-connection", password: "any" }) { success } }',
@@ -91,7 +91,7 @@ const signIns = {
 	item: [
 		item('su reads the token of a connection', commands.GetConnectionToken, {
 			auth: '{{su_token}}',
-			test: accepted('GetConnectionToken', ["pm.test('no token held', function () { pm.expect(payload.token || null).to.eql(null); });"])
+			test: accepted('GetConnectionToken', ["pm.test('no token held', function () { pm.expect(payload.token || null).to.eql(null); });", "pm.test('no token can be issued for a service of no agent, and why', function () { pm.expect(payload.canIssue).to.eql(false); pm.expect(payload.cannotIssueReason).to.match(/The service 'ct-service' of agent '[^']+' is unknown/); });"])
 		}),
 		item('a token is not changed without a sign-in of this server', commands.SetConnectionToken, { auth: '{{su_token}}', test: spentSignIn }),
 		item('an unknown sign-in cannot be cancelled', commands.CancelConnectionTokenSignIn, { auth: '{{su_token}}', test: spentSignIn }),

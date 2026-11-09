@@ -73,6 +73,11 @@ private:
 
 		QString tokenName;
 		imtauthgql::IServerTokenIssuer::ServerInfo server;
+
+		/**
+			The input of the service the connection goes to.
+		*/
+		QByteArray receiverEndpointId;
 	};
 
 	/**
@@ -95,6 +100,11 @@ private:
 				const ::imtgql::CGqlRequest& gqlRequest,
 				sdl::V1_0::agentino::CSetConnectionTokenPayload& response,
 				QString& errorMessage) const;
+
+	/**
+		Check that the service on the other end of the connection receives server tokens through it.
+	*/
+	bool CheckReceiver(const Connection& connection, QString& errorMessage) const;
 
 	bool FindConnection(
 				const ::imtgql::CGqlRequest& gqlRequest,

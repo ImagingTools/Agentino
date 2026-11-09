@@ -12,7 +12,7 @@ QtObject {
 
 	property var headersProvider: null
 
-	signal tokenReceived(var token)
+	signal tokenReceived(var token, bool canIssue, string cannotIssueReason)
 	signal catalogReceived(var catalog)
 	signal tokenChanged(var token, bool restartRequired)
 	signal tokenRevoked()
@@ -85,7 +85,7 @@ QtObject {
 		sdlObjectComp: Component {
 			ConnectionTokenState {
 				onFinished: {
-					root.tokenReceived(root.toToken(m_token))
+					root.tokenReceived(root.toToken(m_token), m_canIssue === true, m_cannotIssueReason ? String(m_cannotIssueReason) : "")
 				}
 			}
 		}

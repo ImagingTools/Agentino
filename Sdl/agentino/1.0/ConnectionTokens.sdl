@@ -27,6 +27,10 @@ input ConnectionTokenInput {
 type ConnectionTokenState {
 	# Missing when the connection holds no token.
 	token: ConnectionToken
+	# The connection goes to a server that receives server tokens, so a token can be issued for it.
+	canIssue: Boolean
+	# Why no token can be issued, e.g. the server of the connection does not receive server tokens.
+	cannotIssueReason: String
 }
 
 input ConnectionTokenCatalogInput {

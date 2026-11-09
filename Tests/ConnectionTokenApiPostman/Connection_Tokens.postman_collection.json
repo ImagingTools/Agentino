@@ -162,7 +162,7 @@
                         "body": {
                             "mode": "graphql",
                             "graphql": {
-                                "query": "query GetConnectionToken { GetConnectionToken(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\" }) { token { tokenId } } }",
+                                "query": "query GetConnectionToken { GetConnectionToken(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\" }) { token { tokenId } canIssue cannotIssueReason } }",
                                 "variables": ""
                             }
                         },
@@ -206,7 +206,7 @@
                         "body": {
                             "mode": "graphql",
                             "graphql": {
-                                "query": "query GetConnectionToken { GetConnectionToken(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\" }) { token { tokenId } } }",
+                                "query": "query GetConnectionToken { GetConnectionToken(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\" }) { token { tokenId } canIssue cannotIssueReason } }",
                                 "variables": ""
                             }
                         },
@@ -571,7 +571,8 @@
                                     "const json = pm.response.json();",
                                     "const payload = json.data && json.data.GetConnectionToken;",
                                     "pm.test('GetConnectionToken answered', function () { pm.expect(json.errors, JSON.stringify(json.errors)).to.eql(undefined); pm.expect(payload, JSON.stringify(json)).to.be.an('object'); });",
-                                    "pm.test('no token held', function () { pm.expect(payload.token || null).to.eql(null); });"
+                                    "pm.test('no token held', function () { pm.expect(payload.token || null).to.eql(null); });",
+                                    "pm.test('no token can be issued for a service of no agent, and why', function () { pm.expect(payload.canIssue).to.eql(false); pm.expect(payload.cannotIssueReason).to.match(/The service 'ct-service' of agent '[^']+' is unknown/); });"
                                 ]
                             }
                         }
@@ -591,7 +592,7 @@
                         "body": {
                             "mode": "graphql",
                             "graphql": {
-                                "query": "query GetConnectionToken { GetConnectionToken(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\" }) { token { tokenId } } }",
+                                "query": "query GetConnectionToken { GetConnectionToken(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\" }) { token { tokenId } canIssue cannotIssueReason } }",
                                 "variables": ""
                             }
                         },

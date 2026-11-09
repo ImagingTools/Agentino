@@ -60,6 +60,11 @@ public:
 	virtual IServiceInfo* GetService(const QByteArray& agentId, const QByteArray& serviceId) const = 0;
 
 	/**
+		\return the agent the service runs on, empty when no connected agent has it.
+	*/
+	virtual QByteArray FindServiceAgent(const QByteArray& serviceId) const = 0;
+
+	/**
 		Per-agent service collection (R1.3: not nested in CAgentInfo).
 		Default returns nullptr; CAgentServiceManagerComp implements.
 	*/

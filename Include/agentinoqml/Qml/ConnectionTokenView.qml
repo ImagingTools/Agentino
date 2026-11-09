@@ -25,6 +25,10 @@ ElementView {
 	property bool restartRequired: false
 	property bool busy: false
 
+	// The server of the connection receives server tokens; otherwise the reason
+	property bool canIssue: false
+	property string cannotIssueReason: ""
+
 	// A stopped service reads the token at its next start, so only a running one needs a restart
 	property bool serviceRunning: false
 
@@ -66,8 +70,10 @@ ElementView {
 	Connections {
 		target: tokenView.transport
 
-		function onTokenReceived(token){
+		function onTokenReceived(token, canIssue, cannotIssueReason){
 			tokenView.token = token
+			tokenView.canIssue = canIssue
+			tokenView.cannotIssueReason = cannotIssueReason
 		}
 
 		function onCatalogReceived(catalog){
@@ -103,6 +109,10 @@ ElementView {
 		}
 
 		if (!tokenView.token){
+			if (!tokenView.canIssue && tokenView.cannotIssueReason !== ""){
+				return tokenView.cannotIssueReason
+			}
+
 			let noTokenText = qsTr("No token: the server at the other end refuses this service")
 
 			return tokenView.restartRequired ? noTokenText + ". " + qsTr("Restart the service to stop using the revoked token.") : noTokenText
@@ -129,7 +139,7 @@ ElementView {
 
 			Button {
 				objectName: "ConnectionTokenSetButton"
-				enabled: !tokenView.busy
+				enabled: !tokenView.busy && tokenView.canIssue
 				text: tokenView.token ? qsTr("Permissions...") : qsTr("Issue Token...")
 				onClicked: {
 					tokenView.startAction("set")
