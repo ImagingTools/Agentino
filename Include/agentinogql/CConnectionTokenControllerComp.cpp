@@ -54,8 +54,8 @@ sdl::V1_0::agentino::CConnectionTokenCatalog CConnectionTokenControllerComp::OnG
 	sdl::V1_0::agentino::CConnectionTokenCatalog response;
 
 	const auto arguments = getConnectionTokenCatalogRequest.GetRequestedArguments();
-	if (!arguments.input || !arguments.input->serviceId || !arguments.input->connectionId || !arguments.input->login || !arguments.input->password){
-		errorMessage = QStringLiteral("The service, the connection and the sign-in are required");
+	if (!arguments.input || !arguments.input->serviceId || !arguments.input->connectionId || !arguments.input->password){
+		errorMessage = QStringLiteral("The service, the connection and the password of the superuser are required");
 
 		return response;
 	}
@@ -65,7 +65,7 @@ sdl::V1_0::agentino::CConnectionTokenCatalog CConnectionTokenControllerComp::OnG
 		return response;
 	}
 
-	const QByteArray sessionToken = m_tokenIssuerCompPtr->SignIn(connection.server, *arguments.input->login, *arguments.input->password, errorMessage);
+	const QByteArray sessionToken = m_tokenIssuerCompPtr->SignInSuperuser(connection.server, *arguments.input->password, errorMessage);
 	if (sessionToken.isEmpty()){
 		return response;
 	}
@@ -174,8 +174,8 @@ sdl::V1_0::agentino::CRevokeConnectionTokenPayload CConnectionTokenControllerCom
 	response.success = false;
 
 	const auto arguments = revokeConnectionTokenRequest.GetRequestedArguments();
-	if (!arguments.input || !arguments.input->serviceId || !arguments.input->connectionId || !arguments.input->login || !arguments.input->password){
-		errorMessage = QStringLiteral("The service, the connection and the sign-in are required");
+	if (!arguments.input || !arguments.input->serviceId || !arguments.input->connectionId || !arguments.input->password){
+		errorMessage = QStringLiteral("The service, the connection and the password of the superuser are required");
 
 		return response;
 	}
@@ -191,7 +191,7 @@ sdl::V1_0::agentino::CRevokeConnectionTokenPayload CConnectionTokenControllerCom
 	}
 
 	if (state.token && state.token->tokenId){
-		const QByteArray sessionToken = m_tokenIssuerCompPtr->SignIn(connection.server, *arguments.input->login, *arguments.input->password, errorMessage);
+		const QByteArray sessionToken = m_tokenIssuerCompPtr->SignInSuperuser(connection.server, *arguments.input->password, errorMessage);
 		if (sessionToken.isEmpty() || !m_tokenIssuerCompPtr->RevokeToken(connection.server, sessionToken, *state.token->tokenId, errorMessage)){
 			return response;
 		}

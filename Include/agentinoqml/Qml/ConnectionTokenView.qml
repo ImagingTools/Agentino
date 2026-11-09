@@ -152,14 +152,13 @@ ElementView {
 			id: signInDialog
 			title: tokenView.pendingAction === "revoke" ? qsTr("Revoke the token") : qsTr("Sign in to the server")
 			width: 420
-			height: 340
+			height: 290
 			backgroundColor: Style.baseColor
 
-			property string login: ""
 			property string password: ""
 
 			function updateApplyButton(){
-				signInDialog.setButtonEnabled(Enums.apply, signInDialog.login !== "" && signInDialog.password !== "")
+				signInDialog.setButtonEnabled(Enums.apply, signInDialog.password !== "")
 			}
 
 			onFinished: {
@@ -168,10 +167,10 @@ ElementView {
 
 				tokenView.busy = true
 				if (tokenView.pendingAction === "revoke"){
-					tokenView.transport.revokeToken(tokenView.serviceId, tokenView.connectionId, signInDialog.login, signInDialog.password)
+					tokenView.transport.revokeToken(tokenView.serviceId, tokenView.connectionId, signInDialog.password)
 				}
 				else{
-					tokenView.transport.requestCatalog(tokenView.serviceId, tokenView.connectionId, signInDialog.login, signInDialog.password)
+					tokenView.transport.requestCatalog(tokenView.serviceId, tokenView.connectionId, signInDialog.password)
 				}
 			}
 
@@ -197,26 +196,15 @@ ElementView {
 						BaseText {
 							width: parent.width
 							wrapMode: Text.WordWrap
-							text: qsTr("The server the connection goes to issues the token. Sign in there as a superuser; the sign-in is not kept.")
+							text: qsTr("The server the connection goes to issues the token. Enter the password of its superuser; the password is not kept.")
 							color: Style.inactiveTextColor
-						}
-
-						CustomTextField {
-							objectName: "ConnectionTokenLoginInput"
-							width: parent.width
-							height: Style.controlHeightM
-							placeHolderText: qsTr("Login")
-							onTextChanged: {
-								signInDialog.login = text.trim()
-								signInDialog.updateApplyButton()
-							}
 						}
 
 						CustomTextField {
 							objectName: "ConnectionTokenPasswordInput"
 							width: parent.width
 							height: Style.controlHeightM
-							placeHolderText: qsTr("Password")
+							placeHolderText: qsTr("Superuser password")
 							echoMode: TextInput.Password
 							onTextChanged: {
 								signInDialog.password = text

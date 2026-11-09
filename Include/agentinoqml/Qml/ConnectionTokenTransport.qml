@@ -32,10 +32,9 @@ QtObject {
 		root.tokenRequestSender.send(root.tokenInput)
 	}
 
-	function requestCatalog(serviceId, connectionId, login, password){
+	function requestCatalog(serviceId, connectionId, password){
 		root.catalogInput.m_serviceId = "" + serviceId
 		root.catalogInput.m_connectionId = "" + connectionId
-		root.catalogInput.m_login = login
 		root.catalogInput.m_password = password
 		root.catalogRequestSender.send(root.catalogInput)
 	}
@@ -48,10 +47,9 @@ QtObject {
 		root.setRequestSender.send(root.setInput)
 	}
 
-	function revokeToken(serviceId, connectionId, login, password){
+	function revokeToken(serviceId, connectionId, password){
 		root.revokeInput.m_serviceId = "" + serviceId
 		root.revokeInput.m_connectionId = "" + connectionId
-		root.revokeInput.m_login = login
 		root.revokeInput.m_password = password
 		root.revokeRequestSender.send(root.revokeInput)
 	}

@@ -9,7 +9,7 @@ connection: the output connection of a service linked to the input connection of
 | Part | Responsibility |
 |---|---|
 | Receiving server (Puma, later any) | Issues tokens for itself only, with the permissions the operator chooses (`CreateServerToken`, `UpdateServerTokenScopes`, `RevokeServerToken`). Agentino never decides permissions. |
-| Agentino server | Orchestrates: finds the link and the address of the receiving server in its mirror, opens a superuser session there with the sign-in the operator types (not kept), asks it for the permission tree and for the token, hands the token to the agent. |
+| Agentino server | Orchestrates: finds the link and the address of the receiving server in its mirror, opens a superuser session there with the superuser password the operator types (the login of the superuser is fixed; the password is not kept), asks it for the permission tree and for the token, hands the token to the agent. |
 | Agent | Keeps the token per service and output connection in `ConnectionTokens.json`, the value protected by the system (DPAPI on Windows, a file readable by the account of the agent elsewhere), and passes it to the service at its start in `IMT_<RECEIVER>_SERVER_CREDENTIAL`. The value never leaves the agent. |
 | Service | Reads the variable as before (`CServerCredentialProviderComp`); it does not know Agentino. |
 
@@ -26,7 +26,7 @@ connection: the output connection of a service linked to the input connection of
 ## Flow
 
 1. The operator opens the output connection of a linked service and chooses *Issue Token...*.
-2. Sign-in at the receiving server; the Agentino server answers with the permission tree and a session.
+2. The password of the superuser of the receiving server; the Agentino server answers with the permission tree and a session.
 3. The operator checks permissions; the receiving server issues the token, the agent stores it.
 4. The service gets the token at its next start. A change of permissions keeps the token and needs no restart.
 5. *Revoke* revokes the token at the receiving server and removes it from the agent.

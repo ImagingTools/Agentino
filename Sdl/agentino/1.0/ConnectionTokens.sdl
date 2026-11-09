@@ -32,8 +32,7 @@ type ConnectionTokenState {
 input ConnectionTokenCatalogInput {
 	serviceId: ID!
 	connectionId: ID!
-	# A superuser of the server the connection goes to; nothing of it is kept.
-	login: String!
+	# The password of the superuser of the server the connection goes to; it is not kept.
 	password: String!
 }
 
@@ -63,7 +62,6 @@ type SetConnectionTokenPayload {
 input RevokeConnectionTokenInput {
 	serviceId: ID!
 	connectionId: ID!
-	login: String!
 	password: String!
 }
 
