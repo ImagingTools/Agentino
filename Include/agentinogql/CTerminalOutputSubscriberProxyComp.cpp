@@ -5,12 +5,16 @@
 // Qt includes
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
+#include <QtCore/QJsonValue>
 #include <QtCore/QMutexLocker>
 
 // ImtCore includes
 #include <imtgql/CGqlContext.h>
 #include <imtgql/CGqlRequest.h>
 #include <imtgql/IGqlContext.h>
+
+// Agentino includes
+#include <agentinogql/CTerminalControllerProxyComp.h>
 
 
 namespace agentinogql
@@ -63,6 +67,49 @@ imtgql::CGqlRequest MakeAgentSubscriptionRequest(const imtgql::CGqlRequest& guiR
 	agentRequest.SetGqlContext(gqlContextPtr);
 
 	return agentRequest;
+}
+
+
+/**
+	The agent pushes the OnTerminalOutputChanged payload (sessionId, chunks, running, ...)
+	as the subscription data; tolerate one extra \c data / command-id wrapper level, as the
+	GUI-side TerminalController.qml unwrapPayload does.
+*/
+QJsonObject UnwrapOutputPayload(const QJsonObject& data)
+{
+	if (data.contains(QStringLiteral("running")) || data.contains(QStringLiteral("sessionId"))){
+		return data;
+	}
+
+	static const QString commandId = QStringLiteral("OnTerminalOutputChanged");
+	if (data.value(commandId).isObject()){
+		return data.value(commandId).toObject();
+	}
+
+	const QJsonObject dataWrap = data.value(QStringLiteral("data")).toObject();
+	if (dataWrap.value(commandId).isObject()){
+		return dataWrap.value(commandId).toObject();
+	}
+
+	return dataWrap.isEmpty() ? data : dataWrap;
+}
+
+
+bool IsSessionFinished(const QJsonObject& payload)
+{
+	const QJsonValue running = payload.value(QStringLiteral("running"));
+	if (running.isBool()){
+		return !running.toBool();
+	}
+	if (running.isString()){
+		return running.toString() == QStringLiteral("false");
+	}
+	if (running.isDouble()){
+		return running.toDouble() == 0;
+	}
+
+	// Missing/null: no statement about the session state.
+	return false;
 }
 
 
@@ -194,10 +241,29 @@ void CTerminalOutputSubscriberProxyComp::OnResponseReceived(
 
 	const QByteArray subscriptionTypeId = keys[0].toUtf8();
 
+	const QJsonObject jsonData = document.object().value(QString::fromUtf8(subscriptionTypeId)).toObject();
+
 	QByteArray localSubscriptionId;
+	QByteArray sessionId;
 	{
 		QMutexLocker stateLocker(&m_stateMutex);
 		localSubscriptionId = m_remoteSubscriptions.value(subscriptionId);
+		sessionId = m_subscriptionSessions.value(localSubscriptionId);
+	}
+
+	// Keep CTerminalControllerProxyComp's ownership table in step with the session's
+	// lifetime: a natural shell exit / agent idle close is only ever reported here (the GUI
+	// then forgets the session without sending CloseTerminalSession), and a session that is
+	// producing output is still in use even if its owner sends no requests.
+	const QJsonObject payload = UnwrapOutputPayload(jsonData);
+	if (sessionId.isEmpty()){
+		sessionId = payload.value(QStringLiteral("sessionId")).toString().toUtf8();
+	}
+	if (IsSessionFinished(payload)){
+		CTerminalControllerProxyComp::ReleaseSessionOwnership(sessionId);
+	}
+	else{
+		CTerminalControllerProxyComp::TouchSessionOwnership(sessionId);
 	}
 
 	// TEMP DIAGNOSTIC: confirms the server received a push from the agent and whether it
@@ -211,7 +277,6 @@ void CTerminalOutputSubscriberProxyComp::OnResponseReceived(
 		return;
 	}
 
-	const QJsonObject jsonData = document.object().value(QString::fromUtf8(subscriptionTypeId)).toObject();
 	const QByteArray body = QJsonDocument(jsonData).toJson(QJsonDocument::Compact);
 
 	// Push only to the GUI subscription that opened this agent subscription — do not

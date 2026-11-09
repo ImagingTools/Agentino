@@ -3,6 +3,7 @@
 
 
 // Qt includes
+#include <QtCore/QDateTime>
 #include <QtCore/QMap>
 #include <QtCore/QMutex>
 
@@ -34,6 +35,11 @@ namespace agentinogql
 	before forwarding, fail-closed (a sessionId this instance never recorded ownership for -
 	e.g. after a server restart - is refused, not merely warned about).
 
+	Ownership entries are released on CloseTerminalSession, on a GetTerminalOutput or a
+	relayed OnTerminalOutputChanged push reporting the session as no longer running, and -
+	as a backstop for sessions whose end is never observed - after
+	\ref SessionOwnerTtlSeconds without any owned request or relayed output.
+
 	\ingroup Terminal
 */
 class CTerminalControllerProxyComp:
@@ -46,6 +52,20 @@ public:
 
 	I_BEGIN_COMPONENT(CTerminalControllerProxyComp);
 	I_END_COMPONENT;
+
+	/**
+		Forget the owner of \p sessionId. Called by \ref CTerminalOutputSubscriberProxyComp
+		when a relayed output push reports the session as no longer running (natural shell
+		exit or agent idle close) - the GUI then only forgets the session locally and never
+		sends CloseTerminalSession, so without this the entry would never be released.
+	*/
+	static void ReleaseSessionOwnership(const QByteArray& sessionId);
+
+	/**
+		Mark \p sessionId as still in use (e.g. its output was just relayed), postponing
+		expiry of its ownership entry. No-op for unknown sessions.
+	*/
+	static void TouchSessionOwnership(const QByteArray& sessionId);
 
 protected:
 	// reimplemented (sdl::V1_0::agentino::CTerminalGqlHandlerCompBase)
@@ -101,11 +121,28 @@ private:
 	*/
 	bool CheckSessionOwnership(const imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const;
 
+	/**
+		Drop every ownership entry not used for longer than \ref SessionOwnerTtlSeconds.
+		Backstop for sessions whose end is never observed (no CloseTerminalSession, no
+		subscriber listening when the shell exited). Caller must hold s_sessionOwnersMutex.
+	*/
+	static void PruneExpiredSessionOwnersLocked(const QDateTime& now);
+
 private:
+	struct SessionOwner
+	{
+		QByteArray userId;
+		QDateTime lastActivity;
+	};
+
+	// Well above the agent's own idle timeout (15 min, CTerminalSessionManagerComp), so an
+	// entry only expires once the agent has certainly dropped the session as well.
+	static const int SessionOwnerTtlSeconds = 60 * 60;
+
 	// Shared by all instances: each request-handler worker owns an instance of this
 	// component, and a session opened through one is used through the others.
 	static QMutex s_sessionOwnersMutex;
-	static QMap<QByteArray, QByteArray> s_sessionOwners; // sessionId -> owning userId
+	static QMap<QByteArray, SessionOwner> s_sessionOwners; // sessionId -> owner
 };
 
 
