@@ -59,11 +59,14 @@ ElementView {
 	}
 
 	function requestTokenIfShown(){
-		if (tokenView.transport || !tokenView.transportComp || !tokenView.visible || tokenView.serviceId === "" || tokenView.connectionId === ""){
+		if (!tokenView.transportComp || !tokenView.visible || tokenView.serviceId === "" || tokenView.connectionId === ""){
 			return
 		}
 
-		tokenView.transport = tokenView.transportComp.createObject(tokenView)
+		if (!tokenView.transport){
+			tokenView.transport = tokenView.transportComp.createObject(tokenView)
+		}
+
 		tokenView.transport.requestToken(tokenView.serviceId, tokenView.connectionId)
 	}
 
@@ -89,7 +92,7 @@ ElementView {
 			tokenView.token = token
 			tokenView.restartRequired = restartRequired
 			if (restarted){
-				PopupManager.addSuccessMessage(qsTr("The service has been restarted with the new token"), true)
+				PopupManager.addSuccessMessage(qsTr("The service is being restarted with the new token"), true)
 			}
 		}
 

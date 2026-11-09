@@ -150,6 +150,11 @@ IServiceEnvironmentProvider::Environment CConnectionTokenStoreComp::GetServiceEn
 		const QJsonObject tokenObject = it.value().toObject();
 		const IConnectionTokenStore::TokenInfo tokenInfo = ReadTokenInfo(tokenObject);
 
+		// A connection retargeted to another server type does not get the token of the old one
+		if (linkPtr->GetServiceTypeId() != tokenInfo.receiverProductId){
+			continue;
+		}
+
 		// A service reads one token per receiver: the latest one wins
 		const auto issuedAtIter = issuedAtOfReceivers.constFind(tokenInfo.receiverProductId);
 		if (issuedAtIter != issuedAtOfReceivers.constEnd()){

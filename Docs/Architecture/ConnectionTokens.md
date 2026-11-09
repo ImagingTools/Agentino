@@ -30,7 +30,7 @@ connection: the output connection of a service linked to the input connection of
 1. The operator opens the output connection of a linked service and chooses *Issue Token...*.
 2. The password of the superuser of the receiving server; the Agentino server answers with the permission tree and a session.
 3. The operator checks permissions; the receiving server issues the token, the agent stores it.
-4. The service gets the token with its environment when it starts. A running service is restarted by the agent right after a new token is stored (`IServiceController::RestartService`: stop, then start once the process has ended); the operator sees that it was restarted, or that the restart failed. A change of permissions keeps the token and needs no restart; a revoked token is refused by the receiver at once.
+4. The service gets the token with its environment when it starts. A running service is restarted by the agent right after a new token is stored (`IServiceController::RestartService`: stop, then start once the process has ended); the operator sees that the restart has begun, or that it could not begin. The stop may end later (a signal on Linux, an adopted process), so a start that fails afterwards shows in the status and the log of the service. A change of permissions keeps the token and needs no restart; a revoked token is refused by the receiver at once.
 5. *Revoke* revokes the token at the receiving server and removes it from the agent.
 
 The console of the receiving server (Puma's product page) stays an alternative for installations without Agentino.

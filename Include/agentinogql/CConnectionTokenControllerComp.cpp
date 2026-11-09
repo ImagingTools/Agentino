@@ -294,8 +294,13 @@ bool CConnectionTokenControllerComp::ChangeToken(
 		return false;
 	}
 
-	// The token is changed where the operator signed in
-	connection.server = session.server;
+	// A link changed after the sign-in would get a token of the server it no longer points to
+	if (connection.server.url != session.server.url || connection.server.productId != session.server.productId){
+		errorMessage = QStringLiteral("The connection has changed since the sign-in, sign in again");
+
+		return false;
+	}
+
 	const QByteArray& sessionToken = session.sessionToken;
 
 	sdl::V1_0::agentino::CConnectionTokenState state;

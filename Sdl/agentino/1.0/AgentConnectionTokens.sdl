@@ -21,7 +21,7 @@ input StoreConnectionTokenInput {
 
 type ConnectionTokenChangePayload {
 	success: Boolean!
-	# A running service was restarted to take the new token (false: the restart failed); missing when it does not run.
+	# The restart of a running service has begun, so that it takes the new token (false: it could not begin); missing when it does not run. A start that fails later shows in the status of the service.
 	restarted: Boolean
 }
 
