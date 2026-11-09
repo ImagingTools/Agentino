@@ -252,11 +252,14 @@ ElementView {
 			}
 
 			onFinished: {
-				if (buttonId !== Enums.apply || !permissionsDialog.permissionsView)
+				if (buttonId !== Enums.apply || !permissionsDialog.permissionsView){
+					tokenView.transport.cancelSignIn(permissionsDialog.catalog.signInId)
+
 					return
+				}
 
 				tokenView.busy = true
-				tokenView.transport.setToken(tokenView.serviceId, tokenView.connectionId, permissionsDialog.catalog.sessionToken, permissionsDialog.permissionsView.getCheckedIds())
+				tokenView.transport.setToken(tokenView.serviceId, tokenView.connectionId, permissionsDialog.catalog.signInId, permissionsDialog.permissionsView.getCheckedIds())
 			}
 
 			Component.onCompleted: {

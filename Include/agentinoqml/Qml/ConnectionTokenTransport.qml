@@ -5,7 +5,7 @@ import agentinoConnectionTokensSdl 1.0
 /**
 	L3 transport of the token of one output connection.
 	The view gets plain objects: a token {tokenId, receiverProductId, scopes, issuedAt}, a catalog
-	{sessionToken, receiverProductId, groups, requiredPermissions, token} with groups as PermissionsTableView takes them.
+	{signInId, receiverProductId, groups, requiredPermissions, token, clientAdded} with groups as PermissionsTableView takes them.
 */
 QtObject {
 	id: root
@@ -39,10 +39,10 @@ QtObject {
 		root.catalogRequestSender.send(root.catalogInput)
 	}
 
-	function setToken(serviceId, connectionId, sessionToken, scopes){
+	function setToken(serviceId, connectionId, signInId, scopes){
 		root.setInput.m_serviceId = "" + serviceId
 		root.setInput.m_connectionId = "" + connectionId
-		root.setInput.m_sessionToken = sessionToken
+		root.setInput.m_signInId = signInId
 		root.setInput.m_scopes = scopes
 		root.setRequestSender.send(root.setInput)
 	}
@@ -52,6 +52,12 @@ QtObject {
 		root.revokeInput.m_connectionId = "" + connectionId
 		root.revokeInput.m_password = password
 		root.revokeRequestSender.send(root.revokeInput)
+	}
+
+	// The operator closed the permissions: the session at the other server ends
+	function cancelSignIn(signInId){
+		root.cancelInput.m_signInId = signInId
+		root.cancelRequestSender.send(root.cancelInput)
 	}
 
 	function toToken(token){
@@ -71,6 +77,7 @@ QtObject {
 	property ConnectionTokenCatalogInput catalogInput: ConnectionTokenCatalogInput {}
 	property SetConnectionTokenInput setInput: SetConnectionTokenInput {}
 	property RevokeConnectionTokenInput revokeInput: RevokeConnectionTokenInput {}
+	property CancelConnectionTokenSignInInput cancelInput: CancelConnectionTokenSignInInput {}
 
 	// Wire command names as string literals so JQML never sends with an unresolved singleton binding
 	property GqlSdlRequestSender tokenRequestSender: GqlSdlRequestSender {
@@ -98,7 +105,7 @@ QtObject {
 			ConnectionTokenCatalog {
 				onFinished: {
 					root.catalogReceived({
-						"sessionToken": String(m_sessionToken),
+						"signInId": String(m_signInId),
 						"receiverProductId": String(m_receiverProductId),
 						"groups": PermissionGroups.toFlatArray(m_groups),
 						"requiredPermissions": Array.isArray(m_requiredPermissions) ? m_requiredPermissions : [],
@@ -161,6 +168,18 @@ QtObject {
 
 		function onError(message, type){
 			root.failed(message)
+		}
+	}
+
+	property GqlSdlRequestSender cancelRequestSender: GqlSdlRequestSender {
+		gqlCommandId: "CancelConnectionTokenSignIn"
+		requestType: 1
+		sdlObjectComp: Component {
+			CancelConnectionTokenSignInPayload {}
+		}
+
+		function getHeaders(){
+			return root.getHeaders()
 		}
 	}
 }

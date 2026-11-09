@@ -9,12 +9,24 @@
 #include <istd/TDelPtr.h>
 
 // ImtCore includes
+#include <imtauthgql/imtauthgql.h>
 #include <imtgql/CGqlContext.h>
 #include <imtservice/IServiceConnectionLinkParam.h>
 
 
 namespace agentinogql
 {
+
+
+namespace
+{
+
+
+// The operator chooses the permissions within this time after the sign-in
+const int s_signInLifetimeSecs = 10 * 60;
+
+
+} // namespace
 
 
 // protected methods
@@ -27,6 +39,10 @@ sdl::V1_0::agentino::CConnectionTokenState CConnectionTokenControllerComp::OnGet
 			QString& errorMessage) const
 {
 	sdl::V1_0::agentino::CConnectionTokenState response;
+
+	if (!CheckOperator(gqlRequest, errorMessage)){
+		return response;
+	}
 
 	const auto arguments = getConnectionTokenRequest.GetRequestedArguments();
 	if (!arguments.input || !arguments.input->serviceId || !arguments.input->connectionId){
@@ -53,6 +69,10 @@ sdl::V1_0::agentino::CConnectionTokenCatalog CConnectionTokenControllerComp::OnG
 {
 	sdl::V1_0::agentino::CConnectionTokenCatalog response;
 
+	if (!CheckOperator(gqlRequest, errorMessage)){
+		return response;
+	}
+
 	const auto arguments = getConnectionTokenCatalogRequest.GetRequestedArguments();
 	if (!arguments.input || !arguments.input->serviceId || !arguments.input->connectionId || !arguments.input->password){
 		errorMessage = QStringLiteral("The service, the connection and the password of the superuser are required");
@@ -72,21 +92,26 @@ sdl::V1_0::agentino::CConnectionTokenCatalog CConnectionTokenControllerComp::OnG
 
 	// The server issues tokens to its clients only: the product of the service becomes one
 	bool isClientAdded = false;
-	if (!m_tokenIssuerCompPtr->AddClient(connection.server, sessionToken, connection.clientProductId, QString::fromUtf8(connection.clientProductId), isClientAdded, errorMessage)){
-		return response;
-	}
-
 	sdl::V1_0::imtauth::CServerTokenReceiver permissions;
-	if (!m_tokenIssuerCompPtr->GetPermissions(connection.server, sessionToken, connection.clientProductId, permissions, errorMessage)){
-		return response;
-	}
-
 	sdl::V1_0::agentino::CConnectionTokenState state;
-	if (!GetStoredToken(connection, state, errorMessage)){
+	if (!m_tokenIssuerCompPtr->AddClient(connection.server, sessionToken, connection.clientProductId, QString::fromUtf8(connection.clientProductId), isClientAdded, errorMessage)
+				|| !m_tokenIssuerCompPtr->GetPermissions(connection.server, sessionToken, connection.clientProductId, permissions, errorMessage)
+				|| !GetStoredToken(connection, state, errorMessage)){
+		EndSession(connection.server, sessionToken);
+
 		return response;
 	}
 
-	response.sessionToken = sessionToken;
+	CReceiverSessionPool::Session session;
+	session.sessionToken = sessionToken;
+	session.server = connection.server;
+	session.operatorId = gqlRequest.GetRequestContext()->GetUserId();
+	session.agentId = connection.agentId;
+	session.serviceId = connection.serviceId;
+	session.connectionId = connection.connectionId;
+	session.expiresAt = QDateTime::currentDateTimeUtc().addSecs(s_signInLifetimeSecs);
+
+	response.signInId = m_sessionPool.Add(session);
 	response.receiverProductId = connection.server.productId;
 	response.groups = permissions.groups;
 	response.requiredPermissions = permissions.requiredPermissions;
@@ -104,69 +129,38 @@ sdl::V1_0::agentino::CSetConnectionTokenPayload CConnectionTokenControllerComp::
 {
 	sdl::V1_0::agentino::CSetConnectionTokenPayload response;
 
+	if (!CheckOperator(gqlRequest, errorMessage)){
+		return response;
+	}
+
 	const auto arguments = setConnectionTokenRequest.GetRequestedArguments();
-	if (!arguments.input || !arguments.input->serviceId || !arguments.input->connectionId || !arguments.input->sessionToken){
-		errorMessage = QStringLiteral("The service, the connection and the session are required");
+	if (!arguments.input || !arguments.input->serviceId || !arguments.input->connectionId || !arguments.input->signInId){
+		errorMessage = QStringLiteral("The service, the connection and the sign-in are required");
 
 		return response;
 	}
 
-	Connection connection;
-	if (!FindConnection(gqlRequest, *arguments.input->serviceId, *arguments.input->connectionId, connection, errorMessage)){
-		return response;
-	}
-
-	sdl::V1_0::agentino::CConnectionTokenState state;
-	if (!GetStoredToken(connection, state, errorMessage)){
-		return response;
-	}
-
-	const QByteArray sessionToken = *arguments.input->sessionToken;
-	QByteArrayList scopes = arguments.input->scopes ? arguments.input->scopes->ToList() : QByteArrayList();
-
-	sdl::V1_0::agentino::CConnectionToken token;
-	token.receiverProductId = connection.server.productId;
-
-	// A token of the same server keeps its value: only its permissions change, the service needs no restart
-	const bool isHeld = state.token && state.token->tokenId && state.token->receiverProductId
-				&& QByteArray(*state.token->receiverProductId) == connection.server.productId;
-	if (isHeld){
-		if (!m_tokenIssuerCompPtr->SetTokenScopes(connection.server, sessionToken, *state.token->tokenId, scopes, errorMessage)){
-			return response;
-		}
-
-		token.tokenId = state.token->tokenId;
-		token.issuedAt = state.token->issuedAt;
-		token.scopes.Emplace().FromList(scopes);
-		if (!StoreToken(connection, token, QByteArray(), errorMessage)){
-			return response;
-		}
-
-		response.token = token;
-		response.restartRequired = false;
+	CReceiverSessionPool::Session session;
+	if (!m_sessionPool.Take(*arguments.input->signInId, session)){
+		errorMessage = QStringLiteral("The sign-in has expired or has been used, sign in again");
 
 		return response;
 	}
 
-	QByteArray tokenId;
-	QByteArray value;
-	if (!m_tokenIssuerCompPtr->IssueToken(connection.server, sessionToken, connection.clientProductId, connection.tokenName, scopes, tokenId, value, errorMessage)){
-		return response;
-	}
-
-	token.tokenId = tokenId;
-	token.issuedAt = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
-	token.scopes.Emplace().FromList(scopes);
-	if (!StoreToken(connection, token, value, errorMessage)){
-		// A token nobody holds must not stay valid
-		QString revokeError;
-		m_tokenIssuerCompPtr->RevokeToken(connection.server, sessionToken, tokenId, revokeError);
+	// One session, one change of the token: it ends whatever the change gives
+	const bool isOwnSignIn = session.operatorId == gqlRequest.GetRequestContext()->GetUserId()
+				&& session.agentId == gqlRequest.GetHeader("clientid")
+				&& session.serviceId == *arguments.input->serviceId
+				&& session.connectionId == *arguments.input->connectionId;
+	if (!isOwnSignIn){
+		EndSession(session.server, session.sessionToken);
+		errorMessage = QStringLiteral("The sign-in belongs to another operator or connection");
 
 		return response;
 	}
 
-	response.token = token;
-	response.restartRequired = true;
+	ChangeToken(session, arguments.input->scopes ? arguments.input->scopes->ToList() : QByteArrayList(), gqlRequest, response, errorMessage);
+	EndSession(session.server, session.sessionToken);
 
 	return response;
 }
@@ -179,6 +173,10 @@ sdl::V1_0::agentino::CRevokeConnectionTokenPayload CConnectionTokenControllerCom
 {
 	sdl::V1_0::agentino::CRevokeConnectionTokenPayload response;
 	response.success = false;
+
+	if (!CheckOperator(gqlRequest, errorMessage)){
+		return response;
+	}
 
 	const auto arguments = revokeConnectionTokenRequest.GetRequestedArguments();
 	if (!arguments.input || !arguments.input->serviceId || !arguments.input->connectionId || !arguments.input->password){
@@ -199,7 +197,13 @@ sdl::V1_0::agentino::CRevokeConnectionTokenPayload CConnectionTokenControllerCom
 
 	if (state.token && state.token->tokenId){
 		const QByteArray sessionToken = m_tokenIssuerCompPtr->SignInSuperuser(connection.server, *arguments.input->password, errorMessage);
-		if (sessionToken.isEmpty() || !m_tokenIssuerCompPtr->RevokeToken(connection.server, sessionToken, *state.token->tokenId, errorMessage)){
+		if (sessionToken.isEmpty()){
+			return response;
+		}
+
+		const bool isRevoked = m_tokenIssuerCompPtr->RevokeToken(connection.server, sessionToken, *state.token->tokenId, errorMessage);
+		EndSession(connection.server, sessionToken);
+		if (!isRevoked){
 			return response;
 		}
 	}
@@ -210,7 +214,129 @@ sdl::V1_0::agentino::CRevokeConnectionTokenPayload CConnectionTokenControllerCom
 }
 
 
+sdl::V1_0::agentino::CCancelConnectionTokenSignInPayload CConnectionTokenControllerComp::OnCancelConnectionTokenSignIn(
+			const sdl::V1_0::agentino::CCancelConnectionTokenSignInGqlRequest& cancelConnectionTokenSignInRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::CCancelConnectionTokenSignInPayload response;
+	response.success = false;
+
+	if (!CheckOperator(gqlRequest, errorMessage)){
+		return response;
+	}
+
+	const auto arguments = cancelConnectionTokenSignInRequest.GetRequestedArguments();
+	CReceiverSessionPool::Session session;
+	if (!arguments.input || !arguments.input->signInId || !m_sessionPool.Take(*arguments.input->signInId, session)){
+		errorMessage = QStringLiteral("The sign-in has expired or has been used, sign in again");
+
+		return response;
+	}
+
+	// The session ends whoever cancels: a sign-in ID in other hands is spent as well
+	EndSession(session.server, session.sessionToken);
+	response.success = true;
+
+	return response;
+}
+
+
 // private methods
+
+bool CConnectionTokenControllerComp::CheckOperator(const ::imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+{
+	for (const CReceiverSessionPool::Session& session : m_sessionPool.TakeExpired()){
+		EndSession(session.server, session.sessionToken);
+	}
+
+	if (!imtauthgql::IsSuperuserSessionRequest(gqlRequest)){
+		errorMessage = QStringLiteral("Connection tokens are managed by a superuser session of Agentino");
+
+		return false;
+	}
+
+	return true;
+}
+
+
+void CConnectionTokenControllerComp::EndSession(const imtauthgql::IServerTokenIssuer::ServerInfo& server, const QByteArray& sessionToken) const
+{
+	QString errorMessage;
+	if (!m_tokenIssuerCompPtr->SignOut(server, sessionToken, errorMessage)){
+		SendWarningMessage(0, QStringLiteral("The session at '%1' did not end: %2").arg(QString::fromUtf8(server.productId), errorMessage), "CConnectionTokenControllerComp");
+	}
+}
+
+
+bool CConnectionTokenControllerComp::ChangeToken(
+			const CReceiverSessionPool::Session& session,
+			QByteArrayList scopes,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			sdl::V1_0::agentino::CSetConnectionTokenPayload& response,
+			QString& errorMessage) const
+{
+	Connection connection;
+	if (!FindConnection(gqlRequest, session.serviceId, session.connectionId, connection, errorMessage)){
+		return false;
+	}
+
+	// The token is changed where the operator signed in
+	connection.server = session.server;
+	const QByteArray& sessionToken = session.sessionToken;
+
+	sdl::V1_0::agentino::CConnectionTokenState state;
+	if (!GetStoredToken(connection, state, errorMessage)){
+		return false;
+	}
+
+	sdl::V1_0::agentino::CConnectionToken token;
+	token.receiverProductId = connection.server.productId;
+
+	// A token of the same server keeps its value: only its permissions change, the service needs no restart
+	const bool isHeld = state.token && state.token->tokenId && state.token->receiverProductId
+				&& QByteArray(*state.token->receiverProductId) == connection.server.productId;
+	if (isHeld){
+		if (!m_tokenIssuerCompPtr->SetTokenScopes(connection.server, sessionToken, *state.token->tokenId, scopes, errorMessage)){
+			return false;
+		}
+
+		token.tokenId = state.token->tokenId;
+		token.issuedAt = state.token->issuedAt;
+		token.scopes.Emplace().FromList(scopes);
+		if (!StoreToken(connection, token, QByteArray(), errorMessage)){
+			return false;
+		}
+
+		response.token = token;
+		response.restartRequired = false;
+
+		return true;
+	}
+
+	QByteArray tokenId;
+	QByteArray value;
+	if (!m_tokenIssuerCompPtr->IssueToken(connection.server, sessionToken, connection.clientProductId, connection.tokenName, scopes, tokenId, value, errorMessage)){
+		return false;
+	}
+
+	token.tokenId = tokenId;
+	token.issuedAt = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
+	token.scopes.Emplace().FromList(scopes);
+	if (!StoreToken(connection, token, value, errorMessage)){
+		// A token nobody holds must not stay valid
+		QString revokeError;
+		m_tokenIssuerCompPtr->RevokeToken(connection.server, sessionToken, tokenId, revokeError);
+
+		return false;
+	}
+
+	response.token = token;
+	response.restartRequired = true;
+
+	return true;
+}
+
 
 bool CConnectionTokenControllerComp::FindConnection(
 			const ::imtgql::CGqlRequest& gqlRequest,

@@ -694,6 +694,7 @@
                                 <Value>GetConnectionTokenCatalog</Value>
                                 <Value>SetConnectionToken</Value>
                                 <Value>RevokeConnectionToken</Value>
+                                <Value>CancelConnectionTokenSignIn</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

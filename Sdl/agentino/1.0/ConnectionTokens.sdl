@@ -37,8 +37,9 @@ input ConnectionTokenCatalogInput {
 }
 
 type ConnectionTokenCatalog {
-	# The session at the server for the following changes of the token.
-	sessionToken: ID!
+	# The sign-in at the server for SetConnectionToken: used once, by the same operator, for this connection only.
+	# The session itself stays on this server.
+	signInId: ID!
 	receiverProductId: ID!
 	groups: [PermissionGroup]
 	requiredPermissions: [ID]
@@ -50,7 +51,7 @@ type ConnectionTokenCatalog {
 input SetConnectionTokenInput {
 	serviceId: ID!
 	connectionId: ID!
-	sessionToken: ID!
+	signInId: ID!
 	scopes: [ID]
 }
 
@@ -71,6 +72,15 @@ type RevokeConnectionTokenPayload {
 	success: Boolean!
 }
 
+# The operator closes the dialog: the session at the server ends.
+input CancelConnectionTokenSignInInput {
+	signInId: ID!
+}
+
+type CancelConnectionTokenSignInPayload {
+	success: Boolean!
+}
+
 type Query {
 	GetConnectionToken (input: ConnectionTokenInput): ConnectionTokenState!
 	GetConnectionTokenCatalog (input: ConnectionTokenCatalogInput): ConnectionTokenCatalog!
@@ -79,4 +89,5 @@ type Query {
 type Mutation {
 	SetConnectionToken (input: SetConnectionTokenInput): SetConnectionTokenPayload!
 	RevokeConnectionToken (input: RevokeConnectionTokenInput): RevokeConnectionTokenPayload!
+	CancelConnectionTokenSignIn (input: CancelConnectionTokenSignInInput): CancelConnectionTokenSignInPayload!
 }
