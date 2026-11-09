@@ -5,6 +5,7 @@
 // Qt includes
 #include <QtCore/QHash>
 #include <QtCore/QProcess>
+#include <QtCore/QSet>
 #include <QtCore/QString>
 #include <QtCore/QTimer>
 
@@ -19,6 +20,7 @@
 #include <agentinodata/CServiceFsm.h>
 #include <agentinodata/IProcessHost.h>
 #include <agentinodata/IServiceController.h>
+#include <agentinodata/IServiceEnvironmentProvider.h>
 #include <agentinodata/IServiceSupervisor.h>
 #include <agentinodata/IServiceTypeCatalog.h>
 
@@ -51,6 +53,7 @@ public:
 		I_ASSIGN(m_serviceCollectionCompPtr, "ServiceCollection", "Authoritative service descriptors", true, "ServiceCollection");
 		I_ASSIGN(m_processHostCompPtr, "ProcessHost", "OS child-process port", true, "ProcessHost");
 		I_ASSIGN(m_typeCatalogCompPtr, "ServiceTypeCatalog", "Plugin catalog (once per type)", false, "ServiceTypeCatalog");
+		I_ASSIGN(m_environmentProviderCompPtr, "EnvironmentProvider", "Environment variables of a service, e.g. the tokens of its connections", false, "EnvironmentProvider");
 		I_ASSIGN(m_stopTimeoutMsAttrPtr, "StopTimeoutMs", "Graceful stop timeout before force-kill", false, 10000);
 		I_ASSIGN(m_stableSecondsAttrPtr, "StableSeconds", "Running duration before clearing restart budget", false, 15);
 		I_ASSIGN(m_runtimeStatePathAttrPtr, "RuntimeStatePath", "JSON file for durable service PIDs (adoption)", false, "ServiceRuntimePids.json");
@@ -65,6 +68,7 @@ public:
 	virtual IServiceStatusInfo::ServiceStatus GetServiceStatus(const QByteArray& serviceId) const override;
 	virtual bool StartService(const QByteArray& serviceId) override;
 	virtual bool StopService(const QByteArray& serviceId) override;
+	virtual bool RestartService(const QByteArray& serviceId) override;
 
 protected:
 	// reimplemented (icomp::CComponentBase)
@@ -121,6 +125,7 @@ private:
 	I_REF(imtbase::IObjectCollection, m_serviceCollectionCompPtr);
 	I_REF(IProcessHost, m_processHostCompPtr);
 	I_REF(IServiceTypeCatalog, m_typeCatalogCompPtr);
+	I_REF(IServiceEnvironmentProvider, m_environmentProviderCompPtr);
 	I_ATTR(int, m_stopTimeoutMsAttrPtr);
 	I_ATTR(int, m_stableSecondsAttrPtr);
 	I_ATTR(QString, m_runtimeStatePathAttrPtr);
@@ -129,6 +134,9 @@ private:
 	QHash<QByteArray, QTimer*> m_stopTimers;
 	QHash<QByteArray, QTimer*> m_restartTimers;
 	QHash<QByteArray, QTimer*> m_healthTimers;
+
+	// Stopped to be started again when their process has ended
+	QSet<QByteArray> m_pendingRestarts;
 	QHash<QByteArray, DurablePidEntry> m_durablePids;
 	int m_stopTimeoutMs = 10000;
 	int m_stableSeconds = 15;

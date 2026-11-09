@@ -40,6 +40,11 @@ I_EXPORT_COMPONENT(
 			"Service Controller Proxy");
 
 I_EXPORT_COMPONENT(
+			ConnectionTokenController,
+			"Tokens of the output connections, issued by the servers they go to",
+			"Connection Token Controller");
+
+I_EXPORT_COMPONENT(
 			TerminalControllerProxy,
 			"Remote terminal controller proxy",
 			"Remote Terminal Controller Proxy");

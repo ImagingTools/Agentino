@@ -1,0 +1,99 @@
+schema {
+	query: Query
+	mutation: Mutation
+	namespace: agentino
+	version: 1.0
+}
+
+import {
+	"../../../../ImtCore/Sdl/imtbase/1.0/ImtBaseTypes.sdl"
+	"../../../../ImtCore/Sdl/imtauth/1.0/Permissions.sdl"
+}
+
+# The token an output connection of a service holds at the server it connects to.
+# The server issues it for itself; its value stays on the agent of the service.
+type ConnectionToken {
+	tokenId: ID!
+	receiverProductId: ID!
+	scopes: [ID]
+	issuedAt: String
+}
+
+input ConnectionTokenInput {
+	serviceId: ID!
+	connectionId: ID!
+}
+
+type ConnectionTokenState {
+	# Missing when the connection holds no token.
+	token: ConnectionToken
+	# The connection goes to a server that receives server tokens, so a token can be issued for it.
+	canIssue: Boolean
+	# Why no token can be issued, e.g. the server of the connection does not receive server tokens.
+	cannotIssueReason: String
+}
+
+input ConnectionTokenCatalogInput {
+	serviceId: ID!
+	connectionId: ID!
+	# The password of the superuser of the server the connection goes to; it is not kept.
+	password: String!
+}
+
+type ConnectionTokenCatalog {
+	# The sign-in at the server for SetConnectionToken: used once, by the same operator, for this connection only.
+	# The session itself stays on this server.
+	signInId: ID!
+	receiverProductId: ID!
+	groups: [PermissionGroup]
+	requiredPermissions: [ID]
+	token: ConnectionToken
+	# The server has made the product of the service its client with this sign-in.
+	clientAdded: Boolean
+}
+
+input SetConnectionTokenInput {
+	serviceId: ID!
+	connectionId: ID!
+	signInId: ID!
+	scopes: [ID]
+}
+
+type SetConnectionTokenPayload {
+	token: ConnectionToken
+	# The restart of the running service with the new token has begun.
+	restarted: Boolean
+	# The service still runs with the old token: restarting it failed.
+	restartRequired: Boolean
+}
+
+# The superuser of the receiving server revokes the token there.
+input RevokeConnectionTokenInput {
+	serviceId: ID!
+	connectionId: ID!
+	password: String!
+}
+
+type RevokeConnectionTokenPayload {
+	success: Boolean!
+}
+
+# The operator closes the dialog: the session at the server ends.
+input CancelConnectionTokenSignInInput {
+	signInId: ID!
+}
+
+type CancelConnectionTokenSignInPayload {
+	success: Boolean!
+}
+
+type Query {
+	GetConnectionToken (input: ConnectionTokenInput): ConnectionTokenState!
+	GetConnectionTokenCatalog (input: ConnectionTokenCatalogInput): ConnectionTokenCatalog!
+}
+
+type Mutation {
+	SetConnectionToken (input: SetConnectionTokenInput): SetConnectionTokenPayload!
+	RevokeConnectionToken (input: RevokeConnectionTokenInput): RevokeConnectionTokenPayload!
+	CancelConnectionTokenSignIn (input: CancelConnectionTokenSignInInput): CancelConnectionTokenSignInPayload!
+}

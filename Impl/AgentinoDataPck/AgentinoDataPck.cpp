@@ -70,6 +70,11 @@ I_EXPORT_COMPONENT(
 			"Service-type plugin catalog (load once per type)",
 			"Service Type Catalog");
 
+I_EXPORT_COMPONENT(
+			ConnectionTokenStore,
+			"Tokens of the output connections of the services, kept protected",
+			"Connection Token Store");
+
 
 } // namespace AgentinoDataPck
 

@@ -49,6 +49,11 @@ bool GetRepresentationFromServerConnectionParam(
 			const imtcom::CServerConnectionInterfaceParam& serverConnectionParam,
 			sdl::V1_0::imtbase::CServerConnectionParam& serverConnectionRepresentation);
 
+/**
+	Check that the plugin of a service declares the input connection as receiving server tokens.
+*/
+bool IsServerTokenReceiver(const imtservice::IConnectionCollection& connectionCollection, const QByteArray& inputConnectionId);
+
 bool GetRepresentationFromConnectionCollection(
 			imtservice::IConnectionCollection& connectionCollection,
 			sdl::V1_0::agentino::CPluginInfo& connectionCollectionRepresentation);

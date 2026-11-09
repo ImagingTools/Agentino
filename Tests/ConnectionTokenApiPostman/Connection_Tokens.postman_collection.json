@@ -1,0 +1,787 @@
+{
+    "info": {
+        "name": "Agentino connection tokens",
+        "description": "Who manages the tokens of the output connections and how a sign-in at the receiving server is used. Run by Run-CiTests.ps1.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "00 Bootstrap",
+            "item": [
+                {
+                    "name": "su signs in",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const payload = json.data && json.data.Authorization;",
+                                    "pm.test('Authorization answered', function () { pm.expect(json.errors, JSON.stringify(json.errors)).to.eql(undefined); pm.expect(payload, JSON.stringify(json)).to.be.an('object'); });",
+                                    "pm.test('su token', function () { pm.expect(payload.token).to.be.a('string').and.not.empty; });",
+                                    "pm.environment.set('su_token', payload.token);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query Authorization { Authorization(input: { login: \"{{su_login}}\", password: \"{{su_password}}\" }) { token } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "su adds an ordinary user",
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.environment.set('ct_user_id', pm.variables.replaceIn('{{$guid}}'));",
+                                    "pm.environment.set('ct_user_login', 'ct.probe.' + Date.now());"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const payload = json.data && json.data.UserAdd;",
+                                    "pm.test('UserAdd answered', function () { pm.expect(json.errors, JSON.stringify(json.errors)).to.eql(undefined); pm.expect(payload, JSON.stringify(json)).to.be.an('object'); });",
+                                    "pm.test('added', function () { pm.expect(payload.id).to.eql(pm.environment.get('ct_user_id')); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "x-authentication-token",
+                                "value": "{{su_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation UserAdd { UserAdd(input: { id: \"{{ct_user_id}}\", typeId: \"User\", productId: \"Agentino\", item: { id: \"{{ct_user_id}}\", productId: \"Agentino\", name: \"Connection token probe\", username: \"{{ct_user_login}}\", password: \"CtProbe_2026x\", email: \"{{ct_user_login}}@test.local\", groups: [], roles: [], permissions: [], systemInfos: [] } }) { id } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "the ordinary user signs in",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const payload = json.data && json.data.Authorization;",
+                                    "pm.test('Authorization answered', function () { pm.expect(json.errors, JSON.stringify(json.errors)).to.eql(undefined); pm.expect(payload, JSON.stringify(json)).to.be.an('object'); });",
+                                    "pm.test('user token', function () { pm.expect(payload.token).to.be.a('string').and.not.empty; });",
+                                    "pm.environment.set('user_token', payload.token);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query Authorization { Authorization(input: { login: \"{{ct_user_login}}\", password: \"CtProbe_2026x\" }) { token } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "01 Who manages connection tokens",
+            "item": [
+                {
+                    "name": "GetConnectionToken: anonymous is refused",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const messages = (json.errors || []).map(function (e) { return e.message || ''; }).join(' | ');",
+                                    "pm.test('refused: /Connection tokens are managed by a superuser session of Agentino/', function () { pm.expect(messages, JSON.stringify(json)).to.match(/Connection tokens are managed by a superuser session of Agentino/); });",
+                                    "pm.test('no data', function () { const data = json.data || {}; Object.keys(data).forEach(function (k) { pm.expect(data[k], k).to.eql(null); }); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "clientid",
+                                "value": "{{client_id}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query GetConnectionToken { GetConnectionToken(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\" }) { token { tokenId } canIssue cannotIssueReason } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "GetConnectionToken: an ordinary user is refused",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const messages = (json.errors || []).map(function (e) { return e.message || ''; }).join(' | ');",
+                                    "pm.test('refused: /Connection tokens are managed by a superuser session of Agentino/', function () { pm.expect(messages, JSON.stringify(json)).to.match(/Connection tokens are managed by a superuser session of Agentino/); });",
+                                    "pm.test('no data', function () { const data = json.data || {}; Object.keys(data).forEach(function (k) { pm.expect(data[k], k).to.eql(null); }); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "x-authentication-token",
+                                "value": "{{user_token}}"
+                            },
+                            {
+                                "key": "clientid",
+                                "value": "{{client_id}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query GetConnectionToken { GetConnectionToken(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\" }) { token { tokenId } canIssue cannotIssueReason } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "GetConnectionTokenCatalog: anonymous is refused",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const messages = (json.errors || []).map(function (e) { return e.message || ''; }).join(' | ');",
+                                    "pm.test('refused: /Connection tokens are managed by a superuser session of Agentino/', function () { pm.expect(messages, JSON.stringify(json)).to.match(/Connection tokens are managed by a superuser session of Agentino/); });",
+                                    "pm.test('no data', function () { const data = json.data || {}; Object.keys(data).forEach(function (k) { pm.expect(data[k], k).to.eql(null); }); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "clientid",
+                                "value": "{{client_id}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query GetConnectionTokenCatalog { GetConnectionTokenCatalog(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\", password: \"any\" }) { signInId } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "GetConnectionTokenCatalog: an ordinary user is refused",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const messages = (json.errors || []).map(function (e) { return e.message || ''; }).join(' | ');",
+                                    "pm.test('refused: /Connection tokens are managed by a superuser session of Agentino/', function () { pm.expect(messages, JSON.stringify(json)).to.match(/Connection tokens are managed by a superuser session of Agentino/); });",
+                                    "pm.test('no data', function () { const data = json.data || {}; Object.keys(data).forEach(function (k) { pm.expect(data[k], k).to.eql(null); }); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "x-authentication-token",
+                                "value": "{{user_token}}"
+                            },
+                            {
+                                "key": "clientid",
+                                "value": "{{client_id}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query GetConnectionTokenCatalog { GetConnectionTokenCatalog(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\", password: \"any\" }) { signInId } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "SetConnectionToken: anonymous is refused",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const messages = (json.errors || []).map(function (e) { return e.message || ''; }).join(' | ');",
+                                    "pm.test('refused: /Connection tokens are managed by a superuser session of Agentino/', function () { pm.expect(messages, JSON.stringify(json)).to.match(/Connection tokens are managed by a superuser session of Agentino/); });",
+                                    "pm.test('no data', function () { const data = json.data || {}; Object.keys(data).forEach(function (k) { pm.expect(data[k], k).to.eql(null); }); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "clientid",
+                                "value": "{{client_id}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation SetConnectionToken { SetConnectionToken(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\", signInId: \"ct-sign-in\", scopes: [] }) { restartRequired } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "SetConnectionToken: an ordinary user is refused",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const messages = (json.errors || []).map(function (e) { return e.message || ''; }).join(' | ');",
+                                    "pm.test('refused: /Connection tokens are managed by a superuser session of Agentino/', function () { pm.expect(messages, JSON.stringify(json)).to.match(/Connection tokens are managed by a superuser session of Agentino/); });",
+                                    "pm.test('no data', function () { const data = json.data || {}; Object.keys(data).forEach(function (k) { pm.expect(data[k], k).to.eql(null); }); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "x-authentication-token",
+                                "value": "{{user_token}}"
+                            },
+                            {
+                                "key": "clientid",
+                                "value": "{{client_id}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation SetConnectionToken { SetConnectionToken(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\", signInId: \"ct-sign-in\", scopes: [] }) { restartRequired } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "RevokeConnectionToken: anonymous is refused",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const messages = (json.errors || []).map(function (e) { return e.message || ''; }).join(' | ');",
+                                    "pm.test('refused: /Connection tokens are managed by a superuser session of Agentino/', function () { pm.expect(messages, JSON.stringify(json)).to.match(/Connection tokens are managed by a superuser session of Agentino/); });",
+                                    "pm.test('no data', function () { const data = json.data || {}; Object.keys(data).forEach(function (k) { pm.expect(data[k], k).to.eql(null); }); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "clientid",
+                                "value": "{{client_id}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation RevokeConnectionToken { RevokeConnectionToken(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\", password: \"any\" }) { success } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "RevokeConnectionToken: an ordinary user is refused",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const messages = (json.errors || []).map(function (e) { return e.message || ''; }).join(' | ');",
+                                    "pm.test('refused: /Connection tokens are managed by a superuser session of Agentino/', function () { pm.expect(messages, JSON.stringify(json)).to.match(/Connection tokens are managed by a superuser session of Agentino/); });",
+                                    "pm.test('no data', function () { const data = json.data || {}; Object.keys(data).forEach(function (k) { pm.expect(data[k], k).to.eql(null); }); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "x-authentication-token",
+                                "value": "{{user_token}}"
+                            },
+                            {
+                                "key": "clientid",
+                                "value": "{{client_id}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation RevokeConnectionToken { RevokeConnectionToken(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\", password: \"any\" }) { success } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "CancelConnectionTokenSignIn: anonymous is refused",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const messages = (json.errors || []).map(function (e) { return e.message || ''; }).join(' | ');",
+                                    "pm.test('refused: /Connection tokens are managed by a superuser session of Agentino/', function () { pm.expect(messages, JSON.stringify(json)).to.match(/Connection tokens are managed by a superuser session of Agentino/); });",
+                                    "pm.test('no data', function () { const data = json.data || {}; Object.keys(data).forEach(function (k) { pm.expect(data[k], k).to.eql(null); }); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "clientid",
+                                "value": "{{client_id}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation CancelConnectionTokenSignIn { CancelConnectionTokenSignIn(input: { signInId: \"ct-sign-in\" }) { success } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "CancelConnectionTokenSignIn: an ordinary user is refused",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const messages = (json.errors || []).map(function (e) { return e.message || ''; }).join(' | ');",
+                                    "pm.test('refused: /Connection tokens are managed by a superuser session of Agentino/', function () { pm.expect(messages, JSON.stringify(json)).to.match(/Connection tokens are managed by a superuser session of Agentino/); });",
+                                    "pm.test('no data', function () { const data = json.data || {}; Object.keys(data).forEach(function (k) { pm.expect(data[k], k).to.eql(null); }); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "x-authentication-token",
+                                "value": "{{user_token}}"
+                            },
+                            {
+                                "key": "clientid",
+                                "value": "{{client_id}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation CancelConnectionTokenSignIn { CancelConnectionTokenSignIn(input: { signInId: \"ct-sign-in\" }) { success } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "02 Sign-ins at the receiving server",
+            "item": [
+                {
+                    "name": "su reads the token of a connection",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const payload = json.data && json.data.GetConnectionToken;",
+                                    "pm.test('GetConnectionToken answered', function () { pm.expect(json.errors, JSON.stringify(json.errors)).to.eql(undefined); pm.expect(payload, JSON.stringify(json)).to.be.an('object'); });",
+                                    "pm.test('no token held', function () { pm.expect(payload.token || null).to.eql(null); });",
+                                    "pm.test('no token can be issued for a service of no agent, and why', function () { pm.expect(payload.canIssue).to.eql(false); pm.expect(payload.cannotIssueReason).to.match(/The service 'ct-service' of agent '[^']+' is unknown/); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "x-authentication-token",
+                                "value": "{{su_token}}"
+                            },
+                            {
+                                "key": "clientid",
+                                "value": "{{client_id}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query GetConnectionToken { GetConnectionToken(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\" }) { token { tokenId } canIssue cannotIssueReason } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "a token is not changed without a sign-in of this server",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const messages = (json.errors || []).map(function (e) { return e.message || ''; }).join(' | ');",
+                                    "pm.test('refused: /The sign-in has expired or has been used, sign in again/', function () { pm.expect(messages, JSON.stringify(json)).to.match(/The sign-in has expired or has been used, sign in again/); });",
+                                    "pm.test('no data', function () { const data = json.data || {}; Object.keys(data).forEach(function (k) { pm.expect(data[k], k).to.eql(null); }); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "x-authentication-token",
+                                "value": "{{su_token}}"
+                            },
+                            {
+                                "key": "clientid",
+                                "value": "{{client_id}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation SetConnectionToken { SetConnectionToken(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\", signInId: \"ct-sign-in\", scopes: [] }) { restartRequired } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "an unknown sign-in cannot be cancelled",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const messages = (json.errors || []).map(function (e) { return e.message || ''; }).join(' | ');",
+                                    "pm.test('refused: /The sign-in has expired or has been used, sign in again/', function () { pm.expect(messages, JSON.stringify(json)).to.match(/The sign-in has expired or has been used, sign in again/); });",
+                                    "pm.test('no data', function () { const data = json.data || {}; Object.keys(data).forEach(function (k) { pm.expect(data[k], k).to.eql(null); }); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "x-authentication-token",
+                                "value": "{{su_token}}"
+                            },
+                            {
+                                "key": "clientid",
+                                "value": "{{client_id}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation CancelConnectionTokenSignIn { CancelConnectionTokenSignIn(input: { signInId: \"ct-sign-in\" }) { success } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "a service of no agent signs in nowhere",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const messages = (json.errors || []).map(function (e) { return e.message || ''; }).join(' | ');",
+                                    "pm.test('refused: /The service ct-service of agent [^]+ is unknown/', function () { pm.expect(messages, JSON.stringify(json)).to.match(/The service 'ct-service' of agent '[^']+' is unknown/); });",
+                                    "pm.test('no data', function () { const data = json.data || {}; Object.keys(data).forEach(function (k) { pm.expect(data[k], k).to.eql(null); }); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "x-authentication-token",
+                                "value": "{{su_token}}"
+                            },
+                            {
+                                "key": "clientid",
+                                "value": "{{client_id}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "query GetConnectionTokenCatalog { GetConnectionTokenCatalog(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\", password: \"any\" }) { signInId } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "a token of a service of no agent is not revoked",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "const messages = (json.errors || []).map(function (e) { return e.message || ''; }).join(' | ');",
+                                    "pm.test('refused: /The service ct-service of agent [^]+ is unknown/', function () { pm.expect(messages, JSON.stringify(json)).to.match(/The service 'ct-service' of agent '[^']+' is unknown/); });",
+                                    "pm.test('no data', function () { const data = json.data || {}; Object.keys(data).forEach(function (k) { pm.expect(data[k], k).to.eql(null); }); });"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "x-authentication-token",
+                                "value": "{{su_token}}"
+                            },
+                            {
+                                "key": "clientid",
+                                "value": "{{client_id}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "graphql",
+                            "graphql": {
+                                "query": "mutation RevokeConnectionToken { RevokeConnectionToken(input: { serviceId: \"ct-service\", connectionId: \"ct-connection\", password: \"any\" }) { success } }",
+                                "variables": ""
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}",
+                            "host": [
+                                "{{base_url}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ]
+}

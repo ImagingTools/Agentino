@@ -1,0 +1,35 @@
+schema {
+	query: Query
+	mutation: Mutation
+	namespace: agentino
+	version: 1.0
+}
+
+import {
+	"ConnectionTokens.sdl"
+}
+
+# Between the Agentino server and the agent keeping the tokens of its services.
+
+input StoreConnectionTokenInput {
+	serviceId: ID!
+	connectionId: ID!
+	token: ConnectionToken!
+	# The secret the service passes to the server, kept protected; missing keeps the stored one.
+	value: ID
+}
+
+type ConnectionTokenChangePayload {
+	success: Boolean!
+	# The restart of a running service has begun, so that it takes the new token (false: it could not begin); missing when it does not run. A start that fails later shows in the status of the service.
+	restarted: Boolean
+}
+
+type Query {
+	GetAgentConnectionToken (input: ConnectionTokenInput): ConnectionTokenState!
+}
+
+type Mutation {
+	StoreAgentConnectionToken (input: StoreConnectionTokenInput): ConnectionTokenChangePayload!
+	RemoveAgentConnectionToken (input: ConnectionTokenInput): ConnectionTokenChangePayload!
+}

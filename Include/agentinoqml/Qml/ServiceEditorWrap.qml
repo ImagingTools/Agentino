@@ -20,6 +20,16 @@ ServiceEditor {
 		headersProvider: serviceEditor
 	}
 
+	connectionTokenTransportComp: serviceEditor.remoteAgentBrowse ? connectionTokenTransportComponent : null
+
+	Component {
+		id: connectionTokenTransportComponent
+
+		ConnectionTokenTransport {
+			headersProvider: serviceEditor
+		}
+	}
+
 	onLoadPlugin: {
 		serviceEditor.pluginLoaded = false
 		serviceEditor.pluginLoading = true
@@ -191,8 +201,8 @@ ServiceEditor {
 	onUpdateCommandsChanged: {
 		if (updateCommands && commandsController){
 			let status = serviceEditor.serviceStatus !== ""
-				? serviceEditor.serviceStatus
-				: serviceEditor.normalizeServiceStatus(serviceData.m_status)
+				? serviceEditor.serviceState
+				: serviceEditor.serviceStatusModel.normalize(serviceData.m_status)
 			// undefined (agent offline) is not startable/stoppable.
 			commandsController.setCommandIsEnabled("Start", serviceEditor.serviceStatusModel.isStartable(status) && serviceEditor.isConfigured)
 			commandsController.setCommandIsEnabled("Stop", serviceEditor.serviceStatusModel.isStoppable(status))
@@ -215,8 +225,8 @@ ServiceEditor {
 				serviceEditor.setServiceStatus(documentModel.m_status)
 				serviceEditor.refreshIsNewService()
 				if (serviceEditor.commandsController){
-					serviceEditor.commandsController.setCommandIsEnabled("Start", serviceEditor.serviceStatusModel.isStartable(serviceEditor.serviceStatus) && serviceEditor.isConfigured)
-					serviceEditor.commandsController.setCommandIsEnabled("Stop", serviceEditor.serviceStatusModel.isStoppable(serviceEditor.serviceStatus))
+					serviceEditor.commandsController.setCommandIsEnabled("Start", serviceEditor.serviceStatusModel.isStartable(serviceEditor.serviceState) && serviceEditor.isConfigured)
+					serviceEditor.commandsController.setCommandIsEnabled("Stop", serviceEditor.serviceStatusModel.isStoppable(serviceEditor.serviceState))
 				}
 				serviceEditor.serviceIsDirty = false
 				serviceEditor.doUpdateGui()
@@ -285,8 +295,8 @@ ServiceEditor {
 
 				if (serviceEditor.commandsController){
 					// isStartable/isStoppable treat undefined as neither (agent offline).
-					serviceEditor.commandsController.setCommandIsEnabled("Start", serviceEditor.serviceStatusModel.isStartable(normalized) && serviceEditor.isConfigured)
-					serviceEditor.commandsController.setCommandIsEnabled("Stop", serviceEditor.serviceStatusModel.isStoppable(normalized))
+					serviceEditor.commandsController.setCommandIsEnabled("Start", serviceEditor.serviceStatusModel.isStartable(serviceEditor.serviceState) && serviceEditor.isConfigured)
+					serviceEditor.commandsController.setCommandIsEnabled("Stop", serviceEditor.serviceStatusModel.isStoppable(serviceEditor.serviceState))
 				}
 			}
 		}
