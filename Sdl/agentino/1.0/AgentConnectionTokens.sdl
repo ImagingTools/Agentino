@@ -21,6 +21,8 @@ input StoreConnectionTokenInput {
 
 type ConnectionTokenChangePayload {
 	success: Boolean!
+	# A running service was restarted to take the new token (false: the restart failed); missing when it does not run.
+	restarted: Boolean
 }
 
 type Query {

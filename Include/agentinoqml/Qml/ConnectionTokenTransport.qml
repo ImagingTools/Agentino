@@ -14,7 +14,7 @@ QtObject {
 
 	signal tokenReceived(var token, bool canIssue, string cannotIssueReason)
 	signal catalogReceived(var catalog)
-	signal tokenChanged(var token, bool restartRequired)
+	signal tokenChanged(var token, bool restarted, bool restartRequired)
 	signal tokenRevoked()
 	signal failed(string message)
 
@@ -131,7 +131,7 @@ QtObject {
 		sdlObjectComp: Component {
 			SetConnectionTokenPayload {
 				onFinished: {
-					root.tokenChanged(root.toToken(m_token), m_restartRequired === true)
+					root.tokenChanged(root.toToken(m_token), m_restarted === true, m_restartRequired === true)
 				}
 			}
 		}

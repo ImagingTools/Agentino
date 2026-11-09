@@ -4,6 +4,7 @@
 
 // Agentino includes
 #include <agentinodata/IConnectionTokenStore.h>
+#include <agentinodata/IServiceController.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/AgentConnectionTokens_fwd.h>
 
 
@@ -22,6 +23,7 @@ public:
 
 	I_BEGIN_COMPONENT(CAgentConnectionTokenControllerComp);
 		I_ASSIGN(m_tokenStoreCompPtr, "TokenStore", "Tokens of the output connections", true, "TokenStore");
+		I_ASSIGN(m_serviceControllerCompPtr, "ServiceController", "Restarts a running service so that it takes a new token", false, "ServiceController");
 	I_END_COMPONENT;
 
 protected:
@@ -41,6 +43,7 @@ protected:
 
 private:
 	I_REF(agentinodata::IConnectionTokenStore, m_tokenStoreCompPtr);
+	I_REF(agentinodata::IServiceController, m_serviceControllerCompPtr);
 };
 
 

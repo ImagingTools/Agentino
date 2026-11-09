@@ -5,6 +5,7 @@
 // Qt includes
 #include <QtCore/QHash>
 #include <QtCore/QProcess>
+#include <QtCore/QSet>
 #include <QtCore/QString>
 #include <QtCore/QTimer>
 
@@ -67,6 +68,7 @@ public:
 	virtual IServiceStatusInfo::ServiceStatus GetServiceStatus(const QByteArray& serviceId) const override;
 	virtual bool StartService(const QByteArray& serviceId) override;
 	virtual bool StopService(const QByteArray& serviceId) override;
+	virtual bool RestartService(const QByteArray& serviceId) override;
 
 protected:
 	// reimplemented (icomp::CComponentBase)
@@ -132,6 +134,9 @@ private:
 	QHash<QByteArray, QTimer*> m_stopTimers;
 	QHash<QByteArray, QTimer*> m_restartTimers;
 	QHash<QByteArray, QTimer*> m_healthTimers;
+
+	// Stopped to be started again when their process has ended
+	QSet<QByteArray> m_pendingRestarts;
 	QHash<QByteArray, DurablePidEntry> m_durablePids;
 	int m_stopTimeoutMs = 10000;
 	int m_stableSeconds = 15;

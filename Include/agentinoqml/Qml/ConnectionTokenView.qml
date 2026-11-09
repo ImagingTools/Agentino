@@ -84,17 +84,20 @@ ElementView {
 			ModalDialogManager.openDialog(permissionsDialogComp, {"catalog": catalog})
 		}
 
-		function onTokenChanged(token, restartRequired){
+		function onTokenChanged(token, restarted, restartRequired){
 			tokenView.busy = false
 			tokenView.token = token
-			tokenView.restartRequired = tokenView.serviceRunning && (tokenView.restartRequired || restartRequired)
+			tokenView.restartRequired = restartRequired
+			if (restarted){
+				PopupManager.addSuccessMessage(qsTr("The service has been restarted with the new token"), true)
+			}
 		}
 
 		function onTokenRevoked(){
 			tokenView.busy = false
 			tokenView.token = null
-			// The running process keeps the revoked token until it is restarted
-			tokenView.restartRequired = tokenView.serviceRunning
+			// The receiving server refuses a revoked token at once, the service needs no restart
+			tokenView.restartRequired = false
 		}
 
 		function onFailed(message){
@@ -113,16 +116,14 @@ ElementView {
 				return tokenView.cannotIssueReason
 			}
 
-			let noTokenText = qsTr("No token: the server at the other end refuses this service")
-
-			return tokenView.restartRequired ? noTokenText + ". " + qsTr("Restart the service to stop using the revoked token.") : noTokenText
+			return qsTr("No token: the server at the other end refuses this service")
 		}
 
 		let issuedAt = Qt.formatDateTime(new Date(tokenView.token.issuedAt), "yyyy-MM-dd HH:mm")
 		let count = tokenView.token.scopes.length
 		let text = (count === 1 ? qsTr("1 permission at %2, issued %3") : qsTr("%1 permissions at %2, issued %3").arg(count)).arg(tokenView.token.receiverProductId).arg(issuedAt)
 		if (tokenView.restartRequired){
-			text = text + ". " + qsTr("Restart the service to use the new token.")
+			text = text + ". " + qsTr("The service could not be restarted: restart it to use the new token.")
 		}
 
 		return text

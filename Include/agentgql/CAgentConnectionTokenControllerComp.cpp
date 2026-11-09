@@ -69,9 +69,20 @@ sdl::V1_0::agentino::CConnectionTokenChangePayload CAgentConnectionTokenControll
 
 	const QByteArray value = arguments.input->value ? QByteArray(*arguments.input->value) : QByteArray();
 
-	response.success = m_tokenStoreCompPtr->StoreToken(*arguments.input->serviceId, *arguments.input->connectionId, tokenInfo, value);
+	const QByteArray serviceId = *arguments.input->serviceId;
+	response.success = m_tokenStoreCompPtr->StoreToken(serviceId, *arguments.input->connectionId, tokenInfo, value);
 	if (!*response.success){
 		errorMessage = QStringLiteral("Unable to keep the token of the connection");
+
+		return response;
+	}
+
+	// A running service gets a new token only with its environment at the start: restart it; missing when it does not run
+	if (!value.isEmpty() && m_serviceControllerCompPtr.IsValid()){
+		const agentinodata::IServiceStatusInfo::ServiceStatus status = m_serviceControllerCompPtr->GetServiceStatus(serviceId);
+		if (status == agentinodata::IServiceStatusInfo::SS_RUNNING || status == agentinodata::IServiceStatusInfo::SS_STARTING){
+			response.restarted = m_serviceControllerCompPtr->RestartService(serviceId);
+		}
 	}
 
 	return response;

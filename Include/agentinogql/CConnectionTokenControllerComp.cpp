@@ -336,7 +336,9 @@ bool CConnectionTokenControllerComp::ChangeToken(
 	token.tokenId = tokenId;
 	token.issuedAt = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
 	token.scopes.Emplace().FromList(scopes);
-	if (!StoreToken(connection, token, value, errorMessage)){
+	bool isRestarted = false;
+	bool isRestartFailed = false;
+	if (!StoreToken(connection, token, value, errorMessage, &isRestarted, &isRestartFailed)){
 		// A token nobody holds must not stay valid
 		QString revokeError;
 		m_tokenIssuerCompPtr->RevokeToken(connection.server, sessionToken, tokenId, revokeError);
@@ -344,8 +346,10 @@ bool CConnectionTokenControllerComp::ChangeToken(
 		return false;
 	}
 
+	// The agent restarts a running service itself so that it takes the new token
 	response.token = token;
-	response.restartRequired = true;
+	response.restarted = isRestarted;
+	response.restartRequired = isRestartFailed;
 
 	return true;
 }
@@ -441,7 +445,13 @@ bool CConnectionTokenControllerComp::GetStoredToken(const Connection& connection
 }
 
 
-bool CConnectionTokenControllerComp::StoreToken(const Connection& connection, const sdl::V1_0::agentino::CConnectionToken& token, const QByteArray& value, QString& errorMessage) const
+bool CConnectionTokenControllerComp::StoreToken(
+			const Connection& connection,
+			const sdl::V1_0::agentino::CConnectionToken& token,
+			const QByteArray& value,
+			QString& errorMessage,
+			bool* restartedPtr,
+			bool* restartFailedPtr) const
 {
 	sdl::V1_0::agentino::StoreAgentConnectionTokenRequestArguments arguments;
 	arguments.input.emplace();
@@ -454,6 +464,13 @@ bool CConnectionTokenControllerComp::StoreToken(const Connection& connection, co
 
 	const sdl::V1_0::agentino::CConnectionTokenChangePayload payload =
 				SendToAgent<sdl::V1_0::agentino::CStoreAgentConnectionTokenGqlRequest, sdl::V1_0::agentino::CConnectionTokenChangePayload>(connection, arguments, errorMessage);
+
+	if (restartedPtr != nullptr){
+		*restartedPtr = payload.restarted && *payload.restarted;
+	}
+	if (restartFailedPtr != nullptr){
+		*restartFailedPtr = payload.restarted && !*payload.restarted;
+	}
 
 	return errorMessage.isEmpty() && payload.success && *payload.success;
 }

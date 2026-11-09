@@ -61,7 +61,9 @@ input SetConnectionTokenInput {
 
 type SetConnectionTokenPayload {
 	token: ConnectionToken
-	# A new token reaches the service at its next start.
+	# The running service has been restarted with the new token.
+	restarted: Boolean
+	# The service still runs with the old token: restarting it failed.
 	restartRequired: Boolean
 }
 

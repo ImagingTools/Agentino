@@ -117,7 +117,17 @@ private:
 		\return false if the agent could not be asked; a connection without a token has an empty state.
 	*/
 	bool GetStoredToken(const Connection& connection, sdl::V1_0::agentino::CConnectionTokenState& state, QString& errorMessage) const;
-	bool StoreToken(const Connection& connection, const sdl::V1_0::agentino::CConnectionToken& token, const QByteArray& value, QString& errorMessage) const;
+	/**
+		\param restartedPtr		Set when the agent has restarted the running service to take the new token.
+		\param restartFailedPtr	Set when the service runs and could not be restarted.
+	*/
+	bool StoreToken(
+				const Connection& connection,
+				const sdl::V1_0::agentino::CConnectionToken& token,
+				const QByteArray& value,
+				QString& errorMessage,
+				bool* restartedPtr = nullptr,
+				bool* restartFailedPtr = nullptr) const;
 	bool RemoveStoredToken(const Connection& connection, QString& errorMessage) const;
 
 	template<class GqlRequest, class Payload, class Arguments>

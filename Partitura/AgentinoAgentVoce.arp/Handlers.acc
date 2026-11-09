@@ -434,6 +434,9 @@
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ServiceController" Type="Reference" ExportId="ServiceController">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="TokenStore" Type="Reference" ExportId="ConnectionTokenStore">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
