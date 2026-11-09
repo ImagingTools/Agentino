@@ -72,6 +72,9 @@ ElementView {
 
 		function onCatalogReceived(catalog){
 			tokenView.busy = false
+			if (catalog.clientAdded){
+				PopupManager.addSuccessMessage(qsTr("The product of the service has been added to the clients of %1").arg(catalog.receiverProductId), true)
+			}
 			ModalDialogManager.openDialog(permissionsDialogComp, {"catalog": catalog})
 		}
 

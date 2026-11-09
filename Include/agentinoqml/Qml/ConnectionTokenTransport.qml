@@ -102,7 +102,8 @@ QtObject {
 						"receiverProductId": String(m_receiverProductId),
 						"groups": PermissionGroups.toFlatArray(m_groups),
 						"requiredPermissions": Array.isArray(m_requiredPermissions) ? m_requiredPermissions : [],
-						"token": root.toToken(m_token)
+						"token": root.toToken(m_token),
+						"clientAdded": m_clientAdded === true
 					})
 				}
 			}

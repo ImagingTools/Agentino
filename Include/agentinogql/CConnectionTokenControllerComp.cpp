@@ -70,6 +70,12 @@ sdl::V1_0::agentino::CConnectionTokenCatalog CConnectionTokenControllerComp::OnG
 		return response;
 	}
 
+	// The server issues tokens to its clients only: the product of the service becomes one
+	bool isClientAdded = false;
+	if (!m_tokenIssuerCompPtr->AddClient(connection.server, sessionToken, connection.clientProductId, QString::fromUtf8(connection.clientProductId), isClientAdded, errorMessage)){
+		return response;
+	}
+
 	sdl::V1_0::imtauth::CServerTokenReceiver permissions;
 	if (!m_tokenIssuerCompPtr->GetPermissions(connection.server, sessionToken, connection.clientProductId, permissions, errorMessage)){
 		return response;
@@ -85,6 +91,7 @@ sdl::V1_0::agentino::CConnectionTokenCatalog CConnectionTokenControllerComp::OnG
 	response.groups = permissions.groups;
 	response.requiredPermissions = permissions.requiredPermissions;
 	response.token = state.token;
+	response.clientAdded = isClientAdded;
 
 	return response;
 }
