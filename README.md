@@ -82,7 +82,8 @@ Agentino/
 │   └── *.awc           # ARX compiler configurations
 │
 ├── Docs/                # Documentation
-│   ├── UserGuide.md    # End-user guide (Russian)
+│   ├── UserGuide_En.md # End-user guide (English)
+│   ├── UserGuide_Ru.md # End-user guide (Russian)
 │   ├── Doxyfile        # Doxygen configuration
 │   └── GenerateDocs.bat # Documentation generation script
 │
