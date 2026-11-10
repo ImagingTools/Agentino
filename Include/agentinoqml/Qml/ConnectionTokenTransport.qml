@@ -5,7 +5,7 @@ import agentinoConnectionTokensSdl 1.0
 /**
 	L3 transport of the token of one output connection.
 	The view gets plain objects: a token {tokenId, receiverProductId, scopes, issuedAt}, a catalog
-	{signInId, receiverProductId, groups, requiredPermissions, token, clientAdded} with groups as PermissionsTableView takes them.
+	{signInId, receiverProductId, groups, token, clientAdded} with groups as PermissionsTableView takes them.
 */
 QtObject {
 	id: root
@@ -108,7 +108,6 @@ QtObject {
 						"signInId": String(m_signInId),
 						"receiverProductId": String(m_receiverProductId),
 						"groups": PermissionGroups.toFlatArray(m_groups),
-						"requiredPermissions": Array.isArray(m_requiredPermissions) ? m_requiredPermissions : [],
 						"token": root.toToken(m_token),
 						"clientAdded": m_clientAdded === true
 					})

@@ -46,7 +46,6 @@ type ConnectionTokenCatalog {
 	signInId: ID!
 	receiverProductId: ID!
 	groups: [PermissionGroup]
-	requiredPermissions: [ID]
 	token: ConnectionToken
 	# The server has made the product of the service its client with this sign-in.
 	clientAdded: Boolean

@@ -127,7 +127,6 @@ sdl::V1_0::agentino::CConnectionTokenCatalog CConnectionTokenControllerComp::OnG
 	response.signInId = m_sessionPool.Add(session);
 	response.receiverProductId = connection.server.productId;
 	response.groups = permissions.groups;
-	response.requiredPermissions = permissions.requiredPermissions;
 	response.token = state.token;
 	response.clientAdded = isClientAdded;
 

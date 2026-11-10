@@ -261,7 +261,6 @@ ElementView {
 
 				permissionsDialog.permissionsView.setPermissions(
 							permissionsDialog.catalog.groups,
-							permissionsDialog.catalog.requiredPermissions,
 							permissionsDialog.catalog.token ? permissionsDialog.catalog.token.scopes : [])
 			}
 
