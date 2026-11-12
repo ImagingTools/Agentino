@@ -43,10 +43,6 @@ Item {
 	property string richLog: "";
 	property bool startupOutputPhase: true;
 
-	property var commandHistory: [];
-	property int historyIndex: -1;
-	property string historyDraft: "";
-	readonly property int maxCommandHistory: 100;
 	readonly property int maxOutputLines: 5000;
 	readonly property int maxOutputLength: 200000;
 
@@ -335,7 +331,7 @@ Item {
 		}
 		root.updatePrimaryScreen();
 		if (controller.running && !controller.connectionLost){
-			inputField.forceActiveFocus();
+			outputText.forceActiveFocus();
 		}
 	}
 
@@ -1113,80 +1109,32 @@ Item {
 		root.requestRemoveTab();
 	}
 
-	function pushCommandHistory(command){
-		if (command.length === 0){
+	// Sends clipboard text to the shell as typed input (Ctrl+V / Shift+Insert in the output field).
+	// TextEdit.paste() is asynchronous in the web build, so the text is picked up in
+	// clipboardProxy.onTextChanged while pasteArmed is set (a timer disarms it if the paste never arrives).
+	property bool pasteArmed: false;
+
+	function pasteFromClipboard(){
+		if (!controller.running || controller.connectionLost){
 			return;
 		}
 
-		if (root.commandHistory.length > 0
-					&& root.commandHistory[root.commandHistory.length - 1] === command){
-			root.historyIndex = -1;
-			root.historyDraft = "";
-			return;
-		}
-
-		let next = root.commandHistory.slice();
-		next.push(command);
-		while (next.length > root.maxCommandHistory){
-			next.shift();
-		}
-		root.commandHistory = next;
-		root.historyIndex = -1;
-		root.historyDraft = "";
-		root.persistCommandHistory();
+		root.pasteArmed = false;
+		clipboardProxy.text = "";
+		root.pasteArmed = true;
+		pasteArmTimer.restart();
+		clipboardProxy.paste();
 	}
 
-	function historyUp(){
-		if (root.commandHistory.length === 0){
-			return;
+	function sendPastedText(text){
+		root.pasteArmed = false;
+		pasteArmTimer.stop();
+		let data = String(text).replace(/\r\n/g, "\r").replace(/\n/g, "\r");
+		clipboardProxy.text = "";
+		if (data.length > 0 && controller.running && !controller.connectionLost){
+			root.startupOutputPhase = false;
+			controller.sendRawInput(data);
 		}
-
-		if (root.historyIndex < 0){
-			root.historyDraft = inputField.text;
-			root.historyIndex = root.commandHistory.length - 1;
-		}
-		else if (root.historyIndex > 0){
-			root.historyIndex = root.historyIndex - 1;
-		}
-
-		inputField.text = root.commandHistory[root.historyIndex];
-	}
-
-	function historyDown(){
-		if (root.historyIndex < 0){
-			return;
-		}
-
-		if (root.historyIndex < root.commandHistory.length - 1){
-			root.historyIndex = root.historyIndex + 1;
-			inputField.text = root.commandHistory[root.historyIndex];
-		}
-		else{
-			root.historyIndex = -1;
-			inputField.text = root.historyDraft;
-		}
-	}
-
-	function submitCommand(){
-		// commandInFlight: refuse a new line until the previous SendTerminalInput is acked,
-		// so commands are delivered to the shell strictly one at a time (see the input
-		// field's readOnly / the Send button's enabled bindings, which mirror this).
-		if (!controller.running || controller.connectionLost || controller.commandInFlight){
-			return;
-		}
-
-		// Single-line input: strip CR/LF from paste, ignore empty.
-		let command = String(inputField.text).replace(/\r/g, "").replace(/\n/g, "").trim();
-		if (command.length === 0){
-			return;
-		}
-
-		root.pushCommandHistory(command);
-		root.startupOutputPhase = false;
-		// Backend appends the platform-specific Enter sequence so the shell executes the line.
-		controller.sendInput(command);
-		inputField.text = "";
-		inputField.forceActiveFocus();
 	}
 
 	function copyAllOutput(){
@@ -1194,6 +1142,7 @@ Item {
 			return;
 		}
 
+		root.pasteArmed = false;
 		clipboardProxy.text = root.plainLog;
 		clipboardProxy.selectAll();
 		clipboardProxy.copy();
@@ -1242,30 +1191,6 @@ Item {
 		// makes the UTF-8 encoding explicit so the saved file reads exactly as on screen.
 		logFileIO.write("\uFEFF" + root.plainLog);
 		root.showActionHint(qsTr("Log saved"));
-	}
-
-	function loadCommandHistory(){
-		try {
-			let raw = historySettings.commandHistoryJson;
-			if (!raw || raw.length === 0){
-				return;
-			}
-			let parsed = JSON.parse(raw);
-			if (Array.isArray(parsed)){
-				root.commandHistory = parsed.slice(-root.maxCommandHistory);
-			}
-		}
-		catch (e){
-			root.commandHistory = [];
-		}
-	}
-
-	function persistCommandHistory(){
-		try {
-			historySettings.commandHistoryJson = JSON.stringify(root.commandHistory);
-		}
-		catch (e){
-		}
 	}
 
 	function sessionLabel(){
@@ -1325,19 +1250,6 @@ Item {
 		return Style.subtitleColor;
 	}
 
-	function inputPlaceHolder(){
-		if (controller.connectionLost){
-			return qsTr("Reconnect to send commands");
-		}
-		if (controller.running){
-			return qsTr("Type a command and press Enter (↑/↓ history · Ctrl+C interrupt)");
-		}
-		if (controller.busy){
-			return qsTr("Please wait…");
-		}
-		return qsTr("Session ended");
-	}
-
 	function lineCountLabel(){
 		let n = outputModel.count;
 		return n === 1 ? qsTr("1 line") : qsTr("%1 lines").arg(n);
@@ -1379,7 +1291,6 @@ Item {
 
 	Component.onCompleted: {
 		controller.agentId = root.agentId;
-		root.loadCommandHistory();
 		if (root.shellTypeId.length > 0){
 			root.startSession();
 		}
@@ -1479,10 +1390,11 @@ Item {
 		}
 	}
 
-	Settings {
-		id: historySettings;
-		category: "Agentino.Terminal";
-		property string commandHistoryJson: "[]";
+	Timer {
+		id: pasteArmTimer;
+		interval: 2000;
+		repeat: false;
+		onTriggered: root.pasteArmed = false;
 	}
 
 	TextEdit {
@@ -1491,6 +1403,12 @@ Item {
 		height: 0;
 		visible: false;
 		readOnly: true;
+
+		onTextChanged: {
+			if (root.pasteArmed && clipboardProxy.text.length > 0){
+				root.sendPastedText(clipboardProxy.text);
+			}
+		}
 	}
 
 	FileDialog {
@@ -1569,8 +1487,7 @@ Item {
 			root.errorText = "";
 			root.appendOutput(qsTr("[session opened]\n"), "SYSTEM");
 			root.sessionStateChanged();
-			// Focus the output, not the compose box: typing goes straight to the shell
-			// (full cmd-like keyboard). The box stays available for pasting/composing.
+			// Focus the output field: typing goes straight to the shell there.
 			outputText.forceActiveFocus();
 			resizeDebounceTimer.restart();
 		}
@@ -1774,7 +1691,7 @@ Item {
 		anchors.leftMargin: Style.marginL;
 		anchors.right: parent.right;
 		anchors.rightMargin: Style.marginL;
-		anchors.bottom: inputRow.top;
+		anchors.bottom: statusBar.top;
 		anchors.bottomMargin: Style.marginM;
 
 		radius: Style.radiusM;
@@ -1803,7 +1720,7 @@ Item {
 				id: outputText;
 				width: outputFlickable.width;
 				height: contentHeight;
-				readOnly: true;
+				readOnly: false;
 				selectByMouse: true;
 				persistentSelection: true;
 				textFormat: TextEdit.RichText;
@@ -1822,6 +1739,7 @@ Item {
 					// through to the shell below as a real interrupt).
 					if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_C
 								&& outputText.selectedText.length > 0){
+						root.pasteArmed = false;
 						clipboardProxy.text = outputText.selectedText;
 						clipboardProxy.selectAll();
 						clipboardProxy.copy();
@@ -1830,9 +1748,17 @@ Item {
 						return;
 					}
 
-					// Full cmd-like keyboard: every other key is sent straight to the shell,
-					// which echoes it and runs its own line editing / history / Tab-completion.
-					// The compose box below remains for pasting or composing a long line.
+					// Paste goes to the shell as typed input.
+					if (((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_V)
+								|| ((event.modifiers & Qt.ShiftModifier) && event.key === Qt.Key_Insert)){
+						root.pasteFromClipboard();
+						event.accepted = true;
+						return;
+					}
+
+					// Typing happens right here: every other key is sent straight to the shell,
+					// which echoes it into this field and runs its own line editing / history /
+					// Tab-completion; Enter executes the line.
 					if (controller.running && !controller.connectionLost){
 						let data = root.vtInputForKey(event);
 						if (data.length > 0){
@@ -1989,125 +1915,6 @@ Item {
 				font.family: Style.fontFamily;
 				font.pixelSize: Style.fontSizeS;
 			}
-		}
-	}
-
-	// ─── Command input (single-line TextInput) ──────────────────────────────
-	Item {
-		id: inputRow;
-
-		anchors.left: parent.left;
-		anchors.leftMargin: Style.marginL;
-		anchors.right: parent.right;
-		anchors.rightMargin: Style.marginL;
-		anchors.bottom: statusBar.top;
-		anchors.bottomMargin: Style.marginM;
-
-		height: root.altScreenActive ? 0 : Style.controlHeightM;
-		visible: !root.altScreenActive;
-
-		Rectangle {
-			id: inputBackground;
-
-			anchors.left: parent.left;
-			anchors.right: sendButton.left;
-			anchors.rightMargin: Style.marginM;
-			anchors.verticalCenter: parent.verticalCenter;
-			height: parent.height;
-			radius: height / 2;
-			color: controller.running && !controller.connectionLost
-						? Style.backgroundColor2
-						: Style.alternateBaseColor;
-			border.width: inputField.activeFocus && controller.running ? 1 : 0;
-			border.color: Style.textSelectedColor;
-			clip: true;
-
-			// Placeholder (TextInput has no placeholderText in Qt 5.12).
-			Text {
-				anchors.left: parent.left;
-				anchors.leftMargin: Style.marginM;
-				anchors.right: parent.right;
-				anchors.rightMargin: Style.marginM;
-				anchors.verticalCenter: parent.verticalCenter;
-				visible: inputField.text.length === 0;
-				text: root.inputPlaceHolder();
-				color: Style.placeHolderTextColor;
-				font.family: Style.fontFamily;
-				font.pixelSize: Style.fontSizeM;
-				elide: Text.ElideRight;
-				z: 0;
-			}
-
-			TextInput {
-				id: inputField;
-
-				anchors.fill: parent;
-				anchors.leftMargin: Style.marginM;
-				anchors.rightMargin: Style.marginM;
-				verticalAlignment: TextInput.AlignVCenter;
-				font.family: Style.fontFamily
-				font.pixelSize: Style.fontSizeM;
-				color: Style.textColor;
-				selectionColor: Style.textSelectedColor;
-				selectedTextColor: "#ffffff";
-				selectByMouse: true;
-				clip: true;
-				// Single-line only — Enter submits, does not insert a newline.
-				echoMode: TextInput.Normal;
-				readOnly: !controller.running || controller.connectionLost || controller.commandInFlight;
-				activeFocusOnPress: !readOnly;
-
-				// Primary path: TextInput emits accepted on Return/Enter.
-				onAccepted: {
-					root.submitCommand();
-				}
-
-				Keys.onUpPressed: {
-					if (controller.running){
-						root.historyUp();
-						event.accepted = true;
-					}
-				}
-
-				Keys.onDownPressed: {
-					if (controller.running){
-						root.historyDown();
-						event.accepted = true;
-					}
-				}
-
-				Keys.onPressed: {
-					// Ctrl+C with no selection → interrupt remote (toolbar "Copy all" for log).
-					if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_C){
-						if (controller.running && !controller.connectionLost
-									&& inputField.selectedText.length === 0){
-							controller.interruptSession();
-							event.accepted = true;
-						}
-					}
-					// Safety net if onAccepted is swallowed (some platforms/web builds).
-					// Second call is harmless: submitCommand no-ops on empty text.
-					if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter){
-						if (controller.running && !controller.connectionLost){
-							root.submitCommand();
-							event.accepted = true;
-						}
-					}
-				}
-			}
-		}
-
-		Button {
-			id: sendButton;
-			anchors.right: parent.right;
-			anchors.verticalCenter: parent.verticalCenter;
-			widthFromDecorator: true;
-			height: parent.height;
-			text: qsTr("Send");
-			enabled: controller.running && !controller.connectionLost
-						&& !controller.commandInFlight && inputField.text.length > 0;
-			tooltipText: qsTr("Send command (Enter)");
-			onClicked: root.submitCommand();
 		}
 	}
 

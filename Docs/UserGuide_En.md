@@ -360,9 +360,10 @@ regular terminal window.
 
 | Action | How to do it |
 |--------|--------------|
-| Run a command | Type the text and press **Enter** (or **Send**) |
-| Command history | **↑ / ↓** keys |
-| Interrupt the current command | **Ctrl+C** (the session is not closed) |
+| Run a command | Click the output area, type the command right after the prompt and press **Enter** |
+| Command history | **↑ / ↓** keys (provided by the shell) |
+| Paste text | **Ctrl+V** or **Shift+Insert** |
+| Interrupt the current command | **Ctrl+C** (the session is not closed; with selected text it copies instead) |
 | Clear the screen | **Clear** |
 | Copy all output | Copy-to-clipboard button |
 | Save output to a file | **Save terminal log** (text file) |
