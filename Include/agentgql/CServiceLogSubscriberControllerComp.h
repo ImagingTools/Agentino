@@ -3,6 +3,7 @@
 
 
 // Qt includes
+#include <QtCore/QFuture>
 #include <QtCore/QTimer>
 
 // ACF includes
@@ -49,11 +50,20 @@ protected Q_SLOTS:
 private:
 	struct MessageStatusInfo{
 		istd::TSharedInterfacePtr<imtbase::IObjectCollection> messageCollectionPtr;
-		int messageCount;
+		// -1 until the first poll sets the baseline
+		int messageCount = -1;
 	};
+
+	typedef QMap<QByteArray, int> MessageCounts;
+
+	void OnPollFinished(const MessageCounts& messageCounts, qint64 elapsedMs);
+
+	static constexpr int s_minPollIntervalMs = 1000;
+	static constexpr int s_maxPollIntervalMs = 60000;
 
 	QMap<QByteArray, MessageStatusInfo> m_servicesMessageInfo;
 	QTimer m_timer;
+	QFuture<MessageCounts> m_pollFuture;
 
 protected:
 	I_REF(imod::IModel, m_serviceCollectionModelCompPtr);

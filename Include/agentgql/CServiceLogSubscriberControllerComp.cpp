@@ -2,8 +2,13 @@
 #include <agentgql/CServiceLogSubscriberControllerComp.h>
 
 
+// STL includes
+#include <algorithm>
+
 // Qt includes
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QMutexLocker>
+#include <QtConcurrent/QtConcurrentRun>
 
 // Agentino includes
 #include <agentinodata/IServiceController.h>
@@ -27,12 +32,17 @@ void CServiceLogSubscriberControllerComp::OnComponentCreated()
 	}
 
 	connect(&m_timer, &QTimer::timeout, this, &CServiceLogSubscriberControllerComp::TimerUpdate);
-	m_timer.setInterval(1000);
-	m_timer.start();
+	m_timer.setSingleShot(true);
+	m_timer.start(s_minPollIntervalMs);
 }
 
 void CServiceLogSubscriberControllerComp::OnComponentDestroyed()
 {
+	m_timer.stop();
+
+	// The worker runs plugin code; it must finish before the plugins are unloaded.
+	m_pollFuture.waitForFinished();
+
 	if (m_serviceCollectionModelCompPtr.IsValid()){
 		m_serviceCollectionModelCompPtr->DetachObserver(this);
 	}
@@ -56,6 +66,8 @@ void CServiceLogSubscriberControllerComp::OnUpdate(const istd::IChangeable::Chan
 	QList<QByteArray> keys = m_pluginMap.keys();
 	for (const QByteArray& serviceId: keys){
 		if (!serviceIds.contains(serviceId)){
+			m_pollFuture.waitForFinished();
+
 			m_pluginMap.remove(serviceId);
 			m_servicesMessageInfo.remove(serviceId);
 		}
@@ -109,7 +121,6 @@ void CServiceLogSubscriberControllerComp::OnUpdate(const istd::IChangeable::Chan
 					if (messageCollection.IsValid()){
 						MessageStatusInfo& messageStatusInfo = m_servicesMessageInfo[serviceId];
 						messageStatusInfo.messageCollectionPtr.FromUnique(std::move(messageCollection));
-						messageStatusInfo.messageCount = 0;
 					}
 				}
 			}
@@ -121,19 +132,67 @@ void CServiceLogSubscriberControllerComp::OnUpdate(const istd::IChangeable::Chan
 
 void CServiceLogSubscriberControllerComp::TimerUpdate()
 {
-	for (const QByteArray& serviceId: m_servicesMessageInfo.keys()){
-		imtbase::IObjectCollection* messageCollection = m_servicesMessageInfo[serviceId].messageCollectionPtr.GetPtr();
-		if (messageCollection != nullptr){
-			int messageCount = messageCollection->GetElementsCount();
-			if (m_servicesMessageInfo[serviceId].messageCount != messageCount){
-				QString data = QString("{\"serviceid\": \"%1\"}").arg(qPrintable(serviceId));
+	bool hasSubscribers = false;
+	{
+		QMutexLocker locker(&m_mutex);
+		hasSubscribers = !m_registeredSubscribers.isEmpty();
+	}
 
-				PublishData("OnServiceLogCollectionChanged", data.toUtf8());
+	if (!hasSubscribers){
+		m_timer.start(s_minPollIntervalMs);
 
-				m_servicesMessageInfo[serviceId].messageCount = messageCount;
-			}
+		return;
+	}
+
+	QElapsedTimer pollTimer;
+	pollTimer.start();
+
+	QList<QPair<QByteArray, istd::TSharedInterfacePtr<imtbase::IObjectCollection>>> messageCollections;
+	for (auto it = m_servicesMessageInfo.cbegin(); it != m_servicesMessageInfo.cend(); ++it){
+		if (it->messageCollectionPtr.IsValid()){
+			messageCollections.append(qMakePair(it.key(), it->messageCollectionPtr));
 		}
 	}
+
+	// Counting a large service log takes tens of seconds; the main thread carries the server WebSocket.
+	m_pollFuture = QtConcurrent::run([messageCollections](){
+		MessageCounts messageCounts;
+		for (const auto& messageCollection : messageCollections){
+			messageCounts.insert(messageCollection.first, messageCollection.second->GetElementsCount());
+		}
+
+		return messageCounts;
+	});
+
+	m_pollFuture.then(this, [this, pollTimer](const MessageCounts& messageCounts){
+		OnPollFinished(messageCounts, pollTimer.elapsed());
+	});
+}
+
+
+// private methods
+
+void CServiceLogSubscriberControllerComp::OnPollFinished(const MessageCounts& messageCounts, qint64 elapsedMs)
+{
+	for (auto it = messageCounts.cbegin(); it != messageCounts.cend(); ++it){
+		auto infoIt = m_servicesMessageInfo.find(it.key());
+		if (infoIt == m_servicesMessageInfo.end()){
+			continue;
+		}
+
+		const int previousCount = infoIt->messageCount;
+		infoIt->messageCount = it.value();
+
+		if (previousCount >= 0 && previousCount != it.value()){
+			QString data = QString("{\"serviceid\": \"%1\"}").arg(qPrintable(it.key()));
+
+			PublishData("OnServiceLogCollectionChanged", data.toUtf8());
+		}
+	}
+
+	// Each pass scans the whole log; leave the database mostly to the log page requests.
+	const qint64 nextIntervalMs = std::clamp<qint64>(elapsedMs * 10, s_minPollIntervalMs, s_maxPollIntervalMs);
+	m_timer.start(int(nextIntervalMs));
 }
 
 
