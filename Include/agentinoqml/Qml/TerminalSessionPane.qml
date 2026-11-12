@@ -1402,7 +1402,7 @@ Item {
 		width: 0;
 		height: 0;
 		visible: false;
-		readOnly: true;
+readOnly: false;
 
 		onTextChanged: {
 			if (root.pasteArmed && clipboardProxy.text.length > 0){
