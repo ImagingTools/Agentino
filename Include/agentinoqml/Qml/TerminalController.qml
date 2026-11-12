@@ -29,6 +29,7 @@ QtObject {
 	property var pendingChunks: ({});
 	// Keystrokes typed while the previous SendTerminalRawInput is still in flight.
 	property string pendingRawInput: "";
+	readonly property int maxRawInputLength: 16 * 1024;
 	property bool rawInputInFlight: false;
 	property bool busy: false;
 	readonly property bool requestInFlight: shellTypesRequest.state === "Loading"
@@ -117,8 +118,16 @@ QtObject {
 		if (root.rawInputInFlight || root.pendingRawInput.length === 0 || root.sessionId.length === 0){
 			return;
 		}
-		let data = root.pendingRawInput;
-		root.pendingRawInput = "";
+		let dataLength = Math.min(root.pendingRawInput.length, root.maxRawInputLength);
+		if (dataLength < root.pendingRawInput.length
+				&& root.pendingRawInput.charCodeAt(dataLength - 1) >= 0xD800
+				&& root.pendingRawInput.charCodeAt(dataLength - 1) <= 0xDBFF
+				&& root.pendingRawInput.charCodeAt(dataLength) >= 0xDC00
+				&& root.pendingRawInput.charCodeAt(dataLength) <= 0xDFFF){
+			dataLength--;
+		}
+		let data = root.pendingRawInput.slice(0, dataLength);
+		root.pendingRawInput = root.pendingRawInput.slice(dataLength);
 		root.rawInputInFlight = true;
 		rawInputRequest.send({"sessionId": root.sessionId, "data": data});
 	}
