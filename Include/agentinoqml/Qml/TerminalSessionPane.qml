@@ -1593,6 +1593,7 @@ readOnly: false;
 
 			Button {
 				id: clearButton;
+				objectName: "ClearOutputButton";
 				widthFromDecorator: true;
 				enabled: root.plainLog.length > 0;
 				tooltipText: qsTr("Clear the output");
@@ -1610,6 +1611,7 @@ readOnly: false;
 
 			Button {
 				id: copyAllButton;
+				objectName: "CopyOutputButton";
 				widthFromDecorator: true;
 				enabled: root.plainLog.length > 0 && !root.copyFeedbackActive;
 				tooltipText: root.copyFeedbackActive
@@ -1631,6 +1633,7 @@ readOnly: false;
 
 			Button {
 				id: downloadLogButton;
+				objectName: "DownloadOutputButton";
 				widthFromDecorator: true;
 				enabled: root.plainLog.length > 0;
 				tooltipText: qsTr("Download log as a text file");

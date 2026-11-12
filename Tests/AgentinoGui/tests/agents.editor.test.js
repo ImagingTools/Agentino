@@ -87,9 +87,8 @@ test.describe('Agents / editor', () => {
     // Once the agent is genuinely connected this page hosts a LIVE shell session: its output carries
     // the agent machine's absolute paths and Windows build number, and the footer runs an idle timer
     // ("Session active - idle warning ~1 min before 15 min close") plus a line counter. None of it is
-    // maskable either, because the output area and that footer carry no objectName - only the command
-    // input, Send and Ctrl+C do. A pixel baseline of that cannot be stable, so this asserts the page's
-    // controls instead.
+    // maskable either, because the output area and that footer carry no objectName. A pixel baseline
+    // of that cannot be stable, so this asserts the page's controls instead.
     //
     // Historical note worth keeping: this page used to read "No shell available - this agent reports
     // no shell that can be started", and an earlier version of this test pinned that as a legitimate
@@ -100,7 +99,9 @@ test.describe('Agents / editor', () => {
       if (!(await editor.hasPage('Terminal'))) refuse('the agent editor offers no Terminal page');
       await editor.openTerminal();
       await gui.expectVisible(page, ['Page_Terminal'], 'the Terminal page should be selected');
-      await gui.expectVisible(page, ['SendButton'], 'a live terminal offers a Send button');
+      await gui.expectVisible(page, ['ClearOutputButton'], 'a terminal offers a clear-output control');
+      await gui.expectVisible(page, ['CopyOutputButton'], 'a terminal offers a copy-output control');
+      await gui.expectVisible(page, ['DownloadOutputButton'], 'a terminal offers a download-output control');
       await gui.expectVisible(page, ['Ctrl+CButton'], '... and an interrupt');
       await editor.closeDocument();
     });
