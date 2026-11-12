@@ -1723,7 +1723,7 @@ readOnly: false;
 				id: outputText;
 				width: outputFlickable.width;
 				height: contentHeight;
-				readOnly: false;
+readOnly: true;
 				selectByMouse: true;
 				persistentSelection: true;
 				textFormat: TextEdit.RichText;
