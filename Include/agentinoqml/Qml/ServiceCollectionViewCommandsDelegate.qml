@@ -48,8 +48,21 @@ DocumentCollectionViewDelegate {
 		
 		commandsController.setCommandIsEnabled("Remove", isEnabled)
 		commandsController.setCommandIsEnabled("Edit", isEnabled)
-		commandsController.setCommandIsEnabled("Start", startEnabled);
-		commandsController.setCommandIsEnabled("Stop", stopEnabled);
+		setCommandEnabled("Start", startEnabled);
+		setCommandEnabled("Stop", stopEnabled);
+	}
+	
+	// Start/Stop also live in the context menu, which keeps its own enabled state.
+	function setCommandEnabled(commandId, isEnabled){
+		if (collectionView && collectionView.commandsController){
+			collectionView.commandsController.setCommandIsEnabled(commandId, isEnabled)
+		}
+		
+		for (let i = 0; i < container.contextMenuModel.getItemsCount(); i++){
+			if (container.contextMenuModel.getData("id", i) === commandId){
+				container.contextMenuModel.setData("isEnabled", isEnabled, i);
+			}
+		}
 	}
 	
 	function getHeaders(){
@@ -57,10 +70,20 @@ DocumentCollectionViewDelegate {
 	}
 	
 	onCommandActivated: {
+		if (commandId !== "Start" && commandId !== "Stop"){
+			return
+		}
+		
+		// commandHandle() emits commandActivated even for disabled commands.
+		if (!collectionView || !collectionView.commandsController
+				|| !collectionView.commandsController.commandIsEnabled(commandId)){
+			return
+		}
+		
 		if (commandId === "Start"){
 			onStart();
 		}
-		else if (commandId === "Stop"){
+		else{
 			onStop();
 		}
 	}
@@ -93,9 +116,7 @@ DocumentCollectionViewDelegate {
 		if (indexes.length > 0){
 			let serviceId = elements.getData(ServiceItemTypeMetaInfo.s_id, indexes[0])
 
-			if (container.collectionView.commandsController){
-				container.collectionView.commandsController.setCommandIsEnabled("Start", false)
-			}
+			setCommandEnabled("Start", false)
 			startService(serviceId);
 		}
 	}
@@ -106,9 +127,7 @@ DocumentCollectionViewDelegate {
 		if (indexes.length > 0){
 			let serviceId = elements.getData(ServiceItemTypeMetaInfo.s_id, indexes[0])
 
-			if (container.collectionView.commandsController){
-				container.collectionView.commandsController.setCommandIsEnabled("Stop", false)
-			}
+			setCommandEnabled("Stop", false)
 			stopService(serviceId)
 		}
 	}
@@ -120,6 +139,26 @@ DocumentCollectionViewDelegate {
 			
 			let canEdit = commandsController.commandExists("Edit");
 			let canRemove = commandsController.commandExists("Remove");
+			let canStart = commandsController.commandExists("Start");
+			let canStop = commandsController.commandExists("Stop");
+			
+			if (canStart){
+				let index = container.contextMenuModel.insertNewItem();
+				
+				container.contextMenuModel.setData("id", "Start", index);
+				container.contextMenuModel.setData("name", qsTr("Start"), index);
+				container.contextMenuModel.setData("icon", "Icons/Play", index);
+				container.contextMenuModel.setData("isEnabled", commandsController.commandIsEnabled("Start"), index);
+			}
+			
+			if (canStop){
+				let index = container.contextMenuModel.insertNewItem();
+				
+				container.contextMenuModel.setData("id", "Stop", index);
+				container.contextMenuModel.setData("name", qsTr("Stop"), index);
+				container.contextMenuModel.setData("icon", "Icons/Stop", index);
+				container.contextMenuModel.setData("isEnabled", commandsController.commandIsEnabled("Stop"), index);
+			}
 			
 			if (canEdit){
 				let index = container.contextMenuModel.insertNewItem();
@@ -169,10 +208,8 @@ DocumentCollectionViewDelegate {
 		}
 
 		function disableStartStopCommands(){
-			if (container.collectionView && container.collectionView.commandsController){
-				container.collectionView.commandsController.setCommandIsEnabled("Start", false)
-				container.collectionView.commandsController.setCommandIsEnabled("Stop", false)
-			}
+			container.setCommandEnabled("Start", false)
+			container.setCommandEnabled("Stop", false)
 		}
 
 		onBeginStartService: {
@@ -211,10 +248,8 @@ DocumentCollectionViewDelegate {
 			// restore Start/Stop only when the process state is known and actionable.
 			container.finishOperation()
 
-			if (container.collectionView && container.collectionView.commandsController){
-				container.collectionView.commandsController.setCommandIsEnabled("Start", container.serviceStatusModel.isStartable(status))
-				container.collectionView.commandsController.setCommandIsEnabled("Stop", container.serviceStatusModel.isStoppable(status))
-			}
+			container.setCommandEnabled("Start", container.serviceStatusModel.isStartable(status))
+			container.setCommandEnabled("Stop", container.serviceStatusModel.isStoppable(status))
 		}
 
 		onStartServiceFailed: container.finishOperation()

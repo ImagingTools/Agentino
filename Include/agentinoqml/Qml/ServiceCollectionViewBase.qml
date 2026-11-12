@@ -204,10 +204,13 @@ RemoteCollectionView {
 		TableCellIconTextDelegate {
 			id: cellDelegate
 			icon.width: icon.visible ? 9 : 0;
+			icon.height: icon.width;
 			
 			ToolButton {
 				anchors.fill: cellDelegate.icon
-				tooltipText: width > 0 ? cellDelegate.rowDelegate.tableItem.elements.getData("dependantStatusInfo", cellDelegate.rowIndex) : ""
+				// The delegate is reused across rows; a hidden button would still catch the next row's clicks.
+				visible: cellDelegate.icon.visible
+				tooltipText: visible ? cellDelegate.rowDelegate.tableItem.elements.getData("dependantStatusInfo", cellDelegate.rowIndex) : ""
 				decorator: Component {
 					ToolButtonDecorator{
 						color: "transparent"
@@ -221,6 +224,7 @@ RemoteCollectionView {
 					let dependencyStatus = cellDelegate.rowDelegate.tableItem.elements.getData("dependencyStatus", rowIndex);
 					if (status !== ServiceStatus.s_Running){
 						icon.visible = false;
+						icon.source = "";
 					}
 					else if (dependencyStatus === DependencyStatus.s_NotRunning){
 						icon.source = "../../../../" + Style.getIconPath("Icons/Error", Icon.State.On, Icon.Mode.Normal);
@@ -231,7 +235,8 @@ RemoteCollectionView {
 						icon.visible = true
 					}
 					else {
-						icon.visible =false;
+						icon.visible = false;
+						icon.source = "";
 					}
 				}
 			}
