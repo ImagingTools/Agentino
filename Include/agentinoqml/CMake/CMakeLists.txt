@@ -38,6 +38,9 @@ list(APPEND webdirs ${PROJECT_SOURCE_DIR}/../../../Impl/AgentinoLoc/Translations
 list(APPEND webdirs ${buildwebdir}/Resources/Translations)
 
 set(QML_IMPORT_DIRS ${QML_IMPORT_PATH})
+# ImtCore QML modules (imtgui, imtcontrols, ...) and the Acf style module for Qt Creator navigation
+list(APPEND QML_IMPORT_DIRS "${IMTCOREDIR}/Qml")
+list(APPEND QML_IMPORT_DIRS "${IMTCOREDIR}/Include/imtstylecontrolsqml/Qml")
 list(APPEND QML_IMPORT_DIRS "${AUX_INCLUDE_DIR}/agentinosdl/SDL/1.0/QML/agentinoServicesSdl")
 list(REMOVE_DUPLICATES QML_IMPORT_DIRS)
 
