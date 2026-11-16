@@ -50,6 +50,9 @@ type InputConnection {
 	serviceTypeId: String
 	externConnectionList: [ExternConnectionInfo]
 	connectionParam: ServerConnectionParam
+	# The service receives the servers of other products through it: it registers them as clients and issues their tokens.
+	# Declared by the plugin of the service, the agent fills it.
+	acceptsServerTokens: Boolean
 }
 
 type DependantConnectionInfo {

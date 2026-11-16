@@ -223,6 +223,46 @@ bool CServiceSupervisorComp::StopService(const QByteArray& serviceId)
 }
 
 
+bool CServiceSupervisorComp::RestartService(const QByteArray& serviceId)
+{
+	if (QThread::currentThread() != thread()){
+		bool ok = false;
+		const bool invoked = QMetaObject::invokeMethod(
+					this,
+					[this, serviceId, &ok]() {
+						ok = RestartService(serviceId);
+					},
+					Qt::BlockingQueuedConnection);
+		return invoked && ok;
+	}
+
+	const ServiceRuntimeStatus status = EnsureState(serviceId).status;
+	if (status != ServiceRuntimeStatus::Running && status != ServiceRuntimeStatus::Starting){
+		return true;
+	}
+
+	m_pendingRestarts.insert(serviceId);
+
+	QString error;
+	if (!Stop(serviceId, error)){
+		m_pendingRestarts.remove(serviceId);
+		SendErrorMessage(0, QStringLiteral("Unable to restart service '%1': %2").arg(GetServiceDisplayName(serviceId), error), QStringLiteral("RestartService"));
+
+		return false;
+	}
+
+	// The process may have ended within Stop already
+	if (m_pendingRestarts.contains(serviceId) && !m_processHostCompPtr->IsRunning(serviceId)
+				&& EnsureState(serviceId).status == ServiceRuntimeStatus::Stopped){
+		m_pendingRestarts.remove(serviceId);
+
+		return Start(serviceId, error);
+	}
+
+	return true;
+}
+
+
 // protected methods
 
 void CServiceSupervisorComp::OnComponentCreated()
@@ -298,6 +338,22 @@ void CServiceSupervisorComp::OnChildExited(
 							.arg(GetServiceDisplayName(serviceId)),
 					QStringLiteral("ProcessHost"));
 		ApplyEvent(serviceId, CServiceFsm::Event::ChildExited);
+
+		// Queued: a synchronous exit inside Stop() would otherwise arm its kill timer on the new child
+		if (m_pendingRestarts.contains(serviceId)){
+			QMetaObject::invokeMethod(
+						this,
+						[this, serviceId]() {
+							if (!m_pendingRestarts.remove(serviceId)){
+								return;
+							}
+							QString error;
+							if (!Start(serviceId, error)){
+								SendErrorMessage(0, QStringLiteral("Unable to start service '%1' again: %2").arg(GetServiceDisplayName(serviceId), error), QStringLiteral("RestartService"));
+							}
+						},
+						Qt::QueuedConnection);
+		}
 		return;
 	}
 
@@ -587,6 +643,9 @@ bool CServiceSupervisorComp::BuildSpawnRequest(
 		request.arguments.append(QString::fromUtf8(arg));
 	}
 	request.workingDirectory = QFileInfo(request.program).absolutePath();
+	if (m_environmentProviderCompPtr.IsValid()){
+		request.environment = m_environmentProviderCompPtr->GetServiceEnvironment(serviceId, *info);
+	}
 	return true;
 }
 

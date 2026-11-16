@@ -25,6 +25,9 @@ DocumentViewBase {
 	// Agent app has no Agents page → path browse hits local FileSystemController, clientId not required.
 	property bool remoteAgentBrowse: false
 
+	// Creates the transport of the token of an output connection; set where tokens can be managed (the Agentino server)
+	property Component connectionTokenTransportComp: null
+
 	// Browse enabled when local (agent app) or when a target agent id is known (server app).
 	property bool pathBrowseEnabled: !serviceEditorContainer.remoteAgentBrowse
 		|| serviceEditorContainer.clientId !== ""
@@ -206,6 +209,9 @@ DocumentViewBase {
 	property bool isNewService: true
 	property string serviceStatus: ""
 	readonly property bool serviceRunning: serviceStatus === ServiceStatus.s_Running
+	// ServiceStatusModel state: unlike serviceStatus it tells a failed service from an unknown one
+	property string serviceState: ""
+	readonly property bool serviceFailed: serviceStatusModel.isFailed(serviceState)
 	property bool operationInProgress: false
 	property string operationDescription: ""
 	property bool serviceIsDirty: false
@@ -229,7 +235,7 @@ DocumentViewBase {
 
 	function normalizeServiceStatus(status){
 		if (serviceStatusModel !== null) {
-			// unknown/failed/crashed → s_Undefined (Start/Stop disabled when agent offline).
+			// unknown/failed/crashed → s_Undefined; whether it can be started comes from serviceState
 			let n = serviceStatusModel.normalize(status)
 			if (n === serviceStatusModel.running) return ServiceStatus.s_Running
 			if (n === serviceStatusModel.starting) return ServiceStatus.s_Starting
@@ -283,6 +289,7 @@ DocumentViewBase {
 
 	function setServiceStatus(status){
 		serviceStatus = normalizeServiceStatus(status)
+		serviceState = serviceStatusModel.normalize(status)
 	}
 
 	// isNewService must reflect whether the document has actually been persisted via
@@ -348,12 +355,7 @@ DocumentViewBase {
 		settingsFileExists = exists;
 		settingsPath = path;
 		settingsContent = content;
-		let index = multiPageView.getIndexById("Settings");
-		if (index < 0){
-			return;
-		}
-		multiPageView.ensurePageLoaded(index);
-		let item = multiPageView.getPageByIndex(index);
+		let item = multiPageView.getPageById("Settings");
 		if (item){
 			item.updateGui();
 		}
@@ -393,70 +395,44 @@ DocumentViewBase {
 		operationDescription = inProgress ? description : ""
 	}
 	
-	function updateGui(){
-		let idx = multiPageView.getIndexById("Information");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateGui();
-		}
-		idx = multiPageView.getIndexById("Options");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateGui();
-		}
-		idx = multiPageView.getIndexById("Server");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateGui();
-		}
-		idx = multiPageView.getIndexById("OutputConnections");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateGui();
-		}
-		idx = multiPageView.getIndexById("Settings");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateGui();
-		}
+	function isBlockingUpdateModel(){
+		return serviceEditorContainer.internal__ ? serviceEditorContainer.internal__.blockingUpdateModel : false
 	}
-	
+
+	// Fills a page without writing its half-filled fields back into the service; the previous blocking stays
+	function updatePageGui(pageItem){
+		let wasBlocking = serviceEditorContainer.isBlockingUpdateModel()
+		serviceEditorContainer.setBlockingUpdateModel(true)
+		pageItem.updateGui()
+		serviceEditorContainer.setBlockingUpdateModel(wasBlocking)
+	}
+
+	// Only the pages already built are refreshed; the others are filled when they load (see onPageLoaded)
+	function updateGui(){
+		let item = multiPageView.getPageById("Information")
+		if (item) item.updateGui()
+		item = multiPageView.getPageById("Options")
+		if (item) item.updateGui()
+		item = multiPageView.getPageById("Server")
+		if (item) item.updateGui()
+		item = multiPageView.getPageById("OutputConnections")
+		if (item) item.updateGui()
+		item = multiPageView.getPageById("Settings")
+		if (item) item.updateGui()
+	}
+
+	// A page not built yet holds no edits
 	function updateModel(){
-		let idx = multiPageView.getIndexById("Information");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateModel();
-		}
-		idx = multiPageView.getIndexById("Options");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateModel();
-		}
-		idx = multiPageView.getIndexById("Server");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateModel();
-		}
-		idx = multiPageView.getIndexById("OutputConnections");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateModel();
-		}
-		idx = multiPageView.getIndexById("Settings");
-		if (idx >= 0) {
-			multiPageView.ensurePageLoaded(idx);
-			let item = multiPageView.getPageByIndex(idx);
-			if (item) item.updateModel();
-		}
+		let item = multiPageView.getPageById("Information")
+		if (item) item.updateModel()
+		item = multiPageView.getPageById("Options")
+		if (item) item.updateModel()
+		item = multiPageView.getPageById("Server")
+		if (item) item.updateModel()
+		item = multiPageView.getPageById("OutputConnections")
+		if (item) item.updateModel()
+		item = multiPageView.getPageById("Settings")
+		if (item) item.updateModel()
 	}
 	
 	Rectangle {
@@ -468,7 +444,8 @@ DocumentViewBase {
 				(serviceEditorContainer.serviceStatus === ServiceStatus.s_Running ? qsTr("Running") :
 					(serviceEditorContainer.serviceStatus === ServiceStatus.s_Starting ? qsTr("Starting") :
 						(serviceEditorContainer.serviceStatus === ServiceStatus.s_Stopping ? qsTr("Stopping") :
-							(serviceEditorContainer.serviceStatus === ServiceStatus.s_NotRunning ? qsTr("Stopped") : qsTr("Unknown"))))))
+							(serviceEditorContainer.serviceStatus === ServiceStatus.s_NotRunning ? qsTr("Stopped") :
+									(serviceEditorContainer.serviceFailed ? qsTr("Failed") : qsTr("Unknown")))))))
 		anchors.top: parent.top
 		anchors.right: parent.right
 		anchors.topMargin: Style.marginXL
@@ -488,7 +465,7 @@ DocumentViewBase {
 						// Undefined (agent offline / not yet known) is not an error like a crashed/
 						// failed service - it's neutral "we don't know", so it gets a neutral gray
 						// instead of the same red used for a real failure.
-						(serviceEditorContainer.serviceStatus === ServiceStatus.s_Undefined ? Style.subtitleColor : Style.errorColor))))
+						(serviceEditorContainer.serviceStatus === ServiceStatus.s_Undefined && !serviceEditorContainer.serviceFailed ? Style.subtitleColor : Style.errorColor))))
 		border.width: 1
 		z: 100
 		
@@ -512,7 +489,7 @@ DocumentViewBase {
 				radius: 5
 				anchors.verticalCenter: parent.verticalCenter
 				color: serviceEditorContainer.serviceRunning ? Style.greenColor :
-					(serviceEditorContainer.serviceStatus === ServiceStatus.s_Undefined ? Style.subtitleColor : Style.errorColor)
+					(serviceEditorContainer.serviceStatus === ServiceStatus.s_Undefined && !serviceEditorContainer.serviceFailed ? Style.subtitleColor : Style.errorColor)
 				visible: !serviceEditorContainer.isNewService && !serviceEditorContainer.operationInProgress
 			}
 			
@@ -532,6 +509,12 @@ DocumentViewBase {
 		id: multiPageView
 		anchors.fill: parent
 		panelWidth: Style.sizeHintXXS
+
+		onPageLoaded: {
+			if (serviceEditorContainer.serviceData && typeof pageItem.updateGui === "function"){
+				serviceEditorContainer.updatePageGui(pageItem)
+			}
+		}
 
 		function addServicePages() {
 			multiPageView.clear()
@@ -970,6 +953,7 @@ DocumentViewBase {
 								// (still holding their previous/default values) straight back into
 								// model.item.m_connectionParam, clobbering the very port values this
 								// same updateGui() is about to read for the next property.
+								let wasBlocking = serviceEditorContainer.isBlockingUpdateModel()
 								serviceEditorContainer.setBlockingUpdateModel(true)
 								if (model.item.m_connectionParam){
 									inputConnectionEditor.host = model.item.m_connectionParam.m_host
@@ -977,7 +961,7 @@ DocumentViewBase {
 									inputConnectionEditor.wsPort = model.item.m_connectionParam.m_wsPort
 									inputConnectionEditor.isSecure = model.item.m_connectionParam.m_isSecure
 								}
-								serviceEditorContainer.setBlockingUpdateModel(false)
+								serviceEditorContainer.setBlockingUpdateModel(wasBlocking)
 								if (model.item.m_externConnectionList){
 									let values = []
 									for (let i = 0; i < model.item.m_externConnectionList.count; i++){
@@ -1406,7 +1390,7 @@ DocumentViewBase {
 									function onCheckedItemsChanged(){
 										// While restoring checks from model (or from a just-confirmed
 										// response), do not re-fire from the table's own check/uncheck.
-										if (serviceEditorContainer.internal__ && serviceEditorContainer.internal__.blockingUpdateModel){
+										if (serviceEditorContainer.isBlockingUpdateModel()){
 											return
 										}
 										if (!model.item){
@@ -1460,6 +1444,18 @@ DocumentViewBase {
 								}
 							}
 
+							// The server at the other end issues the token: managed from the Agentino server only
+							ConnectionTokenView {
+								id: tokenView
+								controlWidth: serviceEditorContainer.getEditorControlWidth(tokenView)
+								visible: serviceEditorContainer.connectionTokenTransportComp !== null && outputDelegate.currentDependantConnectionId !== ""
+								serviceId: serviceEditorContainer.serviceData ? "" + serviceEditorContainer.serviceData.m_id : ""
+								connectionId: model.item ? "" + model.item.m_id : ""
+								transportComp: serviceEditorContainer.connectionTokenTransportComp
+								// A starting process has read its environment already
+								serviceRunning: serviceEditorContainer.serviceRunning || serviceEditorContainer.serviceStatus === ServiceStatus.s_Starting
+							}
+
 							// One candidate row, or null when the list is not loaded / index is stale.
 							function getCandidate(rowIndex){
 								let candidates = outputDelegate.availableConnections
@@ -1506,8 +1502,7 @@ DocumentViewBase {
 								if (!outTable.table){
 									return
 								}
-								let wasBlocking = serviceEditorContainer.internal__
-											? serviceEditorContainer.internal__.blockingUpdateModel : false
+								let wasBlocking = serviceEditorContainer.isBlockingUpdateModel()
 								serviceEditorContainer.setBlockingUpdateModel(true)
 								outTable.table.elements = outputDelegate.availableConnections
 								serviceEditorContainer.setBlockingUpdateModel(wasBlocking)
@@ -1522,8 +1517,7 @@ DocumentViewBase {
 								// nested inside an outer guarded refresh (e.g. doUpdateGui()'s own
 								// blockingUpdateModel=true) — clearing to false unconditionally would
 								// re-open that outer guard before it is done.
-								let wasBlocking = serviceEditorContainer.internal__
-											? serviceEditorContainer.internal__.blockingUpdateModel : false
+								let wasBlocking = serviceEditorContainer.isBlockingUpdateModel()
 								serviceEditorContainer.setBlockingUpdateModel(true)
 
 								let dependantId = ""
@@ -1591,6 +1585,11 @@ DocumentViewBase {
 						return
 					}
 
+					// Each assignment below fires onXxxChanged -> doUpdateModel(), which would write the
+					// fields not refreshed yet (e.g. an empty script path) back into serviceData.
+					let wasBlocking = serviceEditorContainer.isBlockingUpdateModel()
+					serviceEditorContainer.setBlockingUpdateModel(true)
+
 					switchAutoStart.checked = serviceEditorContainer.serviceData.m_isAutoStart
 					
 					if (serviceEditorContainer.serviceData.m_tracingLevel > -1){
@@ -1618,6 +1617,8 @@ DocumentViewBase {
 					else{
 						stopScriptChecked.checked = false
 					}
+
+					serviceEditorContainer.setBlockingUpdateModel(wasBlocking)
 				}
 				
 				function updateModel(){

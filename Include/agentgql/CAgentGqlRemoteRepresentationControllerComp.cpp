@@ -88,7 +88,7 @@ QJsonObject CAgentGqlRemoteRepresentationControllerComp::CreateInternalResponse(
 	imtclientgql::IGqlClient::GqlRequestPtr clientRequestPtr;
 	clientRequestPtr.MoveCastedPtr(gqlRequestPtr->CloneMe());
 	if (clientRequestPtr.IsValid()){
-		imtclientgql::IGqlClient::GqlResponsePtr responsePtr = m_apiClientCompPtr->SendRequest(clientRequestPtr, &urlParam);
+		imtclientgql::IGqlClient::GqlResponsePtr responsePtr = m_apiClientCompPtr->SendRequest(clientRequestPtr, &urlParam).responsePtr;
 		if (responsePtr.IsValid()){
 			return CreateJsonObjectFromResponse(gqlRequest.GetCommandId(), *responsePtr);
 		}

@@ -1,0 +1,8 @@
+{
+    "name": "agentino-connection-token-api-tests",
+    "private": true,
+    "description": "Newman dependency pin for the Agentino connection token API suite (see Run-CiTests.ps1)",
+    "devDependencies": {
+        "newman": "6.2.2"
+    }
+}

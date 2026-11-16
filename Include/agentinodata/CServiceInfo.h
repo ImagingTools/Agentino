@@ -30,6 +30,11 @@ public:
 	virtual void SetServiceTypeId(const QByteArray& serviceTypeName);
 	virtual void SetServiceVersion(const QString& serviceVersion);
 
+	/**
+		The input connections of the service that receive server tokens; they come from its plugin and are not stored.
+	*/
+	void SetServerTokenReceivers(const QByteArrayList& inputConnectionIds);
+
 	// reimplemented (agentinodata::IServiceInfo)
 	virtual QString GetServiceName() const override;
 	virtual QString GetServiceDescription() const override;
@@ -44,6 +49,7 @@ public:
 	virtual QByteArray GetStopScriptPath() const override;
 	virtual imtbase::IObjectCollection* GetInputConnections() override;
 	virtual imtbase::IObjectCollection* GetDependantServiceConnections() override;
+	virtual bool IsServerTokenReceiver(const QByteArray& inputConnectionId) const override;
 
 	// reimplemented (ilog::ITracingConfiguration)
 	virtual int GetTracingLevel() const override;
@@ -74,6 +80,7 @@ protected:
 	imtbase::CObjectCollection m_inputConnections;
 	imtbase::CObjectCollection m_dependantServiceConnections;
 	bool m_isAutoStart;
+	QByteArrayList m_serverTokenReceivers;
 };
 
 

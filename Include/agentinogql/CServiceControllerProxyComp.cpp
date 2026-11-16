@@ -1993,6 +1993,7 @@ void CServiceControllerProxyComp::AppendServiceDataFields(imtgql::CGqlRequest& g
 	inputConnectionFields.InsertField("connectionName");
 	inputConnectionFields.InsertField("description");
 	inputConnectionFields.InsertField("serviceTypeId");
+	inputConnectionFields.InsertField("acceptsServerTokens");
 	inputConnectionFields.InsertField("connectionParam", connectionParamFields);
 
 	imtgql::CGqlFieldObject outputConnectionFields;

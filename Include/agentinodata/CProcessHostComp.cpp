@@ -91,6 +91,14 @@ bool CProcessHostComp::Spawn(const SpawnRequest& request, qint64& pid, QString& 
 		process->setWorkingDirectory(request.workingDirectory);
 	}
 
+	if (!request.environment.isEmpty()){
+		QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
+		for (auto it = request.environment.constBegin(); it != request.environment.constEnd(); ++it){
+			environment.insert(it.key(), it.value());
+		}
+		process->setProcessEnvironment(environment);
+	}
+
 	connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
 			this, &CProcessHostComp::OnProcessFinished);
 	connect(process, &QProcess::errorOccurred, this, &CProcessHostComp::OnProcessError);

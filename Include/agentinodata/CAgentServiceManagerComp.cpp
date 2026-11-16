@@ -176,6 +176,18 @@ bool CAgentServiceManagerComp::ServiceExists(const QByteArray& agentId, const QB
 }
 
 
+QByteArray CAgentServiceManagerComp::FindServiceAgent(const QByteArray& serviceId) const
+{
+	for (auto iter = m_mirrors.constBegin(); iter != m_mirrors.constEnd(); ++iter){
+		if (iter->collection != nullptr && iter->collection->GetElementIds().contains(serviceId)){
+			return iter.key();
+		}
+	}
+
+	return QByteArray();
+}
+
+
 IServiceInfo* CAgentServiceManagerComp::GetService(const QByteArray& agentId, const QByteArray& serviceId) const
 {
 	imtbase::IObjectCollection* serviceCollectionPtr = EnsureServiceCollection(agentId);

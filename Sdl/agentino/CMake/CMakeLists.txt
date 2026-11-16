@@ -10,6 +10,8 @@ add_custom_target(${PROJECT_NAME}-SDL-related-files SOURCES
 	${CMAKE_CURRENT_LIST_DIR}/../1.0/Topology.sdl
 	${CMAKE_CURRENT_LIST_DIR}/../1.0/Terminal.sdl
 	${CMAKE_CURRENT_LIST_DIR}/../1.0/Enrollment.sdl
+	${CMAKE_CURRENT_LIST_DIR}/../1.0/ConnectionTokens.sdl
+	${CMAKE_CURRENT_LIST_DIR}/../1.0/AgentConnectionTokens.sdl
 )
 
 ImtCoreCustomConfigureSdlCppQml(CXX QML
@@ -28,5 +30,13 @@ ImtCoreCustomConfigureSdlCppQml(CXX QML
 
 ImtCoreCustomConfigureSdlCppQml(CXX QML
 			SCHEMA_PATH	"${CMAKE_CURRENT_LIST_DIR}/../1.0/Enrollment.sdl"
+			VERSION		"1.0")
+
+ImtCoreCustomConfigureSdlCppQml(CXX QML
+			SCHEMA_PATH	"${CMAKE_CURRENT_LIST_DIR}/../1.0/ConnectionTokens.sdl"
+			VERSION		"1.0")
+
+ImtCoreCustomConfigureSdlCppQml(CXX QML
+			SCHEMA_PATH	"${CMAKE_CURRENT_LIST_DIR}/../1.0/AgentConnectionTokens.sdl"
 			VERSION		"1.0")
 

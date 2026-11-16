@@ -101,6 +101,12 @@ public:
 		Get dependant service connection collection.
 	*/
 	virtual imtbase::IObjectCollection* GetDependantServiceConnections() = 0;
+
+	/**
+		Check that the service receives the servers of other products through the input connection:
+		it registers them as clients and issues their server tokens. Declared by the plugin of the service.
+	*/
+	virtual bool IsServerTokenReceiver(const QByteArray& inputConnectionId) const = 0;
 };
 
 

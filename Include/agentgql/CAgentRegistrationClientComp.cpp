@@ -110,7 +110,7 @@ void CAgentRegistrationClientComp::Announce()
 	gqlInitRequest->AddField("addedNotification", returnNotify);
 
 	imtclientgql::IGqlClient::GqlRequestPtr requestPtr(gqlInitRequest);
-	imtclientgql::IGqlClient::GqlResponsePtr responsePtr = m_gqlClientCompPtr->SendRequest(requestPtr);
+	imtclientgql::IGqlClient::GqlResponsePtr responsePtr = m_gqlClientCompPtr->SendRequest(requestPtr).responsePtr;
 	if (!responsePtr.IsValid()){
 		SendErrorMessage(
 					0,

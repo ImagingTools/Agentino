@@ -33,6 +33,9 @@ list(APPEND webdirs ${buildwebdir}/src/agentinoTopologySdl)
 list(APPEND webdirs ${AUX_INCLUDE_DIR}/agentinosdl/SDL/1.0/QML/agentinoEnrollmentSdl)
 list(APPEND webdirs ${buildwebdir}/src/agentinoEnrollmentSdl)
 
+list(APPEND webdirs ${AUX_INCLUDE_DIR}/agentinosdl/SDL/1.0/QML/agentinoConnectionTokensSdl)
+list(APPEND webdirs ${buildwebdir}/src/agentinoConnectionTokensSdl)
+
 # Translations
 list(APPEND webdirs ${PROJECT_SOURCE_DIR}/../../../Impl/AgentinoLoc/Translations)
 list(APPEND webdirs ${buildwebdir}/Resources/Translations)

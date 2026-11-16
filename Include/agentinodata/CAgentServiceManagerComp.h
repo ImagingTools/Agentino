@@ -78,6 +78,7 @@ public:
 				bool beQuiet = false) override;
 	virtual bool ServiceExists(const QByteArray& agentId, const QByteArray& serviceId) const override;
 	virtual IServiceInfo* GetService(const QByteArray& agentId, const QByteArray& serviceId) const override;
+	virtual QByteArray FindServiceAgent(const QByteArray& serviceId) const override;
 
 	/**
 		Per-agent service collection (owned here, not nested in CAgentInfo).

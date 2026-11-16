@@ -1,0 +1,4 @@
+node_modules/
+test-output/
+junit-report.xml
+run-report.json

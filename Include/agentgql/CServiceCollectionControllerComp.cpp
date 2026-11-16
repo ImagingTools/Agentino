@@ -168,6 +168,16 @@ bool CServiceCollectionControllerComp::CreateRepresentationFromObject(
 	
 	serviceData.id = objectId;
 
+	// The plugin declares which inputs receive server tokens; the stored settings do not keep it
+	imtservice::IConnectionCollectionSharedPtr connectionCollectionPtr = GetConnectionCollectionByServiceId(objectId);
+	if (connectionCollectionPtr.IsValid() && serviceData.inputConnections){
+		for (istd::TNullableValue<sdl::V1_0::agentino::CInputConnection>& inputConnection : *serviceData.inputConnections){
+			if (inputConnection && inputConnection->id){
+				inputConnection->acceptsServerTokens = agentinodata::IsServerTokenReceiver(*connectionCollectionPtr, *inputConnection->id);
+			}
+		}
+	}
+
 	// The candidate pick-list is no longer stuffed into every GetService — the editor
 	// fetches it on demand via the AvailableConnections query. GetService stays cheap.
 

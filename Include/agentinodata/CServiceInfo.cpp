@@ -129,6 +129,16 @@ void CServiceInfo::SetServiceVersion(const QString& serviceVersion)
 }
 
 
+void CServiceInfo::SetServerTokenReceivers(const QByteArrayList& inputConnectionIds)
+{
+	if (m_serverTokenReceivers != inputConnectionIds){
+		istd::CChangeNotifier changeNotifier(this);
+
+		m_serverTokenReceivers = inputConnectionIds;
+	}
+}
+
+
 QString CServiceInfo::GetServiceName() const
 {
 	return m_serviceName;
@@ -204,6 +214,12 @@ imtbase::IObjectCollection* CServiceInfo::GetInputConnections()
 imtbase::IObjectCollection* CServiceInfo::GetDependantServiceConnections()
 {
 	return &m_dependantServiceConnections;
+}
+
+
+bool CServiceInfo::IsServerTokenReceiver(const QByteArray& inputConnectionId) const
+{
+	return m_serverTokenReceivers.contains(inputConnectionId);
 }
 
 
@@ -366,6 +382,8 @@ bool CServiceInfo::CopyFrom(const IChangeable &object, CompatibilityMode /*mode*
 		m_dependantServiceConnections.ResetData();
 		m_dependantServiceConnections.CopyFrom(sourcePtr->m_dependantServiceConnections);
 
+		m_serverTokenReceivers = sourcePtr->m_serverTokenReceivers;
+
 		return true;
 	}
 
@@ -397,6 +415,7 @@ bool CServiceInfo::ResetData(CompatibilityMode /*mode*/)
 	m_isAutoStart = true;
 	m_inputConnections.ResetData();
 	m_dependantServiceConnections.ResetData();
+	m_serverTokenReceivers.clear();
 	m_settingsType = ST_NONE;
 
 	return true;

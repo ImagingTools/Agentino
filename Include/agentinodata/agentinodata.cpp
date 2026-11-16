@@ -13,6 +13,7 @@
 // ImtCore includes
 #include <imtcom/IServerConnectionInterface.h>
 #include <imtservice/IConnectionCollection.h>
+#include <imtservice/IServerTokenReceiverInfo.h>
 #include <imtservice/IServiceConnectionParam.h>
 
 // Agentino includes
@@ -140,6 +141,7 @@ bool GetServiceFromRepresentation(
 		if (incomingConnectionCollectionPtr != nullptr){
 			incomingConnectionCollectionPtr->ResetData();
 
+			QByteArrayList serverTokenReceivers;
 			for (const istd::TNullableValue<sdl::V1_0::agentino::CInputConnection>& connection : *connections){
 				QByteArray id;
 				if (connection->id){
@@ -167,7 +169,13 @@ bool GetServiceFromRepresentation(
 				if (retVal.isEmpty()){
 					return false;
 				}
+
+				if (connection->acceptsServerTokens && *connection->acceptsServerTokens){
+					serverTokenReceivers << retVal;
+				}
 			}
+
+			serviceInfo.SetServerTokenReceivers(serverTokenReceivers);
 		}
 	}
 
@@ -275,6 +283,7 @@ bool GetRepresentationFromService(
 					representaion.id = elementId;
 					representaion.connectionName = connectionName;
 					representaion.description = connectionDescription;
+					representaion.acceptsServerTokens = serviceInfo.IsServerTokenReceiver(elementId);
 
 					inputConnectionList << representaion;
 				}
@@ -549,6 +558,15 @@ bool GetRepresentationFromServerConnectionParam(
 
 
 
+bool IsServerTokenReceiver(const imtservice::IConnectionCollection& connectionCollection, const QByteArray& inputConnectionId)
+{
+	// A plugin built before the declaration has no such interface: its service receives no server tokens
+	const imtservice::IServerTokenReceiverInfo* receiverInfoPtr = dynamic_cast<const imtservice::IServerTokenReceiverInfo*>(&connectionCollection);
+
+	return receiverInfoPtr != nullptr && receiverInfoPtr->IsServerTokenReceiver(inputConnectionId);
+}
+
+
 bool GetRepresentationFromConnectionCollection(
 			imtservice::IConnectionCollection& connectionCollection,
 			sdl::V1_0::agentino::CPluginInfo& connectionCollectionRepresentation)
@@ -602,6 +620,7 @@ bool GetRepresentationFromConnectionCollection(
 				inputConnection.connectionName = connectionName;
 				inputConnection.description = connectionDescription;
 				inputConnection.connectionParam = connectionParamRepresentation;
+				inputConnection.acceptsServerTokens = IsServerTokenReceiver(connectionCollection, elementId);
 				inputConnectionList << inputConnection;
 			}
 			else{

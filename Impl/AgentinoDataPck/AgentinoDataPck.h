@@ -17,6 +17,7 @@
 #include <agentinodata/CAgentStatusInfo.h>
 #include <agentinodata/CProcessHostComp.h>
 #include <agentinodata/CServiceSupervisorComp.h>
+#include <agentinodata/CConnectionTokenStoreComp.h>
 #include <agentinodata/CServiceTypeCatalogComp.h>
 
 
@@ -54,6 +55,7 @@ typedef icomp::TMakeComponentWrap<
 					istd::IChangeable> AgentStatusInfo;
 typedef icomp::TModelCompWrap<agentinodata::CProcessHostComp> ProcessHost;
 typedef icomp::TModelCompWrap<agentinodata::CServiceTypeCatalogComp> ServiceTypeCatalog;
+typedef agentinodata::CConnectionTokenStoreComp ConnectionTokenStore;
 
 
 } // namespace AgentinoDataPck
