@@ -19,6 +19,7 @@
 #include <agentinodata/CServiceSupervisorComp.h>
 #include <agentinodata/CConnectionTokenStoreComp.h>
 #include <agentinodata/CServiceTypeCatalogComp.h>
+#include <agentinodata/CTopologyGroup.h>
 
 
 /**
@@ -55,6 +56,11 @@ typedef icomp::TMakeComponentWrap<
 					istd::IChangeable> AgentStatusInfo;
 typedef icomp::TModelCompWrap<agentinodata::CProcessHostComp> ProcessHost;
 typedef icomp::TModelCompWrap<agentinodata::CServiceTypeCatalogComp> ServiceTypeCatalog;
+typedef icomp::TMakeComponentWrap<
+					agentinodata::CTopologyGroup,
+					i2d::IObject2d,
+					iser::ISerializable,
+					istd::IChangeable> TopologyGroup;
 typedef agentinodata::CConnectionTokenStoreComp ConnectionTokenStore;
 
 

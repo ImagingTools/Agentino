@@ -71,6 +71,11 @@ I_EXPORT_COMPONENT(
 			"Service Type Catalog");
 
 I_EXPORT_COMPONENT(
+			TopologyGroup,
+			"User-defined group of the service topology",
+			"Topology Group Composite");
+
+I_EXPORT_COMPONENT(
 			ConnectionTokenStore,
 			"Tokens of the output connections of the services, kept protected",
 			"Connection Token Store");

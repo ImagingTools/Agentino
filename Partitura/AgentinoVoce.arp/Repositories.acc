@@ -157,6 +157,7 @@
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>Position2d</Value>
+                                <Value>TopologyGroup</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -164,10 +165,16 @@
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>Topology</Value>
+                                <Value>TopologyGroup</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
                 </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="TopologyGroup" PackageId="AgentinoDataPck" ComponentId="TopologyGroup">
+            <Data IsEnabled="true" Flags="2">
+                <AttributeInfoMap/>
             </Data>
         </Element>
         <Element Id="TopologyFileAutoPersistence" PackageId="ImtCoreVoce" ComponentId="FileAutoPersistence">

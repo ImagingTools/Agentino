@@ -1402,7 +1402,7 @@ Item {
 		width: 0;
 		height: 0;
 		visible: false;
-readOnly: false;
+		readOnly: false;
 
 		onTextChanged: {
 			if (root.pasteArmed && clipboardProxy.text.length > 0){
@@ -1723,7 +1723,7 @@ readOnly: false;
 				id: outputText;
 				width: outputFlickable.width;
 				height: contentHeight;
-readOnly: true;
+				readOnly: true;
 				selectByMouse: true;
 				persistentSelection: true;
 				textFormat: TextEdit.RichText;

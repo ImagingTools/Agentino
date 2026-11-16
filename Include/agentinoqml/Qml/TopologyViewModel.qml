@@ -27,6 +27,9 @@ QtObject {
 	signal serviceStatusMessage(var data)
 	signal collectionChanged()
 	signal agentStatusChanged()
+	signal groupCreated(string groupId)
+	signal groupRemoved(string groupId)
+	signal groupOperationFailed(string message)
 
 	function normalizeServiceStatus(status) {
 		if (serviceStatusModel !== null) {
@@ -89,6 +92,86 @@ QtObject {
 	}
 
 	property Component topologyInputComp: Component { SaveTopologyInput {} }
+
+	// --- Topology groups (composite nodes) ---
+
+	// parentId: group containing the new group, empty for the root level.
+	function createGroup(name, parentId, x, y) {
+		createGroupInput.m_name = "" + name
+		createGroupInput.m_parentId = parentId ? "" + parentId : ""
+		createGroupInput.m_x = x
+		createGroupInput.m_y = y
+		createGroupRequestSender.send(createGroupInput)
+	}
+
+	// parentId: target group; empty returns the nodes to their default place
+	// (a service to its agent, an agent or a group to the root level).
+	function moveNodes(nodeIds, parentId) {
+		moveNodesInput.m_nodeIds = nodeIds
+		moveNodesInput.m_parentId = parentId ? "" + parentId : ""
+		moveNodesRequestSender.send(moveNodesInput)
+	}
+
+	function removeGroup(groupId) {
+		removeGroupInput.m_id = "" + groupId
+		removeGroupRequestSender.groupId = "" + groupId
+		removeGroupRequestSender.send(removeGroupInput)
+	}
+
+	property CreateTopologyGroupInput createGroupInput: CreateTopologyGroupInput {}
+	property MoveTopologyNodesInput moveNodesInput: MoveTopologyNodesInput {}
+	property RemoveTopologyGroupInput removeGroupInput: RemoveTopologyGroupInput {}
+
+	property GqlSdlRequestSender createGroupRequestSender: GqlSdlRequestSender {
+		requestType: 1
+		gqlCommandId: "CreateTopologyGroup"
+		sdlObjectComp: Component {
+			CreateTopologyGroupResponse {
+				onFinished: {
+					root.groupCreated(m_id)
+					root.requestReload()
+				}
+			}
+		}
+		function onError(message, type) {
+			root.groupOperationFailed(message)
+			finished(-1)
+		}
+	}
+
+	property GqlSdlRequestSender moveNodesRequestSender: GqlSdlRequestSender {
+		requestType: 1
+		gqlCommandId: "MoveTopologyNodes"
+		sdlObjectComp: Component {
+			TopologyGroupResponse {
+				onFinished: root.requestReload()
+			}
+		}
+		function onError(message, type) {
+			root.groupOperationFailed(message)
+			finished(-1)
+		}
+	}
+
+	property GqlSdlRequestSender removeGroupRequestSender: GqlSdlRequestSender {
+		property string groupId: ""
+		requestType: 1
+		gqlCommandId: "RemoveTopologyGroup"
+		sdlObjectComp: Component {
+			TopologyGroupResponse {
+				onFinished: {
+					if (m_successful === true){
+						root.groupRemoved(root.removeGroupRequestSender.groupId)
+					}
+					root.requestReload()
+				}
+			}
+		}
+		function onError(message, type) {
+			root.groupOperationFailed(message)
+			finished(-1)
+		}
+	}
 
 	function requestReload() {
 		if (root.saveInProgress){

@@ -57,6 +57,27 @@ visualizes the overall topology of all agents.
 - **New service**: server → agent picker (`Agents` document service); agent → create without picker/`clientid`.
 - Live refresh: `OnServicesCollectionChanged`, `OnTopologyChanged`, `OnAgentStatusChanged`, `OnServiceStatusChanged` (respects `m_agentOnline`).
 
+## Topology groups (composite nodes, server only)
+
+`GetTopology` returns a tree of nodes (`Service` with `nodeType` / `isComposite` / `parentId`):
+
+| `nodeType` | Composite | Default `parentId` |
+|---|---|---|
+| `AGENT` | yes | root (empty) |
+| `SERVICE` | no | its agent |
+| `GROUP` (user-defined) | yes | root (empty) |
+
+- A user group is a `TopologyCollection` element of type `TopologyGroup`
+  (`agentinodata::CTopologyGroup`: position + IDs of its direct members, name = element name).
+  Membership in a group overrides the default parent; a node belongs to one group only.
+- Mutations of `CTopologyControllerComp`: `CreateTopologyGroup`, `MoveTopologyNodes`
+  (empty target = back to the default parent), `RemoveTopologyGroup` (members move one level up).
+  Cycles are rejected. Positions of agents/groups are saved by `SaveTopology` like services.
+- `CAgentTopologyControllerComp` does not support groups (the agent GUI shows its services flat).
+- UI: each page shows the children of `TopologyPage.groupId` (empty = root). Opening a composite
+  node (double click / Enter / Edit) adds a closable tab with another `TopologyPage`
+  (`MultiDocWorkspaceView.addFixedView`); "Service" documents stay registered by the root page.
+
 ## Layout coordinates
 
 `TopologyCollection` x/y are **local to each side** (server app vs agent app).  

@@ -45,6 +45,20 @@ public:
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
 
+	// Topology groups are managed by the central server only.
+	virtual sdl::V1_0::agentino::CCreateTopologyGroupResponse OnCreateTopologyGroup(
+				const sdl::V1_0::agentino::CCreateTopologyGroupGqlRequest& createTopologyGroupRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CTopologyGroupResponse OnMoveTopologyNodes(
+				const sdl::V1_0::agentino::CMoveTopologyNodesGqlRequest& moveTopologyNodesRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CTopologyGroupResponse OnRemoveTopologyGroup(
+				const sdl::V1_0::agentino::CRemoveTopologyGroupGqlRequest& removeTopologyGroupRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+
 private:
 	QPoint GetServiceCoordinate(const QByteArray& serviceId) const;
 	bool SetServiceCoordinate(const QByteArray& serviceId, const QPoint& point) const;
