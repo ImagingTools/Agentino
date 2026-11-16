@@ -20,6 +20,7 @@
         <Element ComponentName="ServiceStatusInfo" X="220" Y="600" Note=""/>
         <Element ComponentName="TopologyCollection" X="1000" Y="175" Note=""/>
         <Element ComponentName="TopologyFileAutoPersistence" X="1000" Y="50" Note=""/>
+        <Element ComponentName="TopologyGroup" X="1200" Y="275" Note=""/>
         <Element ComponentName="UserLocalRepositories" X="175" Y="75" Note=""/>
     </PositionMap>
     <EmbeddedRegistries/>

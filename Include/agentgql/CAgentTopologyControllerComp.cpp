@@ -193,6 +193,45 @@ sdl::V1_0::agentino::CSaveTopologyResponse CAgentTopologyControllerComp::OnSaveT
 }
 
 
+sdl::V1_0::agentino::CCreateTopologyGroupResponse CAgentTopologyControllerComp::OnCreateTopologyGroup(
+			const sdl::V1_0::agentino::CCreateTopologyGroupGqlRequest& /*createTopologyGroupRequest*/,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	errorMessage = QString("Topology groups are not supported by the agent");
+
+	return sdl::V1_0::agentino::CCreateTopologyGroupResponse();
+}
+
+
+sdl::V1_0::agentino::CTopologyGroupResponse CAgentTopologyControllerComp::OnMoveTopologyNodes(
+			const sdl::V1_0::agentino::CMoveTopologyNodesGqlRequest& /*moveTopologyNodesRequest*/,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	errorMessage = QString("Topology groups are not supported by the agent");
+
+	sdl::V1_0::agentino::CTopologyGroupResponse response;
+	response.successful = false;
+
+	return response;
+}
+
+
+sdl::V1_0::agentino::CTopologyGroupResponse CAgentTopologyControllerComp::OnRemoveTopologyGroup(
+			const sdl::V1_0::agentino::CRemoveTopologyGroupGqlRequest& /*removeTopologyGroupRequest*/,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	errorMessage = QString("Topology groups are not supported by the agent");
+
+	sdl::V1_0::agentino::CTopologyGroupResponse response;
+	response.successful = false;
+
+	return response;
+}
+
+
 QPoint CAgentTopologyControllerComp::GetServiceCoordinate(const QByteArray& serviceId) const
 {
 	QPoint retVal;

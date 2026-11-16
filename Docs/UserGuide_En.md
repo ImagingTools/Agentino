@@ -317,13 +317,45 @@ Features:
 * **AutoFit** — automatically fit the diagram to the window.
 * **New / Edit / Remove / Start / Stop** — the same actions as in the service
   list. **Enter** opens the editor of the selected service, **Delete** removes
-  it (with confirmation).
+  it (with confirmation). Commands that are not available for the current
+  selection are hidden in the toolbar.
+* **Context menu** — a right click on a block selects it and opens a menu with
+  the available commands: **Remove**, **Edit**, **Add to group**, **Remove
+  from group**, **Start service**, **Stop service**. They work exactly like the
+  toolbar commands.
 * **Real-time updates** — service statuses and composition changes are
   updated without reloading the page.
 
 Services of disconnected agents remain on the diagram with their last known
 state and are marked with warning icons; they cannot be managed until the
 connection is restored.
+
+### 10.1. Groups (composite blocks)
+
+On the server, the diagram is a tree of blocks. Composite blocks (drawn as a
+stack of cards with a blue frame) contain other blocks:
+
+* **Agents** — by default the root diagram shows one composite block per
+  agent, which contains the services of that agent.
+* **Groups** — user-defined composite blocks. A group can contain services,
+  agents and other groups.
+
+A double click, **Enter** or **Edit** on a composite block opens it in a new
+tab with the same Topology page showing only the blocks inside it.
+
+* **New group** — create a group on the current diagram (on the root diagram
+  or inside another group) and enter its name.
+* **Add to group** — move the selected block into a group chosen from the
+  list. A block belongs to one group only; a group cannot be moved into itself
+  or into its subgroups.
+* **Remove from group** — move the selected block one level up: into the
+  parent group, or back to its default place (a service to its agent, an agent
+  or a group to the root diagram).
+* **Remove** on a group deletes the group; its content is moved one level up.
+  An open tab of a removed group (or of a removed agent) is closed.
+
+> Groups are available in the server interface only; the agent's local
+> interface shows the services of the agent without groups.
 
 > The block layout on the server diagram and on the diagram in the agent's
 > local interface are stored independently.

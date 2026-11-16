@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #pragma once
 
+
+// Qt includes
+#include <QtCore/QMap>
+#include <QtCore/QPoint>
+
 // ImtCore includes
 #include <imtservergql/CGqlRequestHandlerCompBase.h>
 #include <imtbase/IObjectCollection.h>
@@ -37,11 +42,43 @@ public:
 				const sdl::V1_0::agentino::CSaveTopologyGqlRequest& saveTopologyRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CCreateTopologyGroupResponse OnCreateTopologyGroup(
+				const sdl::V1_0::agentino::CCreateTopologyGroupGqlRequest& createTopologyGroupRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CTopologyGroupResponse OnMoveTopologyNodes(
+				const sdl::V1_0::agentino::CMoveTopologyNodesGqlRequest& moveTopologyNodesRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CTopologyGroupResponse OnRemoveTopologyGroup(
+				const sdl::V1_0::agentino::CRemoveTopologyGroupGqlRequest& removeTopologyGroupRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
 
 private:
+	struct TopologyGroupInfo
+	{
+		QString name;
+		QByteArrayList memberIds;
+	};
+
+	typedef QMap<QByteArray, TopologyGroupInfo> TopologyGroupMap;
+
 	QPoint GetServiceCoordinate(const QByteArray& serviceId) const;
 	bool SetServiceCoordinate(const QByteArray& serviceId, const QPoint& point) const;
 	bool IsAgentOnline(const QByteArray& agentId) const;
+	TopologyGroupMap GetTopologyGroups() const;
+	bool SetTopologyGroupMembers(const QByteArray& groupId, const QByteArrayList& memberIds) const;
+
+	/**
+		Get the group directly containing the node. Empty for nodes outside of all groups.
+	*/
+	static QByteArray FindParentGroupId(const QByteArray& nodeId, const TopologyGroupMap& groups);
+
+	/**
+		Check whether the group is the given ancestor group or is nested in it.
+	*/
+	static bool IsGroupInside(const QByteArray& groupId, const QByteArray& ancestorGroupId, const TopologyGroupMap& groups);
 
 protected:
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);

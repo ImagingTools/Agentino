@@ -13,6 +13,13 @@ type Link {
 	id: ID!
 }
 
+# Kind of a topology node. Agents and groups are composite nodes containing other nodes.
+enum TopologyNodeType {
+	SERVICE
+	AGENT
+	GROUP
+}
+
 type Service {
 	id: ID!
 	agentId: ID!
@@ -30,6 +37,9 @@ type Service {
 	hasError: Boolean
 	isComposite: Boolean
 	agentOnline: Boolean
+	# ID of the composite node (agent or group) containing this node; empty for root nodes
+	parentId: ID
+	nodeType: TopologyNodeType
 }
 
 type Topology {
@@ -50,11 +60,40 @@ type SaveTopologyResponse {
 	successful: Boolean!
 }
 
+input CreateTopologyGroupInput {
+	name: String!
+	# Group containing the new group; empty for the root level
+	parentId: ID
+	x: Double
+	y: Double
+}
+
+type CreateTopologyGroupResponse {
+	id: ID!
+}
+
+input MoveTopologyNodesInput {
+	nodeIds: [ID]
+	# Target group; empty moves the nodes back to their default place (service: own agent, agent/group: root)
+	parentId: ID
+}
+
+input RemoveTopologyGroupInput {
+	id: ID!
+}
+
+type TopologyGroupResponse {
+	successful: Boolean!
+}
+
 type Query {
 	GetTopology: Topology!
 }
 
 type Mutation {
 	SaveTopology (input: SaveTopologyInput): SaveTopologyResponse!
+	CreateTopologyGroup (input: CreateTopologyGroupInput): CreateTopologyGroupResponse!
+	MoveTopologyNodes (input: MoveTopologyNodesInput): TopologyGroupResponse!
+	RemoveTopologyGroup (input: RemoveTopologyGroupInput): TopologyGroupResponse!
 }
 

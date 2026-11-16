@@ -16,8 +16,11 @@
         <EmbededRegistry Id="TopologyCommands">
             <PositionMap>
                 <Element ComponentName="AutoFit" X="950" Y="500" Note=""/>
+                <Element ComponentName="AddToGroup" X="200" Y="625" Note=""/>
                 <Element ComponentName="CommandsController" X="575" Y="75" Note=""/>
                 <Element ComponentName="Edit" X="200" Y="375" Note=""/>
+                <Element ComponentName="NewGroup" X="200" Y="500" Note=""/>
+                <Element ComponentName="RemoveFromGroup" X="200" Y="750" Note=""/>
                 <Element ComponentName="Save" X="200" Y="250" Note=""/>
                 <Element ComponentName="Start" X="575" Y="250" Note=""/>
                 <Element ComponentName="Stop" X="575" Y="375" Note=""/>
