@@ -141,6 +141,71 @@ QtObject {
 		removeGroupRequestSender.send(removeGroupInput)
 	}
 
+	function renameGroup(groupId, name) {
+		renameGroupInput.m_id = "" + groupId
+		renameGroupInput.m_name = "" + name
+		renameGroupRequestSender.send(renameGroupInput)
+	}
+
+	// The service name is owned by the agent: the service is renamed the same way the service
+	// editor saves it (GetService, then UpdateService with the new name, forwarded to the agent).
+	// agentId: owning agent (clientid header); empty in the agent app.
+	function renameService(serviceId, agentId, name) {
+		let controller = serviceRenameControllerComp.createObject(root)
+		if (!controller){
+			root.groupOperationFailed(qsTr("Unable to rename the service"))
+			return
+		}
+		controller.agentId = agentId ? "" + agentId : ""
+		controller.newName = "" + name
+		controller.documentId = "" + serviceId
+		controller.updateDocumentModel()
+	}
+
+	property Component serviceRenameControllerComp: Component {
+		ServiceDocumentDataController {
+			id: renameController
+
+			property string agentId: ""
+			property string newName: ""
+			property bool saving: false
+
+			// Destroyed after the request finished, not from inside its handler.
+			function release() {
+				Qt.callLater(function(){
+					renameController.destroy()
+				})
+			}
+
+			function getHeaders() {
+				let headers = {}
+				if (renameController.agentId !== ""){
+					headers["clientid"] = renameController.agentId
+				}
+				return headers
+			}
+
+			onModelChanged: {
+				if (renameController.saving || !renameController.documentModel){
+					return
+				}
+				renameController.saving = true
+				renameController.documentModel.m_name = renameController.newName
+				renameController.saveDocument()
+			}
+
+			onSaved: {
+				root.requestReload()
+				renameController.release()
+			}
+
+			// The base controller already shows the error message.
+			onError: {
+				renameController.release()
+			}
+		}
+	}
+
 	// --- Topology views (ways of grouping) ---
 
 	function loadViews() {
@@ -234,6 +299,21 @@ QtObject {
 	property CreateTopologyGroupInput createGroupInput: CreateTopologyGroupInput {}
 	property MoveTopologyNodesInput moveNodesInput: MoveTopologyNodesInput {}
 	property RemoveTopologyGroupInput removeGroupInput: RemoveTopologyGroupInput {}
+	property RenameTopologyGroupInput renameGroupInput: RenameTopologyGroupInput {}
+
+	property GqlSdlRequestSender renameGroupRequestSender: GqlSdlRequestSender {
+		requestType: 1
+		gqlCommandId: "RenameTopologyGroup"
+		sdlObjectComp: Component {
+			TopologyGroupResponse {
+				onFinished: root.requestReload()
+			}
+		}
+		function onError(message, type) {
+			root.groupOperationFailed(message)
+			finished(-1)
+		}
+	}
 
 	property GqlSdlRequestSender createGroupRequestSender: GqlSdlRequestSender {
 		requestType: 1

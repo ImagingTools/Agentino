@@ -320,9 +320,12 @@ Features:
   it (with confirmation). Commands that are not available for the current
   selection are hidden in the toolbar.
 * **Context menu** — a right click on a block selects it and opens a menu with
-  the available commands: **Remove**, **Edit**, **Add to group**, **Remove
+  the available commands: **Remove**, **Edit**, **Rename**, **Add to group**, **Remove
   from group**, **Start service**, **Stop service**. They work exactly like the
   toolbar commands.
+* **Rename** (or **F2**) — rename the selected group or service. A service is
+  renamed on its agent, so the agent must be connected; agents are renamed in
+  the agent editor.
 * **Real-time updates** — service statuses and composition changes are
   updated without reloading the page.
 
@@ -367,8 +370,8 @@ the left of the diagram lists the views; click a view to show it.
 * User-defined views — services are not grouped by agents: the root diagram
   shows the services themselves, and groups can contain services of different
   agents. Every view has its own groups and its own block layout.
-* **Add** (below the list) — create a view and enter its name.
-* **Remove** (below the list) — delete the selected view with all its groups;
+* **Add** (the "+" icon to the right of the "Views" title) — create a view and enter its name.
+* **Remove** (the trash icon next to it) — delete the selected view with all its groups;
   the services themselves are not affected.
 * A right click on a user-defined view selects it and opens a menu with
   **Remove**; for **Agents** the right click only selects it.

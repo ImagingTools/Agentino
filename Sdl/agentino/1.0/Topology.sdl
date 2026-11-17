@@ -91,6 +91,11 @@ input RemoveTopologyGroupInput {
 	id: ID!
 }
 
+input RenameTopologyGroupInput {
+	id: ID!
+	name: String!
+}
+
 type TopologyGroupResponse {
 	successful: Boolean!
 }
@@ -127,6 +132,7 @@ type Mutation {
 	CreateTopologyGroup (input: CreateTopologyGroupInput): CreateTopologyGroupResponse!
 	MoveTopologyNodes (input: MoveTopologyNodesInput): TopologyGroupResponse!
 	RemoveTopologyGroup (input: RemoveTopologyGroupInput): TopologyGroupResponse!
+	RenameTopologyGroup (input: RenameTopologyGroupInput): TopologyGroupResponse!
 	CreateTopologyView (input: CreateTopologyViewInput): CreateTopologyViewResponse!
 	RemoveTopologyView (input: RemoveTopologyViewInput): TopologyGroupResponse!
 }
