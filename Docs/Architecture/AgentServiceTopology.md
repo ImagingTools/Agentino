@@ -74,9 +74,10 @@ visualizes the overall topology of all agents.
   (empty target = back to the default parent), `RemoveTopologyGroup` (members move one level up).
   Cycles are rejected. Positions of agents/groups are saved by `SaveTopology` like services.
 - `CAgentTopologyControllerComp` does not support groups (the agent GUI shows its services flat).
-- UI: each page shows the children of `TopologyPage.groupId` (empty = root). Opening a composite
-  node (double click / Enter / Edit) adds a closable tab with another `TopologyPage`
-  (`MultiDocWorkspaceView.addFixedView`); "Service" documents stay registered by the root page.
+- UI: `TopologyPage` navigates inside composite nodes (double click / Enter / Edit) with an ImtCore
+  `StackView` of scheme levels and a `StackViewHeader` navigation panel (shown below the root level).
+  Each level shows the children of its node (`groupId`, empty = root); only the shown level is
+  refreshed, a level whose node disappeared is closed (back to its parent level).
 
 ## Layout coordinates
 

@@ -340,8 +340,10 @@ stack of cards with a blue frame) contain other blocks:
 * **Groups** — user-defined composite blocks. A group can contain services,
   agents and other groups.
 
-A double click, **Enter** or **Edit** on a composite block opens it in a new
-tab with the same Topology page showing only the blocks inside it.
+A double click, **Enter** or **Edit** on a composite block goes inside it: the
+diagram shows only the blocks inside it. A navigation panel above the diagram
+shows the path from the root diagram (for example *Topology › Group ›
+Agent*); click a name in the path or the back arrow to return to that level.
 
 * **New group** — create a group on the current diagram (on the root diagram
   or inside another group) and enter its name.
@@ -352,7 +354,8 @@ tab with the same Topology page showing only the blocks inside it.
   parent group, or back to its default place (a service to its agent, an agent
   or a group to the root diagram).
 * **Remove** on a group deletes the group; its content is moved one level up.
-  An open tab of a removed group (or of a removed agent) is closed.
+  If the shown group (or agent) is removed, the diagram returns to its parent
+  level.
 
 > Groups are available in the server interface only; the agent's local
 > interface shows the services of the agent without groups.

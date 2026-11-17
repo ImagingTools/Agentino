@@ -28,7 +28,6 @@ QtObject {
 	signal collectionChanged()
 	signal agentStatusChanged()
 	signal groupCreated(string groupId)
-	signal groupRemoved(string groupId)
 	signal groupOperationFailed(string message)
 
 	function normalizeServiceStatus(status) {
@@ -114,7 +113,6 @@ QtObject {
 
 	function removeGroup(groupId) {
 		removeGroupInput.m_id = "" + groupId
-		removeGroupRequestSender.groupId = "" + groupId
 		removeGroupRequestSender.send(removeGroupInput)
 	}
 
@@ -154,17 +152,11 @@ QtObject {
 	}
 
 	property GqlSdlRequestSender removeGroupRequestSender: GqlSdlRequestSender {
-		property string groupId: ""
 		requestType: 1
 		gqlCommandId: "RemoveTopologyGroup"
 		sdlObjectComp: Component {
 			TopologyGroupResponse {
-				onFinished: {
-					if (m_successful === true){
-						root.groupRemoved(root.removeGroupRequestSender.groupId)
-					}
-					root.requestReload()
-				}
+				onFinished: root.requestReload()
 			}
 		}
 		function onError(message, type) {
