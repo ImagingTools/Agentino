@@ -21,18 +21,19 @@ ViewBase {
 	property bool serviceOperationInProgress: false
 	property string serviceOperationText: ""
 
-	// Composite node shown by this page: empty for the whole topology, otherwise the ID of an
-	// agent or a group opened in its own tab (openGroupTab()). Only its direct children are shown.
-	property string groupId: ""
-	// Root topology page owning the "Service" document registrations; null for the root page itself.
-	property var rootPage: null
+	// Navigation through composite nodes (agents and groups): every level of schemeStack is a scheme
+	// showing the direct children of its node; the first level is the whole topology (groupId "").
+	// Scheme of the current level; null until the first level is loaded.
+	property var scheme: null
+	// Composite node shown by the current level.
+	readonly property string groupId: scheme ? scheme.groupId : ""
+	readonly property string selectedService: scheme ? scheme.selectedService : ""
+	// Node IDs of the levels of schemeStack (and of the headers of the navigation panel).
+	property var levelNodeIds: [""]
 	// Agent of the service document being opened or created (clientid of the document components).
 	property string documentAgentId: ""
 	// Nodes of the last loaded topology by ID: {id, parentId, nodeType, name, agentId}.
 	property var topologyNodes: ({})
-	// Group tabs opened from this page and not loaded yet: tab ID -> node ID.
-	property var pendingGroupTabs: ({})
-	property Component groupPageComp: null
 
 	// Transport stays in TopologyViewModel (L2/L3) — view is presentation only (QG2).
 	property var topologyViewModel: TopologyViewModel {}
@@ -55,30 +56,34 @@ ViewBase {
 	// Meta-info only for a service that is still on the canvas — avoids GetElementMetaInfo
 	// errors after Remove when selection/subscription still holds a deleted id.
 	function refreshSelectedMetaInfo(){
-		if (scheme.selectedService === "")
+		if (topologyPage.selectedService === "")
 			return
-		if (scheme.findModelIndex(scheme.selectedService) < 0)
+		if (topologyPage.scheme.findModelIndex(topologyPage.selectedService) < 0)
 			return
-		collectionDataProvider.getObjectMetaInfo(scheme.selectedService)
+		collectionDataProvider.getObjectMetaInfo(topologyPage.selectedService)
 	}
 
 	function clearServiceSelection(){
-		scheme.selectedIndex = -1
-		scheme.selectedNodeId = ""
-		scheme.selectedService = ""
+		if (topologyPage.scheme){
+			topologyPage.scheme.selectedIndex = -1
+			topologyPage.scheme.selectedNodeId = ""
+			topologyPage.scheme.selectedService = ""
+		}
 		topologyPage.selectedAgentId = ""
 		metaInfo.contentVisible = false
 		topologyPage.updateCommandStates()
 	}
 
 	function selectedNode(){
-		if (scheme.selectedIndex < 0 || !scheme.objectsModel || scheme.selectedIndex >= scheme.objectsModel.count)
+		let currentScheme = topologyPage.scheme
+		if (!currentScheme || currentScheme.selectedIndex < 0 || !currentScheme.objectsModel
+				|| currentScheme.selectedIndex >= currentScheme.objectsModel.count)
 			return null
-		let item = scheme.objectsModel.get(scheme.selectedIndex).item
+		let item = currentScheme.objectsModel.get(currentScheme.selectedIndex).item
 		return item ? item : null
 	}
 
-	// Agents and groups are composite nodes; they open in their own topology tab.
+	// Agents and groups are composite nodes; double click opens their content as the next level.
 	function isCompositeNode(item){
 		return item !== null && item !== undefined && item.m_isComposite === true
 	}
@@ -257,12 +262,6 @@ ViewBase {
 		ModalDialogManager.openDialog(topologyContextMenuComp, {"x": x, "y": menuY, "model": topologyPage.contextMenuModel, "shownItemsCount": count})
 	}
 
-	function documentHost(){
-		return topologyPage.rootPage ? topologyPage.rootPage : topologyPage
-	}
-
-	// Document components are registered once by the root page, so every topology tab opens
-	// service documents through it.
 	function openServiceDocument(serviceId, serviceName, agentId){
 		if (!topologyPage.documentManager)
 			return
@@ -277,40 +276,66 @@ ViewBase {
 		topologyPage.documentManager.insertNewDocument("Service", qsTr("New service"))
 	}
 
-	// Topology pages of composite nodes are tabs of the same workspace; the page is loaded by URL
-	// because a QML type cannot instantiate itself.
-	function openGroupTab(nodeId, name){
-		let workspaceView = topologyPage.documentManager ? topologyPage.documentManager.getActiveView() : null
-		if (!workspaceView || typeof workspaceView.addFixedView !== "function"){
-			console.error("TopologyPage: unable to open the group. Error: Workspace view is invalid")
+	function updateCurrentScheme(){
+		let currentScheme = schemeStack.currentPage()
+		if (!currentScheme || currentScheme === topologyPage.scheme)
 			return
-		}
 
-		if (!topologyPage.groupPageComp){
-			topologyPage.groupPageComp = Qt.createComponent("qrc:/qml/TopologyPage.qml")
+		topologyPage.scheme = currentScheme
+		topologyPage.applySelection(currentScheme)
+		if (topologyPage.commandsController){
+			topologyPage.commandsController.setToggled("AutoFit", currentScheme.autoFit)
 		}
-		if (!topologyPage.groupPageComp || topologyPage.groupPageComp.status !== Component.Ready){
-			console.error("TopologyPage: unable to open the group. Error:", topologyPage.groupPageComp ? topologyPage.groupPageComp.errorString() : "")
-			return
-		}
-
-		let tabId = "TopologyGroup_" + nodeId
-		topologyPage.pendingGroupTabs[tabId] = nodeId
-		workspaceView.addFixedView(topologyPage.groupPageComp, name, tabId, true, false)
 	}
 
-	// Closes the tab of a removed composite node. Deferred: the tab may be closed from its own page.
-	function closeGroupTab(nodeId){
-		let workspaceView = topologyPage.documentManager ? topologyPage.documentManager.getActiveView() : null
-		if (!workspaceView || typeof workspaceView.removeFixedView !== "function"){
-			return
-		}
+	// Goes inside a composite node: its content becomes the next level of the navigation.
+	function openLevel(nodeId, name){
+		let levelNodeIds = topologyPage.levelNodeIds.slice()
+		levelNodeIds.push(nodeId)
+		topologyPage.levelNodeIds = levelNodeIds
 
-		let tabId = "TopologyGroup_" + nodeId
-		delete topologyPage.pendingGroupTabs[tabId]
-		Qt.callLater(function(){
-			workspaceView.removeFixedView(tabId)
-		})
+		stackHeader.addHeader(nodeId, name)
+		schemeStack.addPage(schemeLevelComp)
+		schemeStack.setCurrentIndex(schemeStack.count - 1)
+		topologyPage.updateCurrentScheme()
+
+		topologyPage.topologyViewModel.loadTopology()
+	}
+
+	// Returns to the level with the given index of the navigation panel; the deeper levels are closed.
+	function navigateToLevel(index){
+		if (index < 0 || index >= schemeStack.count - 1)
+			return
+
+		schemeStack.setCurrentIndex(index)
+		while (schemeStack.count > index + 1){
+			schemeStack.removePage(schemeStack.count - 1)
+			stackHeader.popHeader()
+		}
+		topologyPage.levelNodeIds = topologyPage.levelNodeIds.slice(0, index + 1)
+		topologyPage.updateCurrentScheme()
+
+		// The upper levels were not updated while hidden.
+		topologyPage.topologyViewModel.loadTopology()
+	}
+
+	// Index of the first level whose node no longer exists (removed by this or another client), -1 if all exist.
+	function findRemovedLevel(nodesModel){
+		for (let i = 1; i < topologyPage.levelNodeIds.length; ++i){
+			if (!topologyPage.modelContainsNode(nodesModel, topologyPage.levelNodeIds[i]))
+				return i
+		}
+		return -1
+	}
+
+	// Group names can be changed by other clients.
+	function updateLevelNames(){
+		for (let i = 1; i < topologyPage.levelNodeIds.length; ++i){
+			let node = topologyPage.topologyNodes[topologyPage.levelNodeIds[i]]
+			if (node && stackHeader.getHeaderName(node.id) !== node.name){
+				stackHeader.setHeaderName(node.id, node.name)
+			}
+		}
 	}
 
 	// Nodes at (0, 0) have no stored position yet and do not occupy space.
@@ -377,11 +402,7 @@ ViewBase {
 
 	// Topology.Service.agentOnline — false when the owning agent is disconnected.
 	function isSelectedAgentOnline(){
-		if (scheme.selectedIndex < 0 || !scheme.objectsModel)
-			return false
-		if (scheme.selectedIndex >= scheme.objectsModel.count)
-			return false
-		let item = scheme.objectsModel.get(scheme.selectedIndex).item
+		let item = topologyPage.selectedNode()
 		if (!item)
 			return false
 		// Treat missing field as online (legacy payloads); only explicit false blocks delete.
@@ -389,7 +410,7 @@ ViewBase {
 	}
 
 	function canRemoveSelectedService(){
-		return scheme.selectedService !== "" && topologyPage.isSelectedAgentOnline()
+		return topologyPage.selectedService !== "" && topologyPage.isSelectedAgentOnline()
 	}
 
 	function showCannotRemoveWhileDisconnected(){
@@ -398,34 +419,13 @@ ViewBase {
 	}
 
 	Component.onCompleted: {
-		// Group tabs reuse the registration of the root page (opened first, lives as long as the workspace).
-		if (documentManager && !documentManager.documentIsRegistered("Service")){
+		if (documentManager){
 			documentManager.registerDocumentView("Service", serviceEditorComp);
 			documentManager.registerDocumentDataController("Service", serviceDataControllerComp);
 			documentManager.registerDocumentValidator("Service", serviceValidatorComp);
 		}
 		
 		topologyViewModel.loadTopology()
-	}
-
-	onGroupIdChanged: {
-		if (!topologyViewModel.loading){
-			topologyViewModel.loadTopology()
-		}
-	}
-
-	// Hands the opened composite node over to the topology page created for its tab.
-	Connections {
-		target: topologyPage.documentManager ? topologyPage.documentManager.activeView : null
-		function onViewLoaded(viewId, view) {
-			let nodeId = topologyPage.pendingGroupTabs[viewId]
-			if (nodeId === undefined || !view){
-				return
-			}
-			delete topologyPage.pendingGroupTabs[viewId]
-			view.rootPage = topologyPage.documentHost()
-			view.groupId = nodeId
-		}
 	}
 
 	Connections {
@@ -436,22 +436,25 @@ ViewBase {
 			if (!topologySdlObject){
 				return
 			}
-			// The composite node of this tab was removed (here or by another client): close the tab.
+			// A shown composite node was removed (here or by another client): return to its parent level.
 			let nodesModel = topologySdlObject.m_services
-			if (topologyPage.groupId !== "" && !topologyPage.modelContainsNode(nodesModel, topologyPage.groupId)){
-				topologyPage.closeGroupTab(topologyPage.groupId)
+			let removedLevel = topologyPage.findRemovedLevel(nodesModel)
+			if (removedLevel > 0){
+				topologyPage.navigateToLevel(removedLevel - 1)
+				return
+			}
+			let currentScheme = topologyPage.scheme
+			if (!currentScheme){
 				return
 			}
 			// Re-find selection after full reload (see prior comments on selectedAgentId).
-			let previousNodeId = scheme.selectedNodeId
-			scheme.selectedIndex = -1
-			scheme.objectsModel = topologyPage.applyTopologyNodes(nodesModel)
-			scheme.selectedIndex = scheme.findModelIndex(previousNodeId)
+			let previousNodeId = currentScheme.selectedNodeId
+			currentScheme.selectedIndex = -1
+			currentScheme.objectsModel = topologyPage.applyTopologyNodes(nodesModel)
+			currentScheme.selectedIndex = currentScheme.findModelIndex(previousNodeId)
+			topologyPage.updateLevelNames()
 			topologyPage.updateCommandStates()
-			scheme.requestPaint()
-		}
-		function onGroupRemoved(groupId) {
-			topologyPage.closeGroupTab(groupId)
+			currentScheme.requestPaint()
 		}
 		function onServiceStatusMessage(data) {
 			topologyPage.applyLiveServiceStatus(data)
@@ -468,7 +471,7 @@ ViewBase {
 				setCommandVisible("Save", false)
 				setCommandIsEnabled("New", true)
 				setIsToggleable("AutoFit", true);
-				setToggled("AutoFit", scheme.autoFit);
+				setToggled("AutoFit", topologyPage.scheme ? topologyPage.scheme.autoFit : true);
 				topologyPage.updateCommandStates()
 			}
 		}
@@ -484,6 +487,12 @@ ViewBase {
 		// Subscription payload is a TreeItemModel (has getData). Plain objects / missing
 		// Connections args must not throw into the UI event loop.
 		if (!dataModel || typeof dataModel.getData !== "function"){
+			return
+		}
+
+		// Only the shown level is updated; the others are reloaded when they are shown again.
+		let scheme = topologyPage.scheme
+		if (!scheme){
 			return
 		}
 
@@ -620,6 +629,10 @@ ViewBase {
 			}
 			
 			onCommandActivated: {
+				let scheme = topologyPage.scheme
+				if (!scheme){
+					return
+				}
 				if (commandId === "ZoomIn"){
 					scheme.setAutoFit(false);
 					
@@ -639,32 +652,30 @@ ViewBase {
 			}
 			
 			function onStart(){
-				if(scheme.objectsModel.count > scheme.selectedIndex && scheme.selectedIndex >= 0){
-					let item = scheme.objectsModel.get(scheme.selectedIndex).item
-					let serviceId = item.m_id;
-					
-					startService(serviceId);
+				let item = topologyPage.selectedNode()
+				if (item && !topologyPage.isCompositeNode(item)){
+					startService(item.m_id);
 				}
 			}
 			
 			function onStop(){
-				if(scheme.objectsModel.count > scheme.selectedIndex && scheme.selectedIndex >= 0){
-					let item = scheme.objectsModel.get(scheme.selectedIndex).item
-					let serviceId = item.m_id;
-					
-					stopService(serviceId);
+				let item = topologyPage.selectedNode()
+				if (item && !topologyPage.isCompositeNode(item)){
+					stopService(item.m_id);
 				}
 			}
 			
 			function onEdit(){
-				scheme.goInside()
+				if (topologyPage.scheme){
+					topologyPage.scheme.goInside()
+				}
 			}
 
 			function onNew(){
 				// Inside an agent the target agent is known.
 				let currentNode = topologyPage.topologyNodes[topologyPage.groupId]
 				if (currentNode && currentNode.nodeType === "AGENT"){
-					topologyPage.documentHost().createServiceDocument(currentNode.id)
+					topologyPage.createServiceDocument(currentNode.id)
 					return
 				}
 
@@ -680,7 +691,7 @@ ViewBase {
 						ModalDialogManager.openDialog(newServiceAgentDialogComp, {})
 					}
 					else{
-						topologyPage.documentHost().createServiceDocument("")
+						topologyPage.createServiceDocument("")
 					}
 				})
 			}
@@ -710,7 +721,7 @@ ViewBase {
 
 					onFinished: {
 						if (buttonId === Enums.apply && chosenAgentId !== ""){
-							topologyPage.documentHost().createServiceDocument(chosenAgentId)
+							topologyPage.createServiceDocument(chosenAgentId)
 						}
 					}
 
@@ -752,99 +763,163 @@ ViewBase {
 		}
 	}
 	
-	SchemeView {
-		id: scheme
+	// Applies the selection of the shown level to the page (meta information, commands, headers).
+	function applySelection(levelScheme){
+		if (!levelScheme || levelScheme !== topologyPage.scheme){
+			return
+		}
 
-		// Test instrumentation: SchemeView carries no objectName of its own, so the diagram would
-		// otherwise be unaddressable. Inert.
-		objectName: "TopologySchemeView"
+		let item = topologyPage.selectedNode()
+		let isComposite = topologyPage.isCompositeNode(item)
 
-		maximumObjectWidth: 360
-		objectFontSize: Style.fontSizeXL
-		objectSecondaryFontSize: Style.fontSizeS
-		strokeSecondaryText: false
-		
+		topologyPage.selectedAgentId = item !== null && !isComposite ? item.m_agentId : ""
+		// Meta information is provided for services only.
+		metaInfo.contentVisible = item !== null && !isComposite
+		topologyPage.refreshSelectedMetaInfo()
+
+		topologyPage.updateCommandStates()
+	}
+
+	// Navigation panel of the levels; shown inside a composite node only.
+	StackViewHeader {
+		id: stackHeader
+
+		objectName: "TopologyNavigationPanel"
+
+		anchors.top: parent.top
+		anchors.left: parent.left
+		anchors.leftMargin: Style.marginM
+		anchors.right: metaInfo.left
+		anchors.rightMargin: Style.marginM
+		height: visible ? Style.controlHeightL : 0
+		visible: schemeStack.count > 1
+		initialItemTitleVisible: true
+
+		onCloseClicked: {
+			topologyPage.navigateToLevel(schemeStack.count - 2)
+		}
+
+		onHeaderItemClicked: {
+			topologyPage.navigateToLevel(index)
+		}
+
+		Component.onCompleted: {
+			stackHeader.addHeader("", qsTr("Topology"))
+		}
+	}
+
+	StackView {
+		id: schemeStack
+
 		anchors.left: parent.left;
 		anchors.right: metaInfo.left;
-		anchors.top: parent.top;
+		anchors.top: stackHeader.bottom;
 		anchors.bottom: parent.bottom;
-		
-		// Selected node (service, agent or group); selectedService is set for services only.
-		property string selectedNodeId: ""
-		property string selectedService: ""
-		
-		onAutoFitChanged: {
-			console.log("SchemeView onAutoFitChanged", autoFit);
-			if (topologyPage.commandsController){
-				topologyPage.commandsController.setToggled("AutoFit", scheme.autoFit);
+
+		Component.onCompleted: {
+			schemeStack.addPage(schemeLevelComp)
+		}
+
+		onPageAdded: {
+			if (index >= 0 && index < topologyPage.levelNodeIds.length){
+				item.groupId = topologyPage.levelNodeIds[index]
+			}
+			// The page may be loaded after it was made current.
+			if (index === schemeStack.currentIndex){
+				topologyPage.updateCurrentScheme()
+				if (index > 0){
+					topologyPage.topologyViewModel.loadTopology()
+				}
 			}
 		}
-		
-		onObjectMoveFinished: {
-			// saveTopology() sets saveInProgress so OnTopologyChanged does not reload mid-save.
-			topologyPage.topologyViewModel.saveTopology(scheme.objectsModel)
-		}
 
-		onDeleteSignal: {
-			topologyPage.requestRemoveSelected()
+		onCurrentPageChanged: {
+			topologyPage.updateCurrentScheme()
 		}
+	}
 
-		// The tile is already selected by the right button press.
-		onContextMenuRequested: {
-			topologyPage.openContextMenu(menuX, menuY)
-		}
+	// One level of the navigation: the direct children of the composite node groupId.
+	Component {
+		id: schemeLevelComp
 
-		onSelectedIndexChanged: {
-			let item = topologyPage.selectedNode()
-			if (item !== null){
+		SchemeView {
+			id: levelScheme
+
+			// Test instrumentation: SchemeView carries no objectName of its own, so the diagram would
+			// otherwise be unaddressable. Inert.
+			objectName: "TopologySchemeView"
+
+			maximumObjectWidth: 360
+			objectFontSize: Style.fontSizeXL
+			objectSecondaryFontSize: Style.fontSizeS
+			strokeSecondaryText: false
+
+			// Composite node shown by the level, empty for the whole topology.
+			property string groupId: ""
+			// Selected node (service, agent or group); selectedService is set for services only.
+			property string selectedNodeId: ""
+			property string selectedService: ""
+
+			onAutoFitChanged: {
+				if (levelScheme === topologyPage.scheme && topologyPage.commandsController){
+					topologyPage.commandsController.setToggled("AutoFit", levelScheme.autoFit);
+				}
+			}
+
+			onObjectMoveFinished: {
+				// saveTopology() sets saveInProgress so OnTopologyChanged does not reload mid-save.
+				topologyPage.topologyViewModel.saveTopology(levelScheme.objectsModel)
+			}
+
+			onDeleteSignal: {
+				topologyPage.requestRemoveSelected()
+			}
+
+			// The tile is already selected by the right button press.
+			onContextMenuRequested: {
+				topologyPage.openContextMenu(menuX, menuY)
+			}
+
+			onSelectedIndexChanged: {
+				let item = levelScheme.selectedIndex >= 0 && levelScheme.objectsModel
+						&& levelScheme.selectedIndex < levelScheme.objectsModel.count
+						? levelScheme.objectsModel.get(levelScheme.selectedIndex).item : null
 				let isComposite = topologyPage.isCompositeNode(item)
 
-				selectedNodeId = item.m_id
-				selectedService = isComposite ? "" : item.m_id
-				topologyPage.selectedAgentId = isComposite ? "" : item.m_agentId
+				levelScheme.selectedNodeId = item ? item.m_id : ""
+				levelScheme.selectedService = item && !isComposite ? item.m_id : ""
 
-				// Meta information is provided for services only.
-				metaInfo.contentVisible = !isComposite
-				topologyPage.refreshSelectedMetaInfo()
-			}
-			else{
-				selectedNodeId = ""
-				selectedService = ""
-				topologyPage.selectedAgentId = ""
-
-				metaInfo.contentVisible = false;
+				topologyPage.applySelection(levelScheme)
 			}
 
-			topologyPage.updateCommandStates()
-		}
-		
-		// Double click / Return / Edit: a composite node opens in its own tab, a service in its editor.
-		function goInside(){
-			let item = topologyPage.selectedNode()
-			if (item === null){
-				return
+			// Double click / Return / Edit: goes inside a composite node, opens the editor of a service.
+			function goInside(){
+				let item = topologyPage.selectedNode()
+				if (item === null){
+					return
+				}
+
+				if (topologyPage.isCompositeNode(item)){
+					topologyPage.openLevel(item.m_id, item.m_mainText)
+				}
+				else{
+					topologyPage.openServiceDocument(item.m_id, item.m_mainText, item.m_agentId)
+				}
 			}
 
-			if (topologyPage.isCompositeNode(item)){
-				topologyPage.openGroupTab(item.m_id, item.m_mainText)
+			function zoomToFit(){
+				fitToCanvas()
 			}
-			else{
-				topologyPage.documentHost().openServiceDocument(item.m_id, item.m_mainText, item.m_agentId)
-			}
-		}
 
-		function zoomToFit(){
-			fitToCanvas()
-		}
-
-		// Disabled while any modal is open: otherwise Return is stolen from
-		// FileSystemBrowserDialog (and any other dialog that needs Enter).
-		// Only the visible topology tab reacts.
-		Shortcut {
-			sequence: "Return"
-			enabled: ModalDialogManager.count === 0 && topologyPage.visible
-			onActivated: {
-				scheme.goInside()
+			// Disabled while any modal is open: otherwise Return is stolen from
+			// FileSystemBrowserDialog (and any other dialog that needs Enter).
+			// Only the shown level of the visible topology page reacts.
+			Shortcut {
+				sequence: "Return"
+				enabled: ModalDialogManager.count === 0 && topologyPage.visible && levelScheme.visible
+				onActivated: {
+					levelScheme.goInside()
+				}
 			}
 		}
 	}
@@ -858,7 +933,7 @@ ViewBase {
 		property real maxTextWidth: Math.max(0, maxPopupWidth - 2 * Style.marginL - spinnerSize - Style.spacingS)
 		property real textWidth: Math.min(serviceOperationTextItem.implicitWidth, maxTextWidth)
 
-		anchors.top: parent.top
+		anchors.top: schemeStack.top
 		anchors.right: metaInfo.left
 		anchors.topMargin: Style.marginXL
 		anchors.rightMargin: Style.marginXL
@@ -906,8 +981,8 @@ ViewBase {
 		anchors.bottom: parent.bottom;
 
 		// Takes room only for a selected service, so the scheme gets the whole page otherwise
-		width: scheme.selectedService !== "" ? 250 : 0;
-		visible: scheme.selectedService !== "";
+		width: topologyPage.selectedService !== "" ? 250 : 0;
+		visible: topologyPage.selectedService !== "";
 
 		Component.onCompleted: {
 			registerViewDelegate("ExternPaths", metaInfoViewExternPathsDelegateComp)
@@ -922,7 +997,7 @@ ViewBase {
 		}
 		onObjectMetaInfoReceiveFailed: {
 			// Deleted / missing service — keep the panel quiet rather than showing a stale error.
-			if (scheme.selectedService === "" || scheme.findModelIndex(scheme.selectedService) < 0){
+			if (topologyPage.selectedService === "" || !topologyPage.scheme || topologyPage.scheme.findModelIndex(topologyPage.selectedService) < 0){
 				metaInfo.contentVisible = false
 			}
 		}
@@ -931,9 +1006,9 @@ ViewBase {
 		onElementsRemoved: {
 			let removedIds = elementIds
 			let selectedGone = false
-			if (removedIds && scheme.selectedService !== ""){
+			if (removedIds && topologyPage.selectedService !== ""){
 				for (let i = 0; i < removedIds.length; i++){
-					if (("" + removedIds[i]) === scheme.selectedService){
+					if (("" + removedIds[i]) === topologyPage.selectedService){
 						selectedGone = true
 						break
 					}
@@ -953,14 +1028,14 @@ ViewBase {
 		// Thin adapter for ImtCore widgets — scope lives on topologyViewModel.dataScope.
 		if (topologyViewModel.dataScope) {
 			topologyViewModel.dataScope.agentId = topologyPage.selectedAgentId
-			topologyViewModel.dataScope.serviceId = scheme.selectedService
+			topologyViewModel.dataScope.serviceId = topologyPage.selectedService
 		}
 		let headers = {}
 		if (topologyPage.selectedAgentId !== ""){
 			headers["clientid"] = topologyPage.selectedAgentId;
 		}
-		if (scheme.selectedService !== ""){
-			headers["serviceid"] = scheme.selectedService;
+		if (topologyPage.selectedService !== ""){
+			headers["serviceid"] = topologyPage.selectedService;
 		}
 		return headers
 	}
@@ -1046,12 +1121,12 @@ ViewBase {
 			title: qsTr("Deleting a service")
 			message: qsTr("Delete the selected service?")
 			onFinished: {
-				if (buttonId == Enums.yes && scheme.selectedService !== ""){
+				if (buttonId == Enums.yes && topologyPage.selectedService !== ""){
 					if (!topologyPage.canRemoveSelectedService()){
 						topologyPage.showCannotRemoveWhileDisconnected()
 						return
 					}
-					collectionDataProvider.removeElements([scheme.selectedService])
+					collectionDataProvider.removeElements([topologyPage.selectedService])
 				}
 			}
 		}
@@ -1084,7 +1159,7 @@ ViewBase {
 			onFinished: {
 				let name = inputValue ? inputValue.trim() : ""
 				if (buttonId == Enums.ok && name !== ""){
-					let position = topologyPage.findFreePosition(scheme.objectsModel)
+					let position = topologyPage.findFreePosition(topologyPage.scheme ? topologyPage.scheme.objectsModel : null)
 					let parentId = topologyPage.isGroupNode(topologyPage.groupId) ? topologyPage.groupId : ""
 					topologyPage.topologyViewModel.createGroup(name, parentId, position.x, position.y)
 				}
