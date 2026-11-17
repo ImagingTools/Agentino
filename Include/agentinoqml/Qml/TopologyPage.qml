@@ -220,6 +220,9 @@ ViewBase {
 		topologyPage.setCommandState("Start", canStartStop && status === "NOT_RUNNING")
 		topologyPage.setCommandState("Stop", canStartStop && status === "RUNNING")
 		topologyPage.setCommandState("Edit", item !== null)
+		// Groups are renamed on the server; services through their agent, which must be online.
+		// Agents are renamed in the agent editor.
+		topologyPage.setCommandState("Rename", item !== null && (isComposite ? topologyPage.isGroupNode(item.m_id) : agentOnline))
 		// Delete requires a live agent — mirror-only delete comes back on reconnect. Agents cannot be removed here.
 		topologyPage.setCommandState("Remove", isComposite ? topologyPage.isGroupNode(item.m_id) : serviceSelected && agentOnline)
 		// Groups live at the root level or inside other groups; an agent contains only its services.
@@ -239,6 +242,7 @@ ViewBase {
 		let commands = [
 			{"id": "Remove", "name": qsTr("Remove"), "icon": "Icons/Delete"},
 			{"id": "Edit", "name": qsTr("Edit"), "icon": "Icons/Edit"},
+			{"id": "Rename", "name": qsTr("Rename"), "icon": "Icons/Edit"},
 			{"id": "AddToGroup", "name": qsTr("Add to group"), "icon": "Icons/Link"},
 			{"id": "RemoveFromGroup", "name": qsTr("Remove from group"), "icon": "Icons/Unlink"},
 			{"id": "Start", "name": qsTr("Start service"), "icon": "Icons/Play"},
@@ -470,6 +474,28 @@ ViewBase {
 		let currentGroup = topologyPage.topologyNodes[topologyPage.groupId]
 		let targetGroupId = topologyPage.isGroupNode(currentGroup.parentId) ? currentGroup.parentId : ""
 		topologyPage.topologyViewModel.moveNodes([item.m_id], targetGroupId)
+	}
+
+	// Renames the selected group or service (F2, toolbar or context menu).
+	function requestRename(){
+		let item = topologyPage.selectedNode()
+		if (!item || !topologyPage.commandsController || !topologyPage.commandsController.commandIsEnabled("Rename"))
+			return
+
+		let isGroup = topologyPage.isCompositeNode(item)
+		let name = item.m_mainText ? "" + item.m_mainText : ""
+		// A service is shown as "<service name>@<agent name>".
+		if (!isGroup && name.lastIndexOf("@") > 0){
+			name = name.substring(0, name.lastIndexOf("@"))
+		}
+
+		ModalDialogManager.openDialog(renameDialogComp, {
+				"nodeId": item.m_id,
+				"agentId": isGroup ? "" : item.m_agentId,
+				"isGroup": isGroup,
+				"oldName": name,
+				"inputValue": name,
+				"title": isGroup ? qsTr("Rename group") : qsTr("Rename service")})
 	}
 
 	function requestRemoveSelected(){
@@ -730,6 +756,9 @@ ViewBase {
 					else if (commandId === "RemoveFromGroup"){
 						topologyPage.requestRemoveFromGroup()
 					}
+					else if (commandId === "Rename"){
+						topologyPage.requestRename()
+					}
 				}
 
 				commandActivated(commandId)
@@ -915,31 +944,96 @@ ViewBase {
 			color: Style.borderColor
 		}
 
-		BaseText {
-			id: viewsTitle
+		// Title line: "Views" with the Add / Remove icon buttons on the right.
+		Item {
+			id: viewsHeader
 
 			anchors.top: parent.top
-			anchors.topMargin: Style.marginM
+			anchors.topMargin: Style.marginS
 			anchors.left: parent.left
 			anchors.leftMargin: Style.marginL
 			anchors.right: parent.right
-			anchors.rightMargin: Style.marginL
+			anchors.rightMargin: Style.marginS
 
-			text: qsTr("Views")
-			color: Style.subtitleColor
-			font.family: Style.fontFamilyBold
-			font.pixelSize: Style.fontSizeM
-			elide: Text.ElideRight
+			height: Style.controlHeightM
+
+			BaseText {
+				id: viewsTitle
+
+				anchors.verticalCenter: parent.verticalCenter
+				anchors.left: parent.left
+				anchors.right: viewsButtons.left
+				anchors.rightMargin: Style.marginS
+
+				text: qsTr("Views")
+				color: Style.subtitleColor
+				font.family: Style.fontFamilyBold
+				font.pixelSize: Style.fontSizeM
+				elide: Text.ElideRight
+			}
+
+			Row {
+				id: viewsButtons
+
+				anchors.verticalCenter: parent.verticalCenter
+				anchors.right: parent.right
+
+				spacing: Style.spacingXS
+
+				Button {
+					id: addViewButton
+
+					objectName: "TopologyAddViewButton"
+					width: Style.controlHeightM
+					height: Style.controlHeightM
+					tooltipText: qsTr("Add view")
+					iconSource: "qrc:/" + Style.getIconPath("Icons/Add", Icon.State.On,
+								enabled ? Icon.Mode.Normal : Icon.Mode.Disabled)
+					decorator: Component {
+						ButtonDecorator {
+							color: parent.hovered ? Style.alternateBaseColor : "transparent"
+							radius: Style.radiusM
+							border.width: 0
+						}
+					}
+					onClicked: {
+						topologyPage.requestAddView()
+					}
+				}
+
+				Button {
+					id: removeViewButton
+
+					objectName: "TopologyRemoveViewButton"
+					width: Style.controlHeightM
+					height: Style.controlHeightM
+					tooltipText: qsTr("Remove view")
+					// The pinned default view cannot be removed.
+					enabled: topologyPage.viewId !== ""
+					iconSource: "qrc:/" + Style.getIconPath("Icons/Delete", Icon.State.On,
+								enabled ? Icon.Mode.Normal : Icon.Mode.Disabled)
+					decorator: Component {
+						ButtonDecorator {
+							color: parent.hovered ? Style.alternateBaseColor : "transparent"
+							radius: Style.radiusM
+							border.width: 0
+						}
+					}
+					onClicked: {
+						topologyPage.requestRemoveView(topologyPage.viewId)
+					}
+				}
+			}
 		}
 
 		ListView {
 			id: viewsList
 
-			anchors.top: viewsTitle.bottom
+			anchors.top: viewsHeader.bottom
 			anchors.topMargin: Style.marginS
 			anchors.left: parent.left
 			anchors.right: parent.right
-			anchors.bottom: viewsButtons.top
+			anchors.bottom: parent.bottom
 			anchors.bottomMargin: Style.marginS
 
 			clip: true
@@ -982,37 +1076,16 @@ ViewBase {
 			}
 		}
 
-		Row {
-			id: viewsButtons
-
-			anchors.bottom: parent.bottom
-			anchors.bottomMargin: Style.marginM
-			anchors.left: parent.left
-			anchors.leftMargin: Style.marginL
-
-			spacing: Style.marginS
-
-			Button {
-				objectName: "TopologyAddViewButton"
-				width: (viewsPanel.width - 2 * Style.marginL - viewsButtons.spacing) / 2
-				height: Style.controlHeightM
-				text: qsTr("Add")
-				onClicked: {
-					topologyPage.requestAddView()
-				}
-			}
-
-			Button {
-				objectName: "TopologyRemoveViewButton"
-				width: (viewsPanel.width - 2 * Style.marginL - viewsButtons.spacing) / 2
-				height: Style.controlHeightM
-				text: qsTr("Remove")
-				// The pinned default view cannot be removed.
-				enabled: topologyPage.viewId !== ""
-				onClicked: {
-					topologyPage.requestRemoveView(topologyPage.viewId)
-				}
-			}
+		// Shown only when the list does not fit.
+		CustomScrollbar {
+			z: viewsList.z + 1
+			anchors.right: viewsList.right
+			anchors.rightMargin: Style.marginXS
+			anchors.top: viewsList.top
+			anchors.bottom: viewsList.bottom
+			secondSize: Style.marginS
+			radius: Style.radiusS
+			targetItem: viewsList
 		}
 	}
 
@@ -1109,6 +1182,13 @@ ViewBase {
 
 			onDeleteSignal: {
 				topologyPage.requestRemoveSelected()
+			}
+
+			// F2; ignored while a dialog is open.
+			onRenameSignal: {
+				if (ModalDialogManager.count === 0){
+					topologyPage.requestRename()
+				}
 			}
 
 			// The tile is already selected by the right button press.
@@ -1429,6 +1509,34 @@ ViewBase {
 			onFinished: {
 				if (buttonId == Enums.yes && groupId !== ""){
 					topologyPage.topologyViewModel.removeGroup(groupId)
+				}
+			}
+		}
+	}
+
+	Component {
+		id: renameDialogComp
+
+		InputDialog {
+			property string nodeId: ""
+			property string agentId: ""
+			property bool isGroup: false
+			property string oldName: ""
+
+			message: qsTr("Name")
+			placeHolderText: qsTr("Enter the name")
+			selectTextOnStart: true
+
+			onFinished: {
+				let name = inputValue ? inputValue.trim() : ""
+				if (buttonId != Enums.ok || name === "" || name === oldName || nodeId === ""){
+					return
+				}
+				if (isGroup){
+					topologyPage.topologyViewModel.renameGroup(nodeId, name)
+				}
+				else{
+					topologyPage.topologyViewModel.renameService(nodeId, agentId, name)
 				}
 			}
 		}

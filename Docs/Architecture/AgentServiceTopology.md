@@ -71,7 +71,9 @@ visualizes the overall topology of all agents.
   (`agentinodata::CTopologyGroup`: position + IDs of its direct members, name = element name).
   Membership in a group overrides the default parent; a node belongs to one group only.
 - Mutations of `CTopologyControllerComp`: `CreateTopologyGroup`, `MoveTopologyNodes`
-  (empty target = back to the default parent), `RemoveTopologyGroup` (members move one level up).
+  (empty target = back to the default parent), `RemoveTopologyGroup` (members move one level up),
+  `RenameTopologyGroup` (element name). Services are renamed by the client like the service editor
+  saves them (`GetService` + `UpdateService` with the new name, forwarded to the owning agent).
   Cycles are rejected. Positions of agents/groups are saved by `SaveTopology` like services.
 - Views (ways of grouping): `viewId` in `GetTopology`/`SaveTopology`/`CreateTopologyGroup`/
   `MoveTopologyNodes`; `GetTopologyViews`, `CreateTopologyView`, `RemoveTopologyView`.

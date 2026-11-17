@@ -232,6 +232,20 @@ sdl::V1_0::agentino::CTopologyGroupResponse CAgentTopologyControllerComp::OnRemo
 }
 
 
+sdl::V1_0::agentino::CTopologyGroupResponse CAgentTopologyControllerComp::OnRenameTopologyGroup(
+			const sdl::V1_0::agentino::CRenameTopologyGroupGqlRequest& /*renameTopologyGroupRequest*/,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	errorMessage = QString("Topology groups are not supported by the agent");
+
+	sdl::V1_0::agentino::CTopologyGroupResponse response;
+	response.successful = false;
+
+	return response;
+}
+
+
 sdl::V1_0::agentino::CTopologyViewList CAgentTopologyControllerComp::OnGetTopologyViews(
 			const sdl::V1_0::agentino::CGetTopologyViewsGqlRequest& /*getTopologyViewsRequest*/,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,

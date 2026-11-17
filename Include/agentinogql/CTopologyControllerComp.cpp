@@ -610,6 +610,56 @@ sdl::V1_0::agentino::CTopologyGroupResponse CTopologyControllerComp::OnRemoveTop
 }
 
 
+sdl::V1_0::agentino::CTopologyGroupResponse CTopologyControllerComp::OnRenameTopologyGroup(
+			const sdl::V1_0::agentino::CRenameTopologyGroupGqlRequest& renameTopologyGroupRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::CTopologyGroupResponse response;
+	response.successful = false;
+
+	if (!m_topologyCollectionCompPtr.IsValid()){
+		Q_ASSERT_X(false, "Attribute 'TopologyCollection' was not set", "CTopologyControllerComp");
+		return response;
+	}
+
+	sdl::V1_0::agentino::RenameTopologyGroupRequestArguments arguments = renameTopologyGroupRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->id.has_value() || arguments.input->id->isEmpty()){
+		errorMessage = QString("Unable to rename topology group. Error: Group ID is empty");
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+		return response;
+	}
+
+	if (!arguments.input->name.has_value() || arguments.input->name->trimmed().isEmpty()){
+		errorMessage = QString("Unable to rename topology group. Error: Group name is empty");
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+		return response;
+	}
+
+	const QByteArray groupId = *arguments.input->id;
+	if (m_topologyCollectionCompPtr->GetObjectTypeId(groupId) != s_topologyGroupTypeId){
+		errorMessage = QString("Unable to rename topology group. Error: Group '%1' does not exist").arg(QString::fromUtf8(groupId));
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+		return response;
+	}
+
+	// The group name is the element name in the topology collection.
+	if (!m_topologyCollectionCompPtr->SetElementName(groupId, arguments.input->name->trimmed())){
+		errorMessage = QString("Unable to rename topology group. Error: Failed to rename group '%1'").arg(QString::fromUtf8(groupId));
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+		return response;
+	}
+
+	response.successful = true;
+
+	return response;
+}
+
+
 sdl::V1_0::agentino::CTopologyViewList CTopologyControllerComp::OnGetTopologyViews(
 			const sdl::V1_0::agentino::CGetTopologyViewsGqlRequest& /*getTopologyViewsRequest*/,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,
