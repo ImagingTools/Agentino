@@ -158,6 +158,7 @@
                             <Values>
                                 <Value>Position2d</Value>
                                 <Value>TopologyGroup</Value>
+                                <Value>TopologyView</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -166,6 +167,7 @@
                             <Values>
                                 <Value>Topology</Value>
                                 <Value>TopologyGroup</Value>
+                                <Value>TopologyView</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -173,6 +175,11 @@
             </Data>
         </Element>
         <Element Id="TopologyGroup" PackageId="AgentinoDataPck" ComponentId="TopologyGroup">
+            <Data IsEnabled="true" Flags="2">
+                <AttributeInfoMap/>
+            </Data>
+        </Element>
+        <Element Id="TopologyView" PackageId="AgentinoDataPck" ComponentId="TopologyView">
             <Data IsEnabled="true" Flags="2">
                 <AttributeInfoMap/>
             </Data>

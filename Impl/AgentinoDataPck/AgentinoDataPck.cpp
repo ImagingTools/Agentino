@@ -76,6 +76,11 @@ I_EXPORT_COMPONENT(
 			"Topology Group Composite");
 
 I_EXPORT_COMPONENT(
+			TopologyView,
+			"User-defined view (grouping) of the service topology",
+			"Topology View Grouping");
+
+I_EXPORT_COMPONENT(
 			ConnectionTokenStore,
 			"Tokens of the output connections of the services, kept protected",
 			"Connection Token Store");
