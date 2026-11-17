@@ -58,6 +58,19 @@ public:
 				const sdl::V1_0::agentino::CRemoveTopologyGroupGqlRequest& removeTopologyGroupRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
+	// Topology views are managed by the central server only.
+	virtual sdl::V1_0::agentino::CTopologyViewList OnGetTopologyViews(
+				const sdl::V1_0::agentino::CGetTopologyViewsGqlRequest& getTopologyViewsRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CCreateTopologyViewResponse OnCreateTopologyView(
+				const sdl::V1_0::agentino::CCreateTopologyViewGqlRequest& createTopologyViewRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CTopologyGroupResponse OnRemoveTopologyView(
+				const sdl::V1_0::agentino::CRemoveTopologyViewGqlRequest& removeTopologyViewRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
 
 private:
 	QPoint GetServiceCoordinate(const QByteArray& serviceId) const;

@@ -46,6 +46,12 @@ type Topology {
 	services: [Service]
 }
 
+# Views are different ways to group the topology nodes. The default view (empty view ID) groups
+# services by agents; in the other views services are grouped freely, independently of agents.
+input GetTopologyInput {
+	viewId: ID
+}
+
 input ServiceCoordinateInput {
 	id: ID!
 	x: Double
@@ -53,6 +59,7 @@ input ServiceCoordinateInput {
 }
 
 input SaveTopologyInput {
+	viewId: ID
 	services: [ServiceCoordinateInput]
 }
 
@@ -61,6 +68,7 @@ type SaveTopologyResponse {
 }
 
 input CreateTopologyGroupInput {
+	viewId: ID
 	name: String!
 	# Group containing the new group; empty for the root level
 	parentId: ID
@@ -73,8 +81,9 @@ type CreateTopologyGroupResponse {
 }
 
 input MoveTopologyNodesInput {
+	viewId: ID
 	nodeIds: [ID]
-	# Target group; empty moves the nodes back to their default place (service: own agent, agent/group: root)
+	# Target group; empty moves the nodes back to their default place (service: own agent in the default view, otherwise root)
 	parentId: ID
 }
 
@@ -86,8 +95,31 @@ type TopologyGroupResponse {
 	successful: Boolean!
 }
 
+type TopologyViewInfo {
+	id: ID!
+	name: String
+}
+
+# User-defined views; the default view (grouping by agents) is not listed
+type TopologyViewList {
+	views: [TopologyViewInfo]
+}
+
+input CreateTopologyViewInput {
+	name: String!
+}
+
+type CreateTopologyViewResponse {
+	id: ID!
+}
+
+input RemoveTopologyViewInput {
+	id: ID!
+}
+
 type Query {
-	GetTopology: Topology!
+	GetTopology (input: GetTopologyInput): Topology!
+	GetTopologyViews: TopologyViewList!
 }
 
 type Mutation {
@@ -95,5 +127,7 @@ type Mutation {
 	CreateTopologyGroup (input: CreateTopologyGroupInput): CreateTopologyGroupResponse!
 	MoveTopologyNodes (input: MoveTopologyNodesInput): TopologyGroupResponse!
 	RemoveTopologyGroup (input: RemoveTopologyGroupInput): TopologyGroupResponse!
+	CreateTopologyView (input: CreateTopologyViewInput): CreateTopologyViewResponse!
+	RemoveTopologyView (input: RemoveTopologyViewInput): TopologyGroupResponse!
 }
 

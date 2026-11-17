@@ -35,6 +35,11 @@ ViewBase {
 	// Nodes of the last loaded topology by ID: {id, parentId, nodeType, name, agentId}.
 	property var topologyNodes: ({})
 
+	// Views (ways of grouping the nodes): the pinned default view "Agents" (empty ID) groups services
+	// by agents, the user-defined views group them freely. Items: {id, name, pinned}.
+	property ListModel viewsModel: ListModel {}
+	readonly property string viewId: topologyViewModel.viewId
+
 	// Transport stays in TopologyViewModel (L2/L3) — view is presentation only (QG2).
 	property var topologyViewModel: TopologyViewModel {}
 	
@@ -338,6 +343,90 @@ ViewBase {
 		}
 	}
 
+	// --- Views ---
+
+	function getViewName(viewId){
+		for (let i = 0; i < topologyPage.viewsModel.count; ++i){
+			if (topologyPage.viewsModel.get(i).id === viewId){
+				return topologyPage.viewsModel.get(i).name
+			}
+		}
+		return ""
+	}
+
+	// views: [{id, name}] of the user-defined views; the default view is always the first, pinned item.
+	function fillViews(views){
+		topologyPage.viewsModel.clear()
+		topologyPage.viewsModel.append({"id": "", "name": qsTr("Agents"), "pinned": true})
+		let currentViewExists = topologyPage.viewId === ""
+		for (let i = 0; i < views.length; ++i){
+			topologyPage.viewsModel.append({"id": views[i].id, "name": views[i].name, "pinned": false})
+			if (views[i].id === topologyPage.viewId){
+				currentViewExists = true
+			}
+		}
+
+		// The current view was removed by another client.
+		if (!currentViewExists){
+			topologyPage.selectView("")
+			return
+		}
+
+		stackHeader.setHeaderName("", topologyPage.getViewName(topologyPage.viewId))
+	}
+
+	// Shows the root level of the view; the levels opened in the previous view are closed.
+	function selectView(viewId){
+		if (viewId === topologyPage.viewId){
+			return
+		}
+
+		topologyPage.clearServiceSelection()
+
+		while (schemeStack.count > 1){
+			schemeStack.removePage(schemeStack.count - 1)
+			stackHeader.popHeader()
+		}
+		schemeStack.setCurrentIndex(0)
+		topologyPage.levelNodeIds = [""]
+		topologyPage.updateCurrentScheme()
+
+		topologyPage.topologyViewModel.viewId = viewId
+		stackHeader.setHeaderName("", topologyPage.getViewName(viewId))
+
+		topologyPage.topologyViewModel.loadTopology()
+	}
+
+	function requestAddView(){
+		ModalDialogManager.openDialog(newViewDialogComp, {})
+	}
+
+	function requestRemoveView(viewId){
+		// The default view cannot be removed.
+		if (viewId === ""){
+			return
+		}
+		ModalDialogManager.openDialog(removeViewDialogComp, {"viewId": viewId, "viewName": topologyPage.getViewName(viewId)})
+	}
+
+	property TreeItemModel viewContextMenuModel: TreeItemModel {}
+
+	// Context menu of a view item: Remove only. The pinned default view has no commands, so no menu is opened for it.
+	function openViewContextMenu(viewId, x, y){
+		if (viewId === ""){
+			return
+		}
+
+		topologyPage.viewContextMenuModel.clear()
+
+		let index = topologyPage.viewContextMenuModel.insertNewItem()
+		topologyPage.viewContextMenuModel.setData("id", "RemoveView", index)
+		topologyPage.viewContextMenuModel.setData("name", qsTr("Remove"), index)
+		topologyPage.viewContextMenuModel.setData("icon", "Icons/Delete", index)
+
+		ModalDialogManager.openDialog(viewContextMenuComp, {"x": x, "y": y, "model": topologyPage.viewContextMenuModel, "contextViewId": viewId})
+	}
+
 	// Nodes at (0, 0) have no stored position yet and do not occupy space.
 	function findFreePosition(nodesModel){
 		let width = 280
@@ -426,6 +515,7 @@ ViewBase {
 		}
 		
 		topologyViewModel.loadTopology()
+		topologyViewModel.loadViews()
 	}
 
 	Connections {
@@ -462,6 +552,17 @@ ViewBase {
 		function onGroupOperationFailed(message) {
 			ModalDialogManager.showErrorDialog(message !== "" ? message : qsTr("Unable to change the topology groups"))
 		}
+		function onViewsLoaded(views) {
+			topologyPage.fillViews(views)
+		}
+		function onViewCreated(viewId) {
+			topologyPage.selectView(viewId)
+		}
+		function onViewRemoved(viewId) {
+			if (viewId === topologyPage.viewId){
+				topologyPage.selectView("")
+			}
+		}
 	}
 	
 	commandsControllerComp: Component {GqlBasedCommandsController {
@@ -480,6 +581,17 @@ ViewBase {
 	onVisibleChanged: {
 		if (topologyPage.visible){
 			topologyViewModel.loadTopology()
+			topologyViewModel.loadViews()
+		}
+	}
+
+	// A hidden views panel must not leave the page in a user-defined view.
+	Connections {
+		target: topologyPage.topologyViewModel
+		function onViewsSupportedChanged() {
+			if (!topologyPage.topologyViewModel.viewsSupported){
+				topologyPage.selectView("")
+			}
 		}
 	}
 
@@ -780,6 +892,130 @@ ViewBase {
 		topologyPage.updateCommandStates()
 	}
 
+	// Views (ways of grouping): styled as the main menu of the application.
+	Rectangle {
+		id: viewsPanel
+
+		objectName: "TopologyViewsPanel"
+
+		anchors.left: parent.left
+		anchors.top: parent.top
+		anchors.bottom: parent.bottom
+
+		width: visible ? Style.sizeHintXXS : 0
+		// Hidden where views are not supported (agent app).
+		visible: topologyPage.topologyViewModel.viewsSupported
+		color: Style.menuPanelBackgroundColor
+
+		Rectangle {
+			anchors.right: parent.right
+			anchors.top: parent.top
+			anchors.bottom: parent.bottom
+			width: 1
+			color: Style.borderColor
+		}
+
+		BaseText {
+			id: viewsTitle
+
+			anchors.top: parent.top
+			anchors.topMargin: Style.marginM
+			anchors.left: parent.left
+			anchors.leftMargin: Style.marginL
+			anchors.right: parent.right
+			anchors.rightMargin: Style.marginL
+
+			text: qsTr("Views")
+			color: Style.subtitleColor
+			font.family: Style.fontFamilyBold
+			font.pixelSize: Style.fontSizeM
+			elide: Text.ElideRight
+		}
+
+		ListView {
+			id: viewsList
+
+			anchors.top: viewsTitle.bottom
+			anchors.topMargin: Style.marginS
+			anchors.left: parent.left
+			anchors.right: parent.right
+			anchors.bottom: viewsButtons.top
+			anchors.bottomMargin: Style.marginS
+
+			clip: true
+			boundsBehavior: Flickable.StopAtBounds
+			model: topologyPage.viewsModel
+
+			delegate: MenuPanelButton {
+				id: viewButton
+
+				objectName: model.pinned ? "TopologyViewAgentsButton" : "TopologyViewButton"
+
+				width: viewsList.width
+				height: Style.controlHeightL
+
+				text: model.name
+				textColor: Style.textColor
+				fontName: Style.fontFamily
+				selected: model.id === topologyPage.viewId
+				iconSource: "qrc:/" + Style.getIconPath(model.pinned ? "Icons/Agents" : "Icons/FolderClosed",
+							Icon.State.On, (highlighted || selected) ? Icon.Mode.Selected : Icon.Mode.Normal)
+
+				Component.onCompleted: {
+					viewButton.mouseArea.acceptedButtons = Qt.LeftButton | Qt.RightButton
+				}
+
+				// Left and right click select the view; the right click opens its context menu as well.
+				onClicked: {
+					topologyPage.selectView(model.id)
+				}
+
+				Connections {
+					target: viewButton.mouseArea
+					function onClicked(mouse) {
+						if (mouse.button === Qt.RightButton){
+							let point = viewButton.mouseArea.mapToItem(null, mouse.x, mouse.y)
+							topologyPage.openViewContextMenu(model.id, point.x, point.y)
+						}
+					}
+				}
+			}
+		}
+
+		Row {
+			id: viewsButtons
+
+			anchors.bottom: parent.bottom
+			anchors.bottomMargin: Style.marginM
+			anchors.left: parent.left
+			anchors.leftMargin: Style.marginL
+
+			spacing: Style.marginS
+
+			Button {
+				objectName: "TopologyAddViewButton"
+				width: (viewsPanel.width - 2 * Style.marginL - viewsButtons.spacing) / 2
+				height: Style.controlHeightM
+				text: qsTr("Add")
+				onClicked: {
+					topologyPage.requestAddView()
+				}
+			}
+
+			Button {
+				objectName: "TopologyRemoveViewButton"
+				width: (viewsPanel.width - 2 * Style.marginL - viewsButtons.spacing) / 2
+				height: Style.controlHeightM
+				text: qsTr("Remove")
+				// The pinned default view cannot be removed.
+				enabled: topologyPage.viewId !== ""
+				onClicked: {
+					topologyPage.requestRemoveView(topologyPage.viewId)
+				}
+			}
+		}
+	}
+
 	// Navigation panel of the levels; shown inside a composite node only.
 	StackViewHeader {
 		id: stackHeader
@@ -787,7 +1023,7 @@ ViewBase {
 		objectName: "TopologyNavigationPanel"
 
 		anchors.top: parent.top
-		anchors.left: parent.left
+		anchors.left: viewsPanel.right
 		anchors.leftMargin: Style.marginM
 		anchors.right: metaInfo.left
 		anchors.rightMargin: Style.marginM
@@ -804,14 +1040,14 @@ ViewBase {
 		}
 
 		Component.onCompleted: {
-			stackHeader.addHeader("", qsTr("Topology"))
+			stackHeader.addHeader("", qsTr("Agents"))
 		}
 	}
 
 	StackView {
 		id: schemeStack
 
-		anchors.left: parent.left;
+		anchors.left: viewsPanel.right;
 		anchors.right: metaInfo.left;
 		anchors.top: stackHeader.bottom;
 		anchors.bottom: parent.bottom;
@@ -929,7 +1165,7 @@ ViewBase {
 	Rectangle {
 		id: serviceOperationIndicator
 		property int spinnerSize: 18
-		property real maxPopupWidth: Math.max(0, metaInfo.x - 2 * Style.marginXL)
+		property real maxPopupWidth: Math.max(0, metaInfo.x - viewsPanel.width - 2 * Style.marginXL)
 		property real maxTextWidth: Math.max(0, maxPopupWidth - 2 * Style.marginL - spinnerSize - Style.spacingS)
 		property real textWidth: Math.min(serviceOperationTextItem.implicitWidth, maxTextWidth)
 
@@ -1099,6 +1335,55 @@ ViewBase {
 		id: serviceValidatorComp;
 		
 		ServiceValidator {}
+	}
+
+	Component {
+		id: viewContextMenuComp
+
+		PopupMenuDialog {
+			// View the menu was opened for.
+			property string contextViewId: ""
+
+			onFinished: {
+				if (commandId === "RemoveView"){
+					topologyPage.requestRemoveView(contextViewId)
+				}
+			}
+		}
+	}
+
+	Component {
+		id: newViewDialogComp
+
+		InputDialog {
+			title: qsTr("New view")
+			message: qsTr("View name")
+			placeHolderText: qsTr("Enter the view name")
+			onFinished: {
+				let name = inputValue ? inputValue.trim() : ""
+				if (buttonId == Enums.ok && name !== ""){
+					topologyPage.topologyViewModel.createView(name)
+				}
+			}
+		}
+	}
+
+	Component {
+		id: removeViewDialogComp
+
+		MessageDialog {
+			property string viewId: ""
+			property string viewName: ""
+
+			width: Style.sizeHintM
+			title: qsTr("Deleting a view")
+			message: qsTr("Delete the view \"%1\" with all its groups? The services are not affected.").arg(viewName)
+			onFinished: {
+				if (buttonId == Enums.yes && viewId !== ""){
+					topologyPage.topologyViewModel.removeView(viewId)
+				}
+			}
+		}
 	}
 
 	Component {

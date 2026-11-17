@@ -20,6 +20,12 @@ QtObject {
 	// While SaveTopology is in flight, ignore OnTopologyChanged reloads — they race the
 	// server write and replace the canvas with stale GetTopology data (nodes snap back).
 	property bool saveInProgress: false
+	// Current view (way of grouping); empty for the default view grouping services by agents.
+	property string viewId: ""
+	// False until GetTopologyViews succeeds (e.g. the agent app has no views).
+	property bool viewsSupported: false
+	// Set when the server answered that views are not supported; transport failures do not set it.
+	property bool viewsUnsupported: false
 
 	signal topologyLoaded(var topologySdlObject)
 	signal topologySaved()
@@ -29,6 +35,10 @@ QtObject {
 	signal agentStatusChanged()
 	signal groupCreated(string groupId)
 	signal groupOperationFailed(string message)
+	// views: [{id, name}] of the user-defined views (the default view is not listed).
+	signal viewsLoaded(var views)
+	signal viewCreated(string viewId)
+	signal viewRemoved(string viewId)
 
 	function normalizeServiceStatus(status) {
 		if (serviceStatusModel !== null) {
@@ -49,9 +59,21 @@ QtObject {
 			root.loading = false
 			return
 		}
+		// One request at a time: responses are not tied to requests, so a response for a
+		// previous view could replace the current one. Later loads are merged into one.
+		if (root.loading){
+			root.reloadPending = true
+			return
+		}
 		root.loading = true
-		getTopologyRequestSender.send()
+		root.reloadPending = false
+		getTopologyInput.m_viewId = root.viewId
+		getTopologyRequestSender.requestedViewId = root.viewId
+		getTopologyRequestSender.send(getTopologyInput)
 	}
+
+	property bool reloadPending: false
+	property GetTopologyInput getTopologyInput: GetTopologyInput {}
 
 	// SaveTopology only persists coordinates (see CTopologyControllerComp::OnSaveTopology,
 	// which reads id/x/y and nothing else) — the input is the minimal ServiceCoordinateInput,
@@ -61,6 +83,7 @@ QtObject {
 	// the generated setter, so services would be sent as null on the wire.
 	function buildTopologyInput(model) {
 		let topologyInput = topologyInputComp.createObject(root)
+		topologyInput.m_viewId = root.viewId
 		topologyInput.emplaceServices()
 		for (let i = 0; i < model.count; ++i){
 			let item = model.get(i).item
@@ -96,6 +119,7 @@ QtObject {
 
 	// parentId: group containing the new group, empty for the root level.
 	function createGroup(name, parentId, x, y) {
+		createGroupInput.m_viewId = root.viewId
 		createGroupInput.m_name = "" + name
 		createGroupInput.m_parentId = parentId ? "" + parentId : ""
 		createGroupInput.m_x = x
@@ -104,8 +128,9 @@ QtObject {
 	}
 
 	// parentId: target group; empty returns the nodes to their default place
-	// (a service to its agent, an agent or a group to the root level).
+	// (in the default view a service to its agent, otherwise the root level).
 	function moveNodes(nodeIds, parentId) {
+		moveNodesInput.m_viewId = root.viewId
 		moveNodesInput.m_nodeIds = nodeIds
 		moveNodesInput.m_parentId = parentId ? "" + parentId : ""
 		moveNodesRequestSender.send(moveNodesInput)
@@ -114,6 +139,96 @@ QtObject {
 	function removeGroup(groupId) {
 		removeGroupInput.m_id = "" + groupId
 		removeGroupRequestSender.send(removeGroupInput)
+	}
+
+	// --- Topology views (ways of grouping) ---
+
+	function loadViews() {
+		if (root.viewsUnsupported){
+			return
+		}
+		getViewsRequestSender.send()
+	}
+
+	function createView(name) {
+		createViewInput.m_name = "" + name
+		createViewRequestSender.send(createViewInput)
+	}
+
+	function removeView(viewId) {
+		removeViewInput.m_id = "" + viewId
+		removeViewRequestSender.removedViewId = "" + viewId
+		removeViewRequestSender.send(removeViewInput)
+	}
+
+	property CreateTopologyViewInput createViewInput: CreateTopologyViewInput {}
+	property RemoveTopologyViewInput removeViewInput: RemoveTopologyViewInput {}
+
+	property GqlSdlRequestSender getViewsRequestSender: GqlSdlRequestSender {
+		gqlCommandId: "GetTopologyViews"
+		sdlObjectComp: Component {
+			TopologyViewList {
+				onFinished: {
+					let views = []
+					if (m_views){
+						for (let i = 0; i < m_views.count; ++i){
+							let item = m_views.get(i).item
+							if (item){
+								views.push({"id": item.m_id, "name": item.m_name})
+							}
+						}
+					}
+					root.viewsSupported = true
+					root.viewsLoaded(views)
+				}
+			}
+		}
+		// The agent app has no views: no popup, the views panel stays hidden. Only an answer of the
+		// server (state "Ready" with GraphQL errors) means "unsupported"; a network error is retried later.
+		function onError(message, type) {
+			if (state === "Ready"){
+				root.viewsUnsupported = true
+				root.viewsSupported = false
+			}
+			finished(-1)
+		}
+	}
+
+	property GqlSdlRequestSender createViewRequestSender: GqlSdlRequestSender {
+		requestType: 1
+		gqlCommandId: "CreateTopologyView"
+		sdlObjectComp: Component {
+			CreateTopologyViewResponse {
+				onFinished: {
+					root.viewCreated(m_id)
+					root.loadViews()
+				}
+			}
+		}
+		function onError(message, type) {
+			root.groupOperationFailed(message)
+			finished(-1)
+		}
+	}
+
+	property GqlSdlRequestSender removeViewRequestSender: GqlSdlRequestSender {
+		property string removedViewId: ""
+		requestType: 1
+		gqlCommandId: "RemoveTopologyView"
+		sdlObjectComp: Component {
+			TopologyGroupResponse {
+				onFinished: {
+					if (m_successful === true){
+						root.viewRemoved(root.removeViewRequestSender.removedViewId)
+					}
+					root.loadViews()
+				}
+			}
+		}
+		function onError(message, type) {
+			root.groupOperationFailed(message)
+			finished(-1)
+		}
 	}
 
 	property CreateTopologyGroupInput createGroupInput: CreateTopologyGroupInput {}
@@ -177,7 +292,11 @@ QtObject {
 
 	property SubscriptionClient topologySubscriptionClient: SubscriptionClient {
 		gqlCommandId: "OnTopologyChanged"
-		onMessageReceived: root.requestReload()
+		onMessageReceived: {
+			// Views are stored in the topology collection as well (added/removed by other clients).
+			root.loadViews()
+			root.requestReload()
+		}
 	}
 
 	property SubscriptionClient servicesCollectionSubscriptionClient: SubscriptionClient {
@@ -225,12 +344,27 @@ QtObject {
 	}
 
 	property GqlSdlRequestSender getTopologyRequestSender: GqlSdlRequestSender {
+		// View of the request in flight; the response is dropped if another view was chosen meanwhile.
+		property string requestedViewId: ""
 		gqlCommandId: "GetTopology"
 		sdlObjectComp: Component {
 			Topology {
 				onFinished: {
 					root.loading = false
+					if (root.reloadPending || root.getTopologyRequestSender.requestedViewId !== root.viewId){
+						root.loadTopology()
+						return
+					}
 					root.topologyLoaded(this)
+				}
+			}
+		}
+		// status -1 = error: release the single-request gate so later loads are sent.
+		onFinished: {
+			if (status < 0){
+				root.loading = false
+				if (root.reloadPending){
+					root.loadTopology()
 				}
 			}
 		}

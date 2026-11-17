@@ -232,6 +232,43 @@ sdl::V1_0::agentino::CTopologyGroupResponse CAgentTopologyControllerComp::OnRemo
 }
 
 
+sdl::V1_0::agentino::CTopologyViewList CAgentTopologyControllerComp::OnGetTopologyViews(
+			const sdl::V1_0::agentino::CGetTopologyViewsGqlRequest& /*getTopologyViewsRequest*/,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	// An error (not an empty list) tells the client to hide the views panel.
+	errorMessage = QString("Topology views are not supported by the agent");
+
+	return sdl::V1_0::agentino::CTopologyViewList();
+}
+
+
+sdl::V1_0::agentino::CCreateTopologyViewResponse CAgentTopologyControllerComp::OnCreateTopologyView(
+			const sdl::V1_0::agentino::CCreateTopologyViewGqlRequest& /*createTopologyViewRequest*/,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	errorMessage = QString("Topology views are not supported by the agent");
+
+	return sdl::V1_0::agentino::CCreateTopologyViewResponse();
+}
+
+
+sdl::V1_0::agentino::CTopologyGroupResponse CAgentTopologyControllerComp::OnRemoveTopologyView(
+			const sdl::V1_0::agentino::CRemoveTopologyViewGqlRequest& /*removeTopologyViewRequest*/,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	errorMessage = QString("Topology views are not supported by the agent");
+
+	sdl::V1_0::agentino::CTopologyGroupResponse response;
+	response.successful = false;
+
+	return response;
+}
+
+
 QPoint CAgentTopologyControllerComp::GetServiceCoordinate(const QByteArray& serviceId) const
 {
 	QPoint retVal;

@@ -357,6 +357,22 @@ Agent*); click a name in the path or the back arrow to return to that level.
   If the shown group (or agent) is removed, the diagram returns to its parent
   level.
 
+### 10.2. Views
+
+A view is a way to group the blocks of the diagram. The **Views** panel on
+the left of the diagram lists the views; click a view to show it.
+
+* **Agents** — the first, pinned view: services are grouped by agents (see
+  10.1). It cannot be removed.
+* User-defined views — services are not grouped by agents: the root diagram
+  shows the services themselves, and groups can contain services of different
+  agents. Every view has its own groups and its own block layout.
+* **Add** (below the list) — create a view and enter its name.
+* **Remove** (below the list) — delete the selected view with all its groups;
+  the services themselves are not affected.
+* A right click on a user-defined view selects it and opens a menu with
+  **Remove**; for **Agents** the right click only selects it.
+
 > Groups are available in the server interface only; the agent's local
 > interface shows the services of the agent without groups.
 

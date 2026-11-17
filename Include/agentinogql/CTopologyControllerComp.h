@@ -13,6 +13,7 @@
 // Agentino includes
 #include <agentinodata/CServiceCompositeInfoComp.h>
 #include <agentinodata/IServiceManager.h>
+#include <agentinodata/CTopologyView.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Topology_fwd.h>
 
 
@@ -54,6 +55,18 @@ public:
 				const sdl::V1_0::agentino::CRemoveTopologyGroupGqlRequest& removeTopologyGroupRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CTopologyViewList OnGetTopologyViews(
+				const sdl::V1_0::agentino::CGetTopologyViewsGqlRequest& getTopologyViewsRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CCreateTopologyViewResponse OnCreateTopologyView(
+				const sdl::V1_0::agentino::CCreateTopologyViewGqlRequest& createTopologyViewRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CTopologyGroupResponse OnRemoveTopologyView(
+				const sdl::V1_0::agentino::CRemoveTopologyViewGqlRequest& removeTopologyViewRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
 
 private:
 	struct TopologyGroupInfo
@@ -67,7 +80,27 @@ private:
 	QPoint GetServiceCoordinate(const QByteArray& serviceId) const;
 	bool SetServiceCoordinate(const QByteArray& serviceId, const QPoint& point) const;
 	bool IsAgentOnline(const QByteArray& agentId) const;
-	TopologyGroupMap GetTopologyGroups() const;
+
+	/**
+		Get IDs of the user-defined views in the order of the topology collection.
+	*/
+	QByteArrayList GetTopologyViewIds() const;
+
+	/**
+		Get the user-defined view. Returns false if the view does not exist.
+	*/
+	bool GetTopologyView(const QByteArray& viewId, agentinodata::CTopologyView& view) const;
+
+	/**
+		Get the view the group belongs to. Empty for the default view (grouping by agents).
+	*/
+	QByteArray FindGroupViewId(const QByteArray& groupId) const;
+
+	/**
+		Get the groups of the view. An empty view ID stands for the default view (grouping by agents),
+		which owns the groups not listed in any user-defined view.
+	*/
+	TopologyGroupMap GetTopologyGroups(const QByteArray& viewId) const;
 	bool SetTopologyGroupMembers(const QByteArray& groupId, const QByteArrayList& memberIds) const;
 
 	/**

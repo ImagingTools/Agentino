@@ -73,6 +73,14 @@ visualizes the overall topology of all agents.
 - Mutations of `CTopologyControllerComp`: `CreateTopologyGroup`, `MoveTopologyNodes`
   (empty target = back to the default parent), `RemoveTopologyGroup` (members move one level up).
   Cycles are rejected. Positions of agents/groups are saved by `SaveTopology` like services.
+- Views (ways of grouping): `viewId` in `GetTopology`/`SaveTopology`/`CreateTopologyGroup`/
+  `MoveTopologyNodes`; `GetTopologyViews`, `CreateTopologyView`, `RemoveTopologyView`.
+  The default view (empty `viewId`, "Agents") is the agent grouping above. A user view is a
+  `TopologyCollection` element of type `TopologyView` (`agentinodata::CTopologyView`: IDs of its
+  groups + positions of the services in this view); it has no agent nodes, its root shows the
+  services not in a group, groups may mix services of different agents. Groups listed in no view
+  belong to the default view. Removing a view removes its groups. UI: the "Views" panel of
+  `TopologyPage` (MenuPanelButton items, Add/Remove buttons and context menu); hidden in the agent app.
 - `CAgentTopologyControllerComp` does not support groups (the agent GUI shows its services flat).
 - UI: `TopologyPage` navigates inside composite nodes (double click / Enter / Edit) with an ImtCore
   `StackView` of scheme levels and a `StackViewHeader` navigation panel (shown below the root level).

@@ -59,6 +59,9 @@
                                 <Value>CreateTopologyGroup</Value>
                                 <Value>MoveTopologyNodes</Value>
                                 <Value>RemoveTopologyGroup</Value>
+                                <Value>GetTopologyViews</Value>
+                                <Value>CreateTopologyView</Value>
+                                <Value>RemoveTopologyView</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
