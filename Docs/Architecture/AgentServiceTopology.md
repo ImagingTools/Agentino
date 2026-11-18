@@ -76,13 +76,23 @@ visualizes the overall topology of all agents.
   saves them (`GetService` + `UpdateService` with the new name, forwarded to the owning agent).
   Cycles are rejected. Positions of agents/groups are saved by `SaveTopology` like services.
 - Views (ways of grouping): `viewId` in `GetTopology`/`SaveTopology`/`CreateTopologyGroup`/
-  `MoveTopologyNodes`; `GetTopologyViews`, `CreateTopologyView`, `RemoveTopologyView`.
+  `MoveTopologyNodes`; `GetTopologyViews`, `CreateTopologyView`, `RemoveTopologyView`,
+  `RemoveFromTopologyView` (excludes services from a user view: stored in the view's removed-node
+  list and removed from its groups; the services are not deleted), `AddToTopologyView` (returns
+  removed services to the view, at the root level or into a group of the view). `GetTopology` of a
+  user view lists the removed services in `removedServices`.
   The default view (empty `viewId`, "Agents") is the agent grouping above. A user view is a
   `TopologyCollection` element of type `TopologyView` (`agentinodata::CTopologyView`: IDs of its
-  groups + positions of the services in this view); it has no agent nodes, its root shows the
-  services not in a group, groups may mix services of different agents. Groups listed in no view
+  groups + positions of the services in this view + IDs of the services removed from it); it has
+  no agent nodes, its root shows the services not in a group, groups may mix services of different
+  agents. Groups listed in no view
   belong to the default view. Removing a view removes its groups. UI: the "Views" panel of
   `TopologyPage` (MenuPanelButton items, Add/Remove buttons and context menu); hidden in the agent app.
+- Removal commands of `TopologyPage`: `Remove` deletes a group or, in a user view, calls
+  `RemoveFromTopologyView` for a service; `RemoveService` deletes the service physically
+  (`RemoveElements` through its agent) and is enabled only for a service of the default view
+  (inside an agent or a group; in the agent app — for any service). `AddToView` (toolbar only)
+  opens a check list of the removed services of the current user view.
 - `CAgentTopologyControllerComp` does not support groups (the agent GUI shows its services flat).
 - UI: `TopologyPage` navigates inside composite nodes (double click / Enter / Edit) with an ImtCore
   `StackView` of scheme levels and a `StackViewHeader` navigation panel (shown below the root level).

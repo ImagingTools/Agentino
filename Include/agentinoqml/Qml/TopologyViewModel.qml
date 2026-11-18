@@ -147,6 +147,28 @@ QtObject {
 		renameGroupRequestSender.send(renameGroupInput)
 	}
 
+	// Removes the services from the current user-defined view only; the services are not deleted.
+	function removeFromView(nodeIds) {
+		if (root.viewId === ""){
+			return
+		}
+		removeFromViewInput.m_viewId = root.viewId
+		removeFromViewInput.m_nodeIds = nodeIds
+		removeFromViewRequestSender.send(removeFromViewInput)
+	}
+
+	// Adds services removed from the current user-defined view back to it.
+	// parentId: group of the view receiving the services; empty for the root level.
+	function addToView(nodeIds, parentId) {
+		if (root.viewId === ""){
+			return
+		}
+		addToViewInput.m_viewId = root.viewId
+		addToViewInput.m_nodeIds = nodeIds
+		addToViewInput.m_parentId = parentId ? "" + parentId : ""
+		addToViewRequestSender.send(addToViewInput)
+	}
+
 	// The service name is owned by the agent: the service is renamed the same way the service
 	// editor saves it (GetService, then UpdateService with the new name, forwarded to the agent).
 	// agentId: owning agent (clientid header); empty in the agent app.
@@ -300,6 +322,36 @@ QtObject {
 	property MoveTopologyNodesInput moveNodesInput: MoveTopologyNodesInput {}
 	property RemoveTopologyGroupInput removeGroupInput: RemoveTopologyGroupInput {}
 	property RenameTopologyGroupInput renameGroupInput: RenameTopologyGroupInput {}
+	property RemoveFromTopologyViewInput removeFromViewInput: RemoveFromTopologyViewInput {}
+	property AddToTopologyViewInput addToViewInput: AddToTopologyViewInput {}
+
+	property GqlSdlRequestSender addToViewRequestSender: GqlSdlRequestSender {
+		requestType: 1
+		gqlCommandId: "AddToTopologyView"
+		sdlObjectComp: Component {
+			TopologyGroupResponse {
+				onFinished: root.requestReload()
+			}
+		}
+		function onError(message, type) {
+			root.groupOperationFailed(message)
+			finished(-1)
+		}
+	}
+
+	property GqlSdlRequestSender removeFromViewRequestSender: GqlSdlRequestSender {
+		requestType: 1
+		gqlCommandId: "RemoveFromTopologyView"
+		sdlObjectComp: Component {
+			TopologyGroupResponse {
+				onFinished: root.requestReload()
+			}
+		}
+		function onError(message, type) {
+			root.groupOperationFailed(message)
+			finished(-1)
+		}
+	}
 
 	property GqlSdlRequestSender renameGroupRequestSender: GqlSdlRequestSender {
 		requestType: 1

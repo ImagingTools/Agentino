@@ -302,6 +302,8 @@ start/stop commands are unavailable.
 Select the service, run **Remove**, then confirm the removal. A service can
 be removed only while its agent is connected — otherwise the message
 *Cannot delete the service while the agent is disconnected* appears.
+On the **Topology** page the service is deleted with **Remove service**
+(see section 10).
 
 ## 10. Topology
 
@@ -315,14 +317,21 @@ Features:
   addresses).
 * **Moving blocks** with the mouse — the layout is saved automatically.
 * **AutoFit** — automatically fit the diagram to the window.
-* **New / Edit / Remove / Start / Stop** — the same actions as in the service
-  list. **Enter** opens the editor of the selected service, **Delete** removes
-  it (with confirmation). Commands that are not available for the current
-  selection are hidden in the toolbar.
+* **New / Edit / Start / Stop** — the same actions as in the service
+  list. **Enter** opens the editor of the selected service. Commands that are
+  not available for the current selection are hidden in the toolbar.
+* **Remove service** — delete the selected service (with confirmation). It is
+  available only in the **Agents** view — inside an agent or a group (and in
+  the agent's local interface); the agent must be connected.
+* **Remove** — delete the selected group, or remove the selected service from
+  a user-defined view (see 10.2). In the **Agents** view **Remove** is not
+  available for services.
+* **Delete** runs the removal command available for the selected block
+  (**Remove** or **Remove service**).
 * **Context menu** — a right click on a block selects it and opens a menu with
-  the available commands: **Remove**, **Edit**, **Rename**, **Add to group**, **Remove
-  from group**, **Start service**, **Stop service**. They work exactly like the
-  toolbar commands.
+  the available commands: **Remove**, **Remove service**, **Edit**, **Rename**,
+  **Add to group**, **Remove from group**, **Start service**, **Stop service**.
+  They work exactly like the toolbar commands.
 * **Rename** (or **F2**) — rename the selected group or service. A service is
   renamed on its agent, so the agent must be connected; agents are renamed in
   the agent editor.
@@ -370,6 +379,13 @@ the left of the diagram lists the views; click a view to show it.
 * User-defined views — services are not grouped by agents: the root diagram
   shows the services themselves, and groups can contain services of different
   agents. Every view has its own groups and its own block layout.
+* **Remove** on a service in a user-defined view removes the service from this
+  view only (and from its groups in this view); the service itself is not
+  deleted and remains in the other views.
+* **Add to view** — add services removed from the view back to it: select the
+  services in the list; they are added to the shown level (the root diagram
+  or the shown group). The command is shown only when the view has removed
+  services.
 * **Add** (the "+" icon to the right of the "Views" title) — create a view and enter its name.
 * **Remove** (the trash icon next to it) — delete the selected view with all its groups;
   the services themselves are not affected.

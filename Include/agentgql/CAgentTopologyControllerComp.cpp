@@ -246,6 +246,34 @@ sdl::V1_0::agentino::CTopologyGroupResponse CAgentTopologyControllerComp::OnRena
 }
 
 
+sdl::V1_0::agentino::CTopologyGroupResponse CAgentTopologyControllerComp::OnRemoveFromTopologyView(
+			const sdl::V1_0::agentino::CRemoveFromTopologyViewGqlRequest& /*removeFromTopologyViewRequest*/,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	errorMessage = QString("Topology views are not supported by the agent");
+
+	sdl::V1_0::agentino::CTopologyGroupResponse response;
+	response.successful = false;
+
+	return response;
+}
+
+
+sdl::V1_0::agentino::CTopologyGroupResponse CAgentTopologyControllerComp::OnAddToTopologyView(
+			const sdl::V1_0::agentino::CAddToTopologyViewGqlRequest& /*addToTopologyViewRequest*/,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	errorMessage = QString("Topology views are not supported by the agent");
+
+	sdl::V1_0::agentino::CTopologyGroupResponse response;
+	response.successful = false;
+
+	return response;
+}
+
+
 sdl::V1_0::agentino::CTopologyViewList CAgentTopologyControllerComp::OnGetTopologyViews(
 			const sdl::V1_0::agentino::CGetTopologyViewsGqlRequest& /*getTopologyViewsRequest*/,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,

@@ -70,7 +70,7 @@
                 <Element ComponentName="CommandsController" X="575" Y="75" Note=""/>
                 <Element ComponentName="Edit" X="200" Y="375" Note=""/>
                 <Element ComponentName="New" X="0" Y="0" Note=""/>
-                <Element ComponentName="Remove" X="0" Y="0" Note=""/>
+                <Element ComponentName="RemoveService" X="0" Y="0" Note=""/>
                 <Element ComponentName="Save" X="200" Y="250" Note=""/>
                 <Element ComponentName="StandardCollectionCommands" X="0" Y="0" Note=""/>
                 <Element ComponentName="Start" X="575" Y="250" Note=""/>
