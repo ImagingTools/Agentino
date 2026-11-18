@@ -35,8 +35,9 @@ QtObject {
 	signal agentStatusChanged()
 	signal groupCreated(string groupId)
 	signal groupOperationFailed(string message)
-	// views: [{id, name}] of the user-defined views (the default view is not listed).
-	signal viewsLoaded(var views)
+	// views: [{id, name, nodeNames}] of the user-defined views (the default view is not listed);
+	// nodeNames: names of the services and groups of the view, agentsViewNodeNames - the same for the default view.
+	signal viewsLoaded(var views, var agentsViewNodeNames)
 	signal viewCreated(string viewId)
 	signal viewRemoved(string viewId)
 
@@ -230,6 +231,21 @@ QtObject {
 
 	// --- Topology views (ways of grouping) ---
 
+	// SDL list of strings (JS array or list-like object) as a JS array; null gives an empty array.
+	function toStringList(value) {
+		let result = []
+		if (value === undefined || value === null){
+			return result
+		}
+		let count = value.length !== undefined ? value.length : 0
+		for (let i = 0; i < count; ++i){
+			if (value[i] !== undefined && value[i] !== null){
+				result.push("" + value[i])
+			}
+		}
+		return result
+	}
+
 	function loadViews() {
 		if (root.viewsUnsupported){
 			return
@@ -261,12 +277,12 @@ QtObject {
 						for (let i = 0; i < m_views.count; ++i){
 							let item = m_views.get(i).item
 							if (item){
-								views.push({"id": item.m_id, "name": item.m_name})
+								views.push({"id": item.m_id, "name": item.m_name, "nodeNames": root.toStringList(item.m_nodeNames)})
 							}
 						}
 					}
 					root.viewsSupported = true
-					root.viewsLoaded(views)
+					root.viewsLoaded(views, root.toStringList(m_agentsViewNodeNames))
 				}
 			}
 		}
@@ -435,6 +451,8 @@ QtObject {
 		gqlCommandId: "OnServicesCollectionChanged"
 		onMessageReceived: {
 			root.collectionChanged()
+			// The views are found by the names of their services as well.
+			root.loadViews()
 			root.requestReload()
 		}
 	}

@@ -357,6 +357,34 @@ ViewBase {
 
 	// --- Views ---
 
+	// Filter of the views panel: a view matches by its name or by the names of its services and groups.
+	property string viewsFilterText: ""
+	readonly property int matchingViewsCount: {
+		let count = 0
+		for (let i = 0; i < topologyPage.viewsModel.count; ++i){
+			if (topologyPage.viewMatchesFilter(topologyPage.viewsModel.get(i).searchText, topologyPage.viewsFilterText)){
+				++count
+			}
+		}
+		return count
+	}
+
+	// Lower-case text searched by the filter: the view name and the names of its content, one per line.
+	function makeViewSearchText(viewName, nodeNames){
+		let names = [viewName ? "" + viewName : ""]
+		if (nodeNames){
+			for (let i = 0; i < nodeNames.length; ++i){
+				names.push("" + nodeNames[i])
+			}
+		}
+		return names.join("\n").toLowerCase()
+	}
+
+	function viewMatchesFilter(searchText, filterText){
+		let filter = filterText ? filterText.trim().toLowerCase() : ""
+		return filter === "" || (searchText ? searchText : "").indexOf(filter) >= 0
+	}
+
 	function getViewName(viewId){
 		for (let i = 0; i < topologyPage.viewsModel.count; ++i){
 			if (topologyPage.viewsModel.get(i).id === viewId){
@@ -366,13 +394,16 @@ ViewBase {
 		return ""
 	}
 
-	// views: [{id, name}] of the user-defined views; the default view is always the first, pinned item.
-	function fillViews(views){
+	// views: [{id, name, nodeNames}] of the user-defined views; the default view is always the first, pinned item.
+	// agentsViewNodeNames: names of the agents, services and groups of the default view.
+	function fillViews(views, agentsViewNodeNames){
 		topologyPage.viewsModel.clear()
-		topologyPage.viewsModel.append({"id": "", "name": qsTr("Agents"), "pinned": true})
+		topologyPage.viewsModel.append({"id": "", "name": qsTr("Agents"), "pinned": true,
+				"searchText": topologyPage.makeViewSearchText(qsTr("Agents"), agentsViewNodeNames)})
 		let currentViewExists = topologyPage.viewId === ""
 		for (let i = 0; i < views.length; ++i){
-			topologyPage.viewsModel.append({"id": views[i].id, "name": views[i].name, "pinned": false})
+			topologyPage.viewsModel.append({"id": views[i].id, "name": views[i].name, "pinned": false,
+					"searchText": topologyPage.makeViewSearchText(views[i].name, views[i].nodeNames)})
 			if (views[i].id === topologyPage.viewId){
 				currentViewExists = true
 			}
@@ -638,8 +669,8 @@ ViewBase {
 		function onGroupOperationFailed(message) {
 			ModalDialogManager.showErrorDialog(message !== "" ? message : qsTr("Unable to change the topology groups"))
 		}
-		function onViewsLoaded(views) {
-			topologyPage.fillViews(views)
+		function onViewsLoaded(views, agentsViewNodeNames) {
+			topologyPage.fillViews(views, agentsViewNodeNames)
 		}
 		function onViewCreated(viewId) {
 			topologyPage.selectView(viewId)
@@ -1085,11 +1116,72 @@ ViewBase {
 			}
 		}
 
+		// Finds a view by its name or by the names of its services and groups.
+		CustomTextField {
+			id: viewsFilterField
+
+			objectName: "TopologyViewsFilter"
+
+			// Same horizontal bounds as the highlight of the selected view (marker of MenuPanelButtonDecorator).
+			anchors.top: viewsHeader.bottom
+			anchors.topMargin: Style.marginS
+			anchors.left: parent.left
+			anchors.leftMargin: Style.marginS
+			anchors.right: parent.right
+			anchors.rightMargin: Style.marginS
+
+			height: Style.controlHeightM
+			textFieldRightMargin: clearViewsFilterButton.width + Style.marginM + Style.marginXS
+			placeHolderText: qsTr("Filter")
+			radius: Style.textFieldRadius
+
+			onTextChanged: {
+				topologyPage.viewsFilterText = viewsFilterField.text
+			}
+
+			Button {
+				id: clearViewsFilterButton
+
+				anchors.verticalCenter: viewsFilterField.verticalCenter
+				anchors.right: viewsFilterField.right
+				anchors.rightMargin: Style.marginXS
+
+				width: height
+				height: 12
+				z: viewsFilterField.z + 1
+
+				decorator: Component { IconButtonDecorator {} }
+				iconSource: "qrc:/" + Style.getIconPath("Icons/Close", Icon.State.On, Icon.Mode.Normal)
+
+				visible: viewsFilterField.text !== ""
+				enabled: visible
+
+				onClicked: {
+					viewsFilterField.text = ""
+				}
+			}
+		}
+
+		BaseText {
+			anchors.top: viewsList.top
+			anchors.topMargin: Style.marginM
+			anchors.left: parent.left
+			anchors.leftMargin: Style.marginL
+			anchors.right: parent.right
+			anchors.rightMargin: Style.marginL
+
+			visible: topologyPage.matchingViewsCount === 0
+			text: qsTr("No views match the filter")
+			color: Style.placeHolderTextColor
+			font.pixelSize: Style.fontSizeS
+			wrapMode: Text.WordWrap
+		}
+
 		ListView {
 			id: viewsList
 
-			anchors.top: viewsHeader.bottom
-			anchors.topMargin: Style.marginS
+			anchors.top: viewsFilterField.bottom
+			anchors.topMargin: Style.marginL
 			anchors.left: parent.left
 			anchors.right: parent.right
 			anchors.bottom: parent.bottom
@@ -1105,7 +1197,9 @@ ViewBase {
 				objectName: model.pinned ? "TopologyViewAgentsButton" : "TopologyViewButton"
 
 				width: viewsList.width
-				height: Style.controlHeightL
+				// Views not matching the filter are collapsed.
+				visible: topologyPage.viewMatchesFilter(model.searchText, topologyPage.viewsFilterText)
+				height: visible ? Style.controlHeightL : 0
 
 				text: model.name
 				textColor: Style.textColor

@@ -389,6 +389,10 @@ the left of the diagram lists the views; click a view to show it.
   shown level (the root diagram or the shown group). The command is shown only
   when there are services not yet in the view.
 * **Add** (the "+" icon to the right of the "Views" title) — create a view and enter its name.
+* **Filter** (the field under the "Views" title) — quickly find a view: the
+  list keeps the views whose name, or the name of one of their services or
+  groups, contains the entered text (case-insensitive; for **Agents** the
+  agent names are searched as well).
 * **Remove** (the trash icon next to it) — delete the selected view with all its groups;
   the services themselves are not affected.
 * A right click on a user-defined view selects it and opens a menu with
