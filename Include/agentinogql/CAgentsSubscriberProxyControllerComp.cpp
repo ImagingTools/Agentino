@@ -38,23 +38,24 @@ bool CAgentsSubscriberProxyControllerComp::RegisterSubscription(
 	bool retVal = BaseClass::RegisterSubscription(subscriptionId, gqlRequest, networkRequest, errorMessage);
 	if (retVal){
 		QByteArray remoteSubscriptionId = m_subscriptionManagerCompPtr->RegisterSubscription(gqlRequest, *this);
-		m_remoteSubscriptions.insert(remoteSubscriptionId, subscriptionId);
+		m_remoteSubscriptions.insert(remoteSubscriptionId, qMakePair(GetConnectionId(networkRequest), subscriptionId));
 	}
 
 	return retVal;
 }
 
 
-bool CAgentsSubscriberProxyControllerComp::UnregisterSubscription(const QByteArray& subscriptionId)
+bool CAgentsSubscriberProxyControllerComp::UnregisterSubscription(const QByteArray& connectionId, const QByteArray& subscriptionId)
 {
 	if (!m_subscriptionManagerCompPtr.IsValid()){
 		return false;
 	}
 
-	bool retVal = BaseClass::UnregisterSubscription(subscriptionId);
+	bool retVal = BaseClass::UnregisterSubscription(connectionId, subscriptionId);
 	if (retVal){
+		const SubscriptionKey key = qMakePair(connectionId, subscriptionId);
 		for (auto it = m_remoteSubscriptions.constBegin(); it != m_remoteSubscriptions.constEnd(); ++it){
-			if (it.value() == subscriptionId){
+			if (it.value() == key){
 				m_subscriptionManagerCompPtr->UnregisterSubscription(it.key(), *this);
 				m_remoteSubscriptions.remove(it.key());
 				retVal = true;
@@ -78,7 +79,8 @@ void CAgentsSubscriberProxyControllerComp::OnResponseReceived(const QByteArray &
 	QStringList keys = document.object().keys();
 	if (!keys.isEmpty()){
 		QByteArray subscriptionTypeId = keys[0].toUtf8();
-		QByteArray registerSubscriptionId = m_remoteSubscriptions.value(subscriptionId);
+		const SubscriptionKey registerKey = m_remoteSubscriptions.value(subscriptionId);
+		const QByteArray registerSubscriptionId = registerKey.second;
 		if (registerSubscriptionId.isEmpty()){
 			return;
 		}
