@@ -166,7 +166,6 @@
                                         <Values>
                                             <Value>Undo</Value>
                                             <Value>Redo</Value>
-                                            <Value>New</Value>
                                             <Value>Rename</Value>
                                             <Value>Remove</Value>
                                             <Value>RemoveService</Value>
@@ -174,6 +173,7 @@
                                             <Value>AddToGroup</Value>
                                             <Value>RemoveFromGroup</Value>
                                             <Value>AddToView</Value>
+                                            <Value>New</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>

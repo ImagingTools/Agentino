@@ -126,6 +126,8 @@ QtObject {
 	property var redoStack: []
 	property int undoCount: 0
 	property int redoCount: 0
+	// An undo/redo step is running: it has left one stack and is not in the other one yet.
+	property bool historyActionPending: false
 	property var operationQueue: []
 	property bool operationInProgress: false
 	// Undo/Redo wait for the running changes, otherwise the history would not match the server.
@@ -139,6 +141,7 @@ QtObject {
 
 	// The history no longer matches the server (e.g. the topology was changed by another client).
 	function clearHistory() {
+		root.historyActionPending = false
 		root.undoStack = []
 		root.redoStack = []
 		root.updateHistoryCounts()
@@ -251,6 +254,7 @@ QtObject {
 		}
 		let stack = root.undoStack.slice()
 		let action = stack.pop()
+		root.historyActionPending = true
 		root.undoStack = stack
 		root.updateHistoryCounts()
 
@@ -268,6 +272,7 @@ QtObject {
 				else{
 					root.clearHistory()
 				}
+				root.historyActionPending = false
 				root.finishAction(action, ok, true)
 				finish()
 			})
@@ -280,6 +285,7 @@ QtObject {
 		}
 		let stack = root.redoStack.slice()
 		let action = stack.pop()
+		root.historyActionPending = true
 		root.redoStack = stack
 		root.updateHistoryCounts()
 
@@ -297,6 +303,7 @@ QtObject {
 				else{
 					root.clearHistory()
 				}
+				root.historyActionPending = false
 				root.finishAction(action, ok, true)
 				finish()
 			})
