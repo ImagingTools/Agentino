@@ -737,7 +737,7 @@
                                             <Value>New</Value>
                                             <Value>Edit</Value>
                                             <Value>Rename</Value>
-                                            <Value>Remove</Value>
+                                            <Value>RemoveService</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -825,11 +825,11 @@
                             </AttributeInfoMap>
                         </Data>
                     </Element>
-                    <Element Id="Remove" PackageId="ImtCoreVoce" ComponentId="Command">
+                    <Element Id="RemoveService" PackageId="ImtCoreVoce" ComponentId="Command">
                         <Data IsEnabled="true" Flags="0">
                             <AttributeInfoMap>
                                 <AttributeInfo Id="CommandId" Type="Id" ExportId="">
-                                    <Data IsEnabled="true" Value="Remove"/>
+                                    <Data IsEnabled="true" Value="RemoveService"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="CommandPermissions" Type="Id[]" ExportId="">
                                     <Data IsEnabled="false"/>
@@ -847,7 +847,7 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Name" Type="Text" ExportId="">
-                                    <Data IsEnabled="true" Value="Remove"/>
+                                    <Data IsEnabled="true" Value="Remove service"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>

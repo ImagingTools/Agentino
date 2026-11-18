@@ -64,6 +64,17 @@ void CTopologyView::SetNodePosition(const QByteArray& nodeId, const i2d::CVector
 }
 
 
+void CTopologyView::SetRemovedNodeIds(const QByteArrayList& nodeIds)
+{
+	if (m_removedNodeIds != nodeIds){
+		istd::CChangeNotifier changeNotifier(this);
+		Q_UNUSED(changeNotifier);
+
+		m_removedNodeIds = nodeIds;
+	}
+}
+
+
 // reimplemented (iser::IObject)
 
 QByteArray CTopologyView::GetFactoryId() const
@@ -95,6 +106,7 @@ bool CTopologyView::Serialize(iser::IArchive& archive)
 	retVal = retVal && iser::CPrimitiveTypesSerializer::SerializeContainer(archive, nodeIds, "PositionNodes", "NodeId");
 	retVal = retVal && iser::CPrimitiveTypesSerializer::SerializeContainer(archive, positionsX, "PositionsX", "X");
 	retVal = retVal && iser::CPrimitiveTypesSerializer::SerializeContainer(archive, positionsY, "PositionsY", "Y");
+	retVal = retVal && iser::CPrimitiveTypesSerializer::SerializeContainer(archive, m_removedNodeIds, "RemovedNodes", "NodeId");
 
 	if (retVal && !archive.IsStoring()){
 		if ((nodeIds.count() != positionsX.count()) || (nodeIds.count() != positionsY.count())){
@@ -128,6 +140,7 @@ bool CTopologyView::CopyFrom(const IChangeable& object, CompatibilityMode /*mode
 
 		m_groupIds = viewPtr->m_groupIds;
 		m_nodePositions = viewPtr->m_nodePositions;
+		m_removedNodeIds = viewPtr->m_removedNodeIds;
 
 		return true;
 	}
@@ -140,7 +153,9 @@ bool CTopologyView::IsEqual(const istd::IChangeable& object) const
 {
 	const CTopologyView* viewPtr = dynamic_cast<const CTopologyView*>(&object);
 	if (viewPtr != nullptr){
-		return (m_groupIds == viewPtr->m_groupIds) && (m_nodePositions == viewPtr->m_nodePositions);
+		return		(m_groupIds == viewPtr->m_groupIds) &&
+					(m_nodePositions == viewPtr->m_nodePositions) &&
+					(m_removedNodeIds == viewPtr->m_removedNodeIds);
 	}
 
 	return false;
@@ -165,6 +180,7 @@ bool CTopologyView::ResetData(CompatibilityMode /*mode*/)
 
 	m_groupIds.clear();
 	m_nodePositions.clear();
+	m_removedNodeIds.clear();
 
 	return true;
 }

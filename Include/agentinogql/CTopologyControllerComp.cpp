@@ -50,6 +50,7 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 	
 	
 	QList<sdl::V1_0::agentino::CService> services;
+	QList<sdl::V1_0::agentino::CTopologyNodeInfo> removedServices;
 
 	sdl::V1_0::agentino::GetTopologyRequestArguments arguments = getTopologyRequest.GetRequestedArguments();
 	const QByteArray viewId = (arguments.input.has_value() && arguments.input->viewId.has_value()) ? *arguments.input->viewId : QByteArray();
@@ -121,6 +122,16 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 					}
 					
 					if (serviceInfoPtr == nullptr){
+						continue;
+					}
+
+					if (!isAgentsView && view.GetRemovedNodeIds().contains(serviceElementId)){
+						sdl::V1_0::agentino::CTopologyNodeInfo removedService;
+						removedService.id = serviceElementId;
+						removedService.name = serviceInfoPtr->GetServiceName() + "@" + agentName;
+
+						removedServices << removedService;
+
 						continue;
 					}
 					
@@ -256,6 +267,9 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 
 	response.services.Emplace();
 	response.services->FromList(services);
+
+	response.removedServices.Emplace();
+	response.removedServices->FromList(removedServices);
 
 	return response;
 }
@@ -649,6 +663,194 @@ sdl::V1_0::agentino::CTopologyGroupResponse CTopologyControllerComp::OnRenameTop
 	// The group name is the element name in the topology collection.
 	if (!m_topologyCollectionCompPtr->SetElementName(groupId, arguments.input->name->trimmed())){
 		errorMessage = QString("Unable to rename topology group. Error: Failed to rename group '%1'").arg(QString::fromUtf8(groupId));
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+		return response;
+	}
+
+	response.successful = true;
+
+	return response;
+}
+
+
+sdl::V1_0::agentino::CTopologyGroupResponse CTopologyControllerComp::OnRemoveFromTopologyView(
+			const sdl::V1_0::agentino::CRemoveFromTopologyViewGqlRequest& removeFromTopologyViewRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::CTopologyGroupResponse response;
+	response.successful = false;
+
+	if (!m_topologyCollectionCompPtr.IsValid()){
+		Q_ASSERT_X(false, "Attribute 'TopologyCollection' was not set", "CTopologyControllerComp");
+		return response;
+	}
+
+	sdl::V1_0::agentino::RemoveFromTopologyViewRequestArguments arguments = removeFromTopologyViewRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->viewId.has_value() || arguments.input->viewId->isEmpty()){
+		// The default view ("Agents") shows all services; a service can be removed from it only physically.
+		errorMessage = QString("Unable to remove nodes from topology view. Error: View ID is empty");
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+		return response;
+	}
+
+	if (!arguments.input->nodeIds.has_value() || arguments.input->nodeIds->isEmpty()){
+		errorMessage = QString("Unable to remove nodes from topology view. Error: Node list is empty");
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+		return response;
+	}
+
+	const QByteArray viewId = *arguments.input->viewId;
+	const QByteArrayList nodeIds = (*arguments.input->nodeIds).ToList();
+
+	agentinodata::CTopologyView view;
+	if (!GetTopologyView(viewId, view)){
+		errorMessage = QString("Unable to remove nodes from topology view. Error: View '%1' does not exist").arg(QString::fromUtf8(viewId));
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+		return response;
+	}
+
+	const TopologyGroupMap groups = GetTopologyGroups(viewId);
+	for (const QByteArray& nodeId : nodeIds){
+		if (nodeId.isEmpty() || groups.contains(nodeId)){
+			// Groups are removed with RemoveTopologyGroup
+			errorMessage = QString("Unable to remove nodes from topology view. Error: '%1' is not a service").arg(QString::fromUtf8(nodeId));
+			SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+			return response;
+		}
+	}
+
+	istd::CChangeGroup changeGroup(m_topologyCollectionCompPtr.GetPtr());
+
+	for (TopologyGroupMap::const_iterator groupIter = groups.constBegin(); groupIter != groups.constEnd(); ++groupIter){
+		QByteArrayList memberIds = groupIter->memberIds;
+
+		bool isChanged = false;
+		for (const QByteArray& nodeId : nodeIds){
+			if (memberIds.removeAll(nodeId) > 0){
+				isChanged = true;
+			}
+		}
+
+		if (isChanged && !SetTopologyGroupMembers(groupIter.key(), memberIds)){
+			errorMessage = QString("Unable to remove nodes from topology view. Error: Failed to update group '%1'").arg(groupIter->name);
+			SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+			return response;
+		}
+	}
+
+	QByteArrayList removedNodeIds = view.GetRemovedNodeIds();
+	for (const QByteArray& nodeId : nodeIds){
+		if (!removedNodeIds.contains(nodeId)){
+			removedNodeIds.append(nodeId);
+		}
+	}
+
+	view.SetRemovedNodeIds(removedNodeIds);
+	if (!m_topologyCollectionCompPtr->SetObjectData(viewId, view)){
+		errorMessage = QString("Unable to remove nodes from topology view. Error: Failed to update the view '%1'").arg(QString::fromUtf8(viewId));
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+		return response;
+	}
+
+	response.successful = true;
+
+	return response;
+}
+
+
+sdl::V1_0::agentino::CTopologyGroupResponse CTopologyControllerComp::OnAddToTopologyView(
+			const sdl::V1_0::agentino::CAddToTopologyViewGqlRequest& addToTopologyViewRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::CTopologyGroupResponse response;
+	response.successful = false;
+
+	if (!m_topologyCollectionCompPtr.IsValid()){
+		Q_ASSERT_X(false, "Attribute 'TopologyCollection' was not set", "CTopologyControllerComp");
+		return response;
+	}
+
+	sdl::V1_0::agentino::AddToTopologyViewRequestArguments arguments = addToTopologyViewRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->viewId.has_value() || arguments.input->viewId->isEmpty()){
+		errorMessage = QString("Unable to add nodes to topology view. Error: View ID is empty");
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+		return response;
+	}
+
+	if (!arguments.input->nodeIds.has_value() || arguments.input->nodeIds->isEmpty()){
+		errorMessage = QString("Unable to add nodes to topology view. Error: Node list is empty");
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+		return response;
+	}
+
+	const QByteArray viewId = *arguments.input->viewId;
+	const QByteArrayList nodeIds = (*arguments.input->nodeIds).ToList();
+	const QByteArray parentId = arguments.input->parentId.has_value() ? *arguments.input->parentId : QByteArray();
+
+	agentinodata::CTopologyView view;
+	if (!GetTopologyView(viewId, view)){
+		errorMessage = QString("Unable to add nodes to topology view. Error: View '%1' does not exist").arg(QString::fromUtf8(viewId));
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+		return response;
+	}
+
+	const TopologyGroupMap groups = GetTopologyGroups(viewId);
+	if (!parentId.isEmpty() && !groups.contains(parentId)){
+		errorMessage = QString("Unable to add nodes to topology view. Error: Target group '%1' does not exist").arg(QString::fromUtf8(parentId));
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+		return response;
+	}
+
+	QByteArrayList removedNodeIds = view.GetRemovedNodeIds();
+	QByteArrayList addedNodeIds;
+	for (const QByteArray& nodeId : nodeIds){
+		if (removedNodeIds.removeAll(nodeId) > 0){
+			addedNodeIds.append(nodeId);
+		}
+	}
+
+	if (addedNodeIds.isEmpty()){
+		// Already shown in the view (e.g. added back by another client)
+		response.successful = true;
+
+		return response;
+	}
+
+	istd::CChangeGroup changeGroup(m_topologyCollectionCompPtr.GetPtr());
+
+	if (!parentId.isEmpty()){
+		// Removed services are not members of the view groups, so they are just appended to the target group.
+		QByteArrayList memberIds = groups.value(parentId).memberIds;
+		for (const QByteArray& nodeId : addedNodeIds){
+			if (!memberIds.contains(nodeId)){
+				memberIds.append(nodeId);
+			}
+		}
+
+		if (!SetTopologyGroupMembers(parentId, memberIds)){
+			errorMessage = QString("Unable to add nodes to topology view. Error: Failed to update group '%1'").arg(groups.value(parentId).name);
+			SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+			return response;
+		}
+	}
+
+	view.SetRemovedNodeIds(removedNodeIds);
+	if (!m_topologyCollectionCompPtr->SetObjectData(viewId, view)){
+		errorMessage = QString("Unable to add nodes to topology view. Error: Failed to update the view '%1'").arg(QString::fromUtf8(viewId));
 		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
 
 		return response;

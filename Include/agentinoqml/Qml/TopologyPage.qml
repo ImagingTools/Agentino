@@ -39,6 +39,8 @@ ViewBase {
 	// by agents, the user-defined views group them freely. Items: {id, name, pinned}.
 	property ListModel viewsModel: ListModel {}
 	readonly property string viewId: topologyViewModel.viewId
+	// Services removed from the current user-defined view: [{id, name}].
+	property var removedServices: []
 
 	// Transport stays in TopologyViewModel (L2/L3) — view is presentation only (QG2).
 	property var topologyViewModel: TopologyViewModel {}
@@ -223,8 +225,15 @@ ViewBase {
 		// Groups are renamed on the server; services through their agent, which must be online.
 		// Agents are renamed in the agent editor.
 		topologyPage.setCommandState("Rename", item !== null && (isComposite ? topologyPage.isGroupNode(item.m_id) : agentOnline))
-		// Delete requires a live agent — mirror-only delete comes back on reconnect. Agents cannot be removed here.
-		topologyPage.setCommandState("Remove", isComposite ? topologyPage.isGroupNode(item.m_id) : serviceSelected && agentOnline)
+		// Remove: a group (agents cannot be removed here) or, in a user-defined view, a service from
+		// this view only. Remove Service deletes the service physically; it is available only in the
+		// "Agents" view (inside an agent or a group; the agent app shows the services of its agent).
+		// Delete requires a live agent — mirror-only delete comes back on reconnect.
+		topologyPage.setCommandState("Remove", isComposite ? topologyPage.isGroupNode(item.m_id) : serviceSelected && topologyPage.viewId !== "")
+		topologyPage.setCommandState("RemoveService", serviceSelected && agentOnline && topologyPage.viewId === "")
+		// Services removed from a user-defined view are added back to the current level (root or group).
+		topologyPage.setCommandState("AddToView", topologyPage.viewId !== "" && topologyPage.removedServices.length > 0
+				&& (topologyPage.groupId === "" || topologyPage.isGroupNode(topologyPage.groupId)))
 		// Groups live at the root level or inside other groups; an agent contains only its services.
 		topologyPage.setCommandState("NewGroup", topologyPage.groupId === "" || topologyPage.isGroupNode(topologyPage.groupId))
 		topologyPage.setCommandState("AddToGroup", item !== null && topologyPage.getTargetGroups(item.m_id).length > 0)
@@ -241,6 +250,7 @@ ViewBase {
 
 		let commands = [
 			{"id": "Remove", "name": qsTr("Remove"), "icon": "Icons/Delete"},
+			{"id": "RemoveService", "name": qsTr("Remove service"), "icon": "Icons/Delete"},
 			{"id": "Edit", "name": qsTr("Edit"), "icon": "Icons/Edit"},
 			{"id": "Rename", "name": qsTr("Rename"), "icon": "Icons/Edit"},
 			{"id": "AddToGroup", "name": qsTr("Add to group"), "icon": "Icons/Link"},
@@ -386,6 +396,8 @@ ViewBase {
 		}
 
 		topologyPage.clearServiceSelection()
+		topologyPage.removedServices = []
+		topologyPage.updateCommandStates()
 
 		while (schemeStack.count > 1){
 			schemeStack.removePage(schemeStack.count - 1)
@@ -459,6 +471,30 @@ ViewBase {
 		ModalDialogManager.openDialog(newGroupDialogComp, {})
 	}
 
+	// Adds services removed from the current user-defined view back to the current level.
+	function requestAddToView(){
+		if (topologyPage.viewId === "" || topologyPage.removedServices.length === 0)
+			return
+		let parentId = topologyPage.isGroupNode(topologyPage.groupId) ? topologyPage.groupId : ""
+		ModalDialogManager.openDialog(addToViewDialogComp, {"parentId": parentId, "services": topologyPage.removedServices.slice()})
+	}
+
+	// [{id, name}] sorted by name; a missing list (e.g. the agent app) is empty.
+	function readRemovedServices(topologySdlObject){
+		let result = []
+		let servicesModel = topologySdlObject ? topologySdlObject.m_removedServices : null
+		if (servicesModel){
+			for (let i = 0; i < servicesModel.count; ++i){
+				let item = servicesModel.get(i).item
+				if (item){
+					result.push({"id": item.m_id, "name": item.m_name ? "" + item.m_name : "" + item.m_id})
+				}
+			}
+		}
+		result.sort(function(left, right){ return left.name.localeCompare(right.name) })
+		return result
+	}
+
 	function requestAddToGroup(){
 		let item = topologyPage.selectedNode()
 		if (!item)
@@ -498,9 +534,10 @@ ViewBase {
 				"title": isGroup ? qsTr("Rename group") : qsTr("Rename service")})
 	}
 
+	// Remove: deletes the selected group or removes the selected service from the current user-defined view.
 	function requestRemoveSelected(){
 		let item = topologyPage.selectedNode()
-		if (!item)
+		if (!item || !topologyPage.commandsController || !topologyPage.commandsController.commandIsEnabled("Remove"))
 			return
 		if (topologyPage.isCompositeNode(item)){
 			if (topologyPage.isGroupNode(item.m_id)){
@@ -508,11 +545,35 @@ ViewBase {
 			}
 			return
 		}
+		if (topologyPage.viewId !== ""){
+			ModalDialogManager.openDialog(removeFromViewDialogComp, {"nodeId": item.m_id})
+		}
+	}
+
+	// Remove Service: deletes the selected service physically (on its agent).
+	function requestRemoveService(){
+		let item = topologyPage.selectedNode()
+		if (!item || topologyPage.isCompositeNode(item) || !topologyPage.commandsController
+				|| !topologyPage.commandsController.commandIsEnabled("RemoveService"))
+			return
 		if (!topologyPage.canRemoveSelectedService()){
 			topologyPage.showCannotRemoveWhileDisconnected()
 			return
 		}
 		ModalDialogManager.openDialog(removeServiceDialogComp, {})
+	}
+
+	// Delete key: the removal command available for the selected tile.
+	function requestDelete(){
+		let commandsController = topologyPage.commandsController
+		if (!commandsController)
+			return
+		if (commandsController.commandIsEnabled("Remove")){
+			topologyPage.requestRemoveSelected()
+		}
+		else if (commandsController.commandIsEnabled("RemoveService")){
+			topologyPage.requestRemoveService()
+		}
 	}
 
 	// Topology.Service.agentOnline — false when the owning agent is disconnected.
@@ -552,6 +613,7 @@ ViewBase {
 			if (!topologySdlObject){
 				return
 			}
+			topologyPage.removedServices = topologyPage.readRemovedServices(topologySdlObject)
 			// A shown composite node was removed (here or by another client): return to its parent level.
 			let nodesModel = topologySdlObject.m_services
 			let removedLevel = topologyPage.findRemovedLevel(nodesModel)
@@ -746,6 +808,12 @@ ViewBase {
 					}
 					else if (commandId === "Remove"){
 						onRemove(params)
+					}
+					else if (commandId === "RemoveService"){
+						topologyPage.requestRemoveService()
+					}
+					else if (commandId === "AddToView"){
+						topologyPage.requestAddToView()
 					}
 					else if (commandId === "NewGroup"){
 						topologyPage.requestNewGroup()
@@ -1181,7 +1249,7 @@ ViewBase {
 			}
 
 			onDeleteSignal: {
-				topologyPage.requestRemoveSelected()
+				topologyPage.requestDelete()
 			}
 
 			// F2; ignored while a dialog is open.
@@ -1515,6 +1583,24 @@ ViewBase {
 	}
 
 	Component {
+		id: removeFromViewDialogComp
+
+		MessageDialog {
+			property string nodeId: ""
+
+			width: Style.sizeHintM
+			title: qsTr("Removing from the view")
+			message: qsTr("Remove the selected service from the view \"%1\"? The service itself is not deleted.")
+						.arg(topologyPage.getViewName(topologyPage.viewId))
+			onFinished: {
+				if (buttonId == Enums.yes && nodeId !== ""){
+					topologyPage.topologyViewModel.removeFromView([nodeId])
+				}
+			}
+		}
+	}
+
+	Component {
 		id: renameDialogComp
 
 		InputDialog {
@@ -1555,6 +1641,135 @@ ViewBase {
 					let position = topologyPage.findFreePosition(topologyPage.scheme ? topologyPage.scheme.objectsModel : null)
 					let parentId = topologyPage.isGroupNode(topologyPage.groupId) ? topologyPage.groupId : ""
 					topologyPage.topologyViewModel.createGroup(name, parentId, position.x, position.y)
+				}
+			}
+		}
+	}
+
+	Component {
+		id: addToViewDialogComp
+
+		Dialog {
+			id: addToViewDialog
+			width: Style.sizeHintM
+			title: qsTr("Add to view")
+
+			property string parentId: ""
+			// [{id, name}] of the services removed from the view.
+			property var services: []
+			property var selectedIds: []
+
+			// Dialog parameters are assigned after the dialog is created.
+			onServicesChanged: {
+				addToViewDialog.selectedIds = []
+				addToViewDialog.setButtonEnabled(Enums.apply, false)
+			}
+
+			function toggleService(serviceId){
+				let ids = addToViewDialog.selectedIds.slice()
+				let index = ids.indexOf(serviceId)
+				if (index >= 0){
+					ids.splice(index, 1)
+				}
+				else{
+					ids.push(serviceId)
+				}
+				addToViewDialog.selectedIds = ids
+				addToViewDialog.setButtonEnabled(Enums.apply, ids.length > 0)
+			}
+
+			Component.onCompleted: {
+				addButton(Enums.apply, qsTr("Add"), false)
+				addButton(Enums.cancel, qsTr("Cancel"), true)
+			}
+
+			onFinished: {
+				if (buttonId === Enums.apply && addToViewDialog.selectedIds.length > 0){
+					topologyPage.topologyViewModel.addToView(addToViewDialog.selectedIds, addToViewDialog.parentId)
+				}
+			}
+
+			contentComp: Component {
+				Item {
+					width: addToViewDialog.width
+					height: messageText.height + Style.marginM + servicesList.height + 2 * Style.marginL
+
+					BaseText {
+						id: messageText
+						anchors.top: parent.top
+						anchors.topMargin: Style.marginL
+						anchors.left: parent.left
+						anchors.leftMargin: Style.marginL
+						anchors.right: parent.right
+						anchors.rightMargin: Style.marginL
+						wrapMode: Text.WordWrap
+						text: addToViewDialog.parentId !== ""
+							? qsTr("Select the services to add to the group \"%1\"").arg(topologyPage.getNodePath(addToViewDialog.parentId))
+							: qsTr("Select the services to add to the view")
+					}
+
+					ListView {
+						id: servicesList
+						anchors.top: messageText.bottom
+						anchors.topMargin: Style.marginM
+						anchors.left: parent.left
+						anchors.leftMargin: Style.marginL
+						anchors.right: parent.right
+						anchors.rightMargin: Style.marginL
+						height: Math.min(Math.max(count, 1), 8) * Style.controlHeightL
+
+						clip: true
+						boundsBehavior: Flickable.StopAtBounds
+						model: addToViewDialog.services
+
+						delegate: Rectangle {
+							id: serviceRow
+							width: servicesList.width
+							height: Style.controlHeightL
+							color: serviceRowMouseArea.containsMouse ? Style.hover : "transparent"
+
+							property bool selected: addToViewDialog.selectedIds.indexOf(modelData.id) >= 0
+
+							MouseArea {
+								id: serviceRowMouseArea
+								anchors.fill: parent
+								hoverEnabled: true
+								cursorShape: Qt.PointingHandCursor
+								onClicked: {
+									addToViewDialog.toggleService(modelData.id)
+								}
+							}
+
+							CheckBox {
+								id: serviceCheckBox
+								anchors.left: parent.left
+								anchors.leftMargin: Style.marginM
+								anchors.verticalCenter: parent.verticalCenter
+								isActive: false
+								checkState: serviceRow.selected ? Qt.Checked : Qt.Unchecked
+							}
+
+							BaseText {
+								anchors.left: serviceCheckBox.right
+								anchors.leftMargin: Style.marginM
+								anchors.right: parent.right
+								anchors.rightMargin: Style.marginM
+								anchors.verticalCenter: parent.verticalCenter
+								text: modelData.name
+								elide: Text.ElideRight
+							}
+						}
+					}
+
+					CustomScrollbar {
+						z: servicesList.z + 1
+						anchors.right: servicesList.right
+						anchors.top: servicesList.top
+						anchors.bottom: servicesList.bottom
+						secondSize: Style.marginS
+						radius: Style.radiusS
+						targetItem: servicesList
+					}
 				}
 			}
 		}

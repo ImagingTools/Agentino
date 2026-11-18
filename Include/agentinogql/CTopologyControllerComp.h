@@ -59,6 +59,14 @@ public:
 				const sdl::V1_0::agentino::CRenameTopologyGroupGqlRequest& renameTopologyGroupRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CTopologyGroupResponse OnRemoveFromTopologyView(
+				const sdl::V1_0::agentino::CRemoveFromTopologyViewGqlRequest& removeFromTopologyViewRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CTopologyGroupResponse OnAddToTopologyView(
+				const sdl::V1_0::agentino::CAddToTopologyViewGqlRequest& addToTopologyViewRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
 	virtual sdl::V1_0::agentino::CTopologyViewList OnGetTopologyViews(
 				const sdl::V1_0::agentino::CGetTopologyViewsGqlRequest& getTopologyViewsRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,

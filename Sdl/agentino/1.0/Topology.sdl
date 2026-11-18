@@ -42,8 +42,15 @@ type Service {
 	nodeType: TopologyNodeType
 }
 
+type TopologyNodeInfo {
+	id: ID!
+	name: String
+}
+
 type Topology {
 	services: [Service]
+	# Services removed from the requested user-defined view (they can be added back); empty for the default view
+	removedServices: [TopologyNodeInfo]
 }
 
 # Views are different ways to group the topology nodes. The default view (empty view ID) groups
@@ -96,6 +103,20 @@ input RenameTopologyGroupInput {
 	name: String!
 }
 
+# Removes nodes (services) from a user-defined view only; the services themselves are not deleted
+input RemoveFromTopologyViewInput {
+	viewId: ID!
+	nodeIds: [ID]
+}
+
+# Adds services removed from a user-defined view back to it
+input AddToTopologyViewInput {
+	viewId: ID!
+	nodeIds: [ID]
+	# Group of the view receiving the services; empty for the root level
+	parentId: ID
+}
+
 type TopologyGroupResponse {
 	successful: Boolean!
 }
@@ -133,6 +154,8 @@ type Mutation {
 	MoveTopologyNodes (input: MoveTopologyNodesInput): TopologyGroupResponse!
 	RemoveTopologyGroup (input: RemoveTopologyGroupInput): TopologyGroupResponse!
 	RenameTopologyGroup (input: RenameTopologyGroupInput): TopologyGroupResponse!
+	RemoveFromTopologyView (input: RemoveFromTopologyViewInput): TopologyGroupResponse!
+	AddToTopologyView (input: AddToTopologyViewInput): TopologyGroupResponse!
 	CreateTopologyView (input: CreateTopologyViewInput): CreateTopologyViewResponse!
 	RemoveTopologyView (input: RemoveTopologyViewInput): TopologyGroupResponse!
 }

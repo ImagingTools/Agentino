@@ -49,6 +49,17 @@ public:
 	*/
 	void SetNodePosition(const QByteArray& nodeId, const i2d::CVector2d& position);
 
+	/**
+		Get IDs of the services removed from the view. Such services are not shown in the view,
+		but they still exist and are shown in other views.
+	*/
+	const QByteArrayList& GetRemovedNodeIds() const;
+
+	/**
+		Set IDs of the services removed from the view.
+	*/
+	void SetRemovedNodeIds(const QByteArrayList& nodeIds);
+
 	// reimplemented (iser::IObject)
 	virtual QByteArray GetFactoryId() const override;
 
@@ -65,6 +76,7 @@ public:
 protected:
 	QByteArrayList m_groupIds;
 	QMap<QByteArray, i2d::CVector2d> m_nodePositions;
+	QByteArrayList m_removedNodeIds;
 };
 
 
@@ -73,6 +85,12 @@ protected:
 inline const QByteArrayList& CTopologyView::GetGroupIds() const
 {
 	return m_groupIds;
+}
+
+
+inline const QByteArrayList& CTopologyView::GetRemovedNodeIds() const
+{
+	return m_removedNodeIds;
 }
 
 
