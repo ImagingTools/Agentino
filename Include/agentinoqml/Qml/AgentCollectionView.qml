@@ -29,7 +29,6 @@ AgentCollectionViewBase {
 		}
 	}
 
-
 	Component {
 		id: agentEditorComp;
 

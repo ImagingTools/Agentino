@@ -872,14 +872,47 @@ sdl::V1_0::agentino::CTopologyViewList CTopologyControllerComp::OnGetTopologyVie
 	QList<sdl::V1_0::agentino::CTopologyViewInfo> views;
 
 	if (m_topologyCollectionCompPtr.IsValid()){
+		// Names of the content of the views: they are found by the names of their services and groups as well.
+		QMap<QByteArray, QString> serviceNames;
+		QStringList agentNames;
+		CollectNodeNames(serviceNames, agentNames);
+
 		const QByteArrayList viewIds = GetTopologyViewIds();
 		for (const QByteArray& viewId : viewIds){
 			sdl::V1_0::agentino::CTopologyViewInfo viewInfo;
 			viewInfo.id = viewId;
 			viewInfo.name = m_topologyCollectionCompPtr->GetElementInfo(viewId, imtbase::ICollectionInfo::EIT_NAME).toString();
 
+			QStringList nodeNames;
+			agentinodata::CTopologyView view;
+			if (GetTopologyView(viewId, view)){
+				for (const QByteArray& nodeId : view.GetNodeIds()){
+					if (serviceNames.contains(nodeId)){
+						nodeNames << serviceNames.value(nodeId);
+					}
+				}
+			}
+
+			const TopologyGroupMap groups = GetTopologyGroups(viewId);
+			for (TopologyGroupMap::const_iterator groupIter = groups.constBegin(); groupIter != groups.constEnd(); ++groupIter){
+				nodeNames << groupIter->name;
+			}
+
+			viewInfo.nodeNames.Emplace();
+			viewInfo.nodeNames->FromList(nodeNames);
+
 			views << viewInfo;
 		}
+
+		QStringList agentsViewNodeNames = agentNames;
+		agentsViewNodeNames << serviceNames.values();
+		const TopologyGroupMap defaultGroups = GetTopologyGroups(QByteArray());
+		for (TopologyGroupMap::const_iterator groupIter = defaultGroups.constBegin(); groupIter != defaultGroups.constEnd(); ++groupIter){
+			agentsViewNodeNames << groupIter->name;
+		}
+
+		response.agentsViewNodeNames.Emplace();
+		response.agentsViewNodeNames->FromList(agentsViewNodeNames);
 	}
 
 	response.views.Emplace();
@@ -1049,6 +1082,40 @@ bool CTopologyControllerComp::IsAgentOnline(const QByteArray& agentId) const
 	
 	// No explicit status found - assume the agent is online
 	return true;
+}
+
+
+void CTopologyControllerComp::CollectNodeNames(QMap<QByteArray, QString>& serviceNames, QStringList& agentNames) const
+{
+	if (!m_agentCollectionCompPtr.IsValid()){
+		return;
+	}
+
+	const imtbase::ICollectionInfo::Ids agentIds = m_agentCollectionCompPtr->GetElementIds();
+	for (const imtbase::ICollectionInfo::Id& agentId : agentIds){
+		const QString agentName = m_agentCollectionCompPtr->GetElementInfo(agentId, imtbase::ICollectionInfo::EIT_NAME).toString();
+		agentNames << agentName;
+
+		imtbase::IObjectCollection* serviceCollectionPtr =
+					m_serviceManagerCompPtr.IsValid()
+								? m_serviceManagerCompPtr->GetServiceCollection(agentId)
+								: nullptr;
+		if (serviceCollectionPtr == nullptr){
+			continue;
+		}
+
+		const imtbase::ICollectionInfo::Ids serviceIds = serviceCollectionPtr->GetElementIds();
+		for (const imtbase::ICollectionInfo::Id& serviceId : serviceIds){
+			imtbase::IObjectCollection::DataPtr serviceDataPtr;
+			if (serviceCollectionPtr->GetObjectData(serviceId, serviceDataPtr)){
+				const agentinodata::IServiceInfo* serviceInfoPtr = dynamic_cast<const agentinodata::IServiceInfo*>(serviceDataPtr.GetPtr());
+				if (serviceInfoPtr != nullptr){
+					// The same text as on the scheme: "<service name>@<agent name>".
+					serviceNames.insert(serviceId, serviceInfoPtr->GetServiceName() + "@" + agentName);
+				}
+			}
+		}
+	}
 }
 
 

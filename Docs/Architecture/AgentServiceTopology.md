@@ -88,7 +88,10 @@ visualizes the overall topology of all agents.
   no agent nodes, its root shows its services not in a group, groups may mix services of different
   agents. Groups listed in no view
   belong to the default view. Removing a view removes its groups. UI: the "Views" panel of
-  `TopologyPage` (MenuPanelButton items, Add/Remove buttons and context menu); hidden in the agent app.
+  `TopologyPage` (MenuPanelButton items, filter field, Add/Remove buttons and context menu); hidden
+  in the agent app. `GetTopologyViews` returns `nodeNames` of every view (its services as
+  "service@agent" and its groups) and `agentsViewNodeNames` (agents, services and groups of the
+  default view); the filter matches the view name or any of these names.
 - Removal commands of `TopologyPage`: `Remove` deletes a group or, in a user view, calls
   `RemoveFromTopologyView` for a service; `RemoveService` deletes the service physically
   (`RemoveElements` through its agent) and is enabled only for a service of the default view

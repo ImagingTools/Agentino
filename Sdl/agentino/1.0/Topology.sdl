@@ -124,11 +124,15 @@ type TopologyGroupResponse {
 type TopologyViewInfo {
 	id: ID!
 	name: String
+	# Names of the services and groups of the view (used to find a view by its content)
+	nodeNames: [String]
 }
 
 # User-defined views; the default view (grouping by agents) is not listed
 type TopologyViewList {
 	views: [TopologyViewInfo]
+	# Names of the agents, services and groups of the default view
+	agentsViewNodeNames: [String]
 }
 
 input CreateTopologyViewInput {

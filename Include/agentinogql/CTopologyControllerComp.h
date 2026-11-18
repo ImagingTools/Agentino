@@ -94,6 +94,11 @@ private:
 	bool IsAgentOnline(const QByteArray& agentId) const;
 
 	/**
+		Get the names of all services (by service ID, as shown on the scheme) and of all agents.
+	*/
+	void CollectNodeNames(QMap<QByteArray, QString>& serviceNames, QStringList& agentNames) const;
+
+	/**
 		Get IDs of the user-defined views in the order of the topology collection.
 	*/
 	QByteArrayList GetTopologyViewIds() const;
