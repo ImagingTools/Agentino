@@ -39,8 +39,8 @@ ViewBase {
 	// by agents, the user-defined views group them freely. Items: {id, name, pinned}.
 	property ListModel viewsModel: ListModel {}
 	readonly property string viewId: topologyViewModel.viewId
-	// Services removed from the current user-defined view: [{id, name}].
-	property var removedServices: []
+	// Services that are not in the current user-defined view and can be added to it: [{id, name}].
+	property var availableServices: []
 
 	// Transport stays in TopologyViewModel (L2/L3) — view is presentation only (QG2).
 	property var topologyViewModel: TopologyViewModel {}
@@ -221,7 +221,6 @@ ViewBase {
 
 		topologyPage.setCommandState("Start", canStartStop && status === "NOT_RUNNING")
 		topologyPage.setCommandState("Stop", canStartStop && status === "RUNNING")
-		topologyPage.setCommandState("Edit", item !== null)
 		// Groups are renamed on the server; services through their agent, which must be online.
 		// Agents are renamed in the agent editor.
 		topologyPage.setCommandState("Rename", item !== null && (isComposite ? topologyPage.isGroupNode(item.m_id) : agentOnline))
@@ -231,8 +230,8 @@ ViewBase {
 		// Delete requires a live agent — mirror-only delete comes back on reconnect.
 		topologyPage.setCommandState("Remove", isComposite ? topologyPage.isGroupNode(item.m_id) : serviceSelected && topologyPage.viewId !== "")
 		topologyPage.setCommandState("RemoveService", serviceSelected && agentOnline && topologyPage.viewId === "")
-		// Services removed from a user-defined view are added back to the current level (root or group).
-		topologyPage.setCommandState("AddToView", topologyPage.viewId !== "" && topologyPage.removedServices.length > 0
+		// A user-defined view is created empty; services are added to the current level (root or group).
+		topologyPage.setCommandState("AddToView", topologyPage.viewId !== "" && topologyPage.availableServices.length > 0
 				&& (topologyPage.groupId === "" || topologyPage.isGroupNode(topologyPage.groupId)))
 		// Groups live at the root level or inside other groups; an agent contains only its services.
 		topologyPage.setCommandState("NewGroup", topologyPage.groupId === "" || topologyPage.isGroupNode(topologyPage.groupId))
@@ -251,7 +250,6 @@ ViewBase {
 		let commands = [
 			{"id": "Remove", "name": qsTr("Remove"), "icon": "Icons/Delete"},
 			{"id": "RemoveService", "name": qsTr("Remove service"), "icon": "Icons/Delete"},
-			{"id": "Edit", "name": qsTr("Edit"), "icon": "Icons/Edit"},
 			{"id": "Rename", "name": qsTr("Rename"), "icon": "Icons/Edit"},
 			{"id": "AddToGroup", "name": qsTr("Add to group"), "icon": "Icons/Link"},
 			{"id": "RemoveFromGroup", "name": qsTr("Remove from group"), "icon": "Icons/Unlink"},
@@ -396,7 +394,7 @@ ViewBase {
 		}
 
 		topologyPage.clearServiceSelection()
-		topologyPage.removedServices = []
+		topologyPage.availableServices = []
 		topologyPage.updateCommandStates()
 
 		while (schemeStack.count > 1){
@@ -471,18 +469,18 @@ ViewBase {
 		ModalDialogManager.openDialog(newGroupDialogComp, {})
 	}
 
-	// Adds services removed from the current user-defined view back to the current level.
+	// Adds services (chosen from the services not yet in the view) to the current level of the user-defined view.
 	function requestAddToView(){
-		if (topologyPage.viewId === "" || topologyPage.removedServices.length === 0)
+		if (topologyPage.viewId === "" || topologyPage.availableServices.length === 0)
 			return
 		let parentId = topologyPage.isGroupNode(topologyPage.groupId) ? topologyPage.groupId : ""
-		ModalDialogManager.openDialog(addToViewDialogComp, {"parentId": parentId, "services": topologyPage.removedServices.slice()})
+		ModalDialogManager.openDialog(addToViewDialogComp, {"parentId": parentId, "services": topologyPage.availableServices.slice()})
 	}
 
 	// [{id, name}] sorted by name; a missing list (e.g. the agent app) is empty.
-	function readRemovedServices(topologySdlObject){
+	function readAvailableServices(topologySdlObject){
 		let result = []
-		let servicesModel = topologySdlObject ? topologySdlObject.m_removedServices : null
+		let servicesModel = topologySdlObject ? topologySdlObject.m_availableServices : null
 		if (servicesModel){
 			for (let i = 0; i < servicesModel.count; ++i){
 				let item = servicesModel.get(i).item
@@ -613,7 +611,7 @@ ViewBase {
 			if (!topologySdlObject){
 				return
 			}
-			topologyPage.removedServices = topologyPage.readRemovedServices(topologySdlObject)
+			topologyPage.availableServices = topologyPage.readAvailableServices(topologySdlObject)
 			// A shown composite node was removed (here or by another client): return to its parent level.
 			let nodesModel = topologySdlObject.m_services
 			let removedLevel = topologyPage.findRemovedLevel(nodesModel)
@@ -658,7 +656,9 @@ ViewBase {
 			
 			onCommandsChanged: {
 				setCommandVisible("Save", false)
+				// "New service" is temporarily hidden; the command and its handler are kept.
 				setCommandIsEnabled("New", true)
+				setCommandVisible("New", false)
 				setIsToggleable("AutoFit", true);
 				setToggled("AutoFit", topologyPage.scheme ? topologyPage.scheme.autoFit : true);
 				topologyPage.updateCommandStates()
@@ -803,9 +803,6 @@ ViewBase {
 					if (commandId === "New"){
 						onNew(params)
 					}
-					else if (commandId === "Edit"){
-						onEdit(params)
-					}
 					else if (commandId === "Remove"){
 						onRemove(params)
 					}
@@ -874,12 +871,6 @@ ViewBase {
 				}
 			}
 			
-			function onEdit(){
-				if (topologyPage.scheme){
-					topologyPage.scheme.goInside()
-				}
-			}
-
 			function onNew(){
 				// Inside an agent the target agent is known.
 				let currentNode = topologyPage.topologyNodes[topologyPage.groupId]
@@ -1276,7 +1267,7 @@ ViewBase {
 				topologyPage.applySelection(levelScheme)
 			}
 
-			// Double click / Return / Edit: goes inside a composite node, opens the editor of a service.
+			// Double click / Return: goes inside a composite node, opens the editor of a service.
 			function goInside(){
 				let item = topologyPage.selectedNode()
 				if (item === null){
@@ -1652,12 +1643,26 @@ ViewBase {
 		Dialog {
 			id: addToViewDialog
 			width: Style.sizeHintM
-			title: qsTr("Add to view")
+			title: qsTr("Add services to view")
 
 			property string parentId: ""
-			// [{id, name}] of the services removed from the view.
+			// [{id, name}] of the services that are not in the view yet.
 			property var services: []
 			property var selectedIds: []
+			property string filterText: ""
+			// Services whose name contains the filter text (case-insensitive); the selection is kept while filtering.
+			readonly property var filteredServices: {
+				let filter = addToViewDialog.filterText.trim().toLowerCase()
+				if (filter === "")
+					return addToViewDialog.services
+				let result = []
+				for (let i = 0; i < addToViewDialog.services.length; ++i){
+					if (addToViewDialog.services[i].name.toLowerCase().indexOf(filter) >= 0){
+						result.push(addToViewDialog.services[i])
+					}
+				}
+				return result
+			}
 
 			// Dialog parameters are assigned after the dialog is created.
 			onServicesChanged: {
@@ -1692,7 +1697,8 @@ ViewBase {
 			contentComp: Component {
 				Item {
 					width: addToViewDialog.width
-					height: messageText.height + Style.marginM + servicesList.height + 2 * Style.marginL
+					height: messageText.height + filterField.height + servicesFrame.height + selectedText.height
+							+ 3 * Style.marginM + 2 * Style.marginL
 
 					BaseText {
 						id: messageText
@@ -1708,73 +1714,145 @@ ViewBase {
 							: qsTr("Select the services to add to the view")
 					}
 
-					ListView {
-						id: servicesList
+					CustomTextField {
+						id: filterField
+						objectName: "TopologyAddToViewFilter"
 						anchors.top: messageText.bottom
 						anchors.topMargin: Style.marginM
 						anchors.left: parent.left
 						anchors.leftMargin: Style.marginL
 						anchors.right: parent.right
 						anchors.rightMargin: Style.marginL
-						height: Math.min(Math.max(count, 1), 8) * Style.controlHeightL
+						height: Style.controlHeightM
+						textFieldRightMargin: clearFilterButton.width + Style.marginM + Style.marginXS
+						placeHolderText: qsTr("Filter by name")
+						radius: Style.textFieldRadius
 
-						clip: true
-						boundsBehavior: Flickable.StopAtBounds
-						model: addToViewDialog.services
+						onTextChanged: {
+							addToViewDialog.filterText = filterField.text
+						}
 
-						delegate: Rectangle {
-							id: serviceRow
-							width: servicesList.width
-							height: Style.controlHeightL
-							color: serviceRowMouseArea.containsMouse ? Style.hover : "transparent"
+						Component.onCompleted: {
+							filterField.forceInputFocus()
+						}
 
-							property bool selected: addToViewDialog.selectedIds.indexOf(modelData.id) >= 0
-
-							MouseArea {
-								id: serviceRowMouseArea
-								anchors.fill: parent
-								hoverEnabled: true
-								cursorShape: Qt.PointingHandCursor
-								onClicked: {
-									addToViewDialog.toggleService(modelData.id)
-								}
-							}
-
-							CheckBox {
-								id: serviceCheckBox
-								anchors.left: parent.left
-								anchors.leftMargin: Style.marginM
-								anchors.verticalCenter: parent.verticalCenter
-								isActive: false
-								checkState: serviceRow.selected ? Qt.Checked : Qt.Unchecked
-							}
-
-							BaseText {
-								anchors.left: serviceCheckBox.right
-								anchors.leftMargin: Style.marginM
-								anchors.right: parent.right
-								anchors.rightMargin: Style.marginM
-								anchors.verticalCenter: parent.verticalCenter
-								text: modelData.name
-								elide: Text.ElideRight
+						Button {
+							id: clearFilterButton
+							anchors.verticalCenter: filterField.verticalCenter
+							anchors.right: filterField.right
+							anchors.rightMargin: Style.marginXS
+							width: height
+							height: 12
+							z: filterField.z + 1
+							decorator: Component { IconButtonDecorator {} }
+							iconSource: "qrc:/" + Style.getIconPath("Icons/Close", Icon.State.On, Icon.Mode.Normal)
+							visible: filterField.text !== ""
+							enabled: visible
+							onClicked: {
+								filterField.text = ""
 							}
 						}
 					}
 
-					CustomScrollbar {
-						z: servicesList.z + 1
-						anchors.right: servicesList.right
-						anchors.top: servicesList.top
-						anchors.bottom: servicesList.bottom
-						secondSize: Style.marginS
+					// Fixed height: the dialog does not jump while filtering; long lists are scrolled.
+					Rectangle {
+						id: servicesFrame
+						anchors.top: filterField.bottom
+						anchors.topMargin: Style.marginM
+						anchors.left: parent.left
+						anchors.leftMargin: Style.marginL
+						anchors.right: parent.right
+						anchors.rightMargin: Style.marginL
+						height: 8 * Style.controlHeightL + 2
+						color: "transparent"
+						border.width: 1
+						border.color: Style.borderColor
 						radius: Style.radiusS
-						targetItem: servicesList
+
+						BaseText {
+							anchors.centerIn: parent
+							visible: servicesList.count === 0
+							color: Style.placeHolderTextColor
+							text: addToViewDialog.services.length === 0
+								? qsTr("All services are already in the view")
+								: qsTr("No services match the filter")
+						}
+
+						ListView {
+							id: servicesList
+							anchors.fill: parent
+							anchors.margins: 1
+							anchors.rightMargin: Style.marginS + 2
+
+							clip: true
+							boundsBehavior: Flickable.StopAtBounds
+							model: addToViewDialog.filteredServices
+
+							delegate: Rectangle {
+								id: serviceRow
+								width: servicesList.width
+								height: Style.controlHeightL
+								color: serviceRowMouseArea.containsMouse ? Style.hover : "transparent"
+
+								property bool selected: addToViewDialog.selectedIds.indexOf(modelData.id) >= 0
+
+								MouseArea {
+									id: serviceRowMouseArea
+									anchors.fill: parent
+									hoverEnabled: true
+									cursorShape: Qt.PointingHandCursor
+									onClicked: {
+										addToViewDialog.toggleService(modelData.id)
+									}
+								}
+
+								CheckBox {
+									id: serviceCheckBox
+									anchors.left: parent.left
+									anchors.leftMargin: Style.marginM
+									anchors.verticalCenter: parent.verticalCenter
+									isActive: false
+									checkState: serviceRow.selected ? Qt.Checked : Qt.Unchecked
+								}
+
+								BaseText {
+									anchors.left: serviceCheckBox.right
+									anchors.leftMargin: Style.marginM
+									anchors.right: parent.right
+									anchors.rightMargin: Style.marginM
+									anchors.verticalCenter: parent.verticalCenter
+									text: modelData.name
+									elide: Text.ElideRight
+								}
+							}
+						}
+
+						CustomScrollbar {
+							z: servicesList.z + 1
+							anchors.right: parent.right
+							anchors.rightMargin: 1
+							anchors.top: servicesList.top
+							anchors.bottom: servicesList.bottom
+							secondSize: Style.marginS
+							radius: Style.radiusS
+							targetItem: servicesList
+						}
+					}
+
+					BaseText {
+						id: selectedText
+						anchors.top: servicesFrame.bottom
+						anchors.topMargin: Style.marginM
+						anchors.left: parent.left
+						anchors.leftMargin: Style.marginL
+						color: Style.placeHolderTextColor
+						font.pixelSize: Style.fontSizeS
+						text: qsTr("Selected: %1 of %2").arg(addToViewDialog.selectedIds.length).arg(addToViewDialog.services.length)
 					}
 				}
 			}
 		}
 	}
-
 	Component {
 		id: addToGroupDialogComp
 

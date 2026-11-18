@@ -50,7 +50,7 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 	
 	
 	QList<sdl::V1_0::agentino::CService> services;
-	QList<sdl::V1_0::agentino::CTopologyNodeInfo> removedServices;
+	QList<sdl::V1_0::agentino::CTopologyNodeInfo> availableServices;
 
 	sdl::V1_0::agentino::GetTopologyRequestArguments arguments = getTopologyRequest.GetRequestedArguments();
 	const QByteArray viewId = (arguments.input.has_value() && arguments.input->viewId.has_value()) ? *arguments.input->viewId : QByteArray();
@@ -125,12 +125,13 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 						continue;
 					}
 
-					if (!isAgentsView && view.GetRemovedNodeIds().contains(serviceElementId)){
-						sdl::V1_0::agentino::CTopologyNodeInfo removedService;
-						removedService.id = serviceElementId;
-						removedService.name = serviceInfoPtr->GetServiceName() + "@" + agentName;
+					// A user-defined view shows only the services added to it.
+					if (!isAgentsView && !view.GetNodeIds().contains(serviceElementId)){
+						sdl::V1_0::agentino::CTopologyNodeInfo availableService;
+						availableService.id = serviceElementId;
+						availableService.name = serviceInfoPtr->GetServiceName() + "@" + agentName;
 
-						removedServices << removedService;
+						availableServices << availableService;
 
 						continue;
 					}
@@ -268,8 +269,8 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 	response.services.Emplace();
 	response.services->FromList(services);
 
-	response.removedServices.Emplace();
-	response.removedServices->FromList(removedServices);
+	response.availableServices.Emplace();
+	response.availableServices->FromList(availableServices);
 
 	return response;
 }
@@ -745,14 +746,12 @@ sdl::V1_0::agentino::CTopologyGroupResponse CTopologyControllerComp::OnRemoveFro
 		}
 	}
 
-	QByteArrayList removedNodeIds = view.GetRemovedNodeIds();
+	QByteArrayList viewNodeIds = view.GetNodeIds();
 	for (const QByteArray& nodeId : nodeIds){
-		if (!removedNodeIds.contains(nodeId)){
-			removedNodeIds.append(nodeId);
-		}
+		viewNodeIds.removeAll(nodeId);
 	}
 
-	view.SetRemovedNodeIds(removedNodeIds);
+	view.SetNodeIds(viewNodeIds);
 	if (!m_topologyCollectionCompPtr->SetObjectData(viewId, view)){
 		errorMessage = QString("Unable to remove nodes from topology view. Error: Failed to update the view '%1'").arg(QString::fromUtf8(viewId));
 		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
@@ -814,16 +813,17 @@ sdl::V1_0::agentino::CTopologyGroupResponse CTopologyControllerComp::OnAddToTopo
 		return response;
 	}
 
-	QByteArrayList removedNodeIds = view.GetRemovedNodeIds();
+	QByteArrayList viewNodeIds = view.GetNodeIds();
 	QByteArrayList addedNodeIds;
 	for (const QByteArray& nodeId : nodeIds){
-		if (removedNodeIds.removeAll(nodeId) > 0){
+		if (!nodeId.isEmpty() && !viewNodeIds.contains(nodeId) && !groups.contains(nodeId)){
+			viewNodeIds.append(nodeId);
 			addedNodeIds.append(nodeId);
 		}
 	}
 
 	if (addedNodeIds.isEmpty()){
-		// Already shown in the view (e.g. added back by another client)
+		// Already shown in the view (e.g. added by another client)
 		response.successful = true;
 
 		return response;
@@ -832,7 +832,7 @@ sdl::V1_0::agentino::CTopologyGroupResponse CTopologyControllerComp::OnAddToTopo
 	istd::CChangeGroup changeGroup(m_topologyCollectionCompPtr.GetPtr());
 
 	if (!parentId.isEmpty()){
-		// Removed services are not members of the view groups, so they are just appended to the target group.
+		// Services not shown in the view are not members of its groups, so they are just appended to the target group.
 		QByteArrayList memberIds = groups.value(parentId).memberIds;
 		for (const QByteArray& nodeId : addedNodeIds){
 			if (!memberIds.contains(nodeId)){
@@ -848,7 +848,7 @@ sdl::V1_0::agentino::CTopologyGroupResponse CTopologyControllerComp::OnAddToTopo
 		}
 	}
 
-	view.SetRemovedNodeIds(removedNodeIds);
+	view.SetNodeIds(viewNodeIds);
 	if (!m_topologyCollectionCompPtr->SetObjectData(viewId, view)){
 		errorMessage = QString("Unable to add nodes to topology view. Error: Failed to update the view '%1'").arg(QString::fromUtf8(viewId));
 		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");

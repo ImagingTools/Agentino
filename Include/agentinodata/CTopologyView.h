@@ -18,7 +18,8 @@ namespace agentinodata
 /**
 	User-defined view of the service topology: a way to group the topology nodes independently
 	of agents. The view holds the IDs of its groups (agentinodata::CTopologyGroup elements of the
-	same topology collection) and the positions of the services on its scheme.
+	same topology collection), the IDs of the services shown in it and the positions of the services
+	on its scheme.
 	The display name of the view is the element name in the topology collection.
 */
 class CTopologyView: virtual public iser::IObject
@@ -50,15 +51,15 @@ public:
 	void SetNodePosition(const QByteArray& nodeId, const i2d::CVector2d& position);
 
 	/**
-		Get IDs of the services removed from the view. Such services are not shown in the view,
-		but they still exist and are shown in other views.
+		Get IDs of the services shown in the view. A new view is empty: services are added to it
+		explicitly; the other services are not shown in the view.
 	*/
-	const QByteArrayList& GetRemovedNodeIds() const;
+	const QByteArrayList& GetNodeIds() const;
 
 	/**
-		Set IDs of the services removed from the view.
+		Set IDs of the services shown in the view.
 	*/
-	void SetRemovedNodeIds(const QByteArrayList& nodeIds);
+	void SetNodeIds(const QByteArrayList& nodeIds);
 
 	// reimplemented (iser::IObject)
 	virtual QByteArray GetFactoryId() const override;
@@ -76,7 +77,7 @@ public:
 protected:
 	QByteArrayList m_groupIds;
 	QMap<QByteArray, i2d::CVector2d> m_nodePositions;
-	QByteArrayList m_removedNodeIds;
+	QByteArrayList m_nodeIds;
 };
 
 
@@ -88,9 +89,9 @@ inline const QByteArrayList& CTopologyView::GetGroupIds() const
 }
 
 
-inline const QByteArrayList& CTopologyView::GetRemovedNodeIds() const
+inline const QByteArrayList& CTopologyView::GetNodeIds() const
 {
-	return m_removedNodeIds;
+	return m_nodeIds;
 }
 
 

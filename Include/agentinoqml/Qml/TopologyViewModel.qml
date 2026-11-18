@@ -157,7 +157,7 @@ QtObject {
 		removeFromViewRequestSender.send(removeFromViewInput)
 	}
 
-	// Adds services removed from the current user-defined view back to it.
+	// Adds services (not yet in the current user-defined view) to it.
 	// parentId: group of the view receiving the services; empty for the root level.
 	function addToView(nodeIds, parentId) {
 		if (root.viewId === ""){
