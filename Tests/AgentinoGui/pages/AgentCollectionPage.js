@@ -32,8 +32,9 @@ const { CollectionPage } = require('imtcore-gui-testkit/pages/CollectionPage');
 // between two runs here), so it is masked for the same reason lastConnection is.
 // "name" and "computerName" both hold the machine's own name ("LAPTOP" here,
 // "b035a0a.online-server.cloud" on the build agent), so they are masked too - without that this
-// baseline only ever matches the machine that generated it.
-const MASK_COLUMNS = ['lastConnection', 'version', 'name', 'computerName'];
+// baseline only ever matches the machine that generated it. "operatingSystem" is the agent host's
+// own OS name (e.g. "Windows 11 Version 24H2"), so it is masked for the same reason.
+const MASK_COLUMNS = ['lastConnection', 'version', 'name', 'computerName', 'operatingSystem'];
 
 const STATUS_FILTERS = {
   all: 'AgentStatusAllFilter',

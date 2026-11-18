@@ -927,6 +927,10 @@
         <translation>计算机名称</translation>
     </message>
     <message>
+        <source>Operating System</source>
+        <translation>操作系统</translation>
+    </message>
+    <message>
         <location line="+8"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+8"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+8"/>

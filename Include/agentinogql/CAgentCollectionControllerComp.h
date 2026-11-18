@@ -83,6 +83,7 @@ private:
 	GateDecision AdmitAgentFromRequest(const imtgql::CGqlRequest& gqlRequest, const QByteArray& agentId) const;
 	bool IsAgentApproved(const QByteArray& agentId) const;
 	QString ComputeAgentStatus(const QByteArray& agentId) const;
+	QString GetAgentOperatingSystem(const QByteArray& agentId) const;
 	QVariant GetAgentSortValue(const QByteArray& agentId, const QByteArray& fieldId) const;
 
 protected:

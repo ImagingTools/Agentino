@@ -96,6 +96,10 @@ bool CAgentCollectionControllerComp::CreateRepresentationFromObject(
 		representationObject.computerName = computerName;
 	}
 
+	if (requestInfo.items.isOperatingSystemRequested){
+		representationObject.operatingSystem = GetAgentOperatingSystem(objectId);
+	}
+
 	if (requestInfo.items.isServicesRequested){
 		// The agent id is the object id from the representation context.
 		imtbase::IObjectCollection* serviceCollectionPtr =
@@ -242,6 +246,18 @@ QString CAgentCollectionControllerComp::ComputeAgentStatus(const QByteArray& age
 }
 
 
+QString CAgentCollectionControllerComp::GetAgentOperatingSystem(const QByteArray& agentId) const
+{
+	// The agent reports its OS (QSysInfo::prettyProductName()) with every announce; the
+	// enrollment store keeps the latest non-empty value, so no separate copy on CAgentInfo.
+	if (!m_enrollmentControllerCompPtr.IsValid()){
+		return QString();
+	}
+
+	return m_enrollmentControllerCompPtr->Get(agentId).os;
+}
+
+
 QVariant CAgentCollectionControllerComp::GetAgentSortValue(const QByteArray& agentId, const QByteArray& fieldId) const
 {
 	if (fieldId == "name"){
@@ -252,6 +268,9 @@ QVariant CAgentCollectionControllerComp::GetAgentSortValue(const QByteArray& age
 	}
 	if (fieldId == "status"){
 		return ComputeAgentStatus(agentId);
+	}
+	if (fieldId == "operatingSystem"){
+		return GetAgentOperatingSystem(agentId);
 	}
 	if (fieldId == "services"){
 		imtbase::IObjectCollection* serviceCollectionPtr =
