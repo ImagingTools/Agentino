@@ -335,6 +335,17 @@ Features:
 * **Rename** (or **F2**) — rename the selected group or service. A service is
   renamed on its agent, so the agent must be connected; agents are renamed in
   the agent editor.
+* **Undo / Redo** (the first buttons of the toolbar; **Ctrl+Z**, **Ctrl+Shift+Z** or
+  **Ctrl+Y**) — the changes of the topology are saved on the server at once;
+  **Undo** reverts the last change and **Redo** applies the reverted change
+  again. Both buttons are shown as soon as either of them is available (the
+  unavailable one is disabled). The history covers
+  moving blocks, creating, removing and renaming groups, **Add to group** /
+  **Remove from group**, adding and removing services of a view, renaming
+  services and creating and removing views (in any view; up to 50 steps).
+  **Remove service** and **Start** / **Stop** are not undone. If a change
+  cannot be undone (e.g. the topology was changed by another user), an error
+  message is shown and the history is cleared.
 * **Real-time updates** — service statuses and composition changes are
   updated without reloading the page.
 
@@ -393,7 +404,7 @@ the left of the diagram lists the views; click a view to show it.
   list keeps the views whose name, or the name of one of their services or
   groups, contains the entered text (case-insensitive; for **Agents** the
   agent names are searched as well).
-* **Remove** (the trash icon next to it) — delete the selected view with all its groups;
+* **Remove** (the trash icon next to it) — delete the selected view with all its groups (can be undone with **Undo**);
   the services themselves are not affected.
 * A right click on a user-defined view selects it and opens a menu with
   **Remove**; for **Agents** the right click only selects it.

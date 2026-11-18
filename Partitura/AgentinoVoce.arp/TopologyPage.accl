@@ -26,6 +26,8 @@
                 <Element ComponentName="Save" X="200" Y="250" Note=""/>
                 <Element ComponentName="Start" X="575" Y="250" Note=""/>
                 <Element ComponentName="Stop" X="575" Y="375" Note=""/>
+                <Element ComponentName="Undo" X="950" Y="625" Note=""/>
+                <Element ComponentName="Redo" X="950" Y="750" Note=""/>
                 <Element ComponentName="ZoomIn" X="950" Y="250" Note=""/>
                 <Element ComponentName="ZoomOut" X="950" Y="375" Note=""/>
             </PositionMap>
