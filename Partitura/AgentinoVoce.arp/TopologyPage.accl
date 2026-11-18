@@ -18,7 +18,6 @@
                 <Element ComponentName="AutoFit" X="950" Y="500" Note=""/>
                 <Element ComponentName="AddToGroup" X="200" Y="625" Note=""/>
                 <Element ComponentName="CommandsController" X="575" Y="75" Note=""/>
-                <Element ComponentName="Edit" X="200" Y="375" Note=""/>
                 <Element ComponentName="NewGroup" X="200" Y="500" Note=""/>
                 <Element ComponentName="RemoveFromGroup" X="200" Y="750" Note=""/>
                 <Element ComponentName="Rename" X="200" Y="875" Note=""/>

@@ -317,8 +317,8 @@ Features:
   addresses).
 * **Moving blocks** with the mouse — the layout is saved automatically.
 * **AutoFit** — automatically fit the diagram to the window.
-* **New / Edit / Start / Stop** — the same actions as in the service
-  list. **Enter** opens the editor of the selected service. Commands that are
+* **Start / Stop** — the same actions as in the service list. A double click
+  or **Enter** opens the editor of the selected service. Commands that are
   not available for the current selection are hidden in the toolbar.
 * **Remove service** — delete the selected service (with confirmation). It is
   available only in the **Agents** view — inside an agent or a group (and in
@@ -329,7 +329,7 @@ Features:
 * **Delete** runs the removal command available for the selected block
   (**Remove** or **Remove service**).
 * **Context menu** — a right click on a block selects it and opens a menu with
-  the available commands: **Remove**, **Remove service**, **Edit**, **Rename**,
+  the available commands: **Remove**, **Remove service**, **Rename**,
   **Add to group**, **Remove from group**, **Start service**, **Stop service**.
   They work exactly like the toolbar commands.
 * **Rename** (or **F2**) — rename the selected group or service. A service is
@@ -352,7 +352,7 @@ stack of cards with a blue frame) contain other blocks:
 * **Groups** — user-defined composite blocks. A group can contain services,
   agents and other groups.
 
-A double click, **Enter** or **Edit** on a composite block goes inside it: the
+A double click or **Enter** on a composite block goes inside it: the
 diagram shows only the blocks inside it. A navigation panel above the diagram
 shows the path from the root diagram (for example *Topology › Group ›
 Agent*); click a name in the path or the back arrow to return to that level.
@@ -378,14 +378,16 @@ the left of the diagram lists the views; click a view to show it.
   10.1). It cannot be removed.
 * User-defined views — services are not grouped by agents: the root diagram
   shows the services themselves, and groups can contain services of different
-  agents. Every view has its own groups and its own block layout.
+  agents. Every view has its own groups and its own block layout. A new view
+  is empty.
 * **Remove** on a service in a user-defined view removes the service from this
   view only (and from its groups in this view); the service itself is not
   deleted and remains in the other views.
-* **Add to view** — add services removed from the view back to it: select the
-  services in the list; they are added to the shown level (the root diagram
-  or the shown group). The command is shown only when the view has removed
-  services.
+* **Add services to view** — add services to the view: the dialog lists all
+  services that are not in the view yet; type in the filter field to find a
+  service by name, check the services and press **Add**. They are added to the
+  shown level (the root diagram or the shown group). The command is shown only
+  when there are services not yet in the view.
 * **Add** (the "+" icon to the right of the "Views" title) — create a view and enter its name.
 * **Remove** (the trash icon next to it) — delete the selected view with all its groups;
   the services themselves are not affected.
