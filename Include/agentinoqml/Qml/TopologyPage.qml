@@ -173,7 +173,9 @@ ViewBase {
 				"parentId": item.m_parentId ? item.m_parentId : "",
 				"nodeType": item.m_nodeType ? item.m_nodeType : "SERVICE",
 				"name": item.m_mainText,
-				"agentId": item.m_agentId
+				"agentId": item.m_agentId,
+				"x": item.m_x,
+				"y": item.m_y
 			}
 		}
 		topologyPage.topologyNodes = nodes
@@ -237,6 +239,13 @@ ViewBase {
 		topologyPage.setCommandState("NewGroup", topologyPage.groupId === "" || topologyPage.isGroupNode(topologyPage.groupId))
 		topologyPage.setCommandState("AddToGroup", item !== null && topologyPage.getTargetGroups(item.m_id).length > 0)
 		topologyPage.setCommandState("RemoveFromGroup", item !== null && topologyPage.isGroupNode(topologyPage.groupId))
+		// Changes are applied on the server at once; Undo/Redo revert or repeat them there.
+		// Both are shown while there is anything in the history, each is enabled on its own.
+		let historyVisible = topologyPage.topologyViewModel.undoCount > 0 || topologyPage.topologyViewModel.redoCount > 0
+		topologyPage.commandsController.setCommandIsEnabled("Undo", topologyPage.topologyViewModel.canUndo)
+		topologyPage.commandsController.setCommandIsEnabled("Redo", topologyPage.topologyViewModel.canRedo)
+		topologyPage.commandsController.setCommandVisible("Undo", historyVisible)
+		topologyPage.commandsController.setCommandVisible("Redo", historyVisible)
 	}
 
 	property TreeItemModel contextMenuModel: TreeItemModel {}
@@ -538,7 +547,78 @@ ViewBase {
 			return
 		let currentGroup = topologyPage.topologyNodes[topologyPage.groupId]
 		let targetGroupId = topologyPage.isGroupNode(currentGroup.parentId) ? currentGroup.parentId : ""
-		topologyPage.topologyViewModel.moveNodes([item.m_id], targetGroupId)
+		topologyPage.topologyViewModel.moveNodes([item.m_id], targetGroupId, topologyPage.getParentGroups([item.m_id]))
+	}
+
+	// Group of the node (empty if the node is not in a group, e.g. a service directly inside its agent).
+	function getParentGroupId(nodeId){
+		let node = topologyPage.topologyNodes[nodeId]
+		return node && topologyPage.isGroupNode(node.parentId) ? node.parentId : ""
+	}
+
+	// {nodeId: group of the node or ""} to undo a move of the nodes.
+	function getParentGroups(nodeIds){
+		let result = {}
+		for (let i = 0; i < nodeIds.length; ++i){
+			result[nodeIds[i]] = topologyPage.getParentGroupId(nodeIds[i])
+		}
+		return result
+	}
+
+	// Data to recreate the removed group on undo: {name, parentId, x, y, memberIds}.
+	function getGroupInfo(groupId){
+		let group = topologyPage.topologyNodes[groupId]
+		let memberIds = []
+		for (let nodeId in topologyPage.topologyNodes){
+			if (topologyPage.topologyNodes[nodeId].parentId === groupId){
+				memberIds.push(nodeId)
+			}
+		}
+		// The group may have been moved since the last load: its current position is on the shown level.
+		let position = topologyPage.scheme && topologyPage.scheme.savedPositions
+				? topologyPage.scheme.savedPositions[groupId] : undefined
+		if (!position){
+			position = {"x": group && group.x !== undefined ? group.x : 0, "y": group && group.y !== undefined ? group.y : 0}
+		}
+		return {
+			"name": group ? "" + group.name : "",
+			"parentId": topologyPage.getParentGroupId(groupId),
+			"x": position.x,
+			"y": position.y,
+			"memberIds": memberIds
+		}
+	}
+
+	// Positions {id: {x, y}} of the nodes of the scheme model.
+	function getPositions(nodesModel){
+		let positions = {}
+		if (!nodesModel)
+			return positions
+		for (let i = 0; i < nodesModel.count; ++i){
+			let item = nodesModel.get(i).item
+			if (item){
+				positions[item.m_id] = {"x": item.m_x, "y": item.m_y}
+			}
+		}
+		return positions
+	}
+
+	// Saves the layout of the level after a move; the moved tiles are recorded for undo.
+	function saveLevelLayout(levelScheme){
+		let currentPositions = topologyPage.getPositions(levelScheme.objectsModel)
+		let previousPositions = levelScheme.savedPositions ? levelScheme.savedPositions : {}
+		let before = []
+		let after = []
+		for (let nodeId in currentPositions){
+			let previous = previousPositions[nodeId]
+			let current = currentPositions[nodeId]
+			if (previous && (previous.x !== current.x || previous.y !== current.y)){
+				before.push({"id": nodeId, "x": previous.x, "y": previous.y})
+				after.push({"id": nodeId, "x": current.x, "y": current.y})
+			}
+		}
+		levelScheme.savedPositions = currentPositions
+		topologyPage.topologyViewModel.saveTopology(levelScheme.objectsModel, before, after)
 	}
 
 	// Renames the selected group or service (F2, toolbar or context menu).
@@ -658,6 +738,7 @@ ViewBase {
 			let previousNodeId = currentScheme.selectedNodeId
 			currentScheme.selectedIndex = -1
 			currentScheme.objectsModel = topologyPage.applyTopologyNodes(nodesModel)
+			currentScheme.savedPositions = topologyPage.getPositions(currentScheme.objectsModel)
 			currentScheme.selectedIndex = currentScheme.findModelIndex(previousNodeId)
 			topologyPage.updateLevelNames()
 			topologyPage.updateCommandStates()
@@ -672,6 +753,18 @@ ViewBase {
 		function onViewsLoaded(views, agentsViewNodeNames) {
 			topologyPage.fillViews(views, agentsViewNodeNames)
 		}
+		function onCanUndoChanged() {
+			topologyPage.updateCommandStates()
+		}
+		function onCanRedoChanged() {
+			topologyPage.updateCommandStates()
+		}
+		function onUndoCountChanged() {
+			topologyPage.updateCommandStates()
+		}
+		function onRedoCountChanged() {
+			topologyPage.updateCommandStates()
+		}
 		function onViewCreated(viewId) {
 			topologyPage.selectView(viewId)
 		}
@@ -681,8 +774,32 @@ ViewBase {
 			}
 		}
 	}
-	
-	commandsControllerComp: Component {GqlBasedCommandsController {
+
+	// Undo/Redo of the topology changes; disabled while a dialog is open.
+	Shortcut {
+		sequence: "Ctrl+Z"
+		enabled: topologyPage.visible && ModalDialogManager.count === 0
+		onActivated: {
+			topologyPage.topologyViewModel.undo()
+		}
+	}
+
+	Shortcut {
+		sequence: "Ctrl+Shift+Z"
+		enabled: topologyPage.visible && ModalDialogManager.count === 0
+		onActivated: {
+			topologyPage.topologyViewModel.redo()
+		}
+	}
+
+	Shortcut {
+		sequence: "Ctrl+Y"
+		enabled: topologyPage.visible && ModalDialogManager.count === 0
+		onActivated: {
+			topologyPage.topologyViewModel.redo()
+		}
+	}
+		commandsControllerComp: Component {GqlBasedCommandsController {
 			typeId: "Topology"
 			
 			onCommandsChanged: {
@@ -839,6 +956,12 @@ ViewBase {
 					}
 					else if (commandId === "RemoveService"){
 						topologyPage.requestRemoveService()
+					}
+					else if (commandId === "Undo"){
+						topologyPage.topologyViewModel.undo()
+					}
+					else if (commandId === "Redo"){
+						topologyPage.topologyViewModel.redo()
 					}
 					else if (commandId === "AddToView"){
 						topologyPage.requestAddToView()
@@ -1321,6 +1444,8 @@ ViewBase {
 			// Selected node (service, agent or group); selectedService is set for services only.
 			property string selectedNodeId: ""
 			property string selectedService: ""
+			// Positions {id: {x, y}} of the nodes as stored on the server; a move is recorded against them.
+			property var savedPositions: ({})
 
 			onAutoFitChanged: {
 				if (levelScheme === topologyPage.scheme && topologyPage.commandsController){
@@ -1330,7 +1455,7 @@ ViewBase {
 
 			onObjectMoveFinished: {
 				// saveTopology() sets saveInProgress so OnTopologyChanged does not reload mid-save.
-				topologyPage.topologyViewModel.saveTopology(levelScheme.objectsModel)
+				topologyPage.saveLevelLayout(levelScheme)
 			}
 
 			onDeleteSignal: {
@@ -1661,7 +1786,7 @@ ViewBase {
 			message: qsTr("Delete the selected group? Its content will be moved one level up.")
 			onFinished: {
 				if (buttonId == Enums.yes && groupId !== ""){
-					topologyPage.topologyViewModel.removeGroup(groupId)
+					topologyPage.topologyViewModel.removeGroup(groupId, topologyPage.getGroupInfo(groupId))
 				}
 			}
 		}
@@ -1679,7 +1804,7 @@ ViewBase {
 						.arg(topologyPage.getViewName(topologyPage.viewId))
 			onFinished: {
 				if (buttonId == Enums.yes && nodeId !== ""){
-					topologyPage.topologyViewModel.removeFromView([nodeId])
+					topologyPage.topologyViewModel.removeFromView([nodeId], topologyPage.getParentGroupId(nodeId))
 				}
 			}
 		}
@@ -1704,10 +1829,10 @@ ViewBase {
 					return
 				}
 				if (isGroup){
-					topologyPage.topologyViewModel.renameGroup(nodeId, name)
+					topologyPage.topologyViewModel.renameGroup(nodeId, name, oldName)
 				}
 				else{
-					topologyPage.topologyViewModel.renameService(nodeId, agentId, name)
+					topologyPage.topologyViewModel.renameService(nodeId, agentId, name, oldName)
 				}
 			}
 		}
@@ -1966,7 +2091,7 @@ ViewBase {
 
 			onFinished: {
 				if (buttonId === Enums.apply && nodeId !== "" && chosenGroupId !== ""){
-					topologyPage.topologyViewModel.moveNodes([nodeId], chosenGroupId)
+					topologyPage.topologyViewModel.moveNodes([nodeId], chosenGroupId, topologyPage.getParentGroups([nodeId]))
 				}
 			}
 

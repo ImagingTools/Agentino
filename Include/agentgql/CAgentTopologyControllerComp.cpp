@@ -311,6 +311,20 @@ sdl::V1_0::agentino::CTopologyGroupResponse CAgentTopologyControllerComp::OnRemo
 }
 
 
+sdl::V1_0::agentino::CTopologyGroupResponse CAgentTopologyControllerComp::OnRestoreTopologyView(
+			const sdl::V1_0::agentino::CRestoreTopologyViewGqlRequest& /*restoreTopologyViewRequest*/,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	errorMessage = QString("Topology views are not supported by the agent");
+
+	sdl::V1_0::agentino::CTopologyGroupResponse response;
+	response.successful = false;
+
+	return response;
+}
+
+
 QPoint CAgentTopologyControllerComp::GetServiceCoordinate(const QByteArray& serviceId) const
 {
 	QPoint retVal;

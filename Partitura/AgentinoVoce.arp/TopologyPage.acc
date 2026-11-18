@@ -65,6 +65,7 @@
                                 <Value>GetTopologyViews</Value>
                                 <Value>CreateTopologyView</Value>
                                 <Value>RemoveTopologyView</Value>
+                                <Value>RestoreTopologyView</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -163,6 +164,8 @@
                                 <AttributeInfo Id="LeftAlignmentCommands" Type="Reference[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
+                                            <Value>Undo</Value>
+                                            <Value>Redo</Value>
                                             <Value>New</Value>
                                             <Value>Rename</Value>
                                             <Value>Remove</Value>
@@ -496,6 +499,60 @@
                                 </AttributeInfo>
                                 <AttributeInfo Id="Name" Type="Text" ExportId="">
                                     <Data IsEnabled="true" Value="Save"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="Undo" PackageId="ImtCoreVoce" ComponentId="Command">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Undo"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="IconPath" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="Icons/Undo"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="IsEnabled" Type="Boolean" ExportId="">
+                                    <Data IsEnabled="true" Value="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="IsVisible" Type="Boolean" ExportId="">
+                                    <Data IsEnabled="true" Value="true"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Name" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="Undo"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
+                        </Data>
+                    </Element>
+                    <Element Id="Redo" PackageId="ImtCoreVoce" ComponentId="Command">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="CommandId" Type="Id" ExportId="">
+                                    <Data IsEnabled="true" Value="Redo"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="IconPath" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="Icons/Redo"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="IsEnabled" Type="Boolean" ExportId="">
+                                    <Data IsEnabled="true" Value="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="IsVisible" Type="Boolean" ExportId="">
+                                    <Data IsEnabled="true" Value="true"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Name" Type="Text" ExportId="">
+                                    <Data IsEnabled="true" Value="Redo"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
                                     <Data IsEnabled="false"/>

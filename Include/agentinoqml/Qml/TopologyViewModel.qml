@@ -82,25 +82,241 @@ QtObject {
 	// a ServiceCoordinateInputObjectList* (built via emplaceServices()/
 	// createServicesArrayElement()/addElement()); plain JS values are silently rejected by
 	// the generated setter, so services would be sent as null on the wire.
-	function buildTopologyInput(model) {
+	// positions: [{id, x, y}]
+	function buildTopologyInput(viewId, positions) {
 		let topologyInput = topologyInputComp.createObject(root)
-		topologyInput.m_viewId = root.viewId
+		topologyInput.m_viewId = viewId
 		topologyInput.emplaceServices()
-		for (let i = 0; i < model.count; ++i){
-			let item = model.get(i).item
-			if (!item){
-				continue
-			}
+		for (let i = 0; i < positions.length; ++i){
 			let coordinate = topologyInput.createServicesArrayElement()
-			coordinate.m_id = item.m_id
-			coordinate.m_x = item.m_x
-			coordinate.m_y = item.m_y
+			coordinate.m_id = positions[i].id
+			coordinate.m_x = positions[i].x
+			coordinate.m_y = positions[i].y
 			topologyInput.m_services.addElement(coordinate)
 		}
 		return topologyInput
 	}
 
-	function saveTopology(model) {
+	// [{id, x, y}] of all nodes of the scheme model.
+	function modelPositions(model) {
+		let positions = []
+		if (!model){
+			return positions
+		}
+		for (let i = 0; i < model.count; ++i){
+			let item = model.get(i).item
+			if (item){
+				positions.push({"id": item.m_id, "x": item.m_x, "y": item.m_y})
+			}
+		}
+		return positions
+	}
+
+	property Component topologyInputComp: Component { SaveTopologyInput {} }
+
+	// --- Undo / Redo ---
+	// Every change of the topology is applied on the server at once. An action of the history knows
+	// how to apply it again (redo) and how to revert it (undo) with the same server operations.
+	// The operations run one after another: the request senders and their inputs are shared, and
+	// an undo must not overtake the change it reverts. Physical removal of services and Start/Stop
+	// are not in the history.
+
+	readonly property int maxHistorySteps: 50
+	property var undoStack: []
+	property var redoStack: []
+	property int undoCount: 0
+	property int redoCount: 0
+	property var operationQueue: []
+	property bool operationInProgress: false
+	// Undo/Redo wait for the running changes, otherwise the history would not match the server.
+	readonly property bool canUndo: root.undoCount > 0 && !root.operationInProgress
+	readonly property bool canRedo: root.redoCount > 0 && !root.operationInProgress
+
+	function updateHistoryCounts() {
+		root.undoCount = root.undoStack.length
+		root.redoCount = root.redoStack.length
+	}
+
+	// The history no longer matches the server (e.g. the topology was changed by another client).
+	function clearHistory() {
+		root.undoStack = []
+		root.redoStack = []
+		root.updateHistoryCounts()
+	}
+
+	// A change that got no answer (e.g. a request path without an error callback) must not block the
+	// queue for good: it is abandoned after this time and the history is cleared.
+	property int operationTimeout: 60000
+	property var currentOperation: null
+
+	property Timer operationTimer: Timer {
+		interval: root.operationTimeout
+		repeat: false
+		onTriggered: root.abandonCurrentOperation()
+	}
+
+	function abandonCurrentOperation() {
+		let operation = root.currentOperation
+		if (!operation || operation.isFinished){
+			return
+		}
+		operation.isAborted = true
+		root.saveInProgress = false
+		root.clearHistory()
+		root.groupOperationFailed(qsTr("The topology change has not been completed. Check the topology and repeat the change if necessary."))
+		operation.finish()
+		root.requestReload()
+	}
+
+	// run: function(finish, operation) calling finish() once the operation is completed;
+	// operation.isAborted is set if the operation was abandoned (its late result is ignored).
+	function enqueueOperation(run) {
+		let queue = root.operationQueue.slice()
+		queue.push(run)
+		root.operationQueue = queue
+		root.runNextOperation()
+	}
+
+	function runNextOperation() {
+		if (root.operationInProgress || root.operationQueue.length === 0){
+			return
+		}
+		let queue = root.operationQueue.slice()
+		let run = queue.shift()
+		root.operationQueue = queue
+		root.operationInProgress = true
+
+		let operation = {"isFinished": false, "isAborted": false}
+		operation.finish = function(){
+			if (operation.isFinished){
+				return
+			}
+			operation.isFinished = true
+			root.operationTimer.stop()
+			root.currentOperation = null
+			root.operationInProgress = false
+			Qt.callLater(root.runNextOperation)
+		}
+		root.currentOperation = operation
+		root.operationTimer.restart()
+		run(operation.finish, operation)
+	}
+
+	// Runs the steps (function(next) calling next(ok)) one after another; stops at the first failure.
+	function runSteps(steps, done) {
+		let index = 0
+		let next = function(ok){
+			if (ok === false){
+				done(false)
+				return
+			}
+			if (index >= steps.length){
+				done(true)
+				return
+			}
+			let step = steps[index]
+			++index
+			step(next)
+		}
+		next(true)
+	}
+
+	// action: {run(done), undo(done), redo(done), reloadOnRun, viewsChanged}; done(ok).
+	// recordable === false applies the change without a history step.
+	function performAction(action, recordable) {
+		root.enqueueOperation(function(finish, operation){
+			action.run(function(ok){
+				if (operation.isAborted){
+					return
+				}
+				if (ok && recordable !== false){
+					let stack = root.undoStack.slice()
+					stack.push(action)
+					while (stack.length > root.maxHistorySteps){
+						stack.shift()
+					}
+					root.undoStack = stack
+					root.redoStack = []
+					root.updateHistoryCounts()
+				}
+				root.finishAction(action, ok, action.reloadOnRun !== false || !ok)
+				finish()
+			})
+		})
+	}
+
+	function undo() {
+		if (!root.canUndo){
+			return
+		}
+		let stack = root.undoStack.slice()
+		let action = stack.pop()
+		root.undoStack = stack
+		root.updateHistoryCounts()
+
+		root.enqueueOperation(function(finish, operation){
+			action.undo(function(ok){
+				if (operation.isAborted){
+					return
+				}
+				if (ok){
+					let redoStack = root.redoStack.slice()
+					redoStack.push(action)
+					root.redoStack = redoStack
+					root.updateHistoryCounts()
+				}
+				else{
+					root.clearHistory()
+				}
+				root.finishAction(action, ok, true)
+				finish()
+			})
+		})
+	}
+
+	function redo() {
+		if (!root.canRedo){
+			return
+		}
+		let stack = root.redoStack.slice()
+		let action = stack.pop()
+		root.redoStack = stack
+		root.updateHistoryCounts()
+
+		root.enqueueOperation(function(finish, operation){
+			action.redo(function(ok){
+				if (operation.isAborted){
+					return
+				}
+				if (ok){
+					let undoStack = root.undoStack.slice()
+					undoStack.push(action)
+					root.undoStack = undoStack
+					root.updateHistoryCounts()
+				}
+				else{
+					root.clearHistory()
+				}
+				root.finishAction(action, ok, true)
+				finish()
+			})
+		})
+	}
+
+	function finishAction(action, ok, reload) {
+		if (action.viewsChanged === true){
+			root.loadViews()
+		}
+		if (reload){
+			root.requestReload()
+		}
+	}
+
+	// --- Topology changes (recorded in the history) ---
+
+	// Saves the layout after tiles were moved on the shown level. The whole level is saved (new tiles
+	// get positions on the client); before/after: [{id, x, y}] of the moved tiles for undo/redo.
+	function saveTopology(model, before, after) {
 		if (!saveModelRequestSender.gqlCommandId){
 			console.error("SaveTopology: gqlCommandId is empty")
 			return
@@ -108,54 +324,121 @@ QtObject {
 		if (!model){
 			return
 		}
-		root.saveInProgress = true
-		let topologyInput = buildTopologyInput(model)
-		saveModelRequestSender.send(topologyInput)
-		topologyInput.destroy()
+		let viewId = root.viewId
+		let positions = root.modelPositions(model)
+		let movedBefore = before ? before : []
+		let movedAfter = after ? after : []
+		let action = {
+			// The scheme already shows the new positions.
+			"reloadOnRun": false,
+			"run": function(done){ root.opSavePositions(viewId, positions, done) },
+			"undo": function(done){ root.opSavePositions(viewId, movedBefore, done) },
+			"redo": function(done){ root.opSavePositions(viewId, movedAfter, done) }
+		}
+		root.performAction(action, movedBefore.length > 0)
 	}
-
-	property Component topologyInputComp: Component { SaveTopologyInput {} }
-
-	// --- Topology groups (composite nodes) ---
 
 	// parentId: group containing the new group, empty for the root level.
 	function createGroup(name, parentId, x, y) {
-		createGroupInput.m_viewId = root.viewId
-		createGroupInput.m_name = "" + name
-		createGroupInput.m_parentId = parentId ? "" + parentId : ""
-		createGroupInput.m_x = x
-		createGroupInput.m_y = y
-		createGroupRequestSender.send(createGroupInput)
+		let viewId = root.viewId
+		let groupName = "" + name
+		let groupParentId = parentId ? "" + parentId : ""
+		let action = {"groupId": ""}
+		action.run = function(done){
+			root.opCreateGroup(viewId, "", groupName, groupParentId, x, y, function(ok, groupId){
+				if (ok){
+					action.groupId = "" + groupId
+					root.groupCreated(action.groupId)
+				}
+				done(ok)
+			})
+		}
+		// The group is empty again: the later changes are undone before.
+		action.undo = function(done){ root.opRemoveGroup(action.groupId, done) }
+		action.redo = function(done){ root.opCreateGroup(viewId, action.groupId, groupName, groupParentId, x, y, done) }
+		root.performAction(action)
 	}
 
 	// parentId: target group; empty returns the nodes to their default place
 	// (in the default view a service to its agent, otherwise the root level).
-	function moveNodes(nodeIds, parentId) {
-		moveNodesInput.m_viewId = root.viewId
-		moveNodesInput.m_nodeIds = nodeIds
-		moveNodesInput.m_parentId = parentId ? "" + parentId : ""
-		moveNodesRequestSender.send(moveNodesInput)
+	// oldParentIds: {nodeId: previous group of the node or ""} to undo the move.
+	function moveNodes(nodeIds, parentId, oldParentIds) {
+		let viewId = root.viewId
+		let ids = nodeIds.slice()
+		let targetId = parentId ? "" + parentId : ""
+		let previousParents = oldParentIds ? oldParentIds : {}
+		root.performAction({
+			"run": function(done){ root.opMoveNodes(viewId, ids, targetId, done) },
+			"undo": function(done){
+				// Nodes are returned to their previous groups, one request per group.
+				let byParent = {}
+				for (let i = 0; i < ids.length; ++i){
+					let previousId = previousParents[ids[i]] ? "" + previousParents[ids[i]] : ""
+					if (!byParent[previousId]){
+						byParent[previousId] = []
+					}
+					byParent[previousId].push(ids[i])
+				}
+				let steps = []
+				for (let previousId in byParent){
+					let groupIds = byParent[previousId]
+					let groupId = previousId
+					steps.push(function(next){ root.opMoveNodes(viewId, groupIds, groupId, next) })
+				}
+				root.runSteps(steps, done)
+			},
+			"redo": function(done){ root.opMoveNodes(viewId, ids, targetId, done) }
+		})
 	}
 
-	function removeGroup(groupId) {
-		removeGroupInput.m_id = "" + groupId
-		removeGroupRequestSender.send(removeGroupInput)
+	// info: {name, parentId, x, y, memberIds} of the group, used to recreate it on undo.
+	function removeGroup(groupId, info) {
+		let viewId = root.viewId
+		let id = "" + groupId
+		let groupInfo = info ? info : {"name": "", "parentId": "", "x": 0, "y": 0, "memberIds": []}
+		root.performAction({
+			"run": function(done){ root.opRemoveGroup(id, done) },
+			"undo": function(done){
+				// The group is recreated with the same ID, its content is moved back into it.
+				let steps = [function(next){
+					root.opCreateGroup(viewId, id, groupInfo.name, groupInfo.parentId, groupInfo.x, groupInfo.y, next)
+				}]
+				if (groupInfo.memberIds.length > 0){
+					steps.push(function(next){ root.opMoveNodes(viewId, groupInfo.memberIds, id, next) })
+				}
+				root.runSteps(steps, done)
+			},
+			"redo": function(done){ root.opRemoveGroup(id, done) }
+		})
 	}
 
-	function renameGroup(groupId, name) {
-		renameGroupInput.m_id = "" + groupId
-		renameGroupInput.m_name = "" + name
-		renameGroupRequestSender.send(renameGroupInput)
+	function renameGroup(groupId, name, oldName) {
+		let id = "" + groupId
+		let newName = "" + name
+		let previousName = "" + oldName
+		root.performAction({
+			"viewsChanged": true,
+			"run": function(done){ root.opRenameGroup(id, newName, done) },
+			"undo": function(done){ root.opRenameGroup(id, previousName, done) },
+			"redo": function(done){ root.opRenameGroup(id, newName, done) }
+		}, previousName !== "")
 	}
 
 	// Removes the services from the current user-defined view only; the services are not deleted.
-	function removeFromView(nodeIds) {
+	// oldParentId: group of the view containing the services (empty for the root level), used on undo.
+	function removeFromView(nodeIds, oldParentId) {
 		if (root.viewId === ""){
 			return
 		}
-		removeFromViewInput.m_viewId = root.viewId
-		removeFromViewInput.m_nodeIds = nodeIds
-		removeFromViewRequestSender.send(removeFromViewInput)
+		let viewId = root.viewId
+		let ids = nodeIds.slice()
+		let previousParentId = oldParentId ? "" + oldParentId : ""
+		root.performAction({
+			"viewsChanged": true,
+			"run": function(done){ root.opRemoveFromView(viewId, ids, done) },
+			"undo": function(done){ root.opAddToView(viewId, ids, previousParentId, done) },
+			"redo": function(done){ root.opRemoveFromView(viewId, ids, done) }
+		})
 	}
 
 	// Adds services (not yet in the current user-defined view) to it.
@@ -164,21 +447,176 @@ QtObject {
 		if (root.viewId === ""){
 			return
 		}
-		addToViewInput.m_viewId = root.viewId
+		let viewId = root.viewId
+		let ids = nodeIds.slice()
+		let targetId = parentId ? "" + parentId : ""
+		root.performAction({
+			"viewsChanged": true,
+			"run": function(done){ root.opAddToView(viewId, ids, targetId, done) },
+			"undo": function(done){ root.opRemoveFromView(viewId, ids, done) },
+			"redo": function(done){ root.opAddToView(viewId, ids, targetId, done) }
+		})
+	}
+
+	// The service name is owned by the agent (see opRenameService).
+	function renameService(serviceId, agentId, name, oldName) {
+		let id = "" + serviceId
+		let agent = agentId ? "" + agentId : ""
+		let newName = "" + name
+		let previousName = "" + oldName
+		root.performAction({
+			"viewsChanged": true,
+			"run": function(done){ root.opRenameService(id, agent, newName, done) },
+			"undo": function(done){ root.opRenameService(id, agent, previousName, done) },
+			"redo": function(done){ root.opRenameService(id, agent, newName, done) }
+		}, previousName !== "")
+	}
+
+	function createView(name) {
+		let viewName = "" + name
+		let action = {"viewsChanged": true, "createdViewId": ""}
+		action.run = function(done){
+			root.opCreateView(viewName, function(ok, viewId){
+				if (ok){
+					action.createdViewId = "" + viewId
+					root.viewCreated(action.createdViewId)
+				}
+				done(ok)
+			})
+		}
+		// A removed view is kept on the server and restored with its ID.
+		action.undo = function(done){ root.opRemoveView(action.createdViewId, done) }
+		action.redo = function(done){ root.opRestoreView(action.createdViewId, done) }
+		root.performAction(action)
+	}
+
+	function removeView(viewId) {
+		let id = "" + viewId
+		root.performAction({
+			"viewsChanged": true,
+			"run": function(done){ root.opRemoveView(id, done) },
+			"undo": function(done){ root.opRestoreView(id, done) },
+			"redo": function(done){ root.opRemoveView(id, done) }
+		})
+	}
+
+	// --- Server operations; done(ok, result) is called once ---
+
+	function completeOperation(sender, ok, result) {
+		let callback = sender.callback
+		sender.callback = null
+		if (callback){
+			callback(ok, result)
+		}
+	}
+
+	function opSavePositions(viewId, positions, done) {
+		if (positions.length === 0){
+			done(true)
+			return
+		}
+		root.saveInProgress = true
+		let topologyInput = buildTopologyInput(viewId, positions)
+		saveModelRequestSender.callback = function(ok){
+			root.saveInProgress = false
+			if (ok){
+				root.topologySaved()
+			}
+			done(ok)
+		}
+		saveModelRequestSender.send(topologyInput)
+		topologyInput.destroy()
+	}
+
+	// groupId: ID of the new group; empty generates a new ID. done(ok, groupId).
+	function opCreateGroup(viewId, groupId, name, parentId, x, y, done) {
+		createGroupInput.m_viewId = viewId
+		createGroupInput.m_id = groupId ? "" + groupId : ""
+		createGroupInput.m_name = "" + name
+		createGroupInput.m_parentId = parentId ? "" + parentId : ""
+		createGroupInput.m_x = x
+		createGroupInput.m_y = y
+		createGroupRequestSender.callback = done
+		createGroupRequestSender.send(createGroupInput)
+	}
+
+	function opMoveNodes(viewId, nodeIds, parentId, done) {
+		moveNodesInput.m_viewId = viewId
+		moveNodesInput.m_nodeIds = nodeIds
+		moveNodesInput.m_parentId = parentId ? "" + parentId : ""
+		moveNodesRequestSender.callback = done
+		moveNodesRequestSender.send(moveNodesInput)
+	}
+
+	function opRemoveGroup(groupId, done) {
+		removeGroupInput.m_id = "" + groupId
+		removeGroupRequestSender.callback = done
+		removeGroupRequestSender.send(removeGroupInput)
+	}
+
+	function opRenameGroup(groupId, name, done) {
+		renameGroupInput.m_id = "" + groupId
+		renameGroupInput.m_name = "" + name
+		renameGroupRequestSender.callback = done
+		renameGroupRequestSender.send(renameGroupInput)
+	}
+
+	function opRemoveFromView(viewId, nodeIds, done) {
+		removeFromViewInput.m_viewId = viewId
+		removeFromViewInput.m_nodeIds = nodeIds
+		removeFromViewRequestSender.callback = done
+		removeFromViewRequestSender.send(removeFromViewInput)
+	}
+
+	function opAddToView(viewId, nodeIds, parentId, done) {
+		addToViewInput.m_viewId = viewId
 		addToViewInput.m_nodeIds = nodeIds
 		addToViewInput.m_parentId = parentId ? "" + parentId : ""
+		addToViewRequestSender.callback = done
 		addToViewRequestSender.send(addToViewInput)
+	}
+
+	// done(ok, viewId)
+	function opCreateView(name, done) {
+		createViewInput.m_name = "" + name
+		createViewRequestSender.callback = done
+		createViewRequestSender.send(createViewInput)
+	}
+
+	// The view is kept on the server (marked as removed) and can be restored.
+	function opRemoveView(viewId, done) {
+		removeViewInput.m_id = "" + viewId
+		removeViewRequestSender.callback = function(ok){
+			if (ok){
+				root.viewRemoved(viewId)
+			}
+			done(ok)
+		}
+		removeViewRequestSender.send(removeViewInput)
+	}
+
+	function opRestoreView(viewId, done) {
+		restoreViewInput.m_id = "" + viewId
+		restoreViewRequestSender.callback = function(ok){
+			if (ok){
+				root.viewCreated(viewId)
+			}
+			done(ok)
+		}
+		restoreViewRequestSender.send(restoreViewInput)
 	}
 
 	// The service name is owned by the agent: the service is renamed the same way the service
 	// editor saves it (GetService, then UpdateService with the new name, forwarded to the agent).
 	// agentId: owning agent (clientid header); empty in the agent app.
-	function renameService(serviceId, agentId, name) {
+	function opRenameService(serviceId, agentId, name, done) {
 		let controller = serviceRenameControllerComp.createObject(root)
 		if (!controller){
 			root.groupOperationFailed(qsTr("Unable to rename the service"))
+			done(false)
 			return
 		}
+		controller.callback = done
 		controller.agentId = agentId ? "" + agentId : ""
 		controller.newName = "" + name
 		controller.documentId = "" + serviceId
@@ -192,9 +630,15 @@ QtObject {
 			property string agentId: ""
 			property string newName: ""
 			property bool saving: false
+			property var callback: null
 
-			// Destroyed after the request finished, not from inside its handler.
-			function release() {
+			function complete(ok) {
+				let done = renameController.callback
+				renameController.callback = null
+				if (done){
+					done(ok)
+				}
+				// Destroyed after the request finished, not from inside its handler.
 				Qt.callLater(function(){
 					renameController.destroy()
 				})
@@ -218,13 +662,12 @@ QtObject {
 			}
 
 			onSaved: {
-				root.requestReload()
-				renameController.release()
+				renameController.complete(true)
 			}
 
 			// The base controller already shows the error message.
 			onError: {
-				renameController.release()
+				renameController.complete(false)
 			}
 		}
 	}
@@ -253,19 +696,9 @@ QtObject {
 		getViewsRequestSender.send()
 	}
 
-	function createView(name) {
-		createViewInput.m_name = "" + name
-		createViewRequestSender.send(createViewInput)
-	}
-
-	function removeView(viewId) {
-		removeViewInput.m_id = "" + viewId
-		removeViewRequestSender.removedViewId = "" + viewId
-		removeViewRequestSender.send(removeViewInput)
-	}
-
 	property CreateTopologyViewInput createViewInput: CreateTopologyViewInput {}
 	property RemoveTopologyViewInput removeViewInput: RemoveTopologyViewInput {}
+	property RestoreTopologyViewInput restoreViewInput: RestoreTopologyViewInput {}
 
 	property GqlSdlRequestSender getViewsRequestSender: GqlSdlRequestSender {
 		gqlCommandId: "GetTopologyViews"
@@ -297,39 +730,67 @@ QtObject {
 		}
 	}
 
+	// The senders of the changes: the response completes the operation (callback), an error shows
+	// a message and fails it; "finished(-1)" also covers transport errors.
 	property GqlSdlRequestSender createViewRequestSender: GqlSdlRequestSender {
+		property var callback: null
 		requestType: 1
 		gqlCommandId: "CreateTopologyView"
 		sdlObjectComp: Component {
 			CreateTopologyViewResponse {
-				onFinished: {
-					root.viewCreated(m_id)
-					root.loadViews()
-				}
+				onFinished: root.completeOperation(root.createViewRequestSender, true, m_id)
+			}
+		}
+		onFinished: {
+			if (status < 0){
+				root.completeOperation(root.createViewRequestSender, false)
 			}
 		}
 		function onError(message, type) {
 			root.groupOperationFailed(message)
+			root.completeOperation(root.createViewRequestSender, false)
 			finished(-1)
 		}
 	}
 
 	property GqlSdlRequestSender removeViewRequestSender: GqlSdlRequestSender {
-		property string removedViewId: ""
+		property var callback: null
 		requestType: 1
 		gqlCommandId: "RemoveTopologyView"
 		sdlObjectComp: Component {
 			TopologyGroupResponse {
-				onFinished: {
-					if (m_successful === true){
-						root.viewRemoved(root.removeViewRequestSender.removedViewId)
-					}
-					root.loadViews()
-				}
+				onFinished: root.completeOperation(root.removeViewRequestSender, m_successful !== false)
+			}
+		}
+		onFinished: {
+			if (status < 0){
+				root.completeOperation(root.removeViewRequestSender, false)
 			}
 		}
 		function onError(message, type) {
 			root.groupOperationFailed(message)
+			root.completeOperation(root.removeViewRequestSender, false)
+			finished(-1)
+		}
+	}
+
+	property GqlSdlRequestSender restoreViewRequestSender: GqlSdlRequestSender {
+		property var callback: null
+		requestType: 1
+		gqlCommandId: "RestoreTopologyView"
+		sdlObjectComp: Component {
+			TopologyGroupResponse {
+				onFinished: root.completeOperation(root.restoreViewRequestSender, m_successful !== false)
+			}
+		}
+		onFinished: {
+			if (status < 0){
+				root.completeOperation(root.restoreViewRequestSender, false)
+			}
+		}
+		function onError(message, type) {
+			root.groupOperationFailed(message)
+			root.completeOperation(root.restoreViewRequestSender, false)
 			finished(-1)
 		}
 	}
@@ -342,88 +803,127 @@ QtObject {
 	property AddToTopologyViewInput addToViewInput: AddToTopologyViewInput {}
 
 	property GqlSdlRequestSender addToViewRequestSender: GqlSdlRequestSender {
+		property var callback: null
 		requestType: 1
 		gqlCommandId: "AddToTopologyView"
 		sdlObjectComp: Component {
 			TopologyGroupResponse {
-				onFinished: root.requestReload()
+				onFinished: root.completeOperation(root.addToViewRequestSender, m_successful !== false)
+			}
+		}
+		onFinished: {
+			if (status < 0){
+				root.completeOperation(root.addToViewRequestSender, false)
 			}
 		}
 		function onError(message, type) {
 			root.groupOperationFailed(message)
+			root.completeOperation(root.addToViewRequestSender, false)
 			finished(-1)
 		}
 	}
 
 	property GqlSdlRequestSender removeFromViewRequestSender: GqlSdlRequestSender {
+		property var callback: null
 		requestType: 1
 		gqlCommandId: "RemoveFromTopologyView"
 		sdlObjectComp: Component {
 			TopologyGroupResponse {
-				onFinished: root.requestReload()
+				onFinished: root.completeOperation(root.removeFromViewRequestSender, m_successful !== false)
+			}
+		}
+		onFinished: {
+			if (status < 0){
+				root.completeOperation(root.removeFromViewRequestSender, false)
 			}
 		}
 		function onError(message, type) {
 			root.groupOperationFailed(message)
+			root.completeOperation(root.removeFromViewRequestSender, false)
 			finished(-1)
 		}
 	}
 
 	property GqlSdlRequestSender renameGroupRequestSender: GqlSdlRequestSender {
+		property var callback: null
 		requestType: 1
 		gqlCommandId: "RenameTopologyGroup"
 		sdlObjectComp: Component {
 			TopologyGroupResponse {
-				onFinished: root.requestReload()
+				onFinished: root.completeOperation(root.renameGroupRequestSender, m_successful !== false)
+			}
+		}
+		onFinished: {
+			if (status < 0){
+				root.completeOperation(root.renameGroupRequestSender, false)
 			}
 		}
 		function onError(message, type) {
 			root.groupOperationFailed(message)
+			root.completeOperation(root.renameGroupRequestSender, false)
 			finished(-1)
 		}
 	}
 
 	property GqlSdlRequestSender createGroupRequestSender: GqlSdlRequestSender {
+		property var callback: null
 		requestType: 1
 		gqlCommandId: "CreateTopologyGroup"
 		sdlObjectComp: Component {
 			CreateTopologyGroupResponse {
-				onFinished: {
-					root.groupCreated(m_id)
-					root.requestReload()
-				}
+				onFinished: root.completeOperation(root.createGroupRequestSender, true, m_id)
+			}
+		}
+		onFinished: {
+			if (status < 0){
+				root.completeOperation(root.createGroupRequestSender, false)
 			}
 		}
 		function onError(message, type) {
 			root.groupOperationFailed(message)
+			root.completeOperation(root.createGroupRequestSender, false)
 			finished(-1)
 		}
 	}
 
 	property GqlSdlRequestSender moveNodesRequestSender: GqlSdlRequestSender {
+		property var callback: null
 		requestType: 1
 		gqlCommandId: "MoveTopologyNodes"
 		sdlObjectComp: Component {
 			TopologyGroupResponse {
-				onFinished: root.requestReload()
+				onFinished: root.completeOperation(root.moveNodesRequestSender, m_successful !== false)
+			}
+		}
+		onFinished: {
+			if (status < 0){
+				root.completeOperation(root.moveNodesRequestSender, false)
 			}
 		}
 		function onError(message, type) {
 			root.groupOperationFailed(message)
+			root.completeOperation(root.moveNodesRequestSender, false)
 			finished(-1)
 		}
 	}
 
 	property GqlSdlRequestSender removeGroupRequestSender: GqlSdlRequestSender {
+		property var callback: null
 		requestType: 1
 		gqlCommandId: "RemoveTopologyGroup"
 		sdlObjectComp: Component {
 			TopologyGroupResponse {
-				onFinished: root.requestReload()
+				onFinished: root.completeOperation(root.removeGroupRequestSender, m_successful !== false)
+			}
+		}
+		onFinished: {
+			if (status < 0){
+				root.completeOperation(root.removeGroupRequestSender, false)
 			}
 		}
 		function onError(message, type) {
 			root.groupOperationFailed(message)
+			root.completeOperation(root.removeGroupRequestSender, false)
 			finished(-1)
 		}
 	}
@@ -435,7 +935,6 @@ QtObject {
 		reloadRequested()
 		loadTopology()
 	}
-
 	// --- L3 transport (must stay out of L1 views) ---
 
 	property SubscriptionClient topologySubscriptionClient: SubscriptionClient {
@@ -471,28 +970,24 @@ QtObject {
 	}
 
 	property GqlSdlRequestSender saveModelRequestSender: GqlSdlRequestSender {
+		property var callback: null
 		requestType: 1
 		// Wire names (same as AgentinoTopologySdlCommandIds) — string literals so JQML
 		// never starts a send with an unresolved singleton property.
 		gqlCommandId: "SaveTopology"
 		sdlObjectComp: Component {
 			SaveTopologyResponse {
-				onFinished: {
-					root.saveInProgress = false
-					root.topologySaved()
-					// Local scheme already has the dragged positions — no GetTopology reload.
-				}
+				onFinished: root.completeOperation(root.saveModelRequestSender, m_successful !== false)
 			}
 		}
-		// status -1 = error; always clear the save gate so later OnTopologyChanged works.
+		// status -1 = error; the callback clears the save gate so later OnTopologyChanged works.
 		onFinished: {
-			root.saveInProgress = false
 			if (status < 0){
 				console.error("SaveTopology failed")
+				root.completeOperation(root.saveModelRequestSender, false)
 			}
 		}
 	}
-
 	property GqlSdlRequestSender getTopologyRequestSender: GqlSdlRequestSender {
 		// View of the request in flight; the response is dropped if another view was chosen meanwhile.
 		property string requestedViewId: ""

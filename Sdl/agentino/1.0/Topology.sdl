@@ -81,6 +81,8 @@ input CreateTopologyGroupInput {
 	parentId: ID
 	x: Double
 	y: Double
+	# ID of the new group; empty generates a new ID (a given ID recreates a removed group, e.g. on undo)
+	id: ID
 }
 
 type CreateTopologyGroupResponse {
@@ -147,6 +149,11 @@ input RemoveTopologyViewInput {
 	id: ID!
 }
 
+# Restores a removed view with its groups (e.g. on undo)
+input RestoreTopologyViewInput {
+	id: ID!
+}
+
 type Query {
 	GetTopology (input: GetTopologyInput): Topology!
 	GetTopologyViews: TopologyViewList!
@@ -162,5 +169,6 @@ type Mutation {
 	AddToTopologyView (input: AddToTopologyViewInput): TopologyGroupResponse!
 	CreateTopologyView (input: CreateTopologyViewInput): CreateTopologyViewResponse!
 	RemoveTopologyView (input: RemoveTopologyViewInput): TopologyGroupResponse!
+	RestoreTopologyView (input: RestoreTopologyViewInput): TopologyGroupResponse!
 }
 

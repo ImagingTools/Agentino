@@ -83,6 +83,10 @@ public:
 				const sdl::V1_0::agentino::CRemoveTopologyViewGqlRequest& removeTopologyViewRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CTopologyGroupResponse OnRestoreTopologyView(
+				const sdl::V1_0::agentino::CRestoreTopologyViewGqlRequest& restoreTopologyViewRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
 
 private:
 	QPoint GetServiceCoordinate(const QByteArray& serviceId) const;

@@ -79,6 +79,10 @@ public:
 				const sdl::V1_0::agentino::CRemoveTopologyViewGqlRequest& removeTopologyViewRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CTopologyGroupResponse OnRestoreTopologyView(
+				const sdl::V1_0::agentino::CRestoreTopologyViewGqlRequest& restoreTopologyViewRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
 
 private:
 	struct TopologyGroupInfo
@@ -100,13 +104,20 @@ private:
 
 	/**
 		Get IDs of the user-defined views in the order of the topology collection.
+		Removed views (kept to undo the removal) are included on request only.
 	*/
-	QByteArrayList GetTopologyViewIds() const;
+	QByteArrayList GetTopologyViewIds(bool includeRemoved = false) const;
 
 	/**
-		Get the user-defined view. Returns false if the view does not exist.
+		Get the user-defined view. Returns false if the view does not exist or was removed
+		(unless removed views are requested).
 	*/
-	bool GetTopologyView(const QByteArray& viewId, agentinodata::CTopologyView& view) const;
+	bool GetTopologyView(const QByteArray& viewId, agentinodata::CTopologyView& view, bool includeRemoved = false) const;
+
+	/**
+		Check whether the view was removed (it is kept to undo the removal).
+	*/
+	bool IsTopologyViewRemoved(const QByteArray& viewId) const;
 
 	/**
 		Get the view the group belongs to. Empty for the default view (grouping by agents).

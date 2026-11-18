@@ -33,6 +33,9 @@ namespace agentinogql
 static const QByteArray s_topologyGroupTypeId = QByteArrayLiteral("TopologyGroup");
 // Type-ID of user-defined views in the topology collection (see Repositories.acc).
 static const QByteArray s_topologyViewTypeId = QByteArrayLiteral("TopologyView");
+// Element description marking a removed view. A removed view is kept with its groups, so that the removal
+// can be undone; the mark is stored with the element and does not change the serialized view data.
+static const QString s_removedTopologyViewDescription = QStringLiteral("#removed");
 
 
 // Layout (x/y) is a view concern stored only in TopologyCollection on the server/GUI
@@ -384,6 +387,14 @@ sdl::V1_0::agentino::CCreateTopologyGroupResponse CTopologyControllerComp::OnCre
 	const QString name = arguments.input->name->trimmed();
 	const QByteArray parentId = arguments.input->parentId.has_value() ? *arguments.input->parentId : QByteArray();
 	const QByteArray viewId = arguments.input->viewId.has_value() ? *arguments.input->viewId : QByteArray();
+	// A given ID recreates a removed group (undo of the removal, redo of the creation).
+	const QByteArray proposedGroupId = arguments.input->id.has_value() ? *arguments.input->id : QByteArray();
+	if (!proposedGroupId.isEmpty() && m_topologyCollectionCompPtr->GetElementIds().contains(proposedGroupId)){
+		errorMessage = QString("Unable to create topology group. Error: Element '%1' already exists").arg(QString::fromUtf8(proposedGroupId));
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+		return response;
+	}
 
 	agentinodata::CTopologyView view;
 	if (!viewId.isEmpty() && !GetTopologyView(viewId, view)){
@@ -410,8 +421,12 @@ sdl::V1_0::agentino::CCreateTopologyGroupResponse CTopologyControllerComp::OnCre
 
 	istd::CChangeGroup changeGroup(m_topologyCollectionCompPtr.GetPtr());
 
-	const QByteArray groupId = m_topologyCollectionCompPtr->InsertNewObject(s_topologyGroupTypeId, name, "", &group);
-	if (groupId.isEmpty()){
+	const QByteArray groupId = m_topologyCollectionCompPtr->InsertNewObject(s_topologyGroupTypeId, name, "", &group, proposedGroupId);
+	if (groupId.isEmpty() || (!proposedGroupId.isEmpty() && (groupId != proposedGroupId))){
+		if (!groupId.isEmpty()){
+			m_topologyCollectionCompPtr->RemoveElements(imtbase::ICollectionInfo::Ids() << groupId);
+		}
+
 		errorMessage = QString("Unable to create topology group. Error: Failed to insert group '%1'").arg(name);
 		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
 
@@ -990,21 +1005,59 @@ sdl::V1_0::agentino::CTopologyGroupResponse CTopologyControllerComp::OnRemoveTop
 		return response;
 	}
 
-	// The groups of the view are removed with it; the services themselves are not affected.
-	imtbase::ICollectionInfo::Ids removedIds;
-	removedIds << viewId;
-	const imtbase::ICollectionInfo::Ids elementIds = m_topologyCollectionCompPtr->GetElementIds();
-	for (const QByteArray& groupId : view.GetGroupIds()){
-		if (elementIds.contains(groupId)){
-			removedIds << groupId;
-		}
-	}
-
-	if (!m_topologyCollectionCompPtr->RemoveElements(removedIds)){
+	// The view is marked as removed and kept with its groups, so that the removal can be undone
+	// (RestoreTopologyView); it is not listed and not shown anymore. The services are not affected.
+	if (!m_topologyCollectionCompPtr->SetElementDescription(viewId, s_removedTopologyViewDescription)){
 		errorMessage = QString("Unable to remove topology view. Error: Failed to remove view '%1'").arg(QString::fromUtf8(viewId));
 		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
 
 		return response;
+	}
+
+	response.successful = true;
+
+	return response;
+}
+
+
+sdl::V1_0::agentino::CTopologyGroupResponse CTopologyControllerComp::OnRestoreTopologyView(
+			const sdl::V1_0::agentino::CRestoreTopologyViewGqlRequest& restoreTopologyViewRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::CTopologyGroupResponse response;
+	response.successful = false;
+
+	if (!m_topologyCollectionCompPtr.IsValid()){
+		Q_ASSERT_X(false, "Attribute 'TopologyCollection' was not set", "CTopologyControllerComp");
+		return response;
+	}
+
+	sdl::V1_0::agentino::RestoreTopologyViewRequestArguments arguments = restoreTopologyViewRequest.GetRequestedArguments();
+	if (!arguments.input.has_value() || !arguments.input->id.has_value() || arguments.input->id->isEmpty()){
+		errorMessage = QString("Unable to restore topology view. Error: View ID is empty");
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+		return response;
+	}
+
+	const QByteArray viewId = *arguments.input->id;
+
+	agentinodata::CTopologyView view;
+	if (!GetTopologyView(viewId, view, true)){
+		errorMessage = QString("Unable to restore topology view. Error: View '%1' does not exist").arg(QString::fromUtf8(viewId));
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+		return response;
+	}
+
+	if (IsTopologyViewRemoved(viewId)){
+		if (!m_topologyCollectionCompPtr->SetElementDescription(viewId, QString())){
+			errorMessage = QString("Unable to restore topology view. Error: Failed to restore view '%1'").arg(QString::fromUtf8(viewId));
+			SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+
+			return response;
+		}
 	}
 
 	response.successful = true;
@@ -1119,7 +1172,7 @@ void CTopologyControllerComp::CollectNodeNames(QMap<QByteArray, QString>& servic
 }
 
 
-QByteArrayList CTopologyControllerComp::GetTopologyViewIds() const
+QByteArrayList CTopologyControllerComp::GetTopologyViewIds(bool includeRemoved) const
 {
 	QByteArrayList retVal;
 
@@ -1130,7 +1183,9 @@ QByteArrayList CTopologyControllerComp::GetTopologyViewIds() const
 	const imtbase::ICollectionInfo::Ids elementIds = m_topologyCollectionCompPtr->GetElementIds();
 	for (const imtbase::ICollectionInfo::Id& elementId : elementIds){
 		if (m_topologyCollectionCompPtr->GetObjectTypeId(elementId) == s_topologyViewTypeId){
-			retVal.append(elementId);
+			if (includeRemoved || !IsTopologyViewRemoved(elementId)){
+				retVal.append(elementId);
+			}
 		}
 	}
 
@@ -1138,13 +1193,17 @@ QByteArrayList CTopologyControllerComp::GetTopologyViewIds() const
 }
 
 
-bool CTopologyControllerComp::GetTopologyView(const QByteArray& viewId, agentinodata::CTopologyView& view) const
+bool CTopologyControllerComp::GetTopologyView(const QByteArray& viewId, agentinodata::CTopologyView& view, bool includeRemoved) const
 {
 	if (!m_topologyCollectionCompPtr.IsValid() || viewId.isEmpty()){
 		return false;
 	}
 
 	if (m_topologyCollectionCompPtr->GetObjectTypeId(viewId) != s_topologyViewTypeId){
+		return false;
+	}
+
+	if (!includeRemoved && IsTopologyViewRemoved(viewId)){
 		return false;
 	}
 
@@ -1159,12 +1218,19 @@ bool CTopologyControllerComp::GetTopologyView(const QByteArray& viewId, agentino
 }
 
 
+bool CTopologyControllerComp::IsTopologyViewRemoved(const QByteArray& viewId) const
+{
+	return m_topologyCollectionCompPtr->GetElementInfo(viewId, imtbase::ICollectionInfo::EIT_DESCRIPTION).toString() == s_removedTopologyViewDescription;
+}
+
+
 QByteArray CTopologyControllerComp::FindGroupViewId(const QByteArray& groupId) const
 {
-	const QByteArrayList viewIds = GetTopologyViewIds();
+	// Removed views keep their groups (the removal can be undone).
+	const QByteArrayList viewIds = GetTopologyViewIds(true);
 	for (const QByteArray& viewId : viewIds){
 		agentinodata::CTopologyView view;
-		if (GetTopologyView(viewId, view) && view.GetGroupIds().contains(groupId)){
+		if (GetTopologyView(viewId, view, true) && view.GetGroupIds().contains(groupId)){
 			return viewId;
 		}
 	}
@@ -1185,10 +1251,11 @@ CTopologyControllerComp::TopologyGroupMap CTopologyControllerComp::GetTopologyGr
 	// Groups of a user-defined view are listed in the view; the default view owns all other groups.
 	QSet<QByteArray> viewGroupIds;
 	if (viewId.isEmpty()){
-		const QByteArrayList viewIds = GetTopologyViewIds();
+		// The groups of removed views are not returned to the default view.
+		const QByteArrayList viewIds = GetTopologyViewIds(true);
 		for (const QByteArray& otherViewId : viewIds){
 			agentinodata::CTopologyView otherView;
-			if (GetTopologyView(otherViewId, otherView)){
+			if (GetTopologyView(otherViewId, otherView, true)){
 				for (const QByteArray& groupId : otherView.GetGroupIds()){
 					viewGroupIds.insert(groupId);
 				}
