@@ -166,6 +166,7 @@
                             <Values>
                                 <Value>name</Value>
                                 <Value>computerName</Value>
+                                <Value>operatingSystem</Value>
                                 <Value>description</Value>
                                 <Value>services</Value>
                                 <Value>status</Value>
@@ -179,6 +180,7 @@
                             <Values>
                                 <Value>Name</Value>
                                 <Value>Computer Name</Value>
+                                <Value>Operating System</Value>
                                 <Value>Description</Value>
                                 <Value>Services</Value>
                                 <Value>Status</Value>
@@ -192,6 +194,7 @@
                             <Values>
                                 <Value>name</Value>
                                 <Value>computerName</Value>
+                                <Value>operatingSystem</Value>
                                 <Value>description</Value>
                                 <Value>services</Value>
                                 <Value>status</Value>

@@ -32,6 +32,9 @@ type AgentItem {
 	description: String
 	added: String
 	computerName: String
+	# Reported by the agent itself on every announce (see CAgentRegistrationClientComp) and kept
+	# in its enrollment record - see CAgentCollectionControllerComp::GetAgentOperatingSystem.
+	operatingSystem: String
 	services: String
 	status: String
 	enrollmentStatus: String
