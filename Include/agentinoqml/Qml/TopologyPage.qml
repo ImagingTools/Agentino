@@ -34,6 +34,8 @@ ViewBase {
 	property string documentAgentId: ""
 	// Nodes of the last loaded topology by ID: {id, parentId, nodeType, name, agentId}.
 	property var topologyNodes: ({})
+	// Set while the selection is restored after a reload (the selection is applied once afterwards).
+	property bool reselecting: false
 
 	// Views (ways of grouping the nodes): the pinned default view "Agents" (empty ID) groups services
 	// by agents, the user-defined views group them freely. Items: {id, name, pinned}.
@@ -240,8 +242,10 @@ ViewBase {
 		topologyPage.setCommandState("AddToGroup", item !== null && topologyPage.getTargetGroups(item.m_id).length > 0)
 		topologyPage.setCommandState("RemoveFromGroup", item !== null && topologyPage.isGroupNode(topologyPage.groupId))
 		// Changes are applied on the server at once; Undo/Redo revert or repeat them there.
-		// Both are shown while there is anything in the history, each is enabled on its own.
-		let historyVisible = topologyPage.topologyViewModel.undoCount > 0 || topologyPage.topologyViewModel.redoCount > 0
+		// Both are shown while there is anything in the history (also while an undo/redo runs and its
+		// step is between the stacks), each is enabled on its own.
+		let viewModel = topologyPage.topologyViewModel
+		let historyVisible = viewModel.undoCount > 0 || viewModel.redoCount > 0 || viewModel.historyActionPending
 		topologyPage.commandsController.setCommandIsEnabled("Undo", topologyPage.topologyViewModel.canUndo)
 		topologyPage.commandsController.setCommandIsEnabled("Redo", topologyPage.topologyViewModel.canRedo)
 		topologyPage.commandsController.setCommandVisible("Undo", historyVisible)
@@ -735,13 +739,17 @@ ViewBase {
 				return
 			}
 			// Re-find selection after full reload (see prior comments on selectedAgentId).
+			// The commands are updated once at the end: the temporary deselection must not hide and
+			// show them again (the command panel would jump).
 			let previousNodeId = currentScheme.selectedNodeId
+			topologyPage.reselecting = true
 			currentScheme.selectedIndex = -1
 			currentScheme.objectsModel = topologyPage.applyTopologyNodes(nodesModel)
 			currentScheme.savedPositions = topologyPage.getPositions(currentScheme.objectsModel)
 			currentScheme.selectedIndex = currentScheme.findModelIndex(previousNodeId)
+			topologyPage.reselecting = false
 			topologyPage.updateLevelNames()
-			topologyPage.updateCommandStates()
+			topologyPage.applySelection(currentScheme)
 			currentScheme.requestPaint()
 		}
 		function onServiceStatusMessage(data) {
@@ -1119,7 +1127,7 @@ ViewBase {
 	
 	// Applies the selection of the shown level to the page (meta information, commands, headers).
 	function applySelection(levelScheme){
-		if (!levelScheme || levelScheme !== topologyPage.scheme){
+		if (!levelScheme || levelScheme !== topologyPage.scheme || topologyPage.reselecting){
 			return
 		}
 
