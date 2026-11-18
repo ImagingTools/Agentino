@@ -13,6 +13,7 @@
         <Element ComponentName="PagesController" X="375" Y="225" Note=""/>
         <Element ComponentName="PagesDemultiplexer" X="600" Y="75" Note=""/>
         <Element ComponentName="TopologyPage" X="150" Y="400" Note=""/>
+        <Element ComponentName="UpdatePage" X="1100" Y="400" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
         <EmbededRegistry Id="PageData">
@@ -26,6 +27,7 @@
                 <Element ComponentName="ServiceControllerProxy" X="1000" Y="250" Note=""/>
                 <Element ComponentName="ServiceHeadersDataProvider" X="575" Y="700" Note=""/>
                 <Element ComponentName="ServiceInfo" X="850" Y="700" Note=""/>
+                <Element ComponentName="ServiceUpdateController" X="1075" Y="600" Note=""/>
                 <Element ComponentName="ServicesRemoteRepresentationController" X="350" Y="475" Note=""/>
                 <Element ComponentName="TerminalControllerProxy" X="850" Y="475" Note=""/>
                 <Element ComponentName="TopologyPage" X="1075" Y="100" Note=""/>

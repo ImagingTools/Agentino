@@ -107,6 +107,7 @@
                             <Values>
                                 <Value>TopologyPage</Value>
                                 <Value>AgentsPage</Value>
+                                <Value>UpdatePage</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -164,6 +165,40 @@
                         <Data IsEnabled="true">
                             <Values>
                                 <Value>ViewTopology</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="UpdatePage" PackageId="ImtCoreVoce" ComponentId="MultiDocPage">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="FixedItemQmlPath" Type="Text" ExportId="">
+                        <Data IsEnabled="true" Value="qrc:/qml/UpdatePage.qml"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="IconPath" Type="Text" ExportId="">
+                        <Data IsEnabled="true" Value="Icons/AutoUpdate"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Name" Type="Text" ExportId="">
+                        <Data IsEnabled="true" Value="Update"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="PageId" Type="Id" ExportId="">
+                        <Data IsEnabled="true" Value="Update"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="PagePermissions" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>ViewServices</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -278,6 +313,7 @@
                                             <Value>AgentsPage</Value>
                                             <Value>MirroredServiceCollectionController</Value>
                                             <Value>RemoteLogCollectionController</Value>
+                                            <Value>ServiceUpdateController</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -494,6 +530,34 @@
                     <Element Id="ServiceInfo" PackageId="AgentinoDataPck" ComponentId="ServiceInfo">
                         <Data IsEnabled="true" Flags="2">
                             <AttributeInfoMap/>
+                        </Data>
+                    </Element>
+                    <Element Id="ServiceUpdateController" PackageId="AgentinoGqlPck" ComponentId="ServiceUpdateController">
+                        <Data IsEnabled="true" Flags="0">
+                            <AttributeInfoMap>
+                                <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                                    <Data IsEnabled="true">
+                                        <Values>
+                                            <Value>ServiceUpdatesList</Value>
+                                        </Values>
+                                    </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="ServiceManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="TracingConfiguration">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                            </AttributeInfoMap>
                         </Data>
                     </Element>
                     <Element Id="ServicesRemoteRepresentationController" PackageId="AgentinoGqlPck" ComponentId="AgentinoGqlRemoteRepresentationController">

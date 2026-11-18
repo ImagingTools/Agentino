@@ -1025,6 +1025,10 @@
         <translation>拓扑</translation>
     </message>
     <message>
+        <source>Update</source>
+        <translation>更新</translation>
+    </message>
+    <message>
         <location line="+4"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+4"/>
@@ -3262,6 +3266,25 @@
     <message>
         <source>Service settings saved</source>
         <translation>服务设置已保存</translation>
+    </message>
+</context>
+<context>
+    <name>UpdatePage</name>
+    <message>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <source>Number of agents</source>
+        <translation>代理数量</translation>
+    </message>
+    <message>
+        <source>Latest version</source>
+        <translation>最新版本</translation>
+    </message>
+    <message>
+        <source>No services</source>
+        <translation>没有服务</translation>
     </message>
 </context>
 </TS>

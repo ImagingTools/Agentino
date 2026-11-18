@@ -147,7 +147,11 @@ The main window consists of:
 
 * **The left navigation panel** with the pages:
   * **Topology** — a diagram of all services;
-  * **Agents** — the list of agents.
+  * **Agents** — the list of agents;
+  * **Update** — the service types installed on the agents: **Name** (service
+    type), **Number of agents** (how many agents have a service of this type)
+    and **Latest version** (not filled in yet). Requires the *View Services*
+    right.
 * **The command panel** (toolbar) above the work area: New, Edit, Remove,
   Start, Stop, Approve, etc. The set of commands depends on the page, and
   their availability depends on the selected item and its state.

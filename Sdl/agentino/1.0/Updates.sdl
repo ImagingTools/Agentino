@@ -1,0 +1,24 @@
+schema {
+	query: Query
+	namespace: agentino
+	version: 1.0
+}
+
+# One row of the "Update" page: a service type (the software product) installed on the agents.
+type ServiceUpdateItem {
+	# Service type ID (falls back to the service name for services without a type)
+	id: ID!
+	name: String!
+	# Number of agents having at least one service of this type
+	agentCount: Int
+	# Latest available version of the software; not provided yet
+	latestVersion: String
+}
+
+type ServiceUpdateListPayload {
+	items: [ServiceUpdateItem]!
+}
+
+type Query {
+	ServiceUpdatesList: ServiceUpdateListPayload!
+}

@@ -20,6 +20,7 @@ static void InitializeAgentinoClientResources()
 	Q_INIT_RESOURCE(agentinoServicesSdl);
 	Q_INIT_RESOURCE(agentinoTopologySdl);
 	Q_INIT_RESOURCE(agentinoEnrollmentSdl);
+	Q_INIT_RESOURCE(agentinoUpdatesSdl);
 	Q_INIT_RESOURCE(agentino);
 
 	ImtCoreInitLocalizationResources();
