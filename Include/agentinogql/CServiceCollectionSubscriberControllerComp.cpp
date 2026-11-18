@@ -30,18 +30,23 @@ void CServiceCollectionSubscriberControllerComp::OnUpdate(const istd::IChangeabl
 
 		for (const RequestNetworks& requestNetworks: m_registeredSubscribers){
 			for (const QByteArray& id: requestNetworks.networkRequests.keys()){
-				const imtrest::IRequest* networkRequest = requestNetworks.networkRequests[id];
-				QByteArray body = QString(R"({"type": "data", "id": "%1", "payload": {"data": {"agentid": "%2", "serviceid": "%3"}}})")
-							.arg(qPrintable(id))
-							.arg(qPrintable(agentId))
-							.arg(qPrintable(serviceId)).toUtf8();
+				for (const imtrest::IRequest* networkRequest: requestNetworks.networkRequests[id]){
+					if (networkRequest == nullptr){
+						continue;
+					}
 
-				QByteArray reponseTypeId = QByteArray("application/json; charset=utf-8");
-				const imtrest::IProtocolEngine& engine = networkRequest->GetProtocolEngine();
+					QByteArray body = QString(R"({"type": "data", "id": "%1", "payload": {"data": {"agentid": "%2", "serviceid": "%3"}}})")
+								.arg(qPrintable(id))
+								.arg(qPrintable(agentId))
+								.arg(qPrintable(serviceId)).toUtf8();
 
-				imtrest::ConstResponsePtr responsePtr(engine.CreateResponse(*networkRequest, imtrest::IProtocolEngine::SC_OK, body, reponseTypeId).PopInterfacePtr());
-				if (responsePtr.IsValid()){
-					m_requestManagerCompPtr->SendResponse(networkRequest->GetRequestId(), responsePtr);
+					QByteArray reponseTypeId = QByteArray("application/json; charset=utf-8");
+					const imtrest::IProtocolEngine& engine = networkRequest->GetProtocolEngine();
+
+					imtrest::ConstResponsePtr responsePtr(engine.CreateResponse(*networkRequest, imtrest::IProtocolEngine::SC_OK, body, reponseTypeId).PopInterfacePtr());
+					if (responsePtr.IsValid()){
+						m_requestManagerCompPtr->SendResponse(networkRequest->GetRequestId(), responsePtr);
+					}
 				}
 			}
 		}

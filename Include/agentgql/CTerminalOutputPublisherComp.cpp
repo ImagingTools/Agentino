@@ -64,20 +64,20 @@ bool CTerminalOutputPublisherComp::RegisterSubscription(
 	const qint64 cursor = ExtractFromSequence(gqlRequest);
 
 	QMutexLocker locker(&m_cursorMutex);
-	m_subscriptionCursors.insert(subscriptionId, cursor);
+	m_subscriptionCursors.insert(qMakePair(GetConnectionId(networkRequest), subscriptionId), cursor);
 
 	return true;
 }
 
 
-bool CTerminalOutputPublisherComp::UnregisterSubscription(const QByteArray& subscriptionId)
+bool CTerminalOutputPublisherComp::UnregisterSubscription(const QByteArray& connectionId, const QByteArray& subscriptionId)
 {
 	{
 		QMutexLocker locker(&m_cursorMutex);
-		m_subscriptionCursors.remove(subscriptionId);
+		m_subscriptionCursors.remove(qMakePair(connectionId, subscriptionId));
 	}
 
-	return BaseClass::UnregisterSubscription(subscriptionId);
+	return BaseClass::UnregisterSubscription(connectionId, subscriptionId);
 }
 
 
@@ -167,58 +167,61 @@ void CTerminalOutputPublisherComp::PublishForSession(const QByteArray& sessionId
 
 		for (auto it = entry.networkRequests.constBegin(); it != entry.networkRequests.constEnd(); ++it){
 			const QByteArray& subscriptionId = it.key();
-			const imtrest::IRequest* networkRequestPtr = it.value();
-			if (networkRequestPtr == nullptr){
-				continue;
-			}
+			for (const imtrest::IRequest* networkRequestPtr : it.value()){
+				if (networkRequestPtr == nullptr){
+					continue;
+				}
 
-			qint64 fromSequence = 0;
-			{
+				const SubscriptionKey cursorKey = qMakePair(GetConnectionId(*networkRequestPtr), subscriptionId);
+
+				qint64 fromSequence = 0;
+				{
+					QMutexLocker cursorLocker(&m_cursorMutex);
+					fromSequence = m_subscriptionCursors.value(cursorKey, 0);
+				}
+
+				qint64 nextSequence = fromSequence;
+				bool running = false;
+				int exitCode = -1;
+				const QList<agentinodata::ITerminalController::OutputChunk> chunks =
+							m_terminalControllerCompPtr->GetOutput(
+										sessionId, fromSequence, nextSequence, running, exitCode);
+
+				if (chunks.isEmpty() && running){
+					// Nothing new for this subscriber yet (another subscriber may have been behind).
+					continue;
+				}
+
+				QJsonArray chunksArray;
+				for (const agentinodata::ITerminalController::OutputChunk& chunk : chunks){
+					QJsonObject chunkObject;
+					chunkObject.insert(QStringLiteral("sequence"), static_cast<qint64>(chunk.sequence));
+					chunkObject.insert(QStringLiteral("stream"), StreamToWire(chunk.stream));
+					chunkObject.insert(QStringLiteral("data"), chunk.data);
+					chunksArray.append(chunkObject);
+				}
+
+				QJsonObject payload;
+				payload.insert(QStringLiteral("sessionId"), QString::fromUtf8(sessionId));
+				payload.insert(QStringLiteral("chunks"), chunksArray);
+				payload.insert(QStringLiteral("nextSequence"), static_cast<qint64>(nextSequence));
+				payload.insert(QStringLiteral("running"), running);
+				payload.insert(QStringLiteral("exitCode"), exitCode);
+
+				const QByteArray body = QJsonDocument(payload).toJson(QJsonDocument::Compact);
+
+				if (!PushDataToSubscriber(subscriptionId, s_commandId, body, *networkRequestPtr)){
+					SendErrorMessage(
+								0,
+								QString("Unable to push terminal output for session '%1' (subscription '%2')")
+											.arg(QString::fromUtf8(sessionId), QString::fromUtf8(subscriptionId)),
+								"CTerminalOutputPublisherComp");
+					continue;
+				}
+
 				QMutexLocker cursorLocker(&m_cursorMutex);
-				fromSequence = m_subscriptionCursors.value(subscriptionId, 0);
+				m_subscriptionCursors.insert(cursorKey, nextSequence);
 			}
-
-			qint64 nextSequence = fromSequence;
-			bool running = false;
-			int exitCode = -1;
-			const QList<agentinodata::ITerminalController::OutputChunk> chunks =
-						m_terminalControllerCompPtr->GetOutput(
-									sessionId, fromSequence, nextSequence, running, exitCode);
-
-			if (chunks.isEmpty() && running){
-				// Nothing new for this subscriber yet (another subscriber may have been behind).
-				continue;
-			}
-
-			QJsonArray chunksArray;
-			for (const agentinodata::ITerminalController::OutputChunk& chunk : chunks){
-				QJsonObject chunkObject;
-				chunkObject.insert(QStringLiteral("sequence"), static_cast<qint64>(chunk.sequence));
-				chunkObject.insert(QStringLiteral("stream"), StreamToWire(chunk.stream));
-				chunkObject.insert(QStringLiteral("data"), chunk.data);
-				chunksArray.append(chunkObject);
-			}
-
-			QJsonObject payload;
-			payload.insert(QStringLiteral("sessionId"), QString::fromUtf8(sessionId));
-			payload.insert(QStringLiteral("chunks"), chunksArray);
-			payload.insert(QStringLiteral("nextSequence"), static_cast<qint64>(nextSequence));
-			payload.insert(QStringLiteral("running"), running);
-			payload.insert(QStringLiteral("exitCode"), exitCode);
-
-			const QByteArray body = QJsonDocument(payload).toJson(QJsonDocument::Compact);
-
-			if (!PushDataToSubscriber(subscriptionId, s_commandId, body, *networkRequestPtr)){
-				SendErrorMessage(
-							0,
-							QString("Unable to push terminal output for session '%1' (subscription '%2')")
-										.arg(QString::fromUtf8(sessionId), QString::fromUtf8(subscriptionId)),
-							"CTerminalOutputPublisherComp");
-				continue;
-			}
-
-			QMutexLocker cursorLocker(&m_cursorMutex);
-			m_subscriptionCursors.insert(subscriptionId, nextSequence);
 		}
 	}
 

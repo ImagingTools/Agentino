@@ -122,18 +122,19 @@ bool CTerminalOutputSubscriberProxyComp::RegisterSubscription(
 	const imtgql::CGqlRequest agentRequest = MakeAgentSubscriptionRequest(gqlRequest);
 	const QByteArray remoteSubscriptionId = m_subscriptionManagerCompPtr->RegisterSubscription(agentRequest, *this);
 	if (remoteSubscriptionId.isEmpty()){
-		BaseClass::UnregisterSubscription(subscriptionId);
+		BaseClass::UnregisterSubscription(GetConnectionId(networkRequest), subscriptionId);
 		errorMessage = QStringLiteral("Unable to open terminal output subscription on the agent");
 		SendErrorMessage(0, errorMessage, "CTerminalOutputSubscriberProxyComp");
 
 		return false;
 	}
 
+	const SubscriptionKey subscriptionKey = qMakePair(GetConnectionId(networkRequest), subscriptionId);
 	QMutexLocker stateLocker(&m_stateMutex);
-	m_remoteSubscriptions.insert(remoteSubscriptionId, subscriptionId);
+	m_remoteSubscriptions.insert(remoteSubscriptionId, subscriptionKey);
 	if (!sessionId.isEmpty()){
 		m_sessionSubscribers.insert(sessionId, userId);
-		m_subscriptionSessions.insert(subscriptionId, sessionId);
+		m_subscriptionSessions.insert(subscriptionKey, sessionId);
 	}
 	SendInfoMessage(
 				0,
@@ -146,18 +147,19 @@ bool CTerminalOutputSubscriberProxyComp::RegisterSubscription(
 }
 
 
-bool CTerminalOutputSubscriberProxyComp::UnregisterSubscription(const QByteArray& subscriptionId)
+bool CTerminalOutputSubscriberProxyComp::UnregisterSubscription(const QByteArray& connectionId, const QByteArray& subscriptionId)
 {
 	if (!m_subscriptionManagerCompPtr.IsValid()){
 		return false;
 	}
 
-	const bool retVal = BaseClass::UnregisterSubscription(subscriptionId);
+	const SubscriptionKey subscriptionKey = qMakePair(connectionId, subscriptionId);
+	const bool retVal = BaseClass::UnregisterSubscription(connectionId, subscriptionId);
 	if (retVal){
 		QMutexLocker stateLocker(&m_stateMutex);
 
 		for (auto it = m_remoteSubscriptions.constBegin(); it != m_remoteSubscriptions.constEnd(); ++it){
-			if (it.value() == subscriptionId){
+			if (it.value() == subscriptionKey){
 				const QByteArray remoteSubscriptionId = it.key();
 				stateLocker.unlock();
 				m_subscriptionManagerCompPtr->UnregisterSubscription(remoteSubscriptionId, *this);
@@ -167,7 +169,7 @@ bool CTerminalOutputSubscriberProxyComp::UnregisterSubscription(const QByteArray
 			}
 		}
 
-		const QByteArray sessionId = m_subscriptionSessions.take(subscriptionId);
+		const QByteArray sessionId = m_subscriptionSessions.take(subscriptionKey);
 		if (!sessionId.isEmpty()){
 			m_sessionSubscribers.remove(sessionId);
 		}
@@ -194,11 +196,12 @@ void CTerminalOutputSubscriberProxyComp::OnResponseReceived(
 
 	const QByteArray subscriptionTypeId = keys[0].toUtf8();
 
-	QByteArray localSubscriptionId;
+	SubscriptionKey localKey;
 	{
 		QMutexLocker stateLocker(&m_stateMutex);
-		localSubscriptionId = m_remoteSubscriptions.value(subscriptionId);
+		localKey = m_remoteSubscriptions.value(subscriptionId);
 	}
+	const QByteArray localSubscriptionId = localKey.second;
 
 	// TEMP DIAGNOSTIC: confirms the server received a push from the agent and whether it
 	// maps to a live GUI subscription - remove once resolved.
@@ -225,20 +228,21 @@ void CTerminalOutputSubscriberProxyComp::OnResponseReceived(
 			continue;
 		}
 
-		const imtrest::IRequest* networkRequestPtr = entry.networkRequests.value(localSubscriptionId);
-		if (networkRequestPtr == nullptr){
+		for (const imtrest::IRequest* networkRequestPtr : entry.networkRequests.value(localSubscriptionId)){
+			if (networkRequestPtr == nullptr || GetConnectionId(*networkRequestPtr) != localKey.first){
+				continue;
+			}
+
+			if (!PushDataToSubscriber(localSubscriptionId, subscriptionTypeId, body, *networkRequestPtr)){
+				SendErrorMessage(
+							0,
+							QString("Unable to relay terminal output to subscription '%1'")
+										.arg(QString::fromUtf8(localSubscriptionId)),
+							"CTerminalOutputSubscriberProxyComp");
+			}
+
 			return;
 		}
-
-		if (!PushDataToSubscriber(localSubscriptionId, subscriptionTypeId, body, *networkRequestPtr)){
-			SendErrorMessage(
-						0,
-						QString("Unable to relay terminal output to subscription '%1'")
-									.arg(QString::fromUtf8(localSubscriptionId)),
-						"CTerminalOutputSubscriberProxyComp");
-		}
-
-		return;
 	}
 }
 

@@ -53,7 +53,7 @@ protected:
 				const imtgql::CGqlRequest& gqlRequest,
 				const imtrest::IRequest& networkRequest,
 				QString& errorMessage) override;
-	virtual bool UnregisterSubscription(const QByteArray& subscriptionId) override;
+	virtual bool UnregisterSubscription(const QByteArray& connectionId, const QByteArray& subscriptionId) override;
 
 	// reimplemented (imtclientgql::IGqlSubscriptionClient)
 	virtual void OnResponseReceived(const QByteArray& subscriptionId, const QByteArray& subscriptionData) override;
@@ -73,12 +73,14 @@ private:
 	// (which independently guards m_registeredSubscribers).
 	QMutex m_stateMutex;
 
-	QMap<QByteArray, QByteArray> m_remoteSubscriptions; // remoteSubscriptionId -> guiSubscriptionId
+	typedef QPair<QByteArray, QByteArray> SubscriptionKey; // <connectionId, guiSubscriptionId>
+
+	QMap<QByteArray, SubscriptionKey> m_remoteSubscriptions; // remoteSubscriptionId -> gui subscription key
 
 	// sessionId this GUI subscription was registered for, recorded at RegisterSubscription
 	// time so UnregisterSubscription can always find and release the matching
 	// m_sessionSubscribers entry.
-	QMap<QByteArray, QByteArray> m_subscriptionSessions; // guiSubscriptionId -> sessionId
+	QMap<SubscriptionKey, QByteArray> m_subscriptionSessions; // gui subscription key -> sessionId
 
 	// Claims one sessionId's output stream for the user who first subscribes to it, so a
 	// second user who merely learns the sessionId cannot attach to someone else's output.

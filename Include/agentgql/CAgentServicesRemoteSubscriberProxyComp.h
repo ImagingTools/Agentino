@@ -38,7 +38,7 @@ protected:
 				const imtgql::CGqlRequest& gqlRequest,
 				const imtrest::IRequest& networkRequest,
 				QString& errorMessage) override;
-	virtual bool UnregisterSubscription(const QByteArray& subscriptionId) override;
+	virtual bool UnregisterSubscription(const QByteArray& connectionId, const QByteArray& subscriptionId) override;
 
 	// reimplemented (imtrest::IRequestEventHandler)
 	virtual void OnRequestDestroyed(imtrest::IRequest* request) override;

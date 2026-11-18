@@ -77,7 +77,7 @@ protected:
 				const imtgql::CGqlRequest& gqlRequest,
 				const imtrest::IRequest& networkRequest,
 				QString& errorMessage) override;
-	virtual bool UnregisterSubscription(const QByteArray& subscriptionId) override;
+	virtual bool UnregisterSubscription(const QByteArray& connectionId, const QByteArray& subscriptionId) override;
 
 	// reimplemented (imod::CSingleModelObserverBase)
 	virtual void OnUpdate(const istd::IChangeable::ChangeSet& changeSet) override;
@@ -92,9 +92,10 @@ private:
 	I_REF(agentinodata::ITerminalController, m_terminalControllerCompPtr);
 	I_REF(imod::IModel, m_modelCompPtr);
 
-	// Per GraphQL subscription: next sequence number that subscriber has not received yet.
+	// Per GraphQL subscription (connection-ID and subscription-ID): next sequence number that subscriber has not received yet.
+	typedef QPair<QByteArray, QByteArray> SubscriptionKey;
 	mutable QMutex m_cursorMutex;
-	QMap<QByteArray, qint64> m_subscriptionCursors;
+	QMap<SubscriptionKey, qint64> m_subscriptionCursors;
 };
 
 

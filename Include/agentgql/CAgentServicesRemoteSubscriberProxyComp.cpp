@@ -120,9 +120,9 @@ bool CAgentServicesRemoteSubscriberProxyComp::RegisterSubscription(
 }
 
 
-bool CAgentServicesRemoteSubscriberProxyComp::UnregisterSubscription(const QByteArray& subscriptionId)
+bool CAgentServicesRemoteSubscriberProxyComp::UnregisterSubscription(const QByteArray& connectionId, const QByteArray& subscriptionId)
 {
-	BaseClass::UnregisterSubscription(subscriptionId);
+	BaseClass::UnregisterSubscription(connectionId, subscriptionId);
 
 	if (m_requestMap.contains(subscriptionId)){
 		QByteArray serviceId = m_requestMap.value(subscriptionId).serviceId;

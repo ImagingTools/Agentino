@@ -33,7 +33,7 @@ protected:
 				const imtgql::CGqlRequest& gqlRequest,
 				const imtrest::IRequest& networkRequest,
 				QString& errorMessage) override;
-	virtual bool UnregisterSubscription(const QByteArray& subscriptionId) override;
+	virtual bool UnregisterSubscription(const QByteArray& connectionId, const QByteArray& subscriptionId) override;
 
 	// reimplemented (imtclientgql::IGqlSubscriptionClient)
 	virtual void OnResponseReceived(const QByteArray& subscriptionId, const QByteArray& subscriptionData) override;
@@ -43,7 +43,8 @@ private:
 	I_REF(imtclientgql::IGqlSubscriptionManager, m_subscriptionManagerCompPtr);
 	
 private:
-	QMap<QByteArray, QByteArray> m_remoteSubscriptions; // <remoteSubscriptionId, subscriptionId>
+	typedef QPair<QByteArray, QByteArray> SubscriptionKey; // <connectionId, subscriptionId>
+	QMap<QByteArray, SubscriptionKey> m_remoteSubscriptions; // <remoteSubscriptionId, subscription key>
 };
 
 
