@@ -60,6 +60,11 @@ I_EXPORT_COMPONENT(
 			"Topology controller");
 
 I_EXPORT_COMPONENT(
+			ServiceUpdateController,
+			"Service types installed on the agents with the number of agents using them (Update page)",
+			"Service Update Controller");
+
+I_EXPORT_COMPONENT(
 			ServiceCollectionSubscriberController,
 			"Service collection subscriber controller",
 			"Service Collection Subscriber Controller");

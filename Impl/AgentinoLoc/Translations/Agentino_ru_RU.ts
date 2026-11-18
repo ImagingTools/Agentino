@@ -870,6 +870,10 @@
         <translation>Топология</translation>
     </message>
     <message>
+        <source>Update</source>
+        <translation>Обновление</translation>
+    </message>
+    <message>
         <location line="+4"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+4"/>
@@ -1435,6 +1439,25 @@
     <message>
         <source>Send</source>
         <translation>Отправить</translation>
+    </message>
+</context>
+<context>
+    <name>UpdatePage</name>
+    <message>
+        <source>Name</source>
+        <translation>Название</translation>
+    </message>
+    <message>
+        <source>Number of agents</source>
+        <translation>Количество агентов</translation>
+    </message>
+    <message>
+        <source>Latest version</source>
+        <translation>Последняя версия</translation>
+    </message>
+    <message>
+        <source>No services</source>
+        <translation>Нет сервисов</translation>
     </message>
 </context>
 </TS>

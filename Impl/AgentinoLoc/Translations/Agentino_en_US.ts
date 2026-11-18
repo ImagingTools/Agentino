@@ -1025,6 +1025,10 @@
         <translation>Topology</translation>
     </message>
     <message>
+        <source>Update</source>
+        <translation>Update</translation>
+    </message>
+    <message>
         <location line="+4"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+4"/>
@@ -3298,6 +3302,25 @@
     <message>
         <source>Service settings saved</source>
         <translation>Service settings saved</translation>
+    </message>
+</context>
+<context>
+    <name>UpdatePage</name>
+    <message>
+        <source>Name</source>
+        <translation>Name</translation>
+    </message>
+    <message>
+        <source>Number of agents</source>
+        <translation>Number of agents</translation>
+    </message>
+    <message>
+        <source>Latest version</source>
+        <translation>Latest version</translation>
+    </message>
+    <message>
+        <source>No services</source>
+        <translation>No services</translation>
     </message>
 </context>
 </TS>

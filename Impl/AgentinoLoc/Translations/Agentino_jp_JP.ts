@@ -1025,6 +1025,10 @@
         <translation>トポロジー</translation>
     </message>
     <message>
+        <source>Update</source>
+        <translation>アップデート</translation>
+    </message>
+    <message>
         <location line="+4"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoClient/CAgentinoClient.cpp" line="+2"/>
         <location filename="../../../AuxInclude/Qt6_VC16_x64/GeneratedFiles/AgentinoServer/CAgentinoServer.cpp" line="+4"/>
@@ -3262,6 +3266,25 @@
     <message>
         <source>Service settings saved</source>
         <translation>サービス設定が保存されました</translation>
+    </message>
+</context>
+<context>
+    <name>UpdatePage</name>
+    <message>
+        <source>Name</source>
+        <translation>名前</translation>
+    </message>
+    <message>
+        <source>Number of agents</source>
+        <translation>エージェント数</translation>
+    </message>
+    <message>
+        <source>Latest version</source>
+        <translation>最新バージョン</translation>
+    </message>
+    <message>
+        <source>No services</source>
+        <translation>サービスがありません</translation>
     </message>
 </context>
 </TS>
