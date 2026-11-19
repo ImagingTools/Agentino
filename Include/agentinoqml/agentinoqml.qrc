@@ -46,6 +46,7 @@
 	<file alias="TypedBackend.qml">Qml/TypedBackend.qml</file>
 	<file alias="AgentStatusFilterDecorator.qml">Qml/AgentStatusFilterDecorator.qml</file>
 	<file alias="UpdatePage.qml">Qml/UpdatePage.qml</file>
+	<file alias="SidePanelItem.qml">Qml/SidePanelItem.qml</file>
     </qresource>
     <qresource prefix="/Features">
         <file alias="AgentinoFeatures">Resources/Features/AgentinoFeatures.xml</file>

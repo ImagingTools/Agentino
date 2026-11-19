@@ -1142,8 +1142,9 @@ ViewBase {
 		topologyPage.updateCommandStates()
 	}
 
-	// Views (ways of grouping): styled as the main menu of the application.
-	Rectangle {
+	// Views (ways of grouping): styled as the page list of MultiPageView (General / Services /
+	// Agent Log / Terminal of AgentEditor) - no background of its own, a thin separator on the right.
+	Item {
 		id: viewsPanel
 
 		objectName: "TopologyViewsPanel"
@@ -1152,224 +1153,245 @@ ViewBase {
 		anchors.top: parent.top
 		anchors.bottom: parent.bottom
 
-		width: visible ? Style.sizeHintXXS : 0
+		width: visible ? Style.sizeHintXXS + 2 * Style.marginM + viewsSeparator.width : 0
 		// Hidden where views are not supported (agent app).
 		visible: topologyPage.topologyViewModel.viewsSupported
-		color: Style.menuPanelBackgroundColor
 
 		Rectangle {
-			anchors.right: parent.right
+			id: viewsSeparator
+
 			anchors.top: parent.top
 			anchors.bottom: parent.bottom
+			anchors.right: parent.right
+
 			width: 1
 			color: Style.borderColor
+			opacity: 0.5
 		}
 
-		// Title line: "Views" with the Add / Remove icon buttons on the right.
 		Item {
-			id: viewsHeader
+			id: viewsContent
 
 			anchors.top: parent.top
-			anchors.topMargin: Style.marginS
-			anchors.left: parent.left
-			anchors.leftMargin: Style.marginL
-			anchors.right: parent.right
-			anchors.rightMargin: Style.marginS
-
-			height: Style.controlHeightM
-
-			BaseText {
-				id: viewsTitle
-
-				anchors.verticalCenter: parent.verticalCenter
-				anchors.left: parent.left
-				anchors.right: viewsButtons.left
-				anchors.rightMargin: Style.marginS
-
-				text: qsTr("Views")
-				color: Style.subtitleColor
-				font.family: Style.fontFamilyBold
-				font.pixelSize: Style.fontSizeM
-				elide: Text.ElideRight
-			}
-
-			Row {
-				id: viewsButtons
-
-				anchors.verticalCenter: parent.verticalCenter
-				anchors.right: parent.right
-
-				spacing: Style.spacingXS
-
-				Button {
-					id: addViewButton
-
-					objectName: "TopologyAddViewButton"
-					width: Style.controlHeightM
-					height: Style.controlHeightM
-					tooltipText: qsTr("Add view")
-					iconSource: "qrc:/" + Style.getIconPath("Icons/Add", Icon.State.On,
-								enabled ? Icon.Mode.Normal : Icon.Mode.Disabled)
-					decorator: Component {
-						ButtonDecorator {
-							color: parent.hovered ? Style.alternateBaseColor : "transparent"
-							radius: Style.radiusM
-							border.width: 0
-						}
-					}
-					onClicked: {
-						topologyPage.requestAddView()
-					}
-				}
-
-				Button {
-					id: removeViewButton
-
-					objectName: "TopologyRemoveViewButton"
-					width: Style.controlHeightM
-					height: Style.controlHeightM
-					tooltipText: qsTr("Remove view")
-					// The pinned default view cannot be removed.
-					enabled: topologyPage.viewId !== ""
-					iconSource: "qrc:/" + Style.getIconPath("Icons/Delete", Icon.State.On,
-								enabled ? Icon.Mode.Normal : Icon.Mode.Disabled)
-					decorator: Component {
-						ButtonDecorator {
-							color: parent.hovered ? Style.alternateBaseColor : "transparent"
-							radius: Style.radiusM
-							border.width: 0
-						}
-					}
-					onClicked: {
-						topologyPage.requestRemoveView(topologyPage.viewId)
-					}
-				}
-			}
-		}
-
-		// Finds a view by its name or by the names of its services and groups.
-		CustomTextField {
-			id: viewsFilterField
-
-			objectName: "TopologyViewsFilter"
-
-			// Same horizontal bounds as the highlight of the selected view (marker of MenuPanelButtonDecorator).
-			anchors.top: viewsHeader.bottom
-			anchors.topMargin: Style.marginS
-			anchors.left: parent.left
-			anchors.leftMargin: Style.marginS
-			anchors.right: parent.right
-			anchors.rightMargin: Style.marginS
-
-			height: Style.controlHeightM
-			textFieldRightMargin: clearViewsFilterButton.width + Style.marginM + Style.marginXS
-			placeHolderText: qsTr("Filter")
-			radius: Style.textFieldRadius
-
-			onTextChanged: {
-				topologyPage.viewsFilterText = viewsFilterField.text
-			}
-
-			Button {
-				id: clearViewsFilterButton
-
-				anchors.verticalCenter: viewsFilterField.verticalCenter
-				anchors.right: viewsFilterField.right
-				anchors.rightMargin: Style.marginXS
-
-				width: height
-				height: 12
-				z: viewsFilterField.z + 1
-
-				decorator: Component { IconButtonDecorator {} }
-				iconSource: "qrc:/" + Style.getIconPath("Icons/Close", Icon.State.On, Icon.Mode.Normal)
-
-				visible: viewsFilterField.text !== ""
-				enabled: visible
-
-				onClicked: {
-					viewsFilterField.text = ""
-				}
-			}
-		}
-
-		BaseText {
-			anchors.top: viewsList.top
 			anchors.topMargin: Style.marginM
 			anchors.left: parent.left
-			anchors.leftMargin: Style.marginL
-			anchors.right: parent.right
-			anchors.rightMargin: Style.marginL
-
-			visible: topologyPage.matchingViewsCount === 0
-			text: qsTr("No views match the filter")
-			color: Style.placeHolderTextColor
-			font.pixelSize: Style.fontSizeS
-			wrapMode: Text.WordWrap
-		}
-
-		ListView {
-			id: viewsList
-
-			anchors.top: viewsFilterField.bottom
-			anchors.topMargin: Style.marginL
-			anchors.left: parent.left
-			anchors.right: parent.right
+			anchors.leftMargin: Style.marginM
 			anchors.bottom: parent.bottom
-			anchors.bottomMargin: Style.marginS
 
-			clip: true
-			boundsBehavior: Flickable.StopAtBounds
-			model: topologyPage.viewsModel
+			width: Style.sizeHintXXS
 
-			delegate: MenuPanelButton {
-				id: viewButton
+			// Title line: "Views" with the Add / Remove icon buttons on the right.
+			Item {
+				id: viewsHeader
 
-				objectName: model.pinned ? "TopologyViewAgentsButton" : "TopologyViewButton"
+				anchors.top: parent.top
+				anchors.left: parent.left
+				anchors.leftMargin: Style.marginM
+				anchors.right: parent.right
 
-				width: viewsList.width
-				// Views not matching the filter are collapsed.
-				visible: topologyPage.viewMatchesFilter(model.searchText, topologyPage.viewsFilterText)
-				height: visible ? Style.controlHeightL : 0
+				height: Style.controlHeightM
 
-				text: model.name
-				textColor: Style.textColor
-				fontName: Style.fontFamily
-				selected: model.id === topologyPage.viewId
-				iconSource: "qrc:/" + Style.getIconPath(model.pinned ? "Icons/Agents" : "Icons/FolderClosed",
-							Icon.State.On, (highlighted || selected) ? Icon.Mode.Selected : Icon.Mode.Normal)
+				BaseText {
+					id: viewsTitle
 
-				Component.onCompleted: {
-					viewButton.mouseArea.acceptedButtons = Qt.LeftButton | Qt.RightButton
+					anchors.verticalCenter: parent.verticalCenter
+					anchors.left: parent.left
+					anchors.right: viewsButtons.left
+					anchors.rightMargin: Style.marginS
+
+					text: qsTr("Views")
+					color: Style.subtitleColor
+					font.family: Style.fontFamilyBold
+					font.pixelSize: Style.fontSizeM
+					elide: Text.ElideRight
 				}
 
-				// Left and right click select the view; the right click opens its context menu as well.
-				onClicked: {
-					topologyPage.selectView(model.id)
-				}
+				Row {
+					id: viewsButtons
 
-				Connections {
-					target: viewButton.mouseArea
-					function onClicked(mouse) {
-						if (mouse.button === Qt.RightButton){
-							let point = viewButton.mouseArea.mapToItem(null, mouse.x, mouse.y)
-							topologyPage.openViewContextMenu(model.id, point.x, point.y)
+					anchors.verticalCenter: parent.verticalCenter
+					anchors.right: parent.right
+
+					spacing: Style.spacingXS
+
+					Button {
+						id: addViewButton
+
+						objectName: "TopologyAddViewButton"
+						width: Style.controlHeightM
+						height: Style.controlHeightM
+						tooltipText: qsTr("Add view")
+						iconSource: "qrc:/" + Style.getIconPath("Icons/Add", Icon.State.On,
+									enabled ? Icon.Mode.Normal : Icon.Mode.Disabled)
+						decorator: Component {
+							ButtonDecorator {
+								color: parent.hovered ? Style.alternateBaseColor : "transparent"
+								radius: Style.radiusM
+								border.width: 0
+							}
+						}
+						onClicked: {
+							topologyPage.requestAddView()
+						}
+					}
+
+					Button {
+						id: removeViewButton
+
+						objectName: "TopologyRemoveViewButton"
+						width: Style.controlHeightM
+						height: Style.controlHeightM
+						tooltipText: qsTr("Remove view")
+						// The pinned default view cannot be removed.
+						enabled: topologyPage.viewId !== ""
+						iconSource: "qrc:/" + Style.getIconPath("Icons/Delete", Icon.State.On,
+									enabled ? Icon.Mode.Normal : Icon.Mode.Disabled)
+						decorator: Component {
+							ButtonDecorator {
+								color: parent.hovered ? Style.alternateBaseColor : "transparent"
+								radius: Style.radiusM
+								border.width: 0
+							}
+						}
+						onClicked: {
+							topologyPage.requestRemoveView(topologyPage.viewId)
 						}
 					}
 				}
 			}
-		}
 
-		// Shown only when the list does not fit.
-		CustomScrollbar {
-			z: viewsList.z + 1
-			anchors.right: viewsList.right
-			anchors.rightMargin: Style.marginXS
-			anchors.top: viewsList.top
-			anchors.bottom: viewsList.bottom
-			secondSize: Style.marginS
-			radius: Style.radiusS
-			targetItem: viewsList
+			// Finds a view by its name or by the names of its services and groups.
+			CustomTextField {
+				id: viewsFilterField
+
+				objectName: "TopologyViewsFilter"
+
+				// Same horizontal bounds as the highlight of the views.
+				anchors.top: viewsHeader.bottom
+				anchors.topMargin: Style.marginS
+				anchors.left: parent.left
+				anchors.right: parent.right
+
+				height: Style.controlHeightM
+				textFieldRightMargin: clearViewsFilterButton.width + Style.marginM + Style.marginXS
+				placeHolderText: qsTr("Filter")
+				radius: Style.textFieldRadius
+
+				onTextChanged: {
+					topologyPage.viewsFilterText = viewsFilterField.text
+				}
+
+				Button {
+					id: clearViewsFilterButton
+
+					anchors.verticalCenter: viewsFilterField.verticalCenter
+					anchors.right: viewsFilterField.right
+					anchors.rightMargin: Style.marginXS
+
+					width: height
+					height: 12
+					z: viewsFilterField.z + 1
+
+					decorator: Component { IconButtonDecorator {} }
+					iconSource: "qrc:/" + Style.getIconPath("Icons/Close", Icon.State.On, Icon.Mode.Normal)
+
+					visible: viewsFilterField.text !== ""
+					enabled: visible
+
+					onClicked: {
+						viewsFilterField.text = ""
+					}
+				}
+			}
+
+			BaseText {
+				anchors.top: viewsFlickable.top
+				anchors.topMargin: Style.marginM
+				anchors.left: parent.left
+				anchors.leftMargin: Style.marginM
+				anchors.right: parent.right
+				anchors.rightMargin: Style.marginM
+
+				visible: topologyPage.matchingViewsCount === 0
+				text: qsTr("No views match the filter")
+				color: Style.placeHolderTextColor
+				font.pixelSize: Style.fontSizeS
+				wrapMode: Text.WordWrap
+			}
+
+			// Views that do not fit the height scroll instead of being cut off.
+			Flickable {
+				id: viewsFlickable
+
+				anchors.top: viewsFilterField.bottom
+				anchors.topMargin: Style.marginS
+				anchors.left: parent.left
+				anchors.right: parent.right
+				anchors.bottom: parent.bottom
+
+				contentWidth: width
+				contentHeight: viewsColumn.height + 2 * Style.marginS
+				boundsBehavior: Flickable.StopAtBounds
+				interactive: contentHeight > height
+				clip: true
+
+				Column {
+					id: viewsColumn
+
+					y: Style.marginS
+					width: viewsFlickable.width - (viewsScrollbar.visible ? viewsScrollbar.width + Style.marginXS : 0)
+
+					spacing: Style.spacingXS
+
+					Repeater {
+						model: topologyPage.viewsModel
+
+						delegate: SidePanelItem {
+							id: viewButton
+
+							objectName: model.pinned ? "TopologyViewAgentsButton" : "TopologyViewButton"
+
+							width: viewsColumn.width
+							// Views not matching the filter are hidden.
+							visible: topologyPage.viewMatchesFilter(model.searchText, topologyPage.viewsFilterText)
+
+							text: model.name
+							icon: model.pinned ? "Icons/Agents" : "Icons/FolderClosed"
+							selected: model.id === topologyPage.viewId
+
+							Component.onCompleted: {
+								viewButton.mouseArea.acceptedButtons = Qt.LeftButton | Qt.RightButton
+							}
+
+							// Left and right click select the view; the right click opens its context menu as well.
+							onClicked: {
+								topologyPage.selectView(model.id)
+							}
+
+							Connections {
+								target: viewButton.mouseArea
+								function onClicked(mouse) {
+									if (mouse.button === Qt.RightButton){
+										let point = viewButton.mouseArea.mapToItem(null, mouse.x, mouse.y)
+										topologyPage.openViewContextMenu(model.id, point.x, point.y)
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			CustomScrollbar {
+				id: viewsScrollbar
+
+				anchors.right: parent.right
+				anchors.top: viewsFlickable.top
+				anchors.bottom: viewsFlickable.bottom
+
+				secondSize: Style.marginS
+				targetItem: viewsFlickable
+			}
 		}
 	}
 
