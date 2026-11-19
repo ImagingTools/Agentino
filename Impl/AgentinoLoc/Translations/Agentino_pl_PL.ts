@@ -3286,5 +3286,21 @@
         <source>No services</source>
         <translation>Brak usług</translation>
     </message>
+    <message>
+        <source>Operating System</source>
+        <translation>System operacyjny</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>Wszystkie</translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation>Nieznany</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <translation>Inne</translation>
+    </message>
 </context>
 </TS>

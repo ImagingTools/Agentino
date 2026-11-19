@@ -1429,5 +1429,21 @@
         <source>No services</source>
         <translation>Keine Dienste</translation>
     </message>
+    <message>
+        <source>Operating System</source>
+        <translation>Betriebssystem</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>Alle</translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation>Unbekannt</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <translation>Andere</translation>
+    </message>
 </context>
 </TS>

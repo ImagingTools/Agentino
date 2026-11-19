@@ -1459,5 +1459,21 @@
         <source>No services</source>
         <translation>Нет сервисов</translation>
     </message>
+    <message>
+        <source>Operating System</source>
+        <translation>Операционная система</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>Все</translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation>Неизвестно</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <translation>Другие</translation>
+    </message>
 </context>
 </TS>

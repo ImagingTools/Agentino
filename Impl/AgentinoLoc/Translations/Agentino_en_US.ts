@@ -3322,5 +3322,21 @@
         <source>No services</source>
         <translation>No services</translation>
     </message>
+    <message>
+        <source>Operating System</source>
+        <translation>Operating System</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>All</translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation>Unknown</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <translation>Other</translation>
+    </message>
 </context>
 </TS>

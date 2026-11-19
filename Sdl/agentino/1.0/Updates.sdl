@@ -19,6 +19,21 @@ type ServiceUpdateListPayload {
 	items: [ServiceUpdateItem]!
 }
 
+input ServiceUpdateListInput {
+	# Operating system family of the agents whose services are listed (one of AgentOperatingSystemList.names).
+	# Absent: the agents of all operating systems; empty: the agents that did not report their operating system.
+	operatingSystem: String
+}
+
+# Operating system families the agents are installed on, derived from the operating systems reported by the agents.
+type AgentOperatingSystemList {
+	# Families present among the agents, in this order: "Windows", "Linux", "macOS", "Other" (unrecognized operating system)
+	names: [String]
+	# Some agents did not report their operating system
+	hasUnknown: Boolean
+}
+
 type Query {
-	ServiceUpdatesList: ServiceUpdateListPayload!
+	ServiceUpdatesList (input: ServiceUpdateListInput): ServiceUpdateListPayload!
+	AgentOperatingSystemsList: AgentOperatingSystemList!
 }
