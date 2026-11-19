@@ -328,7 +328,9 @@ Features:
 * **Start / Stop** — the same actions as in the service list. A double click
   or **Enter** opens the editor of the selected service. Commands that are
   not available for the current selection are hidden in the toolbar.
-* **Remove service** — delete the selected service (with confirmation). It is
+* **Remove service** — delete the selected service from the system (not only
+  from the tile). The confirmation dialog is highlighted as dangerous, lists
+  the consequences and has **Cancel** as the default button. It is
   available only in the **Agents** view — inside an agent or a group (and in
   the agent's local interface); the agent must be connected.
 * **Remove** — delete the selected group, or remove the selected service from
