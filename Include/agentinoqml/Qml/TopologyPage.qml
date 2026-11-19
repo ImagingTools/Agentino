@@ -673,7 +673,14 @@ ViewBase {
 			topologyPage.showCannotRemoveWhileDisconnected()
 			return
 		}
-		ModalDialogManager.openDialog(removeServiceDialogComp, {})
+		// A service is shown as "<service name>@<agent name>".
+		let text = item.m_mainText ? "" + item.m_mainText : ""
+		let separatorIndex = text.lastIndexOf("@")
+		let agentNode = topologyPage.topologyNodes[item.m_agentId]
+		ModalDialogManager.openDialog(removeServiceDialogComp, {
+				"serviceId": item.m_id,
+				"serviceName": separatorIndex > 0 ? text.substring(0, separatorIndex) : text,
+				"agentName": agentNode ? "" + agentNode.name : (separatorIndex > 0 ? text.substring(separatorIndex + 1) : "")})
 	}
 
 	// Delete key: the removal command available for the selected tile.
@@ -1789,17 +1796,127 @@ ViewBase {
 	Component {
 		id: removeServiceDialogComp
 
-		MessageDialog {
+		// Physical deletion of the service: emphasised as a dangerous action. Cancel is the default
+		// button, so Enter does not delete the service by accident.
+		Dialog {
+			id: removeServiceDialog
+
 			width: Style.sizeHintM
-			title: qsTr("Deleting a service")
-			message: qsTr("Delete the selected service?")
+			title: qsTr("Delete service permanently")
+			canMove: true
+			forceFocus: true
+
+			property string serviceId: ""
+			property string serviceName: ""
+			property string agentName: ""
+
+			Component.onCompleted: {
+				addButton(Enums.yes, qsTr("Delete service"), true, false, "danger")
+				addButton(Enums.cancel, qsTr("Cancel"), true, true)
+			}
+
 			onFinished: {
-				if (buttonId == Enums.yes && topologyPage.selectedService !== ""){
-					if (!topologyPage.canRemoveSelectedService()){
-						topologyPage.showCannotRemoveWhileDisconnected()
-						return
+				// The selection may have changed while the dialog was open.
+				if (buttonId !== Enums.yes || removeServiceDialog.serviceId === ""
+						|| removeServiceDialog.serviceId !== topologyPage.selectedService){
+					return
+				}
+				if (!topologyPage.canRemoveSelectedService()){
+					topologyPage.showCannotRemoveWhileDisconnected()
+					return
+				}
+				collectionDataProvider.removeElements([removeServiceDialog.serviceId])
+			}
+
+			contentComp: Component {
+				Item {
+					width: removeServiceDialog.width
+					height: dangerColumn.height + 2 * Style.marginL
+
+					Column {
+						id: dangerColumn
+
+						anchors.top: parent.top
+						anchors.topMargin: Style.marginL
+						anchors.left: parent.left
+						anchors.leftMargin: Style.marginL
+						anchors.right: parent.right
+						anchors.rightMargin: Style.marginL
+
+						spacing: Style.marginM
+
+						// Warning banner
+						Rectangle {
+							width: dangerColumn.width
+							height: bannerText.height + 2 * Style.marginM
+
+							color: Style.dangerSubtleColor
+							border.width: 1
+							border.color: Style.dangerColor
+							radius: Style.radiusM
+
+							Image {
+								id: bannerIcon
+
+								anchors.left: parent.left
+								anchors.leftMargin: Style.marginM
+								anchors.verticalCenter: parent.verticalCenter
+
+								width: Style.iconSizeM
+								height: width
+								sourceSize.width: width
+								sourceSize.height: height
+								source: "qrc:/" + Style.getIconPath("Icons/Warning", Icon.State.On, Icon.Mode.Normal)
+							}
+
+							BaseText {
+								id: bannerText
+
+								anchors.left: bannerIcon.right
+								anchors.leftMargin: Style.marginM
+								anchors.right: parent.right
+								anchors.rightMargin: Style.marginM
+								anchors.verticalCenter: parent.verticalCenter
+
+								text: qsTr("The service will be deleted from the system, not only from this tile. This action cannot be undone.")
+								color: Style.dangerColor
+								font.family: Style.fontFamilyBold
+								font.bold: true
+								wrapMode: Text.WordWrap
+							}
+						}
+
+						BaseText {
+							width: dangerColumn.width
+
+							text: removeServiceDialog.agentName !== ""
+								? qsTr("Service \"%1\" on agent \"%2\"").arg(removeServiceDialog.serviceName).arg(removeServiceDialog.agentName)
+								: qsTr("Service \"%1\"").arg(removeServiceDialog.serviceName)
+							font.family: Style.fontFamilyBold
+							font.bold: true
+							wrapMode: Text.WordWrap
+						}
+
+						BaseText {
+							width: dangerColumn.width
+
+							text: qsTr("Consequences:") + "\n"
+								+ "•  " + qsTr("a running service is stopped, then deleted on its agent together with its settings;") + "\n"
+								+ "•  " + qsTr("it disappears from all views and groups of the topology;") + "\n"
+								+ "•  " + qsTr("services that depend on it may stop working;") + "\n"
+								+ "•  " + qsTr("Undo cannot restore it: the service has to be created and configured again.")
+							wrapMode: Text.WordWrap
+						}
+
+						BaseText {
+							width: dangerColumn.width
+
+							text: qsTr("To remove the service only from a view, use Remove in that view instead.")
+							color: Style.subtitleColor
+							font.pixelSize: Style.fontSizeS
+							wrapMode: Text.WordWrap
+						}
 					}
-					collectionDataProvider.removeElements([topologyPage.selectedService])
 				}
 			}
 		}
