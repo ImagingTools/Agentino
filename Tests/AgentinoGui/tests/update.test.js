@@ -16,6 +16,7 @@ function agentCounts(items) {
     expect(item.name, 'a row names its service type').toBeTruthy();
     expect(item.agentCount, `"${item.name}" is used by at least one agent`).toBeGreaterThan(0);
     expect(item.latestVersion || '', 'the latest version is not provided yet').toBe('');
+    expect(item.autoUpdate || false, 'auto-update is not provided yet').toBe(false);
     counts[item.name] = item.agentCount;
   }
   return counts;

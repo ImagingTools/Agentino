@@ -149,8 +149,9 @@ The main window consists of:
   * **Topology** — a diagram of all services;
   * **Agents** — the list of agents;
   * **Update** — the service types installed on the agents: **Name** (service
-    type), **Number of agents** (how many agents have a service of this type)
-    and **Latest version** (not filled in yet). The **Operating System** panel
+    type), **Number of agents** (how many agents have a service of this type),
+    **Latest version** and **Auto-update** (a check mark when the service type
+    is updated automatically); the last two are not filled in yet. The **Operating System** panel
     on the left filters the table by the operating system family of the
     agents: **All**, **Windows** / **Linux** / **macOS** (only the families
     the agents run on), **Other** for an unrecognized operating system and

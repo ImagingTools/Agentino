@@ -10,7 +10,7 @@ import agentinoUpdatesSdl 1.0
 // the agents with the number of agents using each of them (CServiceUpdateControllerComp).
 // The panel on the left filters the table by the operating system family of the agents
 // (Windows / Linux / macOS / Other).
-// "Latest version" is not provided by the server yet, so the column stays empty.
+// "Latest version" and "Auto-update" are not provided by the server yet, so the columns stay empty.
 ViewBase {
 	id: updatePage
 
@@ -212,7 +212,42 @@ ViewBase {
 			headersModel.setData("id", "latestVersion", index)
 			headersModel.setData("name", qsTr("Latest version"), index)
 
+			index = headersModel.insertNewItem()
+			headersModel.setData("id", "autoUpdate", index)
+			headersModel.setData("name", qsTr("Auto-update"), index)
+
 			servicesTable.headers = headersModel
+		}
+	}
+
+
+	// "Auto-update" cell: the StateOk icon for true, nothing for false or no value.
+	Component {
+		id: autoUpdateCellComp
+
+		TableCellDelegateBase {
+			id: autoUpdateCell
+
+			property bool autoUpdate: false
+
+			Image {
+				anchors.left: parent.left
+				anchors.leftMargin: Style.marginL
+				anchors.verticalCenter: parent.verticalCenter
+
+				width: Style.iconSizeS
+				height: width
+				fillMode: Image.PreserveAspectFit
+				sourceSize.width: width
+				sourceSize.height: height
+
+				visible: autoUpdateCell.autoUpdate
+				source: autoUpdateCell.autoUpdate ? "qrc:/" + Style.getIconPath("Icons/StateOk", Icon.State.On, Icon.Mode.Normal) : ""
+			}
+
+			onReused: {
+				autoUpdateCell.autoUpdate = autoUpdateCell.getValue() === true
+			}
 		}
 	}
 
@@ -228,6 +263,10 @@ ViewBase {
 
 		readOnly: true
 		hasSort: false
+
+		onHeadersChanged: {
+			servicesTable.setColumnContentById("autoUpdate", autoUpdateCellComp)
+		}
 	}
 
 	Text {
@@ -292,6 +331,7 @@ ViewBase {
 			itemsFields.InsertField("name")
 			itemsFields.InsertField("agentCount")
 			itemsFields.InsertField("latestVersion")
+			itemsFields.InsertField("autoUpdate")
 			payloadFields.InsertFieldObject(itemsFields)
 
 			return payloadFields

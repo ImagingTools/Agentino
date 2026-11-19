@@ -67,6 +67,14 @@ if(WEB_COMPILE)
 			"${sdldependency}"
 		)
 	else()
+		# jq_compile_web makes the web bundle depend on ${sdldependency}. Without it the bundle depends only on
+		# the start QML file and agentino.json, so changed Agentino QML files, SDL schemas and translations
+		# were not compiled into the web interface (e.g. a new table column of UpdatePage.qml never showed up).
+		file(GLOB sdldependency CONFIGURE_DEPENDS
+			"${PROJECT_SOURCE_DIR}/../Qml/*.qml"
+			"${PROJECT_SOURCE_DIR}/../../../Sdl/agentino/1.0/*.sdl"
+			"${PROJECT_SOURCE_DIR}/../../../Impl/AgentinoLoc/Translations/*.ts")
+
 		# Server
 		set(inputjs "${PROJECT_SOURCE_DIR}/../agentino.json")
 		set(appicon "../Icons/AgentinoIcon.svg")

@@ -3302,5 +3302,9 @@
         <source>Other</source>
         <translation>Autre</translation>
     </message>
+    <message>
+        <source>Auto-update</source>
+        <translation>Mise à jour automatique</translation>
+    </message>
 </context>
 </TS>

@@ -1445,5 +1445,9 @@
         <source>Other</source>
         <translation>Andere</translation>
     </message>
+    <message>
+        <source>Auto-update</source>
+        <translation>Automatische Aktualisierung</translation>
+    </message>
 </context>
 </TS>
