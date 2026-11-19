@@ -542,8 +542,12 @@
                                     <Data IsEnabled="true">
                                         <Values>
                                             <Value>ServiceUpdatesList</Value>
+                                            <Value>AgentOperatingSystemsList</Value>
                                         </Values>
                                     </Data>
+                                </AttributeInfo>
+                                <AttributeInfo Id="EnrollmentController" Type="Reference" ExportId="EnrollmentController">
+                                    <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                                     <Data IsEnabled="false"/>

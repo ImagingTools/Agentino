@@ -150,8 +150,11 @@ The main window consists of:
   * **Agents** — the list of agents;
   * **Update** — the service types installed on the agents: **Name** (service
     type), **Number of agents** (how many agents have a service of this type)
-    and **Latest version** (not filled in yet). Requires the *View Services*
-    right.
+    and **Latest version** (not filled in yet). The **Operating System** panel
+    on the left filters the table by the operating system family of the
+    agents: **All**, **Windows** / **Linux** / **macOS** (only the families
+    the agents run on), **Other** for an unrecognized operating system and
+    **Unknown** for agents that did not report one. Requires the *View Services* right.
 * **The command panel** (toolbar) above the work area: New, Edit, Remove,
   Start, Stop, Approve, etc. The set of commands depends on the page, and
   their availability depends on the selected item and its state.

@@ -3286,5 +3286,21 @@
         <source>No services</source>
         <translation>没有服务</translation>
     </message>
+    <message>
+        <source>Operating System</source>
+        <translation>操作系统</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>全部</translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation>未知</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <translation>其他</translation>
+    </message>
 </context>
 </TS>

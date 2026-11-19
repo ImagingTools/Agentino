@@ -3286,5 +3286,21 @@
         <source>No services</source>
         <translation>サービスがありません</translation>
     </message>
+    <message>
+        <source>Operating System</source>
+        <translation>オペレーティングシステム</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>すべて</translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation>不明</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <translation>その他</translation>
+    </message>
 </context>
 </TS>

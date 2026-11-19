@@ -3322,5 +3322,21 @@
         <source>No services</source>
         <translation>Inga tjänster</translation>
     </message>
+    <message>
+        <source>Operating System</source>
+        <translation>Operativsystem</translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation>Alla</translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation>Okänt</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <translation>Övriga</translation>
+    </message>
 </context>
 </TS>
