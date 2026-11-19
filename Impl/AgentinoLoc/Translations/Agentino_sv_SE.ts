@@ -3338,5 +3338,9 @@
         <source>Other</source>
         <translation>Övriga</translation>
     </message>
+    <message>
+        <source>Auto-update</source>
+        <translation>Automatisk uppdatering</translation>
+    </message>
 </context>
 </TS>

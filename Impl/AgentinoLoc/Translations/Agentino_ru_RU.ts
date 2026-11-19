@@ -1475,5 +1475,9 @@
         <source>Other</source>
         <translation>Другие</translation>
     </message>
+    <message>
+        <source>Auto-update</source>
+        <translation>Автообновление</translation>
+    </message>
 </context>
 </TS>

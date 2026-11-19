@@ -13,6 +13,8 @@ type ServiceUpdateItem {
 	agentCount: Int
 	# Latest available version of the software; not provided yet
 	latestVersion: String
+	# Services of this type are updated automatically; not provided yet
+	autoUpdate: Boolean
 }
 
 type ServiceUpdateListPayload {

@@ -57,6 +57,7 @@ sdl::V1_0::agentino::CServiceUpdateListPayload CServiceUpdateControllerComp::OnS
 		item.name = iter.key();
 		item.agentCount = iter.value();
 		item.latestVersion = QString();
+		// item.autoUpdate is not provided yet: left unset, the page shows no icon.
 
 		items << item;
 	}

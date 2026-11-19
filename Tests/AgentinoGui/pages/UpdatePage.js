@@ -1,5 +1,6 @@
 // UpdatePage - the "Update" page (UpdatePage.qml). A read-only table of the service types installed on
-// the agents (ServiceUpdatesList, CServiceUpdateControllerComp): Name, Number of agents, Latest version.
+// the agents (ServiceUpdatesList, CServiceUpdateControllerComp): Name, Number of agents, Latest version,
+// Auto-update (the StateOk icon when true, an empty cell otherwise).
 // The "Operating System" panel on the left (AgentOperatingSystemsList) filters the table: "All" first,
 // then the operating system families of the agents (Windows, Linux, macOS, Other), then "Unknown" for
 // agents that did not report one.
