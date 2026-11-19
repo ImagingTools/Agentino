@@ -107,8 +107,9 @@ ViewBase {
 		id: collectionTableStyle
 	}
 
-	// Operating systems of the agents: styled as the main menu of the application.
-	Rectangle {
+	// Operating systems of the agents: styled as the page list of MultiPageView (General / Services /
+	// Agent Log / Terminal of AgentEditor) - no background of its own, a thin separator on the right.
+	Item {
 		id: operatingSystemsPanel
 
 		objectName: "UpdateOperatingSystemsPanel"
@@ -117,82 +118,106 @@ ViewBase {
 		anchors.top: parent.top
 		anchors.bottom: parent.bottom
 
-		width: Style.sizeHintXXS
-		color: Style.menuPanelBackgroundColor
+		width: Style.sizeHintXXS + 2 * Style.marginM + operatingSystemsSeparator.width
 
-		Rectangle {
-			anchors.right: parent.right
-			anchors.top: parent.top
-			anchors.bottom: parent.bottom
-			width: 1
-			color: Style.borderColor
-		}
-
-		BaseText {
-			id: operatingSystemsTitle
+		Item {
+			id: operatingSystemsContent
 
 			anchors.top: parent.top
-			anchors.topMargin: Style.marginS
+			anchors.topMargin: Style.marginM
 			anchors.left: parent.left
-			anchors.leftMargin: Style.marginL
-			anchors.right: parent.right
-			anchors.rightMargin: Style.marginS
-
-			height: Style.controlHeightM
-
-			text: qsTr("Operating System")
-			color: Style.subtitleColor
-			font.family: Style.fontFamilyBold
-			font.pixelSize: Style.fontSizeM
-			verticalAlignment: Text.AlignVCenter
-			elide: Text.ElideRight
-		}
-
-		ListView {
-			id: operatingSystemsList
-
-			anchors.top: operatingSystemsTitle.bottom
-			anchors.topMargin: Style.marginS
-			anchors.left: parent.left
-			anchors.right: parent.right
+			anchors.leftMargin: Style.marginM
 			anchors.bottom: parent.bottom
-			anchors.bottomMargin: Style.marginS
 
-			clip: true
-			boundsBehavior: Flickable.StopAtBounds
-			model: updatePage.operatingSystemsModel
+			width: Style.sizeHintXXS
 
-			delegate: MenuPanelButton {
-				objectName: model.key === "all" ? "UpdateOperatingSystemAllButton"
-						  : model.key === "unknown" ? "UpdateOperatingSystemUnknownButton"
-						  : "UpdateOperatingSystemButton"
+			BaseText {
+				id: operatingSystemsTitle
 
-				width: operatingSystemsList.width
-				height: Style.controlHeightL
+				anchors.top: parent.top
+				anchors.left: parent.left
+				anchors.leftMargin: Style.marginM
+				anchors.right: parent.right
+				anchors.rightMargin: Style.marginM
 
-				text: model.name
-				textColor: Style.textColor
-				fontName: Style.fontFamily
-				selected: model.key === updatePage.selectedOsKey
-				iconSource: "qrc:/" + Style.getIconPath(model.icon, Icon.State.On,
-							(highlighted || selected) ? Icon.Mode.Selected : Icon.Mode.Normal)
+				height: Style.controlHeightM
 
-				onClicked: {
-					updatePage.selectOperatingSystem(model.key)
+				text: qsTr("Operating System")
+				color: Style.subtitleColor
+				font.family: Style.fontFamilyBold
+				font.pixelSize: Style.fontSizeM
+				verticalAlignment: Text.AlignVCenter
+				elide: Text.ElideRight
+			}
+
+			// Items that do not fit the height scroll instead of being cut off.
+			Flickable {
+				id: operatingSystemsFlickable
+
+				anchors.top: operatingSystemsTitle.bottom
+				anchors.left: parent.left
+				anchors.right: parent.right
+				anchors.bottom: parent.bottom
+
+				contentWidth: width
+				contentHeight: operatingSystemsColumn.height + 2 * Style.marginS
+				boundsBehavior: Flickable.StopAtBounds
+				interactive: contentHeight > height
+				clip: true
+
+				Column {
+					id: operatingSystemsColumn
+
+					y: Style.marginS
+					width: operatingSystemsFlickable.width
+						   - (operatingSystemsScrollbar.visible ? operatingSystemsScrollbar.width + Style.marginXS : 0)
+
+					spacing: Style.spacingXS
+
+					Repeater {
+						model: updatePage.operatingSystemsModel
+
+						delegate: SidePanelItem {
+							objectName: model.key === "all" ? "UpdateOperatingSystemAllButton"
+									  : model.key === "unknown" ? "UpdateOperatingSystemUnknownButton"
+									  : "UpdateOperatingSystemButton"
+
+							width: operatingSystemsColumn.width
+
+							text: model.name
+							icon: model.icon
+							selected: model.key === updatePage.selectedOsKey
+
+							onClicked: {
+								updatePage.selectOperatingSystem(model.key)
+							}
+						}
+					}
 				}
+			}
+
+			CustomScrollbar {
+				id: operatingSystemsScrollbar
+
+				anchors.right: parent.right
+				anchors.top: operatingSystemsFlickable.top
+				anchors.bottom: operatingSystemsFlickable.bottom
+
+				secondSize: Style.marginS
+				targetItem: operatingSystemsFlickable
 			}
 		}
 
-		// Shown only when the list does not fit.
-		CustomScrollbar {
-			z: operatingSystemsList.z + 1
-			anchors.right: operatingSystemsList.right
-			anchors.rightMargin: Style.marginXS
-			anchors.top: operatingSystemsList.top
-			anchors.bottom: operatingSystemsList.bottom
-			secondSize: Style.marginS
-			radius: Style.radiusS
-			targetItem: operatingSystemsList
+		Rectangle {
+			id: operatingSystemsSeparator
+
+			anchors.top: parent.top
+			anchors.bottom: parent.bottom
+			anchors.right: parent.right
+
+			width: 1
+			color: Style.borderColor
+			opacity: 0.5
 		}
 	}
 
