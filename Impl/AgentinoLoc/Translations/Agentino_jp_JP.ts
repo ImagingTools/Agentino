@@ -1336,6 +1336,26 @@
         <source>User Management System Server</source>
         <translation>ユーザー管理システムサーバー</translation>
     </message>
+    <message>
+        <source>Version</source>
+        <translation>バージョン</translation>
+    </message>
+    <message>
+        <source>Upload date</source>
+        <translation>アップロード日</translation>
+    </message>
+    <message>
+        <source>Number of installations</source>
+        <translation>インストール数</translation>
+    </message>
+    <message>
+        <source>Load</source>
+        <translation>読み込み</translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation>インストール</translation>
+    </message>
 </context>
 <context>
     <name>AuthorizationPage</name>
@@ -3305,6 +3325,28 @@
     <message>
         <source>Auto-update</source>
         <translation>自動更新</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionsView</name>
+    <message>
+        <source>Loading of service versions is not available yet</source>
+        <translation>サービスバージョンの読み込みはまだ利用できません</translation>
+    </message>
+    <message>
+        <source>Installation of service versions is not available yet</source>
+        <translation>サービスバージョンのインストールはまだ利用できません</translation>
+    </message>
+    <message>
+        <source>Select a version to see the agents it is installed on</source>
+        <translation>バージョンを選択すると、インストールされているエージェントが表示されます</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionsCommandsDelegate</name>
+    <message>
+        <source>Deleting a service version</source>
+        <translation>サービスバージョンの削除</translation>
     </message>
 </context>
 </TS>

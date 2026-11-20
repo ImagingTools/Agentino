@@ -4,7 +4,8 @@
 // The "Operating System" panel on the left (AgentOperatingSystemsList) filters the table: "All" first,
 // then the operating system families of the agents (Windows, Linux, macOS, Other), then "Unknown" for
 // agents that did not report one.
-// No commands of its own.
+// No commands of its own. A double click on a service opens its versions page (ServiceVersionsView.qml)
+// in a new tab: the versions table (Load / Remove / Install) and the agents panel on the right.
 
 const gui = require('imtcore-gui-testkit/lib/gui');
 const { BasePage } = require('imtcore-gui-testkit/pages/BasePage');
@@ -27,6 +28,18 @@ class UpdatePage extends BasePage {
   /** Select the first operating system of the panel. */
   selectFirstOperatingSystem() {
     return gui.clickButton(this.page, ['UpdateOperatingSystemButton']);
+  }
+
+  /** Double-click the first service of the table: opens its versions page in a new tab. */
+  async openFirstServiceVersions() {
+    await gui.dom.mouseAreaOf(this.page, ['UpdateServicesTable', 'TableRow_0']).dblclick();
+    return this;
+  }
+
+  /** The versions page of a service (ServiceVersionsView.qml): the versions table and the agents panel. */
+  async expectVersionsOpen() {
+    await gui.expectVisible(this.page, ['ServiceVersionsCollectionView'], 'the service versions table should render');
+    await gui.expectVisible(this.page, ['ServiceVersionsMetaInfo'], 'the agents panel of the versions page should render');
   }
 }
 

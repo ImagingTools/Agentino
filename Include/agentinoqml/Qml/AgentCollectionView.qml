@@ -42,6 +42,7 @@ AgentCollectionViewBase {
 		}
 	}
 
+
 	Component {
 		id: agentDataControllerComp
 

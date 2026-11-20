@@ -47,6 +47,8 @@
 	<file alias="AgentStatusFilterDecorator.qml">Qml/AgentStatusFilterDecorator.qml</file>
 	<file alias="UpdatePage.qml">Qml/UpdatePage.qml</file>
 	<file alias="SidePanelItem.qml">Qml/SidePanelItem.qml</file>
+	<file alias="ServiceVersionsView.qml">Qml/ServiceVersionsView.qml</file>
+	<file alias="ServiceVersionsCommandsDelegate.qml">Qml/ServiceVersionsCommandsDelegate.qml</file>
     </qresource>
     <qresource prefix="/Features">
         <file alias="AgentinoFeatures">Resources/Features/AgentinoFeatures.xml</file>

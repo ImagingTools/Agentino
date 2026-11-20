@@ -4,6 +4,10 @@ schema {
 	version: 1.0
 }
 
+import {
+	"../../../../ImtCore/Sdl/imtbase/1.0/ImtCollection.sdl"
+}
+
 # One row of the "Update" page: a service type (the software product) installed on the agents.
 type ServiceUpdateItem {
 	# Service type ID (falls back to the service name for services without a type)
@@ -35,7 +39,40 @@ type AgentOperatingSystemList {
 	hasUnknown: Boolean
 }
 
+# A version of a service type uploaded to the server: a row of the versions page of a service
+# (opened by a double click on the "Update" page). The versions of one service type are requested
+# with the "serviceTypeId" request header (see CServiceVersionCollectionControllerComp).
+type ServiceVersionItem {
+	id: ID!
+	typeId: ID!
+	name: String
+	version: String
+	uploadDate: String
+	# Number of agents having this version of the service type installed
+	installationCount: Int
+}
+
+input ServiceVersionListInput {
+	viewParams: CollectionViewParams
+}
+
+type ServiceVersionListPayload {
+	items: [ServiceVersionItem]!
+	# Required for web fromObject() (see AgentListPayload).
+	notification: NotificationItem
+}
+
 type Query {
 	ServiceUpdatesList (input: ServiceUpdateListInput): ServiceUpdateListPayload!
 	AgentOperatingSystemsList: AgentOperatingSystemList!
+	ServiceVersionsList (input: ServiceVersionListInput): ServiceVersionListPayload!
+}
+
+collectionSchema {
+	type ServiceVersion {
+		ref: ServiceVersionItem
+		operations {
+			list: ServiceVersionsList
+		}
+	}
 }

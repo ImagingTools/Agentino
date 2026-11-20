@@ -1336,6 +1336,26 @@
         <source>User Management System Server</source>
         <translation>Server för användarhanteringssystem</translation>
     </message>
+    <message>
+        <source>Version</source>
+        <translation>Version</translation>
+    </message>
+    <message>
+        <source>Upload date</source>
+        <translation>Uppladdningsdatum</translation>
+    </message>
+    <message>
+        <source>Number of installations</source>
+        <translation>Antal installationer</translation>
+    </message>
+    <message>
+        <source>Load</source>
+        <translation>Ladda</translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation>Installera</translation>
+    </message>
 </context>
 <context>
     <name>AuthorizationPage</name>
@@ -3341,6 +3361,28 @@
     <message>
         <source>Auto-update</source>
         <translation>Automatisk uppdatering</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionsView</name>
+    <message>
+        <source>Loading of service versions is not available yet</source>
+        <translation>Inläsning av tjänstversioner är inte tillgänglig ännu</translation>
+    </message>
+    <message>
+        <source>Installation of service versions is not available yet</source>
+        <translation>Installation av tjänstversioner är inte tillgänglig ännu</translation>
+    </message>
+    <message>
+        <source>Select a version to see the agents it is installed on</source>
+        <translation>Välj en version för att se agenterna den är installerad på</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionsCommandsDelegate</name>
+    <message>
+        <source>Deleting a service version</source>
+        <translation>Ta bort en tjänstversion</translation>
     </message>
 </context>
 </TS>

@@ -1181,6 +1181,26 @@
         <source>User Management System Server</source>
         <translation>Server des Benutzerverwaltungssystems</translation>
     </message>
+    <message>
+        <source>Version</source>
+        <translation>Version</translation>
+    </message>
+    <message>
+        <source>Upload date</source>
+        <translation>Hochladedatum</translation>
+    </message>
+    <message>
+        <source>Number of installations</source>
+        <translation>Anzahl der Installationen</translation>
+    </message>
+    <message>
+        <source>Load</source>
+        <translation>Laden</translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation>Installieren</translation>
+    </message>
 </context>
 <context>
     <name>ExternPortsDialog</name>
@@ -1448,6 +1468,28 @@
     <message>
         <source>Auto-update</source>
         <translation>Automatische Aktualisierung</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionsView</name>
+    <message>
+        <source>Loading of service versions is not available yet</source>
+        <translation>Das Laden von Dienstversionen ist noch nicht verfügbar</translation>
+    </message>
+    <message>
+        <source>Installation of service versions is not available yet</source>
+        <translation>Die Installation von Dienstversionen ist noch nicht verfügbar</translation>
+    </message>
+    <message>
+        <source>Select a version to see the agents it is installed on</source>
+        <translation>Wählen Sie eine Version, um die Agenten zu sehen, auf denen sie installiert ist</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionsCommandsDelegate</name>
+    <message>
+        <source>Deleting a service version</source>
+        <translation>Löschen einer Dienstversion</translation>
     </message>
 </context>
 </TS>
