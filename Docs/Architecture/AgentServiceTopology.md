@@ -115,6 +115,16 @@ visualizes the overall topology of all agents.
   `StackView` of scheme levels and a `StackViewHeader` navigation panel (shown below the root level).
   Each level shows the children of its node (`groupId`, empty = root); only the shown level is
   refreshed, a level whose node disappeared is closed (back to its parent level).
+  Links of the services are lifted to the shown level on the client (`computeLevelLinks`): each end
+  is replaced by the shown node containing it, and the links not drawn from `links` of the shown
+  services are passed to `SchemeView.extraLinks` (ImtCore) as `{fromId, toId}`. Links that cannot
+  be drawn on the level (the other service is outside of it or not in the view) are shown as a link
+  icon of the service with a tooltip (`computeLinkHints` → `SchemeView.linkHints`).
+- Drag and drop into a group: `SchemeView.dropTargetFilter` (ImtCore) enables dropping a dragged
+  object onto an accepted object (the target blinks after `dropArmDelay`; a release over it emits
+  `objectDropped`; Escape/leaving cancel); `TopologyPage` accepts the groups allowed by
+  `canAddToGroup` and calls `MoveTopologyNodes` (recorded for Undo); the drag position is not saved,
+  inside the group the node keeps its last saved position.
 
 ## Layout coordinates
 

@@ -146,6 +146,15 @@ ViewBase {
 		return result
 	}
 
+	// The same rule as getTargetGroups for one group (used while dragging a tile).
+	function canAddToGroup(nodeId, groupId){
+		if (!topologyPage.isGroupNode(groupId) || !topologyPage.topologyNodes[nodeId])
+			return false
+		if (topologyPage.topologyNodes[nodeId].parentId === groupId)
+			return false
+		return !topologyPage.isNodeInside(groupId, nodeId)
+	}
+
 	// A missing model is an incomplete response, not a proof that the node was removed.
 	function modelContainsNode(nodesModel, nodeId){
 		if (!nodesModel)
@@ -177,7 +186,8 @@ ViewBase {
 				"name": item.m_mainText,
 				"agentId": item.m_agentId,
 				"x": item.m_x,
-				"y": item.m_y
+				"y": item.m_y,
+				"linkIds": topologyPage.readLinkIds(item)
 			}
 		}
 		topologyPage.topologyNodes = nodes
@@ -203,7 +213,124 @@ ViewBase {
 		return nodesModel
 	}
 
-	// Inactive commands are hidden in the toolbar (and are not offered in the context menu).
+	// IDs of the services the node is linked with (its m_links).
+	function readLinkIds(item){
+		let result = []
+		let links = item ? item.m_links : null
+		if (!links)
+			return result
+		for (let k = 0; k < links.count; ++k){
+			let link = links.get(k).item
+			if (link && link.m_id){
+				result.push("" + link.m_id)
+			}
+		}
+		return result
+	}
+
+	// The node shown on the level of groupId that is the node itself or contains it; "" if the node
+	// is not inside that level.
+	function findShownNode(nodeId, groupId){
+		let visitedIds = {}
+		let currentId = nodeId
+		while (currentId && !visitedIds[currentId]){
+			visitedIds[currentId] = true
+			let node = topologyPage.topologyNodes[currentId]
+			if (!node)
+				return ""
+			if (node.parentId === groupId)
+				return currentId
+			currentId = node.parentId
+		}
+		return ""
+	}
+
+	// Links of the shown level that the scheme does not draw by itself: a link between services in
+	// different composite nodes (groups, agents) is drawn between these nodes, or between a node and
+	// a service shown on the level. Direct links of two shown services are drawn by the scheme.
+	function computeLevelLinks(groupId){
+		let result = []
+		let added = {}
+		for (let sourceId in topologyPage.topologyNodes){
+			let linkIds = topologyPage.topologyNodes[sourceId].linkIds
+			if (!linkIds || linkIds.length === 0)
+				continue
+			let shownSourceId = topologyPage.findShownNode(sourceId, groupId)
+			if (shownSourceId === "")
+				continue
+			for (let k = 0; k < linkIds.length; ++k){
+				let targetId = linkIds[k]
+				let shownTargetId = topologyPage.findShownNode(targetId, groupId)
+				if (shownTargetId === "" || shownTargetId === shownSourceId)
+					continue
+				if (shownSourceId === sourceId && shownTargetId === targetId)
+					continue
+				// Same direction as the scheme: from the linked (target) node to the source node.
+				let key = shownTargetId + "\n" + shownSourceId
+				if (added[key])
+					continue
+				added[key] = true
+				result.push({"fromId": shownTargetId, "toId": shownSourceId})
+			}
+		}
+		return result
+	}
+
+	// Tooltips of the link icons of the level: {serviceId: text}. A shown service gets the icon if it
+	// is linked (in either direction) with a service whose link cannot be drawn on this level: the
+	// service is outside of the level or not in the current view.
+	function computeLinkHints(groupId){
+		// Services linked with each service, in both directions.
+		let related = {}
+		let addRelation = function(fromId, toId){
+			if (!related[fromId]){
+				related[fromId] = []
+			}
+			if (related[fromId].indexOf(toId) < 0){
+				related[fromId].push(toId)
+			}
+		}
+		for (let sourceId in topologyPage.topologyNodes){
+			let linkIds = topologyPage.topologyNodes[sourceId].linkIds
+			if (!linkIds)
+				continue
+			for (let k = 0; k < linkIds.length; ++k){
+				addRelation(sourceId, linkIds[k])
+				addRelation(linkIds[k], sourceId)
+			}
+		}
+
+		let availableNames = {}
+		for (let i = 0; i < topologyPage.availableServices.length; ++i){
+			availableNames[topologyPage.availableServices[i].id] = topologyPage.availableServices[i].name
+		}
+
+		let hints = {}
+		for (let nodeId in topologyPage.topologyNodes){
+			let node = topologyPage.topologyNodes[nodeId]
+			if (node.parentId !== groupId || node.nodeType !== "SERVICE" || !related[nodeId])
+				continue
+			let lines = []
+			for (let k = 0; k < related[nodeId].length; ++k){
+				let otherId = related[nodeId][k]
+				if (topologyPage.findShownNode(otherId, groupId) !== "")
+					continue
+				let other = topologyPage.topologyNodes[otherId]
+				if (other){
+					let groupPath = topologyPage.getNodePath(other.parentId)
+					lines.push(groupPath !== "" ? groupPath + " / " + other.name : "" + other.name)
+				}
+				else if (availableNames[otherId] !== undefined){
+					lines.push(availableNames[otherId] + " (" + qsTr("not in this view") + ")")
+				}
+			}
+			if (lines.length > 0){
+				lines.sort()
+				hints[nodeId] = qsTr("Linked with:") + "\n" + lines.join("\n")
+			}
+		}
+		return hints
+	}
 	function setCommandState(commandId, isEnabled){
 		let commandsController = topologyPage.commandsController
 		if (!commandsController)
@@ -752,6 +879,8 @@ ViewBase {
 			topologyPage.reselecting = true
 			currentScheme.selectedIndex = -1
 			currentScheme.objectsModel = topologyPage.applyTopologyNodes(nodesModel)
+			currentScheme.extraLinks = topologyPage.computeLevelLinks(currentScheme.groupId)
+			currentScheme.linkHints = topologyPage.computeLinkHints(currentScheme.groupId)
 			currentScheme.savedPositions = topologyPage.getPositions(currentScheme.objectsModel)
 			currentScheme.selectedIndex = currentScheme.findModelIndex(previousNodeId)
 			topologyPage.reselecting = false
@@ -1493,6 +1622,19 @@ ViewBase {
 			onObjectMoveFinished: {
 				// saveTopology() sets saveInProgress so OnTopologyChanged does not reload mid-save.
 				topologyPage.saveLevelLayout(levelScheme)
+			}
+
+			// "Add to group" by drag and drop: a tile released over a blinking group is moved into it.
+			// Inside the group it keeps its last saved position (the drag position is not saved).
+			dropTargetFilter: function(objectId, targetId){
+				return topologyPage.canAddToGroup(objectId, targetId)
+			}
+
+			onObjectDropped: {
+				if (!topologyPage.canAddToGroup(objectId, targetId)){
+					return
+				}
+				topologyPage.topologyViewModel.moveNodes([objectId], targetId, topologyPage.getParentGroups([objectId]))
 			}
 
 			onDeleteSignal: {
