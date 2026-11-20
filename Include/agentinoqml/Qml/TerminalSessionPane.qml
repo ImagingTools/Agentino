@@ -1236,7 +1236,7 @@ Item {
 			return Style.errorColor;
 		}
 		if (root.actionHint !== ""){
-			return Style.imaginToolsAccentColor;
+			return Style.imagingToolsAccentColor;
 		}
 		if (controller.busy){
 			return Style.highlightColor;
@@ -1245,7 +1245,7 @@ Item {
 			return Style.highlightColor;
 		}
 		if (controller.running){
-			return Style.imaginToolsAccentColor;
+			return Style.imagingToolsAccentColor;
 		}
 		return Style.subtitleColor;
 	}
@@ -1665,7 +1665,7 @@ Item {
 				radius: parent.radius;
 				color: controller.connectionLost
 							? Style.errorColor
-							: (controller.running ? Style.imaginToolsAccentColor : "transparent");
+							: (controller.running ? Style.imagingToolsAccentColor : "transparent");
 				opacity: (controller.running || controller.connectionLost) ? 0.12 : 0;
 			}
 
@@ -1872,7 +1872,7 @@ Item {
 			width: requestPopupRow.implicitWidth + 2 * Style.marginL;
 			radius: height / 2;
 			color: Style.baseColor;
-			border.color: Style.imaginToolsAccentColor;
+			border.color: Style.imagingToolsAccentColor;
 			border.width: 1;
 			opacity: 0.97;
 

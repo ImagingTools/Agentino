@@ -852,7 +852,7 @@ DocumentViewBase {
 
 						BaseText {
 							text: "\u2713"
-							color: Style.imaginToolsAccentColor
+							color: Style.imagingToolsAccentColor
 							font.bold: true
 							font.pixelSize: Style.fontSizeM
 							anchors.verticalCenter: parent.verticalCenter
@@ -1193,7 +1193,7 @@ DocumentViewBase {
 
 						BaseText {
 							text: "\u2713"
-							color: Style.imaginToolsAccentColor
+							color: Style.imagingToolsAccentColor
 							font.bold: true
 							font.pixelSize: Style.fontSizeM
 							anchors.verticalCenter: parent.verticalCenter
