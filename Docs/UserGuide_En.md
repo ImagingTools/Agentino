@@ -155,7 +155,13 @@ The main window consists of:
     on the left filters the table by the operating system family of the
     agents: **All**, **Windows** / **Linux** / **macOS** (only the families
     the agents run on), **Other** for an unrecognized operating system and
-    **Unknown** for agents that did not report one. Requires the *View Services* right.
+    **Unknown** for agents that did not report one. A double click on a
+    service opens its versions page in a new tab: the table of the versions
+    uploaded to the server (**Version**, **Upload date**, **Number of
+    installations**) with the **Load**, **Remove** and **Install** commands
+    (**Remove** and **Install** need a selected version), and on the right the
+    agents the selected version is installed on. Uploading and installing
+    versions are not available yet. Requires the *View Services* right.
 * **The command panel** (toolbar) above the work area: New, Edit, Remove,
   Start, Stop, Approve, etc. The set of commands depends on the page, and
   their availability depends on the selected item and its state.

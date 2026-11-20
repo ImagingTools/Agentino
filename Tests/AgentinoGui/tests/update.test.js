@@ -73,4 +73,25 @@ test.describe('Update', () => {
     await update.selectAllOperatingSystems();
     expect(agentCounts((await backSpy.wait()).data.ServiceUpdatesList.items), '"All" shows every agent again').toEqual(all);
   });
+
+  test('a double click on a service opens its versions page', async ({ page }) => {
+    const update = new UpdatePage(page);
+    if (!(await update.isAvailable())) refuse('the Update page is not in the menu');
+
+    const servicesSpy = gui.graphql.spyOn(page, 'ServiceUpdatesList');
+    await update.open();
+    const services = (await servicesSpy.wait()).data.ServiceUpdatesList.items;
+    test.skip(services.length === 0, 'no agent of this instance has a service');
+
+    const versionsSpy = gui.graphql.spyOn(page, 'ServiceVersionsList');
+    await update.openFirstServiceVersions();
+    const versions = await versionsSpy.wait();
+    expect(versions.errors, 'ServiceVersionsList must succeed').toBeFalsy();
+    await update.expectVersionsOpen();
+
+    // Nothing is selected yet: only Load is offered.
+    expect(await update.commands.isAvailable('Load'), 'Load is always offered').toBe(true);
+    expect(await update.commands.isAvailable('Remove'), 'Remove needs a selected version').toBe(false);
+    expect(await update.commands.isAvailable('Install'), 'Install needs a selected version').toBe(false);
+  });
 });

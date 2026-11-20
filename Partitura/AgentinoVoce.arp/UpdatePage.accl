@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Acf>
+    <AcfHeader>
+        <VersionInfos>
+            <Version Id="0" Number="6556" Description="ACF"/>
+            <Version Id="1" Number="2449" Description="ACF-Solutions"/>
+            <Version Id="1023" Number="396034" Description="Qt Framework"/>
+        </VersionInfos>
+    </AcfHeader>
+    <PositionMap>
+        <Element ComponentName="Demultiplexer" X="575" Y="75" Note=""/>
+        <Element ComponentName="ServiceVersionCollection" X="150" Y="450" Note=""/>
+        <Element ComponentName="ServiceVersionCollectionController" X="300" Y="250" Note=""/>
+        <Element ComponentName="ServiceVersionCommands" X="850" Y="250" Note=""/>
+        <Element ComponentName="ServiceVersionHeadersProvider" X="450" Y="450" Note=""/>
+    </PositionMap>
+    <EmbeddedRegistries>
+        <EmbededRegistry Id="ServiceVersionCommands">
+            <PositionMap>
+                <Element ComponentName="CommandsController" X="575" Y="75" Note=""/>
+                <Element ComponentName="Install" X="950" Y="250" Note=""/>
+                <Element ComponentName="Load" X="200" Y="250" Note=""/>
+                <Element ComponentName="Remove" X="575" Y="250" Note=""/>
+            </PositionMap>
+            <EmbeddedRegistries/>
+        </EmbededRegistry>
+    </EmbeddedRegistries>
+</Acf>

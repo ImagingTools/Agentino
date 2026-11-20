@@ -65,6 +65,11 @@ I_EXPORT_COMPONENT(
 			"Service Update Controller");
 
 I_EXPORT_COMPONENT(
+			ServiceVersionCollectionController,
+			"Versions of a service type uploaded to the server, with the agents they are installed on (Update page)",
+			"Service Version Collection Controller");
+
+I_EXPORT_COMPONENT(
 			ServiceCollectionSubscriberController,
 			"Service collection subscriber controller",
 			"Service Collection Subscriber Controller");

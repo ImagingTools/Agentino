@@ -1336,6 +1336,26 @@
         <source>User Management System Server</source>
         <translation>用户管理系统服务器</translation>
     </message>
+    <message>
+        <source>Version</source>
+        <translation>版本</translation>
+    </message>
+    <message>
+        <source>Upload date</source>
+        <translation>上传日期</translation>
+    </message>
+    <message>
+        <source>Number of installations</source>
+        <translation>安装数量</translation>
+    </message>
+    <message>
+        <source>Load</source>
+        <translation>加载</translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation>安装</translation>
+    </message>
 </context>
 <context>
     <name>AuthorizationPage</name>
@@ -3305,6 +3325,28 @@
     <message>
         <source>Auto-update</source>
         <translation>自动更新</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionsView</name>
+    <message>
+        <source>Loading of service versions is not available yet</source>
+        <translation>暂不支持加载服务版本</translation>
+    </message>
+    <message>
+        <source>Installation of service versions is not available yet</source>
+        <translation>暂不支持安装服务版本</translation>
+    </message>
+    <message>
+        <source>Select a version to see the agents it is installed on</source>
+        <translation>选择一个版本以查看安装了该版本的代理</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionsCommandsDelegate</name>
+    <message>
+        <source>Deleting a service version</source>
+        <translation>删除服务版本</translation>
     </message>
 </context>
 </TS>

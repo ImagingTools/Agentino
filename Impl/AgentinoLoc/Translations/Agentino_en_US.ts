@@ -1336,6 +1336,26 @@
         <source>User Management System Server</source>
         <translation>User Management System Server</translation>
     </message>
+    <message>
+        <source>Version</source>
+        <translation>Version</translation>
+    </message>
+    <message>
+        <source>Upload date</source>
+        <translation>Upload date</translation>
+    </message>
+    <message>
+        <source>Number of installations</source>
+        <translation>Number of installations</translation>
+    </message>
+    <message>
+        <source>Load</source>
+        <translation>Load</translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation>Install</translation>
+    </message>
 </context>
 <context>
     <name>AuthorizationPage</name>
@@ -3341,6 +3361,28 @@
     <message>
         <source>Auto-update</source>
         <translation>Auto-update</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionsView</name>
+    <message>
+        <source>Loading of service versions is not available yet</source>
+        <translation>Loading of service versions is not available yet</translation>
+    </message>
+    <message>
+        <source>Installation of service versions is not available yet</source>
+        <translation>Installation of service versions is not available yet</translation>
+    </message>
+    <message>
+        <source>Select a version to see the agents it is installed on</source>
+        <translation>Select a version to see the agents it is installed on</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionsCommandsDelegate</name>
+    <message>
+        <source>Deleting a service version</source>
+        <translation>Deleting a service version</translation>
     </message>
 </context>
 </TS>

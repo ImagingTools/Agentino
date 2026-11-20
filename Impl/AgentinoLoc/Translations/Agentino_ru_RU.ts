@@ -1181,6 +1181,26 @@
         <source>User Management System Server</source>
         <translation>Сервер системы управления пользователями</translation>
     </message>
+    <message>
+        <source>Version</source>
+        <translation>Версия</translation>
+    </message>
+    <message>
+        <source>Upload date</source>
+        <translation>Дата загрузки</translation>
+    </message>
+    <message>
+        <source>Number of installations</source>
+        <translation>Количество установок</translation>
+    </message>
+    <message>
+        <source>Load</source>
+        <translation>Загрузить</translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation>Установить</translation>
+    </message>
 </context>
 <context>
     <name>ExternPortsDialog</name>
@@ -1478,6 +1498,28 @@
     <message>
         <source>Auto-update</source>
         <translation>Автообновление</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionsView</name>
+    <message>
+        <source>Loading of service versions is not available yet</source>
+        <translation>Загрузка версий сервиса пока недоступна</translation>
+    </message>
+    <message>
+        <source>Installation of service versions is not available yet</source>
+        <translation>Установка версий сервиса пока недоступна</translation>
+    </message>
+    <message>
+        <source>Select a version to see the agents it is installed on</source>
+        <translation>Выберите версию, чтобы увидеть агентов, на которых она установлена</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionsCommandsDelegate</name>
+    <message>
+        <source>Deleting a service version</source>
+        <translation>Удаление версии сервиса</translation>
     </message>
 </context>
 </TS>

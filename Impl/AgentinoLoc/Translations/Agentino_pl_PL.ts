@@ -1336,6 +1336,26 @@
         <source>User Management System Server</source>
         <translation>Serwer systemu zarządzania użytkownikami</translation>
     </message>
+    <message>
+        <source>Version</source>
+        <translation>Wersja</translation>
+    </message>
+    <message>
+        <source>Upload date</source>
+        <translation>Data przesłania</translation>
+    </message>
+    <message>
+        <source>Number of installations</source>
+        <translation>Liczba instalacji</translation>
+    </message>
+    <message>
+        <source>Load</source>
+        <translation>Wczytaj</translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation>Zainstaluj</translation>
+    </message>
 </context>
 <context>
     <name>AuthorizationPage</name>
@@ -3305,6 +3325,28 @@
     <message>
         <source>Auto-update</source>
         <translation>Automatyczna aktualizacja</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionsView</name>
+    <message>
+        <source>Loading of service versions is not available yet</source>
+        <translation>Wczytywanie wersji usług nie jest jeszcze dostępne</translation>
+    </message>
+    <message>
+        <source>Installation of service versions is not available yet</source>
+        <translation>Instalacja wersji usług nie jest jeszcze dostępna</translation>
+    </message>
+    <message>
+        <source>Select a version to see the agents it is installed on</source>
+        <translation>Wybierz wersję, aby zobaczyć agentów, na których jest zainstalowana</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionsCommandsDelegate</name>
+    <message>
+        <source>Deleting a service version</source>
+        <translation>Usuwanie wersji usługi</translation>
     </message>
 </context>
 </TS>

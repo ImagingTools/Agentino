@@ -4,6 +4,7 @@ import com.imtcore.imtqml 1.0
 import imtcontrols 1.0
 import imtgui 1.0
 import imtguigql 1.0
+import imtdocgui 1.0
 import agentinoUpdatesSdl 1.0
 
 // "Update" page (FixedItemQmlPath of UpdatePage, see Pages.acc): the service types installed on
@@ -11,12 +12,15 @@ import agentinoUpdatesSdl 1.0
 // The panel on the left filters the table by the operating system family of the agents
 // (Windows / Linux / macOS / Other).
 // "Latest version" and "Auto-update" are not provided by the server yet, so the columns stay empty.
+// A double click on a service opens the versions page of the service (ServiceVersionsView.qml) in a new tab.
 ViewBase {
 	id: updatePage
 
 	anchors.fill: parent
 	clip: true
 
+	// Document service of the page (MultiDocPage "Update"): the versions pages are its documents.
+	property var documentManager: MainDocumentService.getDocumentService("Update")
 	// Selected item of the operating system panel: "all", "unknown" (agents that did not report
 	// their operating system) or "os:" + the operating system family.
 	property string selectedOsKey: "all"
@@ -97,10 +101,51 @@ ViewBase {
 		}
 	}
 
+	// Opens the versions page of the service of the table row (the service type ID is the document ID).
+	function openServiceVersions(index){
+		if (!updatePage.documentManager || !servicesTable.elements || index < 0){
+			return
+		}
+
+		let row = servicesTable.elements.get(index)
+		let item = row ? row.item : null
+		if (!item || !item.m_id){
+			return
+		}
+
+		updatePage.documentManager.openDocument(item.m_id, "ServiceVersions", item.m_name)
+	}
+
 	Component.onCompleted: {
+		if (updatePage.documentManager){
+			updatePage.documentManager.registerDocumentView("ServiceVersions", serviceVersionsViewComp)
+			updatePage.documentManager.registerDocumentDataController("ServiceVersions", serviceVersionsDataControllerComp)
+		}
+
 		collectionTableStyle.apply(servicesTable)
 		updatePage.loadOperatingSystems()
 		updatePage.loadServices()
+	}
+
+	Component {
+		id: serviceVersionsViewComp
+
+		ServiceVersionsView {}
+	}
+
+	// The versions page edits nothing: an empty model is enough for the document service.
+	Component {
+		id: serviceVersionsDataControllerComp
+
+		DocumentDataController {
+			documentModelComp: Component {
+				TreeItemModel {}
+			}
+
+			function updateDocumentModel(){
+				createDocumentModel()
+			}
+		}
 	}
 
 	AgentinoCollectionTableStyle {
@@ -291,6 +336,10 @@ ViewBase {
 
 		onHeadersChanged: {
 			servicesTable.setColumnContentById("autoUpdate", autoUpdateCellComp)
+		}
+
+		onDoubleClicked: {
+			updatePage.openServiceVersions(index)
 		}
 	}
 
