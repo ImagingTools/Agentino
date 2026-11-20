@@ -3334,10 +3334,6 @@
         <translation>サービスバージョンの読み込みはまだ利用できません</translation>
     </message>
     <message>
-        <source>Installation of service versions is not available yet</source>
-        <translation>サービスバージョンのインストールはまだ利用できません</translation>
-    </message>
-    <message>
         <source>Select a version to see the agents it is installed on</source>
         <translation>バージョンを選択すると、インストールされているエージェントが表示されます</translation>
     </message>
@@ -3347,6 +3343,41 @@
     <message>
         <source>Deleting a service version</source>
         <translation>サービスバージョンの削除</translation>
+    </message>
+</context>
+<context>
+    <name>InstallServiceVersionDialog</name>
+    <message>
+        <source>Install version %1</source>
+        <translation>バージョン %1 をインストール</translation>
+    </message>
+    <message>
+        <source>Install version</source>
+        <translation>バージョンをインストール</translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation>インストール</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>キャンセル</translation>
+    </message>
+    <message>
+        <source>Select all</source>
+        <translation>すべて選択</translation>
+    </message>
+    <message>
+        <source>%1 of %2 selected</source>
+        <translation>%2 件中 %1 件を選択</translation>
+    </message>
+    <message>
+        <source>No approved agents</source>
+        <translation>承認済みのエージェントがありません</translation>
+    </message>
+    <message>
+        <source>Loading...</source>
+        <translation>読み込み中...</translation>
     </message>
 </context>
 </TS>

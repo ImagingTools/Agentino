@@ -3334,10 +3334,6 @@
         <translation>暂不支持加载服务版本</translation>
     </message>
     <message>
-        <source>Installation of service versions is not available yet</source>
-        <translation>暂不支持安装服务版本</translation>
-    </message>
-    <message>
         <source>Select a version to see the agents it is installed on</source>
         <translation>选择一个版本以查看安装了该版本的代理</translation>
     </message>
@@ -3347,6 +3343,41 @@
     <message>
         <source>Deleting a service version</source>
         <translation>删除服务版本</translation>
+    </message>
+</context>
+<context>
+    <name>InstallServiceVersionDialog</name>
+    <message>
+        <source>Install version %1</source>
+        <translation>安装版本 %1</translation>
+    </message>
+    <message>
+        <source>Install version</source>
+        <translation>安装版本</translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation>安装</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Select all</source>
+        <translation>全选</translation>
+    </message>
+    <message>
+        <source>%1 of %2 selected</source>
+        <translation>已选择 %1 / %2</translation>
+    </message>
+    <message>
+        <source>No approved agents</source>
+        <translation>没有已批准的代理</translation>
+    </message>
+    <message>
+        <source>Loading...</source>
+        <translation>加载中...</translation>
     </message>
 </context>
 </TS>

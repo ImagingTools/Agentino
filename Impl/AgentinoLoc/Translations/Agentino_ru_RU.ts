@@ -1507,10 +1507,6 @@
         <translation>Загрузка версий сервиса пока недоступна</translation>
     </message>
     <message>
-        <source>Installation of service versions is not available yet</source>
-        <translation>Установка версий сервиса пока недоступна</translation>
-    </message>
-    <message>
         <source>Select a version to see the agents it is installed on</source>
         <translation>Выберите версию, чтобы увидеть агентов, на которых она установлена</translation>
     </message>
@@ -1520,6 +1516,41 @@
     <message>
         <source>Deleting a service version</source>
         <translation>Удаление версии сервиса</translation>
+    </message>
+</context>
+<context>
+    <name>InstallServiceVersionDialog</name>
+    <message>
+        <source>Install version %1</source>
+        <translation>Установка версии %1</translation>
+    </message>
+    <message>
+        <source>Install version</source>
+        <translation>Установка версии</translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation>Установить</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Отмена</translation>
+    </message>
+    <message>
+        <source>Select all</source>
+        <translation>Выбрать все</translation>
+    </message>
+    <message>
+        <source>%1 of %2 selected</source>
+        <translation>Выбрано %1 из %2</translation>
+    </message>
+    <message>
+        <source>No approved agents</source>
+        <translation>Нет одобренных агентов</translation>
+    </message>
+    <message>
+        <source>Loading...</source>
+        <translation>Загрузка...</translation>
     </message>
 </context>
 </TS>

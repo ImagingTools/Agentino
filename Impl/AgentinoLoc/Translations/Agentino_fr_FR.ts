@@ -3334,10 +3334,6 @@
         <translation>Le chargement des versions de service n&apos;est pas encore disponible</translation>
     </message>
     <message>
-        <source>Installation of service versions is not available yet</source>
-        <translation>L&apos;installation des versions de service n&apos;est pas encore disponible</translation>
-    </message>
-    <message>
         <source>Select a version to see the agents it is installed on</source>
         <translation>Sélectionnez une version pour voir les agents sur lesquels elle est installée</translation>
     </message>
@@ -3347,6 +3343,41 @@
     <message>
         <source>Deleting a service version</source>
         <translation>Suppression d&apos;une version de service</translation>
+    </message>
+</context>
+<context>
+    <name>InstallServiceVersionDialog</name>
+    <message>
+        <source>Install version %1</source>
+        <translation>Installer la version %1</translation>
+    </message>
+    <message>
+        <source>Install version</source>
+        <translation>Installer la version</translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation>Installer</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuler</translation>
+    </message>
+    <message>
+        <source>Select all</source>
+        <translation>Tout sélectionner</translation>
+    </message>
+    <message>
+        <source>%1 of %2 selected</source>
+        <translation>%1 sur %2 sélectionnés</translation>
+    </message>
+    <message>
+        <source>No approved agents</source>
+        <translation>Aucun agent approuvé</translation>
+    </message>
+    <message>
+        <source>Loading...</source>
+        <translation>Chargement...</translation>
     </message>
 </context>
 </TS>
