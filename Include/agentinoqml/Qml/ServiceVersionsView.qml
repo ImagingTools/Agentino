@@ -35,6 +35,27 @@ ViewBase {
 		}
 	}
 
+	// Versions of the selected rows, e.g. ["1.0.0.513"]
+	function getSelectedVersionNames(){
+		let result = []
+		let elements = versionsCollectionView.table.elements
+		let indexes = versionsCollectionView.table.getSelectedIndexes()
+		for (let i = 0; i < indexes.length; ++i){
+			if (elements && elements.containsKey("version", indexes[i])){
+				result.push(String(elements.getData("version", indexes[i])))
+			}
+		}
+
+		return result
+	}
+
+	// Installation is not implemented yet: the agents chosen in the dialog are not used.
+	Component {
+		id: installDialogComp
+
+		InstallServiceVersionDialog {}
+	}
+
 	RemoteCollectionView {
 		id: versionsCollectionView
 
@@ -66,7 +87,10 @@ ViewBase {
 				}
 
 				onInstallRequested: {
-					PopupManager.addInfoMessage(qsTr("Installation of service versions is not available yet"), true)
+					ModalDialogManager.openDialog(installDialogComp, {
+						"versionIds": versionIds,
+						"versionName": serviceVersionsView.getSelectedVersionNames().join(", ")
+					})
 				}
 			}
 		}

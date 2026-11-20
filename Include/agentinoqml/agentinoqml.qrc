@@ -49,6 +49,7 @@
 	<file alias="SidePanelItem.qml">Qml/SidePanelItem.qml</file>
 	<file alias="ServiceVersionsView.qml">Qml/ServiceVersionsView.qml</file>
 	<file alias="ServiceVersionsCommandsDelegate.qml">Qml/ServiceVersionsCommandsDelegate.qml</file>
+	<file alias="InstallServiceVersionDialog.qml">Qml/InstallServiceVersionDialog.qml</file>
     </qresource>
     <qresource prefix="/Features">
         <file alias="AgentinoFeatures">Resources/Features/AgentinoFeatures.xml</file>

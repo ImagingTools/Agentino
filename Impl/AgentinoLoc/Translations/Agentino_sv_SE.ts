@@ -3370,10 +3370,6 @@
         <translation>Inläsning av tjänstversioner är inte tillgänglig ännu</translation>
     </message>
     <message>
-        <source>Installation of service versions is not available yet</source>
-        <translation>Installation av tjänstversioner är inte tillgänglig ännu</translation>
-    </message>
-    <message>
         <source>Select a version to see the agents it is installed on</source>
         <translation>Välj en version för att se agenterna den är installerad på</translation>
     </message>
@@ -3383,6 +3379,41 @@
     <message>
         <source>Deleting a service version</source>
         <translation>Ta bort en tjänstversion</translation>
+    </message>
+</context>
+<context>
+    <name>InstallServiceVersionDialog</name>
+    <message>
+        <source>Install version %1</source>
+        <translation>Installera version %1</translation>
+    </message>
+    <message>
+        <source>Install version</source>
+        <translation>Installera version</translation>
+    </message>
+    <message>
+        <source>Install</source>
+        <translation>Installera</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Avbryt</translation>
+    </message>
+    <message>
+        <source>Select all</source>
+        <translation>Markera alla</translation>
+    </message>
+    <message>
+        <source>%1 of %2 selected</source>
+        <translation>%1 av %2 markerade</translation>
+    </message>
+    <message>
+        <source>No approved agents</source>
+        <translation>Inga godkända agenter</translation>
+    </message>
+    <message>
+        <source>Loading...</source>
+        <translation>Laddar...</translation>
     </message>
 </context>
 </TS>
