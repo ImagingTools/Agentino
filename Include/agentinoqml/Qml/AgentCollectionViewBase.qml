@@ -153,7 +153,7 @@ RemoteCollectionView {
 			return Style.negativeAccentColor
 		}
 		if (status === "Pending"){
-			return Style.imaginToolsAccentColor
+			return Style.imagingToolsAccentColor
 		}
 		if (status === "Suspended" || status === "Disconnected"){
 			return Style.subtitleColor
