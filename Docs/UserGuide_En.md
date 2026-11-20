@@ -378,11 +378,25 @@ diagram shows only the blocks inside it. A navigation panel above the diagram
 shows the path from the root diagram (for example *Topology › Group ›
 Agent*); click a name in the path or the back arrow to return to that level.
 
+Connections between services are shown on every level: if linked services
+are inside different composite blocks (groups or agents), the line is drawn
+between these blocks, or between a block and a service shown on the diagram.
+If a service is linked with a service that is not on the shown diagram (e.g.
+outside of the shown group, or not added to the view), a link icon is shown in
+the top right corner of the service block; hovering the icon highlights it and
+shows the group and the name of the linked service.
+
 * **New group** — create a group on the current diagram (on the root diagram
   or inside another group) and enter its name.
 * **Add to group** — move the selected block into a group chosen from the
   list. A block belongs to one group only; a group cannot be moved into itself
   or into its subgroups.
+* **Drag and drop into a group** — drag a block over a group block: after a
+  short pause the group is enlarged, highlighted and starts blinking; release
+  the mouse button over the blinking group to add the block to it. Inside the
+  group the block appears at its last saved position. Pressing
+  **Escape** or moving the block away cancels; releasing before the group
+  blinks just moves the block. The adding can be undone with **Undo**.
 * **Remove from group** — move the selected block one level up: into the
   parent group, or back to its default place (a service to its agent, an agent
   or a group to the root diagram).
