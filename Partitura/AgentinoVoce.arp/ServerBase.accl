@@ -8,6 +8,7 @@
         </VersionInfos>
     </AcfHeader>
     <PositionMap>
+        <Element ComponentName="AccessChangePublisher" X="200" Y="225" Note=""/>
         <Element ComponentName="AgentChangeObserver" X="375" Y="700" Note=""/>
         <Element ComponentName="AgentinoHandlers" X="575" Y="225" Note=""/>
         <Element ComponentName="AgentinoLocalization" X="550" Y="450" Note=""/>
