@@ -1,7 +1,7 @@
 name: TeamCity CI
 
 # Calls the reusable TeamCity workflow of Acf. See .github/workflows/TEAMCITY_INTEGRATION.md in ImagingTools/Acf.
-# The build configurations are Projects_Agentino_Build_Windows_PR and Projects_Agentino_Build_Windows_Main.
+# The build configurations come from the repository variables TEAMCITY_BUILD_TYPE_<WINDOWS|LINUX>_<PR|MAIN>.
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
@@ -20,7 +20,4 @@ permissions:
 jobs:
   teamcity:
     uses: ImagingTools/Acf/.github/workflows/teamcity-ci.yml@v1
-    with:
-      platforms: '["windows"]'
-      build-type-prefix: Projects_Agentino
     secrets: inherit
