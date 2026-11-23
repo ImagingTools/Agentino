@@ -10,6 +10,22 @@
     <Description></Description>
     <Keywords></Keywords>
     <ElementsList>
+        <Element Id="AccessChangePublisher" PackageId="ImtServerGqlPck" ComponentId="AccessChangePublisher">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
+                        <Data IsEnabled="true">
+                            <Values>
+                                <Value>OnAccessChanged</Value>
+                            </Values>
+                        </Data>
+                    </AttributeInfo>
+                    <AttributeInfo Id="RequestManager" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="WebSocketServerFramework"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
         <Element Id="AgentChangeObserver" PackageId="AgentinoGqlPck" ComponentId="AgentChangeObserver">
             <Data IsEnabled="true" Flags="0">
                 <AttributeInfoMap>
@@ -639,6 +655,7 @@
                     <AttributeInfo Id="GqlSubscriberControllers" Type="Reference[]" ExportId="">
                         <Data IsEnabled="true">
                             <Values>
+                                <Value>AccessChangePublisher</Value>
                                 <Value>Subscribers/AgentSubscriberProxyController</Value>
                                 <Value>Subscribers/ServiceCollectionSubscriberController</Value>
                                 <Value>Subscribers/UserGroupsSubscriberController</Value>
