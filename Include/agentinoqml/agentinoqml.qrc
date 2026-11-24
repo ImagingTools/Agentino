@@ -37,6 +37,7 @@
 	<file alias="GqlBasedServiceController.qml">Qml/GqlBasedServiceController.qml</file>
 	<file alias="TerminalView.qml">Qml/TerminalView.qml</file>
 	<file alias="TerminalSessionPane.qml">Qml/TerminalSessionPane.qml</file>
+	<file alias="TerminalEmulator.js">Qml/TerminalEmulator.js</file>
 	<file alias="TerminalController.qml">Qml/TerminalController.qml</file>
 	<file alias="DataScope.qml">Qml/DataScope.qml</file>
 	<file alias="ServiceStatusModel.qml">Qml/ServiceStatusModel.qml</file>

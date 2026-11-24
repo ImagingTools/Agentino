@@ -7,6 +7,8 @@ import imtguigql 1.0
 import Qt.labs.platform 1.1
 import Qt.labs.settings 1.0
 
+import "TerminalEmulator.js" as Emulator
+
 /**
 	One terminal session tab content (Windows Terminal-style multi-tab host lives in TerminalView).
 
@@ -49,41 +51,28 @@ Item {
 	readonly property int idleCloseExitCode: -2;
 	readonly property int manualCloseExitCode: -1;
 
-	// ── Full-screen (alternate screen buffer) emulation state ───────────────
-	// Curses-style apps (vim, mc, top) switch the pty into the "alternate screen"
-	// (CSI ?1049h/?47h) and address a real 2D cursor; the line-oriented scrollback
-	// above cannot render that, so those bytes are routed to a small character-grid
-	// emulator instead and the two views are swapped based on altScreenActive.
+	// ── Terminal emulator state ─────────────────────────────────────────────
+	// The VT emulation (the grid of cells with their colors and attributes, the cursor, the modes and the parser of the escape
+	// sequences) is TerminalEmulator.js; see Docs/Architecture/TerminalFullScreenApps.md. The pane keeps mirrors of a few values of
+	// the emulator that the views bind to; syncEmulatorState() refreshes them after every chunk of the output.
+	property var emu: Emulator.create(80, 24);
+	// A program that switched to the alternate screen (CSI ?1049h) owns the whole pane: it is drawn by the grid view, not by the scrollback.
 	property bool altScreenActive: false;
-	property var screenGrid: [];
 	property int gridCols: 80;
 	property int gridRows: 24;
 	property int cursorRow: 0;
 	property int cursorCol: 0;
-	property bool wrapPending: false;
 	property bool cursorVisible: true;
-	property int scrollTop: 0;
-	property int scrollBottom: 23;
-	property var altSgrState: ({color: null, bold: false});
-	property string altPendingPartial: "";
-	property var savedCursorForDECSC: null;
-	// Bumped once per processed chunk so the grid delegates' text bindings
-	// (which read this property) know to re-evaluate; screenGrid is mutated
-	// in place and does not fire property-change notifications on its own.
+	// Bumped once per processed chunk so the grid delegates' text bindings (which read this property) know to re-evaluate;
+	// the grid of the emulator is changed in place and does not fire property-change notifications on its own.
 	property int screenVersion: 0;
-	// Held-back tail of a possibly-split alt-screen-transition sequence
-	// (\x1b[?1049h/l, \x1b[?47h/l) so it is not misread across two chunks.
-	property string routerPendingPartial: "";
 
 	// ── Primary screen ──────────────────────────────────────────────────────
-	// The pty (ConPTY on Windows) addresses the visible screen with cursor moves and
-	// repaints all of it after a resize, so the primary screen runs through the same grid
-	// emulator as the alternate one. Rows scrolled off its top are committed to the
-	// scrollback; the visible rows are rendered below it (currentLineHtml).
+	// The pty (ConPTY on Windows) addresses the visible screen with cursor moves and repaints all of it after a resize, so the
+	// primary screen is the same grid. Rows scrolled off its top are committed to the scrollback; the visible rows are rendered
+	// below it (currentLineHtml). A full-screen program that does not use the alternate screen (mc.exe) is drawn here.
 	property string currentLineHtml: "";
 	property string committedPlain: "";
-	// Primary grid state kept while a full-screen app owns the alternate screen.
-	property var savedPrimaryScreen: null;
 
 	// ── ANSI / HTML helpers ─────────────────────────────────────────────────
 
@@ -161,178 +150,75 @@ Item {
 		return result;
 	}
 
-	// Shared 16-colour SGR table, also used by the alt-screen grid emulator below
-	// (kept intentionally separate from ansiToHtml's own inline table: that function
-	// tracks the *effective* colour directly, this one tracks a null-able "no explicit
-	// colour set" state, so merging them would add a branch to already-working code
-	// for no real benefit).
-	function sgrColorForCode(code){
-		switch (code){
-		case 30: return "#000000";
-		case 31: return "#cc0000";
-		case 32: return "#00aa00";
-		case 33: return "#cccc00";
-		case 34: return "#0000cc";
-		case 35: return "#aa00aa";
-		case 36: return "#00aaaa";
-		case 37: return "#cccccc";
-		case 90: return "#666666";
-		case 91: return "#ff5555";
-		case 92: return "#55ff55";
-		case 93: return "#ffff55";
-		case 94: return "#5555ff";
-		case 95: return "#ff55ff";
-		case 96: return "#55ffff";
-		case 97: return "#ffffff";
-		}
-		return null;
+	// ── Terminal emulator glue ──────────────────────────────────────────────
+
+	// The colors that the emulator uses for the default foreground and background and for the cursor cell.
+	function emulatorOptions(){
+		return {defaultFg: Style.textColor, defaultBg: Style.baseColor, cursorFg: "#ffffff", cursorBg: Style.textSelectedColor};
 	}
 
-	// Mutates state {color, bold} from a list of already-split numeric SGR codes.
-	// state.color === null means "no explicit colour set, use the default".
-	function applySgrToState(codes, state){
-		for (let i = 0; i < codes.length; ++i){
-			let code = codes[i];
-			if (code === 0){
-				state.color = null;
-				state.bold = false;
-			}
-			else if (code === 1){
-				state.bold = true;
-			}
-			else if (code === 22){
-				state.bold = false;
-			}
-			else if (code === 39){
-				state.color = null;
-			}
-			else{
-				let mapped = root.sgrColorForCode(code);
-				if (mapped !== null){
-					state.color = mapped;
-				}
-			}
-		}
-	}
-
-	// ── Alt-screen character-grid emulator ───────────────────────────────────
-
-	function currentGridColor(){
-		return root.altSgrState.color !== null ? root.altSgrState.color : root.streamColor("STDOUT");
-	}
-
-	function makeBlankRow(cols, color){
-		let row = [];
-		for (let c = 0; c < cols; ++c){
-			row.push({ch: " ", color: color, bold: false});
-		}
-		return row;
-	}
-
-	function resetGrid(cols, rows){
-		root.gridCols = Math.max(1, cols);
-		root.gridRows = Math.max(1, rows);
-		root.scrollTop = 0;
-		root.scrollBottom = root.gridRows - 1;
-		root.cursorRow = 0;
-		root.cursorCol = 0;
-		root.wrapPending = false;
-		root.cursorVisible = true;
-		root.savedCursorForDECSC = null;
-		let grid = [];
-		for (let r = 0; r < root.gridRows; ++r){
-			grid.push(root.makeBlankRow(root.gridCols, root.currentGridColor()));
-		}
-		root.screenGrid = grid;
+	// Copies what the views bind to from the emulator and moves the focus when a program enters or leaves the alternate screen.
+	function syncEmulatorState(){
+		let wasAltScreen = root.altScreenActive;
+		root.altScreenActive = root.emu.altActive;
+		root.gridCols = root.emu.cols;
+		root.gridRows = root.emu.rows;
+		root.cursorRow = root.emu.cursorRow;
+		root.cursorCol = root.emu.cursorCol;
+		root.cursorVisible = root.emu.cursorVisible;
 		root.screenVersion++;
+		if (root.altScreenActive && !wasAltScreen){
+			gridView.forceActiveFocus();
+		}
+		else if (!root.altScreenActive && wasAltScreen && controller.running && !controller.connectionLost){
+			outputText.forceActiveFocus();
+		}
 	}
 
-	// Called whenever the panel's computed character size changes (see sendTerminalSize);
-	// curses apps redraw fully on SIGWINCH, so the grid is simply reset to the new size
-	// rather than trying to preserve/reflow stale content.
+	// A new empty emulator of this size (the output is cleared).
+	function createEmulator(cols, rows){
+		root.emu = Emulator.create(cols, rows);
+		// The rows that scroll off the top of the primary screen go to the scrollback.
+		root.emu.onScrollOut = root.commitGridRow;
+		root.syncEmulatorState();
+	}
+
+	// Called whenever the panel's computed character size changes (see sendTerminalSize). The pty repaints the screen after the
+	// resize; keeping the old rows until then avoids a blank flash.
 	function applyLocalGridSize(columns, rows){
 		if (columns === root.gridCols && rows === root.gridRows){
 			return;
 		}
-		if (root.altScreenActive){
-			root.resetGrid(columns, rows);
-			return;
-		}
-		// The pty repaints the primary screen after the resize; keeping the old rows
-		// until then avoids a blank flash.
-		root.resizeGridKeepingContent(columns, rows);
-		root.updatePrimaryScreen();
-	}
-
-	function resizeGridKeepingContent(cols, rows){
-		let newCols = Math.max(1, cols);
-		let newRows = Math.max(1, rows);
-		let grid = [];
-		for (let r = 0; r < newRows; ++r){
-			let row = root.makeBlankRow(newCols, root.currentGridColor());
-			let old = root.screenGrid[r];
-			if (old){
-				for (let c = 0; c < newCols && c < old.length; ++c){
-					row[c] = old[c];
-				}
-			}
-			grid.push(row);
-		}
-		root.screenGrid = grid;
-		root.gridCols = newCols;
-		root.gridRows = newRows;
-		root.scrollTop = 0;
-		root.scrollBottom = newRows - 1;
-		root.cursorRow = Math.min(root.cursorRow, newRows - 1);
-		root.cursorCol = Math.min(root.cursorCol, newCols - 1);
-		root.wrapPending = false;
-		root.screenVersion++;
-	}
-
-	function enterAltScreen(){
-		if (root.altScreenActive){
-			return;
-		}
-		root.savedPrimaryScreen = {
-			grid: root.screenGrid,
-			cols: root.gridCols,
-			rows: root.gridRows,
-			cursorRow: root.cursorRow,
-			cursorCol: root.cursorCol,
-			sgr: root.altSgrState
-		};
-		root.altScreenActive = true;
-		root.altSgrState = {color: null, bold: false};
-		root.altPendingPartial = "";
-		root.resetGrid(root.gridCols, root.gridRows);
-		gridView.forceActiveFocus();
-	}
-
-	function exitAltScreen(){
+		Emulator.resize(root.emu, columns, rows);
+		root.syncEmulatorState();
 		if (!root.altScreenActive){
-			return;
+			root.updatePrimaryScreen();
 		}
-		root.altScreenActive = false;
-		let saved = root.savedPrimaryScreen;
-		root.savedPrimaryScreen = null;
-		if (saved !== null){
-			let cols = root.gridCols;
-			let rows = root.gridRows;
-			root.screenGrid = saved.grid;
-			root.gridCols = saved.cols;
-			root.gridRows = saved.rows;
-			root.cursorRow = saved.cursorRow;
-			root.cursorCol = saved.cursorCol;
-			root.altSgrState = saved.sgr;
-			root.resizeGridKeepingContent(cols, rows);
+	}
+
+	// Feeds one chunk of the raw output of the pty to the emulator and sends what the terminal answers to its queries
+	// (device attributes, the position of the cursor) back to the pty.
+	function feedTerminal(text){
+		Emulator.feed(root.emu, text);
+		let replies = Emulator.takeReplies(root.emu);
+		if (replies.length > 0 && controller.running && !controller.connectionLost){
+			controller.sendRawInput(replies);
 		}
-		else{
-			root.resetGrid(root.gridCols, root.gridRows);
+		root.syncEmulatorState();
+		if (!root.altScreenActive){
+			root.updatePrimaryScreen();
 		}
-		root.updatePrimaryScreen();
-		if (controller.running && !controller.connectionLost){
-			outputText.forceActiveFocus();
+	}
+
+	// Rich-text for one grid row of the full-screen view, including the cursor cell. Reads screenVersion purely so this binding
+	// re-evaluates after each processed chunk (the grid itself is changed in place, not reassigned).
+	function gridRowHtml(rowIndex){
+		let dependency = root.screenVersion;
+		if (rowIndex >= root.emu.rows){
+			return "";
 		}
+		let cursorColumn = (root.cursorVisible && rowIndex === root.emu.cursorRow) ? root.emu.cursorCol : -1;
+		return "<span style=\"white-space:pre\">" + Emulator.rowHtml(root.emu, rowIndex, root.emulatorOptions(), cursorColumn, false) + "</span>";
 	}
 
 	function vtInputForKey(event){
@@ -388,478 +274,6 @@ Item {
 		}
 	}
 
-	function scrollGridUp(){
-		if (!root.altScreenActive && root.scrollTop === 0){
-			root.commitGridRow(root.screenGrid[0]);
-		}
-		let blank = root.makeBlankRow(root.gridCols, root.currentGridColor());
-		root.screenGrid.splice(root.scrollTop, 1);
-		root.screenGrid.splice(root.scrollBottom, 0, blank);
-	}
-
-	function scrollGridDown(){
-		let blank = root.makeBlankRow(root.gridCols, root.currentGridColor());
-		root.screenGrid.splice(root.scrollBottom, 1);
-		root.screenGrid.splice(root.scrollTop, 0, blank);
-	}
-
-	function moveCursorDownWithScroll(){
-		if (root.cursorRow >= root.scrollBottom){
-			root.scrollGridUp();
-		}
-		else if (root.cursorRow < root.gridRows - 1){
-			root.cursorRow++;
-		}
-	}
-
-	// Deferred wrap as in VT100: a character written into the last column leaves the cursor
-	// there and the next printable character wraps; an exactly full line followed by CR LF
-	// must not produce an extra blank row.
-	function gridPutChar(ch){
-		if (root.wrapPending){
-			root.wrapPending = false;
-			root.cursorCol = 0;
-			root.moveCursorDownWithScroll();
-		}
-		if (root.cursorRow >= 0 && root.cursorRow < root.gridRows){
-			let row = root.screenGrid[root.cursorRow];
-			if (row && root.cursorCol >= 0 && root.cursorCol < root.gridCols){
-				row[root.cursorCol] = {ch: ch, color: root.currentGridColor(), bold: root.altSgrState.bold};
-			}
-		}
-		if (root.cursorCol >= root.gridCols - 1){
-			root.wrapPending = true;
-		}
-		else{
-			root.cursorCol++;
-		}
-	}
-
-	function moveCursor(dRow, dCol){
-		root.cursorRow = Math.max(0, Math.min(root.gridRows - 1, root.cursorRow + dRow));
-		root.cursorCol = Math.max(0, Math.min(root.gridCols - 1, root.cursorCol + dCol));
-	}
-
-	function setCursorPosition(row1based, col1based){
-		root.cursorRow = Math.max(0, Math.min(root.gridRows - 1, row1based - 1));
-		root.cursorCol = Math.max(0, Math.min(root.gridCols - 1, col1based - 1));
-	}
-
-	function eraseInLine(mode){
-		let row = root.screenGrid[root.cursorRow];
-		if (!row){
-			return;
-		}
-		let from = 0;
-		let to = root.gridCols - 1;
-		if (mode === 0){
-			from = root.cursorCol;
-		}
-		else if (mode === 1){
-			to = root.cursorCol;
-		}
-		for (let c = from; c <= to; ++c){
-			row[c] = {ch: " ", color: root.currentGridColor(), bold: false};
-		}
-	}
-
-	function eraseInDisplay(mode){
-		if (mode === 2 || mode === 3){
-			for (let r = 0; r < root.gridRows; ++r){
-				root.screenGrid[r] = root.makeBlankRow(root.gridCols, root.currentGridColor());
-			}
-			return;
-		}
-		if (mode === 0){
-			root.eraseInLine(0);
-			for (let r = root.cursorRow + 1; r < root.gridRows; ++r){
-				root.screenGrid[r] = root.makeBlankRow(root.gridCols, root.currentGridColor());
-			}
-		}
-		else if (mode === 1){
-			root.eraseInLine(1);
-			for (let r = 0; r < root.cursorRow; ++r){
-				root.screenGrid[r] = root.makeBlankRow(root.gridCols, root.currentGridColor());
-			}
-		}
-	}
-
-	function insertLines(n){
-		for (let i = 0; i < n; ++i){
-			let blank = root.makeBlankRow(root.gridCols, root.currentGridColor());
-			root.screenGrid.splice(root.scrollBottom, 1);
-			root.screenGrid.splice(root.cursorRow, 0, blank);
-		}
-	}
-
-	function deleteLines(n){
-		for (let i = 0; i < n; ++i){
-			let blank = root.makeBlankRow(root.gridCols, root.currentGridColor());
-			root.screenGrid.splice(root.cursorRow, 1);
-			root.screenGrid.splice(root.scrollBottom, 0, blank);
-		}
-	}
-
-	function deleteChars(n){
-		let row = root.screenGrid[root.cursorRow];
-		if (!row){
-			return;
-		}
-		for (let i = 0; i < n; ++i){
-			row.splice(root.cursorCol, 1);
-			row.push({ch: " ", color: root.currentGridColor(), bold: false});
-		}
-	}
-
-	function insertChars(n){
-		let row = root.screenGrid[root.cursorRow];
-		if (!row){
-			return;
-		}
-		for (let i = 0; i < n; ++i){
-			row.splice(root.cursorCol, 0, {ch: " ", color: root.currentGridColor(), bold: false});
-			row.pop();
-		}
-	}
-
-	// Applies one parsed CSI sequence (params before the final byte, and the final
-	// byte itself) to the grid/cursor state. Sequences with no handling below
-	// (mouse reporting, bracketed paste, etc.) are recognized-and-ignored, same
-	// policy as ansiToHtml uses for the scrollback log.
-	function handleCsiSequence(paramsStr, finalByte){
-		if (finalByte !== "m"){
-			root.wrapPending = false;
-		}
-		let isPrivate = paramsStr.indexOf("?") === 0;
-		let cleanParams = isPrivate ? paramsStr.substring(1) : paramsStr;
-		let parts = cleanParams.length > 0 ? cleanParams.split(";") : [];
-		let nums = parts.map(function(p){ let v = parseInt(p, 10); return isNaN(v) ? 0 : v; });
-
-		let p = function(idx, def){
-			return (nums.length > idx && nums[idx] > 0) ? nums[idx] : def;
-		}
-
-		if (isPrivate){
-			if (finalByte === "h" || finalByte === "l"){
-				let enable = finalByte === "h";
-				for (let k = 0; k < nums.length; ++k){
-					if (nums[k] === 1049 || nums[k] === 47){
-						if (enable){ root.enterAltScreen(); } else { root.exitAltScreen(); }
-					}
-					else if (nums[k] === 25){
-						root.cursorVisible = enable;
-					}
-				}
-			}
-			return;
-		}
-
-		switch (finalByte){
-		case "H":
-		case "f":
-			root.setCursorPosition(p(0, 1), p(1, 1));
-			break;
-		case "A":
-			root.moveCursor(-p(0, 1), 0);
-			break;
-		case "B":
-			root.moveCursor(p(0, 1), 0);
-			break;
-		case "C":
-			root.moveCursor(0, p(0, 1));
-			break;
-		case "D":
-			root.moveCursor(0, -p(0, 1));
-			break;
-		case "G":
-			root.cursorCol = Math.max(0, Math.min(root.gridCols - 1, p(0, 1) - 1));
-			break;
-		case "d":
-			root.cursorRow = Math.max(0, Math.min(root.gridRows - 1, p(0, 1) - 1));
-			break;
-		case "J":
-			root.eraseInDisplay(nums.length > 0 ? nums[0] : 0);
-			break;
-		case "K":
-			root.eraseInLine(nums.length > 0 ? nums[0] : 0);
-			break;
-		case "S":
-			for (let s1 = 0; s1 < p(0, 1); ++s1){ root.scrollGridUp(); }
-			break;
-		case "T":
-			for (let s2 = 0; s2 < p(0, 1); ++s2){ root.scrollGridDown(); }
-			break;
-		case "L":
-			root.insertLines(p(0, 1));
-			break;
-		case "M":
-			root.deleteLines(p(0, 1));
-			break;
-		case "P":
-			root.deleteChars(p(0, 1));
-			break;
-		case "@":
-			root.insertChars(p(0, 1));
-			break;
-		case "r":
-			root.scrollTop = Math.max(0, p(0, 1) - 1);
-			root.scrollBottom = Math.min(root.gridRows - 1, p(1, root.gridRows) - 1);
-			root.cursorRow = 0;
-			root.cursorCol = 0;
-			break;
-		case "m":
-			root.applySgrToState(nums, root.altSgrState);
-			break;
-		case "t":
-			// ConPTY announces the size its following repaint is drawn for; a newer local
-			// resize may still be in flight, so the grid follows the pty here.
-			if (nums.length >= 3 && nums[0] === 8 && nums[1] > 0 && nums[2] > 0){
-				root.resizeGridKeepingContent(nums[2], nums[1]);
-			}
-			break;
-		default:
-			break;
-		}
-	}
-
-	// Feeds one chunk of raw pty bytes (already known to belong to the alternate
-	// screen) through a small VT state machine: cursor movement, erase, scroll
-	// region, insert/delete line/char and SGR are applied to screenGrid; anything
-	// else recognized (OSC, DECSC/DECRC, RIS, reverse line feed) is consumed
-	// without visible effect. An incomplete trailing escape is carried over to the
-	// next chunk via altPendingPartial, mirroring ansiToHtml's own carry-over.
-	function feedAltScreenData(text){
-		let src = root.altPendingPartial + text;
-		root.altPendingPartial = "";
-
-		let i = 0;
-		let n = src.length;
-		while (i < n){
-			let ch = src[i];
-
-			if (ch === "\x1b"){
-				if (i + 1 >= n){
-					root.altPendingPartial = src.substring(i);
-					break;
-				}
-				let next = src[i + 1];
-				if (next === "["){
-					let j = i + 2;
-					while (j < n && /[0-9;?]/.test(src[j])){
-						j++;
-					}
-					if (j >= n){
-						root.altPendingPartial = src.substring(i);
-						break;
-					}
-					root.handleCsiSequence(src.substring(i + 2, j), src[j]);
-					i = j + 1;
-					continue;
-				}
-				else if (next === "]"){
-					let bel = src.indexOf("\x07", i);
-					let st = src.indexOf("\x1b\\", i);
-					let endIdx = -1;
-					if (bel >= 0 && (st < 0 || bel < st)){
-						endIdx = bel + 1;
-					}
-					else if (st >= 0){
-						endIdx = st + 2;
-					}
-					if (endIdx < 0){
-						root.altPendingPartial = src.substring(i);
-						break;
-					}
-					i = endIdx;
-					continue;
-				}
-				else if (next === "7"){
-					root.savedCursorForDECSC = {row: root.cursorRow, col: root.cursorCol};
-					i += 2;
-					continue;
-				}
-				else if (next === "8"){
-					if (root.savedCursorForDECSC){
-						root.cursorRow = root.savedCursorForDECSC.row;
-						root.cursorCol = root.savedCursorForDECSC.col;
-					}
-					i += 2;
-					continue;
-				}
-				else if (next === "c"){
-					root.resetGrid(root.gridCols, root.gridRows);
-					i += 2;
-					continue;
-				}
-				else if (next === "M"){
-					if (root.cursorRow <= root.scrollTop){
-						root.scrollGridDown();
-					}
-					else{
-						root.cursorRow--;
-					}
-					i += 2;
-					continue;
-				}
-				else{
-					i += 2;
-					continue;
-				}
-			}
-			else if (ch === "\r"){
-				root.wrapPending = false;
-				root.cursorCol = 0;
-				i++;
-			}
-			else if (ch === "\n"){
-				root.wrapPending = false;
-				root.moveCursorDownWithScroll();
-				i++;
-			}
-			else if (ch === "\b"){
-				root.wrapPending = false;
-				if (root.cursorCol > 0){
-					root.cursorCol--;
-				}
-				i++;
-			}
-			else if (ch === "\t"){
-				root.wrapPending = false;
-				root.cursorCol = Math.min(root.gridCols - 1, (Math.floor(root.cursorCol / 8) + 1) * 8);
-				i++;
-			}
-			else{
-				let code = ch.charCodeAt(0);
-				if (code >= 32){
-					root.gridPutChar(ch);
-				}
-				i++;
-			}
-		}
-
-		root.screenVersion++;
-	}
-
-	// Rich-text for one grid row, including a highlighted cursor cell. Reads
-	// screenVersion purely so this binding re-evaluates after each processed chunk
-	// (screenGrid itself is mutated in place, not reassigned).
-	function gridRowHtml(rowIndex){
-		let dependency = root.screenVersion;
-		let row = root.screenGrid[rowIndex];
-		if (!row){
-			return "";
-		}
-
-		let inner = "";
-		let curColor = null;
-		let curBold = null;
-		let spanOpen = false;
-		for (let c = 0; c < row.length; ++c){
-			let cell = row[c];
-			let isCursorCell = root.cursorVisible && rowIndex === root.cursorRow && c === root.cursorCol;
-			if (cell.color !== curColor || cell.bold !== curBold || isCursorCell){
-				if (spanOpen){
-					inner += "</span>";
-				}
-				let style = "color:" + cell.color;
-				if (cell.bold){
-					style += ";font-weight:bold";
-				}
-				if (isCursorCell){
-					style += ";background-color:" + Style.textSelectedColor + ";color:#ffffff";
-				}
-				inner += "<span style=\"" + style + "\">";
-				spanOpen = true;
-				curColor = cell.color;
-				curBold = cell.bold;
-			}
-			inner += root.htmlEscape(cell.ch);
-		}
-		if (spanOpen){
-			inner += "</span>";
-		}
-		return "<span style=\"white-space:pre\">" + inner + "</span>";
-	}
-
-	// If the very end of text could be an in-progress prefix of one of the four
-	// alt-screen transition sequences (\x1b[?1049h/l, \x1b[?47h/l), returns the
-	// index where that possible prefix starts; otherwise -1. Used only for the
-	// "about to enter alt screen while still in scrollback mode" direction - once
-	// altScreenActive is true, feedAltScreenData's own altPendingPartial already
-	// carries over an incomplete exit sequence correctly.
-	function findAltTransitionPartialStart(text){
-		let idx = text.lastIndexOf("\x1b");
-		if (idx < 0){
-			return -1;
-		}
-		let candidate = text.substring(idx);
-		if (candidate.length >= 9){
-			return -1;
-		}
-		let targets = ["\x1b[?1049h", "\x1b[?1049l", "\x1b[?47h", "\x1b[?47l"];
-		for (let t = 0; t < targets.length; ++t){
-			if (targets[t].indexOf(candidate) === 0){
-				return idx;
-			}
-		}
-		return -1;
-	}
-
-	// Splits raw pty bytes at DEC alternate-screen-buffer transitions
-	// (\x1b[?1049h/l, \x1b[?47h/l) and routes each segment to the scrollback log
-	// (primary screen) or the character-grid emulator (alternate screen), toggling
-	// altScreenActive as each transition is seen. A transition sequence split
-	// across two chunks is held back in routerPendingPartial (see appendOutput)
-	// and completed once the rest arrives.
-	function routeTerminalBytes(text, streamId){
-		let re = /\x1b\[\??(1049|47)[hl]/g;
-		let last = 0;
-		let match = re.exec(text);
-		while (match){
-			let segment = text.substring(last, match.index);
-			if (segment.length > 0){
-				if (root.altScreenActive){
-					root.feedAltScreenData(segment);
-				}
-				else{
-					root.feedPrimary(segment, streamId);
-				}
-			}
-
-			if (match[0].charAt(match[0].length - 1) === "h"){
-				root.enterAltScreen();
-			}
-			else{
-				root.exitAltScreen();
-			}
-
-			last = match.index + match[0].length;
-			match = re.exec(text);
-		}
-
-		let tail = text.substring(last);
-		if (tail.length === 0){
-			return;
-		}
-
-		if (root.altScreenActive){
-			root.feedAltScreenData(tail);
-			return;
-		}
-
-		let partialIdx = root.findAltTransitionPartialStart(tail);
-		if (partialIdx >= 0){
-			let visible = tail.substring(0, partialIdx);
-			if (visible.length > 0){
-				root.feedPrimary(visible, streamId);
-			}
-			root.routerPendingPartial = tail.substring(partialIdx);
-		}
-		else{
-			root.feedPrimary(tail, streamId);
-		}
-	}
-
 	function streamColor(stream){
 		if (stream === "STDERR"){
 			return Style.errorColor;
@@ -882,12 +296,7 @@ Item {
 		root.committedPlain = "";
 		root.currentLineHtml = "";
 		root.startupOutputPhase = true;
-		root.altScreenActive = false;
-		root.savedPrimaryScreen = null;
-		root.routerPendingPartial = "";
-		root.altPendingPartial = "";
-		root.altSgrState = {color: null, bold: false};
-		root.resetGrid(root.gridCols, root.gridRows);
+		root.createEmulator(root.gridCols, root.gridRows);
 	}
 
 	// Entry point for every real process chunk: SYSTEM messages (our own synthetic
@@ -911,20 +320,14 @@ Item {
 			return;
 		}
 
-		root.routeTerminalBytes(root.routerPendingPartial + text, streamId);
-		root.routerPendingPartial = "";
-	}
-
-	function feedPrimary(text, streamId){
-		root.feedAltScreenData(text);
-		root.updatePrimaryScreen();
+		root.feedTerminal(text);
 	}
 
 	// Index of the last primary row worth showing: the cursor row or a later non-blank one.
 	function lastPrimaryRow(){
 		let last = root.cursorRow;
 		for (let r = root.gridRows - 1; r > last; --r){
-			if (root.lastUsedColumn(root.screenGrid[r]) >= 0){
+			if (root.lastUsedColumn(root.emu.grid[r]) >= 0){
 				return r;
 			}
 		}
@@ -932,58 +335,20 @@ Item {
 	}
 
 	function lastUsedColumn(row){
-		if (!row){
-			return -1;
-		}
-		for (let c = row.length - 1; c >= 0; --c){
-			if (row[c].ch !== " "){
-				return c;
-			}
-		}
-		return -1;
+		return Emulator.lastUsedColumn(row);
 	}
 
 	// One grid row as rich text without trailing blanks; cursorCol >= 0 draws the block cursor.
 	function primaryRowHtml(row, cursorCol){
-		let end = Math.max(root.lastUsedColumn(row), cursorCol);
-		let inner = "";
-		let curColor = null;
-		let curBold = null;
-		let spanOpen = false;
-		for (let c = 0; c <= end; ++c){
-			let cell = row[c] ? row[c] : {ch: " ", color: root.streamColor("STDOUT"), bold: false};
-			let isCursorCell = c === cursorCol;
-			if (cell.color !== curColor || cell.bold !== curBold || isCursorCell){
-				if (spanOpen){
-					inner += "</span>";
-				}
-				let style = "color:" + cell.color;
-				if (cell.bold){
-					style += ";font-weight:bold";
-				}
-				if (isCursorCell){
-					style += ";background-color:" + Style.textSelectedColor + ";color:#ffffff";
-				}
-				inner += "<span style=\"" + style + "\">";
-				spanOpen = true;
-				curColor = isCursorCell ? null : cell.color;
-				curBold = isCursorCell ? null : cell.bold;
-			}
-			inner += root.htmlEscape(cell.ch);
+		let inner = Emulator.rowHtml(root.emu, row, root.emulatorOptions(), cursorCol, true);
+		if (inner.length === 0){
+			return "";
 		}
-		if (spanOpen){
-			inner += "</span>";
-		}
-		return inner;
+		return "<span style=\"white-space:pre\">" + inner + "</span>";
 	}
 
 	function primaryRowText(row){
-		let end = root.lastUsedColumn(row);
-		let text = "";
-		for (let c = 0; c <= end; ++c){
-			text += row[c].ch;
-		}
-		return text;
+		return Emulator.rowText(root.emu, row);
 	}
 
 	function updatePrimaryScreen(){
@@ -992,7 +357,7 @@ Item {
 		let html = "";
 		let plain = "";
 		for (let r = 0; r <= last; ++r){
-			let row = root.screenGrid[r];
+			let row = root.emu.grid[r];
 			if (r > 0){
 				html += "<br/>";
 				plain += "\n";
@@ -1020,14 +385,15 @@ Item {
 	// Moves everything drawn on the primary screen into the scrollback and homes the cursor.
 	function flushPrimaryScreen(){
 		let last = root.lastPrimaryRow();
-		let hasContent = last > 0 || root.lastUsedColumn(root.screenGrid[0]) >= 0;
+		let hasContent = last > 0 || root.lastUsedColumn(root.emu.grid[0]) >= 0;
 		if (!hasContent){
 			return;
 		}
 		for (let r = 0; r <= last; ++r){
-			root.commitGridRow(root.screenGrid[r]);
+			root.commitGridRow(root.emu.grid[r]);
 		}
-		root.resetGrid(root.gridCols, root.gridRows);
+		Emulator.clearScreen(root.emu);
+		root.syncEmulatorState();
 	}
 
 	function appendScrollbackLine(html, plain){
@@ -1290,6 +656,7 @@ Item {
 	}
 
 	Component.onCompleted: {
+		root.createEmulator(root.gridCols, root.gridRows);
 		controller.agentId = root.agentId;
 		if (root.shellTypeId.length > 0){
 			root.startSession();
@@ -1309,6 +676,9 @@ Item {
 	// identically there and in the native QML build. The output font is proportional:
 	// the probe holds typical shell text, since a too narrow grid breaks lines early
 	// while a too wide one only wraps them visually.
+	// The terminal needs a monospace font: the cells of a grid are columns, and a frame of a full-screen program (mc) lines up only when
+	// every character is as wide as the others. The generic family is what the web build draws with the font of the browser.
+	readonly property string terminalFontFamily: Qt.platform.os === "windows" ? "Consolas" : "monospace";
 	readonly property int sizeMetricsProbeLength: 20;
 	readonly property real charWidth: sizeMetricsProbe.contentWidth / root.sizeMetricsProbeLength;
 	readonly property real charHeight: sizeMetricsProbe.contentHeight;
@@ -1318,7 +688,7 @@ Item {
 		visible: false;
 		text: "D:/Work/dir_name.txt";
 		wrapMode: Text.NoWrap;
-		font.family: Style.fontFamily
+		font.family: root.terminalFontFamily;
 		font.pixelSize: Style.fontSizeM;
 	}
 
@@ -1728,7 +1098,7 @@ Item {
 				persistentSelection: true;
 				textFormat: TextEdit.RichText;
 				wrapMode: TextEdit.WrapAnywhere;
-				font.family: Style.fontFamily
+				font.family: root.terminalFontFamily;
 				font.pixelSize: Style.fontSizeM;
 				color: Style.textColor;
 				selectionColor: Style.textSelectedColor;
@@ -1810,7 +1180,7 @@ Item {
 					width: gridView.width;
 					height: root.charHeight;
 					textFormat: Text.RichText;
-					font.family: Style.fontFamily
+					font.family: root.terminalFontFamily;
 					font.pixelSize: Style.fontSizeM;
 					text: root.gridRowHtml(index);
 				}

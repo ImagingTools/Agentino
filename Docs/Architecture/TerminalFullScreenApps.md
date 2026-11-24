@@ -140,6 +140,33 @@ emulator read the fixtures only, so they need no package.
 This gives the order of the stage 1: **background colors and bright foreground (SGR 40-47, 100-107, 90-97), `CSI X`, `CSI b`, the primary
 screen that is not scrolled into the scrollback by a full-screen program, a monospace font** - after that the recorded `mc` is drawn as it is.
 
+## Stage 1: done
+
+- `Include/agentinoqml/Qml/TerminalEmulator.js` (a `.pragma library`, no UI; it is in `agentinoqml.qrc`): the cell model (`fg`, `bg`, attribute mask), the
+  parser as a state machine that goes on across chunks, SGR completely (16, 256, truecolor, the `:` form, bold, dim, italic, underline, blink, inverse,
+  conceal, strike), erase with the background that is set, `CSI X`, `CSI b`, `CSI s/u`, CNL/CPL, tab stops, the sets of characters (`ESC ( 0`, SO/SI), the
+  modes (autowrap, origin, insert, cursor, alternate screen are used; application keys, bracketed paste, mouse and focus are kept for the next stages), the
+  replies (DA1/DA2, DSR 5/6, `CSI 18 t`), wide and combining characters, surrogate pairs, the title. `rowHtml` makes the RichText of a row.
+- `TerminalSessionPane.qml` uses it: the emulator code (about 630 lines) is gone from the pane, the primary screen and the alternate screen are the same
+  grid, a row is `<span style="white-space:pre">` with the spans of `rowHtml`, the terminal font is monospace (`Consolas` on Windows desktop, the generic
+  `monospace` elsewhere and in the web build), and the replies of the terminal are written to the pty.
+- The default foreground on a dark background of the program is light gray: `mc` sets a blue background and "default" for the text, which the dark
+  text color of the light theme would hide (the frames and the files that are not selected).
+- `Tests/TerminalEmulator/emulator.test.mjs` (`node --test`): the recorded `mc.exe` gives the screens of `@xterm/headless` after every chunk (text, colors,
+  attributes, cursor), the same stream character by character gives the same screen, and 22 tests of single sequences and of `rowHtml`.
+- Checked in the web build (the bundle compiled with the JQML 4 compiler from this worktree, in the page of a running server): `mc.exe` is drawn
+  with the colors of its skin, the frames and the columns line up, the selection moves with the arrow keys, the grid follows a change of the size of
+  the page (120x38, then 50x12) and `mc` redraws itself, and after F10 the prompt comes back.
+
+Not done in this stage (the next ones): the key table with modifiers, F11/F12 and application cursor keys; the mouse and bracketed paste; the
+selection and copy of the grid; `TERM=xterm-256color` on the agent; a full-screen program does not get the whole pane yet (its screen is the last
+rows of the scrollback view).
+
+Found while checking: `mc.exe` run by the agent of this machine (the service account) fails at the first start with `No such file or directory`
+for `C:/windows/TEMP/mc-<user>` and prints its messages with a wrong code page; it starts when `TEMP` and `TMP` are set to a folder that exists
+(`set TEMP=C:\Users\Public& set TMP=C:\Users\Public`). That is the environment of the agent, not the terminal. F9 shows no pull-down menu, with the
+reference emulator too: it is what `mc.exe` writes through ConPTY.
+
 ## Open questions
 
 - The recording does not have the mouse, the viewer (F3), the editor (F4) and the dialogs of copy: they are to be recorded for the stages 2 and 3 (the script of keys is in `record.mjs`). `mc` of Linux (with `?1049`, `ESC ( 0` in some skins) is to be recorded on a Linux agent.
