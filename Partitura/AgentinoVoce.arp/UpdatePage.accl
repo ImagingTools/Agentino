@@ -11,15 +11,17 @@
         <Element ComponentName="Demultiplexer" X="575" Y="75" Note=""/>
         <Element ComponentName="ServiceVersionCollection" X="150" Y="450" Note=""/>
         <Element ComponentName="ServiceVersionCollectionController" X="300" Y="250" Note=""/>
+        <Element ComponentName="ServiceVersionCollectionPersistence" X="150" Y="650" Note=""/>
         <Element ComponentName="ServiceVersionCommands" X="850" Y="250" Note=""/>
         <Element ComponentName="ServiceVersionHeadersProvider" X="450" Y="450" Note=""/>
+        <Element ComponentName="ServiceVersionInfo" X="150" Y="850" Note=""/>
     </PositionMap>
     <EmbeddedRegistries>
         <EmbededRegistry Id="ServiceVersionCommands">
             <PositionMap>
                 <Element ComponentName="CommandsController" X="575" Y="75" Note=""/>
+                <Element ComponentName="Add" X="200" Y="250" Note=""/>
                 <Element ComponentName="Install" X="950" Y="250" Note=""/>
-                <Element ComponentName="Load" X="200" Y="250" Note=""/>
                 <Element ComponentName="Remove" X="575" Y="250" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>

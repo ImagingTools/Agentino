@@ -1186,16 +1186,24 @@
         <translation>Версия</translation>
     </message>
     <message>
+        <source>Operating system</source>
+        <translation>Операционная система</translation>
+    </message>
+    <message>
         <source>Upload date</source>
         <translation>Дата загрузки</translation>
+    </message>
+    <message>
+        <source>Path</source>
+        <translation>Путь</translation>
     </message>
     <message>
         <source>Number of installations</source>
         <translation>Количество установок</translation>
     </message>
     <message>
-        <source>Load</source>
-        <translation>Загрузить</translation>
+        <source>Add</source>
+        <translation>Добавить</translation>
     </message>
     <message>
         <source>Install</source>
@@ -1503,8 +1511,12 @@
 <context>
     <name>ServiceVersionsView</name>
     <message>
-        <source>Loading of service versions is not available yet</source>
-        <translation>Загрузка версий сервиса пока недоступна</translation>
+        <source>Select the folder of a service version</source>
+        <translation>Выберите папку версии сервиса</translation>
+    </message>
+    <message>
+        <source>The folder of a service version must be selected</source>
+        <translation>Необходимо выбрать папку версии сервиса</translation>
     </message>
     <message>
         <source>Select a version to see the agents it is installed on</source>

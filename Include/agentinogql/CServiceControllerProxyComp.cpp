@@ -1333,28 +1333,25 @@ QJsonObject CServiceControllerProxyComp::CreateInternalResponse(
 
 bool CServiceControllerProxyComp::IsRequestSupported(const imtgql::CGqlRequest& gqlRequest) const
 {
+	// The generic 'RemoveElements' command (imtbase collection schema) isn't part of
+	// Services.sdl - accept it, but only for the 'Services' collection, so this proxy
+	// doesn't steal the command from unrelated collections (e.g. "ServiceVersions" of the
+	// "Update" page). Checked before the base class: the base accepts every command of the
+	// 'CommandIds' attribute, which lists 'RemoveElements', whatever the collection.
+	if (gqlRequest.GetCommandId() == sdl::V1_0::imtbase::CRemoveElementsGqlRequest::GetCommandId()){
+		const imtgql::CGqlParamObject* inputParamPtr = gqlRequest.GetParamObject("input");
+		if (inputParamPtr == nullptr){
+			return false;
+		}
+
+		return inputParamPtr->GetParamArgumentValue("collectionId").toByteArray() == QByteArrayLiteral("Services");
+	}
+
 	if (BaseClass::IsRequestSupported(gqlRequest)){
 		return true;
 	}
 
-	if (gqlRequest.GetCommandId() == QByteArrayLiteral("NotifyAgentServicesCollectionChanged")){
-		return true;
-	}
-
-	// The generic 'RemoveElements' command (imtbase collection schema) isn't part of
-	// Services.sdl, so CServicesGqlHandlerCompBase never recognizes it - accept it here
-	// too, but only for the 'Services' collection, so this proxy doesn't steal the
-	// command from unrelated collections.
-	if (gqlRequest.GetCommandId() != sdl::V1_0::imtbase::CRemoveElementsGqlRequest::GetCommandId()){
-		return false;
-	}
-
-	const imtgql::CGqlParamObject* inputParamPtr = gqlRequest.GetParamObject("input");
-	if (inputParamPtr == nullptr){
-		return false;
-	}
-
-	return inputParamPtr->GetParamArgumentValue("collectionId").toByteArray() == QByteArrayLiteral("Services");
+	return gqlRequest.GetCommandId() == QByteArrayLiteral("NotifyAgentServicesCollectionChanged");
 }
 
 

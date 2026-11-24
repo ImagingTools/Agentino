@@ -94,7 +94,7 @@ sdl::V1_0::agentino::CAgentOperatingSystemList CServiceUpdateControllerComp::OnA
 }
 
 
-// private methods
+// public static methods
 
 QString CServiceUpdateControllerComp::GetOperatingSystemFamily(const QString& operatingSystem)
 {
@@ -133,6 +133,8 @@ QString CServiceUpdateControllerComp::GetOperatingSystemFamily(const QString& op
 	return s_otherFamily;
 }
 
+
+// private methods
 
 QString CServiceUpdateControllerComp::GetAgentOperatingSystemFamily(const QByteArray& agentId) const
 {

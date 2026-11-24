@@ -1341,16 +1341,24 @@
         <translation>バージョン</translation>
     </message>
     <message>
+        <source>Operating system</source>
+        <translation>オペレーティングシステム</translation>
+    </message>
+    <message>
         <source>Upload date</source>
         <translation>アップロード日</translation>
+    </message>
+    <message>
+        <source>Path</source>
+        <translation>パス</translation>
     </message>
     <message>
         <source>Number of installations</source>
         <translation>インストール数</translation>
     </message>
     <message>
-        <source>Load</source>
-        <translation>読み込み</translation>
+        <source>Add</source>
+        <translation>追加</translation>
     </message>
     <message>
         <source>Install</source>
@@ -3330,8 +3338,12 @@
 <context>
     <name>ServiceVersionsView</name>
     <message>
-        <source>Loading of service versions is not available yet</source>
-        <translation>サービスバージョンの読み込みはまだ利用できません</translation>
+        <source>Select the folder of a service version</source>
+        <translation>サービスバージョンのフォルダーを選択</translation>
+    </message>
+    <message>
+        <source>The folder of a service version must be selected</source>
+        <translation>サービスバージョンのフォルダーを選択する必要があります</translation>
     </message>
     <message>
         <source>Select a version to see the agents it is installed on</source>

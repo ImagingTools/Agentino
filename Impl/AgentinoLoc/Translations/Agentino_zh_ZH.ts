@@ -1341,16 +1341,24 @@
         <translation>版本</translation>
     </message>
     <message>
+        <source>Operating system</source>
+        <translation>操作系统</translation>
+    </message>
+    <message>
         <source>Upload date</source>
         <translation>上传日期</translation>
+    </message>
+    <message>
+        <source>Path</source>
+        <translation>路径</translation>
     </message>
     <message>
         <source>Number of installations</source>
         <translation>安装数量</translation>
     </message>
     <message>
-        <source>Load</source>
-        <translation>加载</translation>
+        <source>Add</source>
+        <translation>添加</translation>
     </message>
     <message>
         <source>Install</source>
@@ -3330,8 +3338,12 @@
 <context>
     <name>ServiceVersionsView</name>
     <message>
-        <source>Loading of service versions is not available yet</source>
-        <translation>暂不支持加载服务版本</translation>
+        <source>Select the folder of a service version</source>
+        <translation>选择服务版本文件夹</translation>
+    </message>
+    <message>
+        <source>The folder of a service version must be selected</source>
+        <translation>必须选择服务版本文件夹</translation>
     </message>
     <message>
         <source>Select a version to see the agents it is installed on</source>

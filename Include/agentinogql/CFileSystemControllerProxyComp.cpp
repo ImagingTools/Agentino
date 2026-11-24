@@ -10,6 +10,23 @@ namespace agentinogql
 {
 
 
+// public methods
+
+// reimplemented (sdl::V1_0::imtbase::CFileSystemGqlHandlerCompBase)
+
+QJsonObject CFileSystemControllerProxyComp::CreateInternalResponse(const ::imtgql::CGqlRequest& gqlRequest, QString& errorMessage) const
+{
+	// No agent to route to: the file system of the server itself, if it may be browsed.
+	if (GetClientId(gqlRequest).isEmpty() && m_localFileSystemControllerCompPtr.IsValid()){
+		if (m_localFileSystemControllerCompPtr->IsRequestSupported(gqlRequest)){
+			return m_localFileSystemControllerCompPtr->CreateResponse(gqlRequest, errorMessage);
+		}
+	}
+
+	return BaseClass::CreateInternalResponse(gqlRequest, errorMessage);
+}
+
+
 // protected methods
 
 // reimplemented (sdl::V1_0::imtbase::CFileSystemGqlHandlerCompBase)
@@ -20,9 +37,29 @@ sdl::V1_0::imtbase::CGetFileSystemEntriesPayload CFileSystemControllerProxyComp:
 			QString& errorMessage) const
 {
 	// Require clientid so the request is routed to a concrete agent.
+	const QByteArray clientId = GetClientId(gqlRequest);
+	if (clientId.isEmpty()){
+		errorMessage = QStringLiteral(
+					"Unable to browse file system. Error: request header 'clientid' (agent id) is missing");
+		SendErrorMessage(0, errorMessage, "CFileSystemControllerProxyComp");
+
+		return sdl::V1_0::imtbase::CGetFileSystemEntriesPayload();
+	}
+
+	// Permission check is performed by CPermissibleGqlRequestHandlerComp base
+	// (CreateResponse → CheckPermissions) before this method is invoked.
+	return SendModelRequest<sdl::V1_0::imtbase::CGetFileSystemEntriesPayload>(gqlRequest, errorMessage);
+}
+
+
+// private methods
+
+QByteArray CFileSystemControllerProxyComp::GetClientId(const ::imtgql::CGqlRequest& gqlRequest)
+{
 	// HTTP layer lowercases header names; accept a few aliases defensively.
-	const imtgql::IGqlContext* contextPtr = gqlRequest.GetRequestContext();
 	QByteArray clientId;
+
+	const imtgql::IGqlContext* contextPtr = gqlRequest.GetRequestContext();
 	if (contextPtr != nullptr){
 		const imtgql::IGqlContext::Headers headers = contextPtr->GetHeaders();
 		clientId = headers.value(QByteArrayLiteral("clientid"));
@@ -42,18 +79,10 @@ sdl::V1_0::imtbase::CGetFileSystemEntriesPayload CFileSystemControllerProxyComp:
 		}
 	}
 
-	if (clientId.isEmpty()){
-		errorMessage = QStringLiteral(
-					"Unable to browse file system. Error: request header 'clientid' (agent id) is missing");
-		SendErrorMessage(0, errorMessage, "CFileSystemControllerProxyComp");
-
-		return sdl::V1_0::imtbase::CGetFileSystemEntriesPayload();
-	}
-
-	// Permission check is performed by CPermissibleGqlRequestHandlerComp base
-	// (CreateResponse → CheckPermissions) before this method is invoked.
-	return SendModelRequest<sdl::V1_0::imtbase::CGetFileSystemEntriesPayload>(gqlRequest, errorMessage);
+	return clientId;
 }
 
 
 } // namespace agentinogql
+
+
