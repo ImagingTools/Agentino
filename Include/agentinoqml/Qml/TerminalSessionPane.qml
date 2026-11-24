@@ -56,8 +56,11 @@ Item {
 	// sequences) is TerminalEmulator.js; see Docs/Architecture/TerminalFullScreenApps.md. The pane keeps mirrors of a few values of
 	// the emulator that the views bind to; syncEmulatorState() refreshes them after every chunk of the output.
 	property var emu: Emulator.create(80, 24);
-	// A program that switched to the alternate screen (CSI ?1049h) owns the whole pane: it is drawn by the grid view, not by the scrollback.
-	property bool altScreenActive: false;
+	// A program that owns the screen owns the whole pane: it is drawn by the grid view, not by the scrollback. It is a program of the alternate screen
+	// (CSI ?1049h) or one that draws the main screen (mc.exe under ConPTY, which has no alternate screen); see updateOwnership of the emulator.
+	property bool gridOwnsPane: false;
+	// The emulator is on its alternate buffer (the pane gives the screen back at once when it leaves it, and after a delay in the other case).
+	property bool altBuffer: false;
 	property int gridCols: 80;
 	property int gridRows: 24;
 	property int cursorRow: 0;
@@ -179,8 +182,9 @@ Item {
 
 	// Copies what the views bind to from the emulator and moves the focus when a program enters or leaves the alternate screen.
 	function syncEmulatorState(){
-		let wasAltScreen = root.altScreenActive;
-		root.altScreenActive = root.emu.altActive;
+		let wasOwned = root.gridOwnsPane;
+		let leftAltBuffer = root.altBuffer && !root.emu.altActive;
+		root.altBuffer = root.emu.altActive;
 		root.gridCols = root.emu.cols;
 		root.gridRows = root.emu.rows;
 		root.cursorRow = root.emu.cursorRow;
@@ -190,10 +194,34 @@ Item {
 		root.mouseReporting = root.emu.mouseMode > 0;
 		root.mouseTracking = root.emu.mouseMode === 1003;
 		root.screenVersion++;
-		if (root.altScreenActive && !wasAltScreen){
-			gridView.forceActiveFocus();
+
+		if (root.emu.altActive || root.emu.owned){
+			ownedOffTimer.stop();
+			root.gridOwnsPane = true;
+			if (!wasOwned){
+				gridView.forceActiveFocus();
+			}
 		}
-		else if (!root.altScreenActive && wasAltScreen && controller.running && !controller.connectionLost){
+		else if (wasOwned){
+			if (leftAltBuffer){
+				root.releaseGrid();
+			}
+			else if (!ownedOffTimer.running){
+				// Not at once: a program may clear its screen and draw it again in the next chunk.
+				ownedOffTimer.start();
+			}
+		}
+	}
+
+	// The pane goes back to the scrollback view when the program does not own the screen any more.
+	function releaseGrid(){
+		ownedOffTimer.stop();
+		if (root.emu.altActive || root.emu.owned || !root.gridOwnsPane){
+			return;
+		}
+		root.gridOwnsPane = false;
+		root.updatePrimaryScreen();
+		if (controller.running && !controller.connectionLost){
 			outputText.forceActiveFocus();
 		}
 	}
@@ -214,7 +242,7 @@ Item {
 		}
 		Emulator.resize(root.emu, columns, rows);
 		root.syncEmulatorState();
-		if (!root.altScreenActive){
+		if (!root.gridOwnsPane){
 			root.updatePrimaryScreen();
 		}
 	}
@@ -228,7 +256,7 @@ Item {
 			controller.sendRawInput(replies);
 		}
 		root.syncEmulatorState();
-		if (!root.altScreenActive){
+		if (!root.gridOwnsPane){
 			root.updatePrimaryScreen();
 		}
 	}
@@ -265,7 +293,7 @@ Item {
 	}
 
 	function sendAltScreenKey(event){
-		if (!root.altScreenActive || !controller.running || controller.connectionLost){
+		if (!root.gridOwnsPane || !controller.running || controller.connectionLost){
 			return;
 		}
 
@@ -317,7 +345,7 @@ Item {
 	function terminalCell(x, y){
 		let col = Math.floor((x - Style.marginS) / root.charWidth);
 		let row = 0;
-		if (root.altScreenActive){
+		if (root.gridOwnsPane){
 			row = Math.floor((y - Style.marginS) / root.charHeight);
 		}
 		else{
@@ -355,7 +383,7 @@ Item {
 			root.mouseButtonDown = mouse.button === Qt.RightButton ? 2 : 0;
 			root.sendMouse("press", root.mouseButtonDown, cell.row, cell.col);
 		}
-		else if (root.altScreenActive){
+		else if (root.gridOwnsPane){
 			// The program has no mouse: the pointer selects the cells.
 			root.selection = {r1: cell.row, c1: cell.col, r2: cell.row, c2: cell.col};
 			root.selecting = true;
@@ -392,8 +420,18 @@ Item {
 		}
 	}
 
+	// The wheel goes to the program as the mouse when it asked for the mouse. A program that owns the screen and did not (or cannot: ConPTY does not give
+	// the mouse to a console program) gets the arrow keys, three for a notch, as in the other terminals on the alternate screen.
 	function terminalWheel(direction){
-		root.sendMouse(direction < 0 ? "wheelUp" : "wheelDown", 0, root.lastMouseRow, root.lastMouseCol);
+		if (root.mouseReporting){
+			root.sendMouse(direction < 0 ? "wheelUp" : "wheelDown", 0, root.lastMouseRow, root.lastMouseCol);
+			return;
+		}
+		if (!controller.running || controller.connectionLost){
+			return;
+		}
+		let arrow = Emulator.encodeKey(root.emu, {key: direction < 0 ? Qt.Key_Up : Qt.Key_Down, text: "", ctrl: false, alt: false, shift: false});
+		controller.sendRawInput(arrow + arrow + arrow);
 	}
 
 	// The program that asked for the focus reports (?1004) is told when the view gets or loses it.
@@ -442,7 +480,7 @@ Item {
 
 		if (streamId === "SYSTEM"){
 			// Our own message goes below whatever the shell has drawn so far.
-			if (!root.altScreenActive){
+			if (!root.gridOwnsPane){
 				root.flushPrimaryScreen();
 			}
 			root.appendScrollbackText(text.endsWith("\n") ? text : text + "\n", streamId);
@@ -824,10 +862,17 @@ Item {
 	}
 
 	Timer {
+		id: ownedOffTimer;
+		interval: 400;
+		repeat: false;
+		onTriggered: root.releaseGrid();
+	}
+
+	Timer {
 		id: cursorBlinkTimer;
 		interval: 530;
 		repeat: true;
-		running: root.altScreenActive && root.cursorVisible && controller.running && gridView.activeFocus;
+		running: root.gridOwnsPane && root.cursorVisible && controller.running && gridView.activeFocus;
 		onTriggered: {
 			root.cursorBlinkOn = !root.cursorBlinkOn;
 			root.screenVersion++;
@@ -1222,7 +1267,7 @@ Item {
 			anchors.margins: Style.marginS;
 			anchors.rightMargin: Style.marginS + Style.marginM;
 
-			visible: !root.altScreenActive;
+			visible: !root.gridOwnsPane;
 			clip: true;
 			boundsBehavior: Flickable.StopAtBounds;
 			contentWidth: width;
@@ -1294,7 +1339,7 @@ Item {
 		}
 
 		CustomScrollbar {
-			visible: !root.altScreenActive;
+			visible: !root.gridOwnsPane;
 			z: outputFlickable.z + 1;
 			anchors.right: parent.right;
 			anchors.rightMargin: Style.marginXS;
@@ -1312,8 +1357,8 @@ Item {
 			anchors.fill: parent;
 			anchors.margins: Style.marginS;
 
-			visible: root.altScreenActive;
-			focus: root.altScreenActive;
+			visible: root.gridOwnsPane;
+			focus: root.gridOwnsPane;
 			clip: true;
 
 			onActiveFocusChanged: root.sendFocusEvent(activeFocus);
@@ -1350,7 +1395,7 @@ Item {
 			anchors.fill: parent;
 			z: 10;
 
-			enabled: root.altScreenActive || root.mouseReporting;
+			enabled: root.gridOwnsPane || root.mouseReporting;
 			hoverEnabled: true;
 			acceptedButtons: Qt.LeftButton | Qt.RightButton;
 
@@ -1367,7 +1412,7 @@ Item {
 			}
 
 			TerminalWheelHandler {
-				enabled: root.mouseReporting;
+				enabled: root.mouseReporting || root.gridOwnsPane;
 				onRolled: root.terminalWheel(direction);
 			}
 		}

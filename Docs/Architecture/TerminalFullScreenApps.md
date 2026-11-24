@@ -262,10 +262,58 @@ draw is in the first group, so nothing was changed for it. The remedy is to cut 
 and to draw them as `Text` items placed at `x = column * width of a cell` over the grid view; it is not done, and it works for the grid view only (the main screen
 is laid out as text).
 
-**The whole pane for a program that draws the main screen** (mc.exe): not done on purpose. There is no sign in the stream to tell `mc.exe` from a shell that
-cleared its screen (`CSI 2J` and the cursor addressing are what ConPTY writes for both), and a guess would take the pane from a shell. The screen of such a program
-is the last lines of the scrollback view, which draws it correctly and takes the keys; what it lacks is the mouse (ConPTY does not give it anyway) and the
-selection by the grid.
+**The whole pane for a program that draws the main screen** (mc.exe): not done in this stage, done in the stage 5 (a sign in the stream is found there).
+
+## Stage 5: the whole pane for a program on the main screen, and the mouse
+
+**The mouse on Windows: measured, and it cannot be done through ConPTY here.** On this Windows 10 (19045) three programs were run in a ConPTY and given the mouse as SGR
+sequences (`ESC [ < b ; x ; y M/m`):
+
+| program | what it asked for | what it got |
+|---|---|---|
+| `mc.exe` (4.8.31) | the mouse of the console | nothing: the selected row did not move, the menu did not open, the wheel did nothing |
+| a PowerShell program with `ENABLE_MOUSE_INPUT` (`ReadConsoleInput`) | the mouse events of the console API | no mouse event, only the characters of the X10 form as keys; the SGR sequences were swallowed |
+| a node program that asks for `?1000h ?1002h ?1006h` in its output and reads raw input | the mouse in the VT way | only the key that was typed afterwards: the SGR sequences were swallowed, and the modes it wrote were not passed to the terminal |
+
+So conhost of this Windows eats mouse input and passes no mouse mode, whatever the program does; the client cannot give a console program of a Windows agent the mouse (a newer
+conhost, Windows 11, passes it). Nothing was changed for it: the mouse is given to a program that asks for it with the modes of the terminal (a Linux agent, WSL, a newer ConPTY),
+as in the stage 3. What was done for the program that does not get the mouse:
+
+- **The wheel is the arrow keys** for a program that owns the screen and has no mouse mode: three Up or Down for a notch (`ESC [ A`, or `ESC O A` in the application mode), as in the
+  other terminals on the alternate screen. Checked: a wheel notch moved the selected row of a program by three.
+- **Selecting with the pointer works on the screen of the program**, as on the alternate screen (the text of the cells is copied with Ctrl+C).
+
+**The pane is the program's while it owns the screen** (`updateOwnership` in `TerminalEmulator.js`, `gridOwnsPane` in the pane). A program of the alternate screen owns it as far as the
+terminal is told. Under ConPTY nothing is told: the program writes the main screen with cursor addressing, and nothing in the stream says it is not a shell that wrote a screenful. The rule
+is about how the screen is written. A shell writes from the top down: its cursor is at the end of what it wrote (nothing under it), and the lines go up into the history when the screen
+is full. A program that owns the screen writes all of its screen at places, with its status line under the cursor, and it does not scroll the main screen while it draws. So the screen is
+the program's when
+
+- no line has scrolled off the top since the cursor was last put in the top row or the screen was last cleared (a program starts its screen at the top row; **ConPTY scrolls the old
+  lines up when a program clears the screen** - 15 lines in the live check, after a screenful of output of the shell - and that must not count against the program), and
+- at least 60% of the rows (and 5) are written, and
+- a written row is under the cursor;
+
+it keeps the screen while a quarter of the rows is written, and the first line that scrolls off ends it. The pane gives the screen back 400 ms after the rule stops to hold (a program may
+clear its screen and draw it again in the next chunk), at once when the real alternate buffer is left. While the program owns the pane the scrollback view is hidden, the cell under a
+point is plain arithmetic of the grid (so the mouse, when a program does have it, is mapped exactly), and the screen is not committed to the history.
+
+- **Tests** (`emulator.test.mjs`, 53 in all): the recordings of `mc.exe` (it owns the screen from its first full frame to its last; after it has quit the screen of the shell is not owned;
+  no gap while it runs, in the viewer, the editor, the dialogs, the help); shells that are never taken for a program (a few commands, a listing that nearly fills the screen written from
+  the top down, a long listing that scrolls, a progress bar that goes up and writes the lines again, a screenful after a clear, a shell that edits its line with absolute positions below
+  the top row and writes rows under the cursor); an editor that draws the main screen (taken, and given back when the shell is back; cleared and drawn again; ended by a line that
+  scrolls off; a program that starts after sixty lines of output, which ConPTY scrolls up).
+- **Live check** (web build, a test program that draws the main screen with cursor addressing only, with no alternate screen and no mouse modes, started after a screenful of output):
+  the pane was the program's from the first sample, the wheel moved its selection, a drag selected cells and Ctrl+C copied them, and after `q` the pane went back to the scrollback
+  400 ms later with the history and the prompt. `mc.exe` itself could not be started in the live session (the service account of the agent, see the stage 2); its recordings are in the tests.
+- **What the first live check found**: the first version ended the ownership at any line that scrolled off, and ConPTY scrolls 15 lines when the program clears; the rule is
+  narrowed to the scrolls since the cursor was in the top row (a test for it).
+
+**Found, and not done: the history of the web terminal is cut at 32767 characters.** The history is the rich text of thousands of lines in one `TextEdit`, and the engine gives every
+`TextEdit` the default `maximumLength` of a `TextInput`, 32767 (Qt has no such limit for a `TextEdit`). When the history is longer than that (about 250 lines) the end of it, with the
+prompt and the output that is being written, is not shown. Taking the limit away is not enough (it was tried: the page froze, because the engine lays out the whole rich text again for every
+chunk of the output). The history needs a window of its own (the last lines in the `TextEdit`, or a view of rows), which is a change of the pane and not of this stage; the check above was done
+with a history that fits.
 
 ## The desktop (Qt) client
 
@@ -297,4 +345,5 @@ resources of the exe: copy it from the main build). The first build needs minute
 - A monospace font that has the box-drawing and Cyrillic glyphs on every client (the browser decides for the generic `monospace`); if it is not good enough, a font file is bundled and loaded by the page.
 - The scrollback of a full-screen application is not kept (as in other terminals); the output of the primary screen is as it is now.
 - Wide characters and braille in the web build (see the glyph widths of the stage 4): the placed `Text` items for the grid view.
-- A sign for a full-screen program on the main screen (see the stage 4): without one the pane is not handed over.
+- The history of the web terminal is cut at 32767 characters (see the stage 5): it needs a window of the last lines.
+- A full-screen program that has nothing under its cursor (`less`: the cursor is in the last row) is not recognized on the main screen; it is drawn in the scrollback view as before.

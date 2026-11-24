@@ -558,3 +558,128 @@ test('the kept rich text stays with its row when the rows scroll, and is made ag
 	assert.notEqual(E.rowHtml(t, 0, { ...OPTIONS, defaultFg: '#222222' }, -1, true), first, 'another color is another text');
 	assert.equal(E.rowHtml(t, 0, OPTIONS, -1, true), first, 'and back');
 });
+
+// ── a program that owns the screen ──────────────────────────────────────────
+
+function ownedAfterEachChunk(recording) {
+	const t = E.create(recording.cols, recording.rows);
+	return recording.chunks.map((chunk) => {
+		E.feed(t, chunk.data);
+		return t.owned;
+	});
+}
+
+for (const { name, recording } of fixtures) {
+	test(`${name}: mc.exe owns the screen from its first full frame to its last (the main screen, no alternate screen)`, () => {
+		const owned = ownedAfterEachChunk(recording);
+		const first = owned.indexOf(true);
+		assert.ok(first > 0 && first < 12, `it takes the screen at the chunk ${first}`);
+		assert.equal(owned[0], false, 'not at the first chunk');
+		if (name === 'mc-dialogs') {
+			assert.ok(owned.slice(first).every(Boolean), 'dialogs, editor, viewer, help: it never lets go');
+		} else {
+			assert.equal(owned[owned.length - 1], false, 'the screen of the shell after mc has quit is not owned');
+			const last = owned.lastIndexOf(true);
+			assert.ok(owned.slice(first, last + 1).every(Boolean), 'no gap while it runs');
+		}
+	});
+}
+
+test('ownership: a shell is never taken for a program, whatever it writes', () => {
+	const prompt = 'C:/Users/user>';
+	const lines = (count, from = 1) => Array.from({ length: count }, (_, i) => `line ${from + i} of the listing`).join('\r\n');
+	// a banner, a few commands
+	const a = screenOf(`Microsoft Windows\r\n(c) Corporation\r\n\r\n${prompt}dir\r\n${lines(8)}\r\n\r\n${prompt}`, 80, 24);
+	assert.equal(a.owned, false, 'a few commands');
+	// a listing that nearly fills the screen: most rows are written, the cursor is under all of them
+	const b = screenOf(`${prompt}dir\r\n${lines(21)}\r\n${prompt}`, 80, 24);
+	assert.equal(b.owned, false, 'a screenful written from the top down');
+	assert.ok(E.lastUsedColumn(b.grid[22]) >= 0, 'the rows are written');
+	// output that scrolls
+	const c = screenOf(`${prompt}dir\r\n${lines(100)}\r\n${prompt}`, 80, 24);
+	assert.equal(c.owned, false, 'a long listing scrolls');
+	assert.ok(c.scrolledOut > 0);
+	// a progress bar: the cursor goes up and the lines are written again
+	const d = screenOf(`${prompt}build\r\n${lines(6)}\r\n[=====     ] 50%\r\n\x1b[2A\x1b[2K[=======   ] 70%\r\n\x1b[2K\r\n`, 80, 24);
+	assert.equal(d.owned, false, 'a progress bar');
+	// a screenful after a clear, the cursor under what was written
+	const e = screenOf(`\x1b[2J\x1b[H${lines(21)}\r\n${prompt}`, 80, 24);
+	assert.equal(e.owned, false, 'a clear and a screenful');
+});
+
+function vimLikeScreen(t) {
+	// the screen of an editor with an empty buffer: tildes under the first row, a status line at the bottom, the cursor at the top
+	let text = '\x1b[2J\x1b[H';
+	for (let row = 2; row <= t.rows - 1; row++) text += `\x1b[${row};1H~`;
+	text += `\x1b[${t.rows};1H\x1b[7m"[No Name]"                              0,0-1 All\x1b[0m\x1b[1;1H`;
+	return text;
+}
+
+test('ownership: an editor that draws the main screen with cursor addressing owns it, and gives it back when the shell is back', () => {
+	const t = E.create(80, 24);
+	E.feed(t, 'C:/Users/user>vim\r\n');
+	assert.equal(t.owned, false, 'before it has drawn');
+	E.feed(t, vimLikeScreen(t));
+	assert.equal(t.owned, true, 'the editor');
+	E.feed(t, 'x');
+	assert.equal(t.owned, true, 'typing in it');
+	E.feed(t, '\x1b[2J\x1b[HC:/Users/user>');
+	assert.equal(t.owned, false, 'the shell is back');
+});
+
+test('ownership: it may be cleared and drawn again; a line that scrolls off ends it; a clear starts the count again', () => {
+	const t = E.create(80, 24);
+	E.feed(t, vimLikeScreen(t));
+	assert.equal(t.owned, true);
+	E.feed(t, '\x1b[1;1H\x1b[2J');
+	assert.equal(t.owned, false, 'a cleared screen is a shell\'s until the program draws again');
+	E.feed(t, vimLikeScreen(t));
+	assert.equal(t.owned, true, 'drawn again');
+	E.feed(t, '\x1b[24;1H\n');
+	assert.equal(t.owned, false, 'a line scrolled off the top');
+	E.feed(t, vimLikeScreen(t));
+	assert.equal(t.owned, true, 'its clear started the count again');
+});
+
+test('ownership: a program that starts on a screen full of the output of a shell takes it (ConPTY scrolls the old lines up when the program clears)', () => {
+	const t = E.create(80, 24);
+	let history = 'C:/Users/user>dir\r\n';
+	for (let i = 1; i <= 60; i++) history += `line ${i} of the listing\r\n`;
+	E.feed(t, history + 'C:/Users/user>editor');
+	assert.ok(t.scrolledOut > 30, 'the listing scrolled');
+	assert.equal(t.owned, false);
+	// what ConPTY writes for the clear of the program: the visible lines go up, then the program draws from the top row
+	E.feed(t, '\n'.repeat(24));
+	assert.equal(t.owned, false, 'nothing to see yet');
+	E.feed(t, vimLikeScreen(t).replace('\x1b[2J\x1b[H', '\x1b[H'));
+	assert.equal(t.owned, true, 'the program has drawn its screen');
+	assert.equal(t.scrolledOut, 0, 'the top row reset the count');
+	E.feed(t, '\x1b[24;1H\n');
+	assert.equal(t.owned, false, 'and a line that scrolls off afterwards ends it');
+});
+
+test('ownership: a shell that positions the cursor below the top row, however often, is still a shell', () => {
+	const t = E.create(80, 24);
+	let text = '';
+	for (let i = 1; i <= 40; i++) text += `line ${i}\r\n`;
+	text += 'C:/Users/user>';
+	E.feed(t, text);
+	// the shell edits its line with absolute positions (PSReadLine under ConPTY) and writes a few rows under the cursor
+	E.feed(t, '\x1b[23;1H\x1b[K\x1b[23;16Hdir\x1b[24;1H\x1b[Kpredictions: dir /w  dir /s\x1b[23;19H');
+	assert.equal(t.owned, false);
+	assert.ok(t.scrolledOut > 0, 'the count is not reset by them');
+});
+
+test('ownership: the alternate screen is owned, and a resize keeps the state that the rows give', () => {
+	const t = E.create(80, 24);
+	E.feed(t, '\x1b[?1049h');
+	assert.equal(t.owned, true);
+	E.feed(t, '\x1b[?1049l');
+	assert.equal(t.owned, false);
+	E.feed(t, vimLikeScreen(t));
+	assert.equal(t.owned, true);
+	E.resize(t, 100, 30);
+	assert.equal(t.owned, true, 'still more than a quarter of the rows are written');
+	E.resize(t, 80, 24);
+	assert.equal(t.owned, true);
+});

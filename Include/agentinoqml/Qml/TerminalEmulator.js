@@ -9,6 +9,7 @@
 //   rowHtml(t, row, options)         the rich text of a row; rowText(t, row) the plain text
 //   resize(t, cols, rows)            the grid changes its size and keeps what it can
 //   encodeKey(t, key)                the bytes that a key of the keyboard sends to the pty (see below)
+//   t.owned                          true while a program owns the screen: the alternate screen, or a program that draws the main one (see updateOwnership)
 //   encodeMouse, encodePaste, encodeFocus   the bytes of a mouse event, of a paste and of the focus when the program asked for them
 //   selectionText, selectionColumns  the text of a rectangle-free (line by line) selection of the grid and its columns in a row
 //
@@ -128,6 +129,8 @@ function create(cols, rows){
 		title: "",
 		altActive: false,
 		savedPrimary: null,
+		owned: false,
+		scrolledOut: 0,
 		version: 0,
 		replies: [],
 		onScrollOut: null,
@@ -201,6 +204,8 @@ function clearScreen(t){
 
 // RIS: everything is as at the start
 function fullReset(t){
+	t.scrolledOut = 0;
+	t.owned = false;
 	t.fg = -1;
 	t.bg = -1;
 	t.fl = 0;
@@ -247,6 +252,7 @@ function resize(t, cols, rows){
 	t.cursorCol = Math.min(t.cursorCol, newCols - 1);
 	t.wrapPending = false;
 	resetTabs(t);
+	updateOwnership(t);
 	t.version++;
 }
 
@@ -254,6 +260,43 @@ function takeReplies(t){
 	var out = t.replies.join("");
 	t.replies = [];
 	return out;
+}
+
+// ── a program that owns the screen ──────────────────────────────────────────
+// A program of the alternate screen (vim, htop) owns the screen as far as the terminal is told. Under ConPTY the alternate screen is not told (it is the
+// main screen that is repainted with cursor addressing), and nothing in the stream tells such a program (mc.exe, vim, nano) from a shell that has written
+// a screenful. What tells them apart is how the screen is written: a shell writes from the top down and the cursor is at the end of what it wrote, so
+// there is nothing under the cursor and the lines go up into the history when the screen is full; a program that owns the screen writes its whole screen
+// at places, with its status line under the cursor, and does not scroll the main screen while it draws. So a program owns the screen when
+//   - nothing has scrolled off the top since the cursor was last put in the top row or the screen was last cleared (scrolledOut): a program starts
+//     its screen at the top row, and ConPTY scrolls the old lines up when a program clears the screen, which must not count against it, and
+//   - most of the rows are written (60% of them, and at least 5), and
+//   - there is a written row under the cursor,
+// and it keeps it while a quarter of the rows (at least 2) is written; the first line that scrolls off ends it. The view keeps a short delay before it
+// gives the pane back, because a program may clear its screen and write it again in the next chunk.
+function updateOwnership(t){
+	if (t.altActive){
+		t.owned = true;
+		return;
+	}
+	if (t.scrolledOut > 0){
+		t.owned = false;
+		return;
+	}
+	var used = 0;
+	var lastUsed = -1;
+	for (var r = 0; r < t.rows; ++r){
+		if (lastUsedColumn(t.grid[r]) >= 0){
+			used++;
+			lastUsed = r;
+		}
+	}
+	if (t.owned){
+		t.owned = used >= Math.max(2, Math.floor(t.rows * 0.25));
+	}
+	else{
+		t.owned = lastUsed > t.cursorRow && used >= Math.max(5, Math.ceil(t.rows * 0.6));
+	}
 }
 
 // ── the alternate screen ────────────────────────────────────────────────────
@@ -301,8 +344,11 @@ function exitAltScreen(t){
 // ── the grid ────────────────────────────────────────────────────────────────
 
 function scrollUp(t){
-	if (!t.altActive && t.scrollTop === 0 && t.onScrollOut !== null){
-		t.onScrollOut(t.grid[0]);
+	if (!t.altActive && t.scrollTop === 0){
+		t.scrolledOut++;
+		if (t.onScrollOut !== null){
+			t.onScrollOut(t.grid[0]);
+		}
 	}
 	t.grid.splice(t.scrollTop, 1);
 	t.grid.splice(t.scrollBottom, 0, blankRow(t, t.cols));
@@ -445,6 +491,7 @@ function eraseInLine(t, mode){
 function eraseInDisplay(t, mode){
 	var r;
 	if (mode === 2 || mode === 3){
+		t.scrolledOut = 0;
 		for (r = 0; r < t.rows; ++r){
 			t.grid[r] = blankRow(t, t.cols);
 		}
@@ -766,6 +813,10 @@ function csi(t, paramsText, intermediates, finalChar){
 	case "H":
 	case "f":
 		setCursor(t, p(0, 1) - 1, p(1, 1) - 1);
+		if (p(0, 1) === 1){
+			// the cursor goes to the top row: a program starts to draw its screen (see updateOwnership)
+			t.scrolledOut = 0;
+		}
 		break;
 	case "d":
 		setCursor(t, p(0, 1) - 1, t.cursorCol);
@@ -1121,6 +1172,7 @@ function feed(t, text){
 			break;
 		}
 	}
+	updateOwnership(t);
 	t.version++;
 }
 
