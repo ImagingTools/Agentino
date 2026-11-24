@@ -63,6 +63,8 @@ Item {
 	property int cursorRow: 0;
 	property int cursorCol: 0;
 	property bool cursorVisible: true;
+	// The cursor of the grid view blinks while the view has the focus; any output or key shows it again (the scrollback view does not blink: its text is laid out as a whole).
+	property bool cursorBlinkOn: true;
 	// Bumped once per processed chunk so the grid delegates' text bindings (which read this property) know to re-evaluate;
 	// the grid of the emulator is changed in place and does not fire property-change notifications on its own.
 	property int screenVersion: 0;
@@ -167,6 +169,14 @@ Item {
 		return {defaultFg: Style.textColor, defaultBg: Style.baseColor, cursorFg: "#ffffff", cursorBg: Style.textSelectedColor, selectionFg: "#ffffff", selectionBg: Style.textSelectedColor};
 	}
 
+	// The cursor is on and stays on for a whole interval after an output or a key, as in xterm.
+	function showCursorSolid(){
+		root.cursorBlinkOn = true;
+		if (cursorBlinkTimer.running){
+			cursorBlinkTimer.restart();
+		}
+	}
+
 	// Copies what the views bind to from the emulator and moves the focus when a program enters or leaves the alternate screen.
 	function syncEmulatorState(){
 		let wasAltScreen = root.altScreenActive;
@@ -176,6 +186,7 @@ Item {
 		root.cursorRow = root.emu.cursorRow;
 		root.cursorCol = root.emu.cursorCol;
 		root.cursorVisible = root.emu.cursorVisible;
+		root.showCursorSolid();
 		root.mouseReporting = root.emu.mouseMode > 0;
 		root.mouseTracking = root.emu.mouseMode === 1003;
 		root.screenVersion++;
@@ -229,7 +240,7 @@ Item {
 		if (rowIndex >= root.emu.rows){
 			return "";
 		}
-		let cursorColumn = (root.cursorVisible && rowIndex === root.emu.cursorRow) ? root.emu.cursorCol : -1;
+		let cursorColumn = (root.cursorVisible && root.cursorBlinkOn && rowIndex === root.emu.cursorRow) ? root.emu.cursorCol : -1;
 		let options = root.emulatorOptions();
 		if (root.selection !== null){
 			let range = Emulator.selectionColumns(root.selection, rowIndex, root.emu.cols);
@@ -268,6 +279,7 @@ Item {
 	// The keys of the grid view: the copy of the selection and the paste are the terminal's, the rest goes to the program.
 	function handleGridKey(event){
 		root.keyModifiers = event.modifiers;
+		root.showCursorSolid();
 		let ctrl = (event.modifiers & Qt.ControlModifier) !== 0;
 		let shift = (event.modifiers & Qt.ShiftModifier) !== 0;
 		if (ctrl && event.key === Qt.Key_C && (root.selection !== null || shift)){
@@ -809,6 +821,17 @@ Item {
 		wrapMode: Text.NoWrap;
 		font.family: root.terminalFontFamily;
 		font.pixelSize: Style.fontSizeM;
+	}
+
+	Timer {
+		id: cursorBlinkTimer;
+		interval: 530;
+		repeat: true;
+		running: root.altScreenActive && root.cursorVisible && controller.running && gridView.activeFocus;
+		onTriggered: {
+			root.cursorBlinkOn = !root.cursorBlinkOn;
+			root.screenVersion++;
+		}
 	}
 
 	Timer {

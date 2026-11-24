@@ -230,8 +230,47 @@ program: it follows from the line height of the scrollback view.
 Not done: the cursor blink; the selection and copy of the scrollback view in the web build (the engine does not select in rich text); the whole pane for a
 program that draws the main screen; the keypad in the application mode.
 
+## Stage 4: done
+
+Measured first, in the web build, with the 192 chunks of the recording `mc-dialogs` (72 KB) fed to the grid view of a running pane (the work of the pane
+for a chunk: the parser, the mirrors, the rich text of every row):
+
+| | before | after |
+|---|---|---|
+| a chunk (mean / median / 95th percentile / worst) | 6.96 / 6.9 / 8.2 / 10.3 ms | 1.18 / 0.5 / 4.0 / 8.0 ms |
+| the rich text of the 26 rows of a screen | 6.67 ms | 0.11 ms (all kept) |
+
+Nearly all of the 7 ms was the rich text of all the rows made again for every chunk, when a keystroke of `mc` changes two or three rows. So:
+
+- **The rich text is kept on the row** (`cacheKey`, `cacheHtml` on the array of the cells, made by `rowHtml` for the options, the cursor, the selection and `trim` it was
+  asked for). The rows are arrays that move with scroll, insert and delete of lines, so the text goes with the row. A change of the cells calls `touch(row)`: a character,
+  a combining character, an erase, an insert or delete of characters, DECALN, and the wide character that does not fit at the end of a line (7 places). The rows that are
+  replaced by new arrays (erase of the display, resize, the screens of the alternate buffer) have no kept text.
+- **The style of a cell is made once per combination** of foreground, background and attributes in a row (`buildRowHtml`), not once per cell.
+- **The test of it** (`emulator.test.mjs`): 1500 steps of random operations (text, cursor moves, SGR, erase, insert and delete of characters and lines, scroll, scroll
+  regions, the alternate screen, reset, resize, combining characters) on a small screen; before each step the rows are asked for one kind of text, after it the kept
+  text of every row is compared with the one made fresh. Checked by taking each of the 7 `touch` calls out in turn: the test fails for every one (the first version of the
+  test did not catch one of them, because it asked the rows for several kinds in a row, and the kept text is of one kind at a time; the test asks for the same kind
+  before and after now).
+- **The cursor blinks** in the grid view (a timer of 530 ms while the view has the focus), and stays on for an interval after any output and any key, as in xterm.
+  The scrollback view does not blink: its text is laid out as a whole, and a blink every half second would lay out the whole log again.
+
+**Glyph widths** in the monospace font of the browser (measured with the canvas that the engine measures with, in units of the width of "M"): ASCII, the box drawing
+characters, the block elements, Cyrillic, the arrows and the common symbols are exactly 1; wide characters (CJK) are 1.82 and braille is 1.37. A row with such a
+character is shifted to the left by 0.18 cell for each CJK character (0.37 for each braille one) from there on. What `mc` and the usual full-screen programs
+draw is in the first group, so nothing was changed for it. The remedy is to cut such characters out of the row (two blanks keep the columns and the background)
+and to draw them as `Text` items placed at `x = column * width of a cell` over the grid view; it is not done, and it works for the grid view only (the main screen
+is laid out as text).
+
+**The whole pane for a program that draws the main screen** (mc.exe): not done on purpose. There is no sign in the stream to tell `mc.exe` from a shell that
+cleared its screen (`CSI 2J` and the cursor addressing are what ConPTY writes for both), and a guess would take the pane from a shell. The screen of such a program
+is the last lines of the scrollback view, which draws it correctly and takes the keys; what it lacks is the mouse (ConPTY does not give it anyway) and the
+selection by the grid.
+
 ## Open questions
 
 - The recording does not have the mouse, the viewer (F3), the editor (F4) and the dialogs of copy: they are to be recorded for the stages 2 and 3 (the script of keys is in `record.mjs`). `mc` of Linux (with `?1049`, `ESC ( 0` in some skins) is to be recorded on a Linux agent.
 - A monospace font that has the box-drawing and Cyrillic glyphs on every client (the browser decides for the generic `monospace`); if it is not good enough, a font file is bundled and loaded by the page.
 - The scrollback of a full-screen application is not kept (as in other terminals); the output of the primary screen is as it is now.
+- Wide characters and braille in the web build (see the glyph widths of the stage 4): the placed `Text` items for the grid view.
+- A sign for a full-screen program on the main screen (see the stage 4): without one the pane is not handed over.

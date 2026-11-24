@@ -16,12 +16,13 @@ const plain = (value) => JSON.parse(JSON.stringify(value));
 const assert = {
 	deepEqual: (actual, expected, message) => assertModule.deepEqual(plain(actual), plain(expected), message),
 	equal: (actual, expected, message) => assertModule.equal(actual, expected, message),
+	notEqual: (actual, expected, message) => assertModule.notEqual(actual, expected, message),
 	ok: (value, message) => assertModule.ok(value, message),
 };
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const source = fs.readFileSync(path.join(here, '..', '..', 'Include', 'agentinoqml', 'Qml', 'TerminalEmulator.js'), 'utf8').replace(/^\.pragma library/m, '');
-const E = vm.runInNewContext(`${source}\n({ create, feed, resize, takeReplies, rowText, rowHtml, lastUsedColumn, clearScreen, encodeKey, encodeMouse, encodePaste, encodeFocus, selectionText, selectionColumns, FL_BOLD, FL_INVERSE, FL_UNDERLINE, FL_DIM, FL_ITALIC, FL_STRIKE, RGB_BASE })`);
+const E = vm.runInNewContext(`${source}\n({ create, feed, resize, takeReplies, rowText, rowHtml, lastUsedColumn, clearScreen, encodeKey, encodeMouse, encodePaste, encodeFocus, selectionText, selectionColumns, buildRowHtml, FL_BOLD, FL_INVERSE, FL_UNDERLINE, FL_DIM, FL_ITALIC, FL_STRIKE, RGB_BASE })`);
 
 // every recording of fixtures/ (made by tools/record.mjs) with the screens that the reference gave for it (tools/reference.mjs)
 const fixtureDir = path.join(here, 'fixtures');
@@ -485,4 +486,75 @@ test('rowHtml: the selected columns have the selection colors, the cursor goes o
 	const options = { defaultFg: '#111111', defaultBg: '#ffffff', cursorFg: '#ffffff', cursorBg: '#005fb8', selectionFg: '#fefefe', selectionBg: '#336699', selectedFrom: 1, selectedTo: 2 };
 	assert.equal(E.rowHtml(t, 0, options, -1, true), '<span style="color:#111111">a</span><span style="color:#fefefe;background-color:#336699">bc</span><span style="color:#111111">d</span>');
 	assert.ok(E.rowHtml(t, 0, options, 2, true).includes('<span style="color:#ffffff;background-color:#005fb8">c</span>'));
+});
+
+// ── the rich text kept on the rows ──────────────────────────────────────────
+
+// A generator of numbers that is the same on every run, so that a failure can be repeated.
+function seeded(seed) {
+	let a = seed >>> 0;
+	return () => {
+		a = (a + 0x6d2b79f5) >>> 0;
+		let t = Math.imul(a ^ (a >>> 15), 1 | a);
+		t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+		return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+	};
+}
+
+const OPTIONS = { defaultFg: '#111111', defaultBg: '#ffffff', cursorFg: '#ffffff', cursorBg: '#005fb8', selectionFg: '#ffffff', selectionBg: '#336699' };
+
+// The kept text of a row is of one kind at a time (the last one asked for), so a check has to ask for the same kind before and after a change.
+function variantOf(random) {
+	const trim = random() < 0.5;
+	const cursorCol = [-1, -1, 0, 3, 7][Math.floor(random() * 5)];
+	const options = { ...OPTIONS };
+	if (random() < 0.4) {
+		options.selectedFrom = Math.floor(random() * 5);
+		options.selectedTo = options.selectedFrom + Math.floor(random() * 6);
+	}
+	return { options, cursorCol, trim };
+}
+
+test('the kept rich text of a row is the one that is made fresh, after every kind of change of a screen', () => {
+	const random = seeded(12345);
+	const pick = (list) => list[Math.floor(random() * list.length)];
+	const number = (max) => 1 + Math.floor(random() * max);
+	const operations = [
+		() => Array.from({ length: number(14) }, () => pick(['a', 'b', 'X', ' ', 'ж', '中', 'é', '😀', '-'])).join(''),
+		() => `\x1b[${number(8)};${number(14)}H`,
+		() => `\x1b[${number(5)}${pick(['A', 'B', 'C', 'D', 'G', 'd'])}`,
+		() => pick(['\x1b[0m', '\x1b[1m', '\x1b[31m', '\x1b[44;93m', '\x1b[7m', '\x1b[4m', '\x1b[38;5;200m', '\x1b[48;2;10;20;30m', '\x1b[2m', '\x1b[9m', '\x1b[22;27m']),
+		() => `\x1b[${number(4)}${pick(['X', 'P', '@', 'L', 'M', 'S', 'T', 'b'])}`,
+		() => `\x1b[${pick([0, 1, 2])}${pick(['K', 'J'])}`,
+		() => pick(['\r\n', '\n\n', '\r', '\b', '\t', '\x1bM', '\x1bD', '\x1bE']),
+		() => pick(['\x1b[2;5r', '\x1b[r', '\x1b[1;3r', '\x1b[4h', '\x1b[4l', '\x1b[?7l', '\x1b[?7h', '\x1b#8', '\x1b7', '\x1b8', '\x1b[s', '\x1b[u']),
+		() => pick(['\x1b[?1049h', '\x1b[?1049l', '\x1bc']),
+		() => pick(['́', '́̂', '​']), // a combining character alone goes to the cell before the cursor
+	];
+	const t = E.create(14, 8);
+	let checked = 0;
+	for (let step = 0; step < 1500; step++) {
+		// the kept text of every row is made for a kind, then something changes, then every kept text is checked for the same kind
+		const { options, cursorCol, trim } = variantOf(random);
+		for (let r = 0; r < t.rows; r++) E.rowHtml(t, r, options, cursorCol, trim);
+		const operation = pick(operations)();
+		if (step % 97 === 96) E.resize(t, number(6) + 8, number(5) + 5);
+		else E.feed(t, operation);
+		for (let r = 0; r < t.rows; r++) {
+			const kept = E.rowHtml(t, r, options, cursorCol, trim);
+			const fresh = E.buildRowHtml(t.grid[r], options, cursorCol, trim);
+			if (kept !== fresh) assertModule.fail(`step ${step} after ${JSON.stringify(operation)}: row ${r}, trim ${trim}, cursor ${cursorCol}: kept ${kept} fresh ${fresh}`);
+			checked++;
+		}
+	}
+	assert.ok(checked > 10000);
+});
+
+test('the kept rich text stays with its row when the rows scroll, and is made again when the options change', () => {
+	const t = screenOf('one\r\ntwo\r\nthree\r\nfour', 8, 4);
+	const first = E.rowHtml(t, 1, OPTIONS, -1, true);
+	E.feed(t, '\r\nfive');
+	assert.equal(E.rowHtml(t, 0, OPTIONS, -1, true), first, 'the row "two" went up and its text with it');
+	assert.notEqual(E.rowHtml(t, 0, { ...OPTIONS, defaultFg: '#222222' }, -1, true), first, 'another color is another text');
+	assert.equal(E.rowHtml(t, 0, OPTIONS, -1, true), first, 'and back');
 });

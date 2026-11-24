@@ -152,6 +152,12 @@ function create(cols, rows){
 	return t;
 }
 
+// A row that changed forgets the rich text that rowHtml made for it. The rows are arrays that travel with the scroll, insert and delete of lines, so the
+// text stays with the row; only a change of its cells (a character, an erase, an insert or a delete of characters) has to say so.
+function touch(cells){
+	cells.cacheKey = null;
+}
+
 function blankCell(t){
 	return {ch: " ", fg: -1, bg: t.bg, fl: 0};
 }
@@ -370,6 +376,7 @@ function putChar(t, text, code){
 		if (row0 && at >= 0){
 			var prev = row0[at];
 			row0[at] = {ch: prev.ch + text, fg: prev.fg, bg: prev.bg, fl: prev.fl};
+			touch(row0);
 		}
 		return;
 	}
@@ -384,6 +391,7 @@ function putChar(t, text, code){
 		// a wide character does not fit at the end of the line
 		if (t.autoWrap){
 			t.grid[t.cursorRow][t.cursorCol] = blankCell(t);
+			touch(t.grid[t.cursorRow]);
 			t.cursorCol = 0;
 			lineFeed(t);
 		}
@@ -392,6 +400,7 @@ function putChar(t, text, code){
 		}
 	}
 	var row = t.grid[t.cursorRow];
+	touch(row);
 	if (t.insertMode){
 		for (var i = 0; i < width; ++i){
 			row.splice(t.cursorCol, 0, blankCell(t));
@@ -415,6 +424,7 @@ function putChar(t, text, code){
 
 function eraseCells(t, row, from, to){
 	var cells = t.grid[row];
+	touch(cells);
 	for (var c = Math.max(0, from); c <= to && c < t.cols; ++c){
 		cells[c] = blankCell(t);
 	}
@@ -479,6 +489,7 @@ function deleteLines(t, n){
 
 function deleteChars(t, n){
 	var row = t.grid[t.cursorRow];
+	touch(row);
 	var count = Math.min(n, t.cols - t.cursorCol);
 	row.splice(t.cursorCol, count);
 	for (var i = 0; i < count; ++i){
@@ -488,6 +499,7 @@ function deleteChars(t, n){
 
 function insertChars(t, n){
 	var row = t.grid[t.cursorRow];
+	touch(row);
 	var count = Math.min(n, t.cols - t.cursorCol);
 	for (var i = 0; i < count; ++i){
 		row.splice(t.cursorCol, 0, blankCell(t));
@@ -911,6 +923,7 @@ function escape(t, intermediates, finalChar){
 		}
 		else if (intermediates === "#" && finalChar === "8"){
 			for (var r = 0; r < t.rows; ++r){
+				touch(t.grid[r]);
 				for (var c = 0; c < t.cols; ++c){
 					t.grid[r][c] = {ch: "E", fg: -1, bg: -1, fl: 0};
 				}
@@ -1246,11 +1259,26 @@ function cellStyle(cell, options, isCursor, isSelected){
 
 // The rich text of a row (spans of the cells with the same style, no wrapper). cursorCol >= 0 draws the cursor cell; trim: the cells
 // after the last one that shows something are left out (a row of the scrollback), otherwise the whole row is made (a row of a full-screen view).
+// The text is kept on the row (cacheKey, cacheHtml) with what it was made for (the options, the cursor, the selection, trim) until a change of the cells
+// of the row (touch): of a screen of a program only the rows that it wrote to are made again.
 function rowHtml(t, row, options, cursorCol, trim){
 	var cells = typeof row === "number" ? t.grid[row] : row;
 	if (!cells){
 		return "";
 	}
+	var key = (trim ? "t" : "f") + "|" + cursorCol + "|" + options.defaultFg + "|" + options.defaultBg + "|" + options.cursorFg + "|" + options.cursorBg
+		+ "|" + options.selectionFg + "|" + options.selectionBg + "|" + options.selectedFrom + "|" + options.selectedTo;
+	if (cells.cacheKey === key){
+		return cells.cacheHtml;
+	}
+	var html = buildRowHtml(cells, options, cursorCol, trim);
+	cells.cacheKey = key;
+	cells.cacheHtml = html;
+	return html;
+}
+
+// rowHtml without the kept text.
+function buildRowHtml(cells, options, cursorCol, trim){
 	options = {
 		defaultFg: hexColor(options.defaultFg, "#000000"),
 		defaultBg: hexColor(options.defaultBg, "#ffffff"),
@@ -1265,6 +1293,8 @@ function rowHtml(t, row, options, cursorCol, trim){
 	var html = "";
 	var open = false;
 	var current = "";
+	// the style of the cells that are neither the cursor nor selected depends on three numbers: it is made once for each of the combinations in the row
+	var styles = {};
 	for (var c = 0; c <= end; ++c){
 		var cell = cells[c];
 		if (!cell){
@@ -1273,7 +1303,18 @@ function rowHtml(t, row, options, cursorCol, trim){
 		if (cell.ch === ""){
 			continue; // the second half of a wide character
 		}
-		var style = cellStyle(cell, options, c === cursorCol, c >= options.selectedFrom && c <= options.selectedTo);
+		var style;
+		if (c === cursorCol || (c >= options.selectedFrom && c <= options.selectedTo)){
+			style = cellStyle(cell, options, c === cursorCol, c >= options.selectedFrom && c <= options.selectedTo);
+		}
+		else{
+			var styleKey = cell.fg + "," + cell.bg + "," + cell.fl;
+			style = styles[styleKey];
+			if (style === undefined){
+				style = cellStyle(cell, options, false, false);
+				styles[styleKey] = style;
+			}
+		}
 		if (!open || style !== current){
 			if (open){
 				html += "</span>";
