@@ -4,42 +4,53 @@ import com.imtcore.imtqml 1.0
 import imtgui 1.0
 import imtcolgui 1.0
 
-// Commands of the versions page of a service (ServiceVersionsView.qml): Add, Remove, Install.
-// Add opens the choice of the folder of a version on the server (enabled when the page shows the
-// versions of one operating system family - addEnabled);
+// Commands of the versions page of a service (ServiceVersionsView.qml): Add, Remove, Install, Set service folder.
+// Add opens the choice of the folder of a version inside the folder of the service versions (enabled
+// when the page shows the versions of one operating system family and that folder is set - addEnabled);
 // Remove is the standard collection command (enabled with a selection, removes the selected versions);
-// Install is enabled with a selection as well.
+// Install is enabled with a selection as well;
+// Set service folder opens the choice of the folder of the service versions for the operating system
+// family of the page (enabled when the page shows one family - setServiceFolderEnabled).
 CollectionViewCommandsDelegateBase {
 	id: container
 
 	removeDialogTitle: qsTr("Deleting a service version")
 	removeNameFieldId: "version"
 
-	// A version can be added: the page shows the versions of one operating system family.
+	// A version can be added: one operating system family, the folder of its versions is set.
 	property bool addEnabled: true
+	// The folder of the versions can be set: the page shows the versions of one operating system family.
+	property bool setServiceFolderEnabled: true
 
 	signal addRequested()
 	signal installRequested(var versionIds)
+	signal setServiceFolderRequested()
 
-	function updateAddCommand(){
+	function updatePageCommands(){
 		if (container.collectionView && container.collectionView.commandsController){
 			container.collectionView.commandsController.setCommandIsEnabled("Add", container.addEnabled)
+			container.collectionView.commandsController.setCommandIsEnabled("SetServiceFolder", container.setServiceFolderEnabled)
 		}
 	}
 
 	function updateStateCustomCommands(selection, commandsController, elementsModel){
 		commandsController.setCommandIsEnabled("Add", container.addEnabled)
+		commandsController.setCommandIsEnabled("SetServiceFolder", container.setServiceFolderEnabled)
 		commandsController.setCommandIsEnabled("Install", selection.length > 0)
 	}
 
 	onAddEnabledChanged: {
-		container.updateAddCommand()
+		container.updatePageCommands()
 	}
 
-	// Add comes from the server enabled; a change made before the commands arrive is applied on their
-	// arrival (CommandsController.pendingChanges).
+	onSetServiceFolderEnabledChanged: {
+		container.updatePageCommands()
+	}
+
+	// Add and Set service folder come from the server disabled; a change made before the commands
+	// arrive is applied on their arrival (CommandsController.pendingChanges).
 	Component.onCompleted: {
-		container.updateAddCommand()
+		container.updatePageCommands()
 	}
 
 	onCommandActivated: {
@@ -56,6 +67,9 @@ CollectionViewCommandsDelegateBase {
 		}
 		else if (commandId === "Install"){
 			container.installRequested(container.collectionView.getSelectedIds())
+		}
+		else if (commandId === "SetServiceFolder"){
+			container.setServiceFolderRequested()
 		}
 	}
 }

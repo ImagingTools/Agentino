@@ -13,6 +13,7 @@
 
 // Agentino includes
 #include <agentinodata/IServiceManager.h>
+#include <agentinodata/IServiceVersionFolders.h>
 #include <agentinogql/IEnrollmentController.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Updates_fwd.h>
 
@@ -37,7 +38,9 @@ namespace agentinogql
 	of them), and a version counts as installed on the agents of its own family only.
 
 	A version is added by AddServiceVersion: a folder on the server, its name is the version; the
-	operating system family, the path of the folder and the upload date are stored with it.
+	operating system family, the path of the folder and the upload date are stored with it. The folder
+	must lie inside the folder of the versions of its service type and operating system family
+	(ServiceVersionFolders, "Set service folder").
 
 	The schema lives in Sdl/agentino/1.0/Updates.sdl.
 */
@@ -50,6 +53,7 @@ public:
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", true, "AgentCollection");
 		I_ASSIGN(m_serviceManagerCompPtr, "ServiceManager", "Per-agent service collections", true, "ServiceManager");
 		I_ASSIGN(m_enrollmentControllerCompPtr, "EnrollmentController", "Enrollment records holding the operating systems reported by the agents", false, "EnrollmentStore");
+		I_ASSIGN(m_serviceVersionFoldersCompPtr, "ServiceVersionFolders", "Folders the versions are chosen in: a version is added from inside the folder of its service type and operating system", false, "ServiceVersionFolders");
 	I_END_COMPONENT;
 
 	// reimplemented (imtservergql::CObjectCollectionControllerCompBase)
@@ -125,6 +129,12 @@ private:
 	static int CompareVersions(const QString& version1, const QString& version2);
 
 	/**
+		Whether the path lies inside the folder (strictly: the folder itself is not inside it).
+		Both are clean paths with forward slashes; on Windows the case is ignored.
+	*/
+	static bool IsPathInsideFolder(const QString& path, const QString& folder);
+
+	/**
 		Get the service type of the request ("serviceTypeId" header).
 	*/
 	static QByteArray GetServiceTypeId(const imtgql::IGqlContext* gqlContextPtr);
@@ -151,6 +161,7 @@ protected:
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
 	I_REF(agentinodata::IServiceManager, m_serviceManagerCompPtr);
 	I_REF(IEnrollmentController, m_enrollmentControllerCompPtr);
+	I_REF(agentinodata::IServiceVersionFolders, m_serviceVersionFoldersCompPtr);
 };
 
 

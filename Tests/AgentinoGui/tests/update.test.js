@@ -89,13 +89,15 @@ test.describe('Update', () => {
     expect(versions.errors, 'ServiceVersionsList must succeed').toBeFalsy();
     await update.expectVersionsOpen();
 
-    // "All" operating systems: the versions of every family are listed, none can be added; nothing is selected yet.
+    // "All" operating systems: the versions of every family are listed, none can be added and no
+    // service folder can be set; nothing is selected yet.
     expect(await update.commands.isAvailable('Add'), 'Add needs an operating system').toBe(false);
+    expect(await update.commands.isAvailable('SetServiceFolder'), 'Set service folder needs an operating system').toBe(false);
     expect(await update.commands.isAvailable('Remove'), 'Remove needs a selected version').toBe(false);
     expect(await update.commands.isAvailable('Install'), 'Install needs a selected version').toBe(false);
   });
 
-  test('the versions page of an operating system offers Add', async ({ page }) => {
+  test('the versions page of an operating system offers Set service folder, and Add once it is set', async ({ page }) => {
     const update = new UpdatePage(page);
     if (!(await update.isAvailable())) refuse('the Update page is not in the menu');
 
@@ -111,14 +113,19 @@ test.describe('Update', () => {
 
     // The versions of the selected family only: the request names it.
     const versionsSpy = gui.graphql.spyOn(page, 'ServiceVersionsList');
+    const folderSpy = gui.graphql.spyOn(page, 'GetServiceVersionFolder');
     await update.openFirstServiceVersions();
     const versions = await versionsSpy.wait();
     expect(versions.errors, 'ServiceVersionsList must succeed').toBeFalsy();
     for (const item of versions.data.ServiceVersionsList.items) {
       expect(item.operatingSystem, `"${item.version}" is a version of ${names[0]}`).toBe(names[0]);
     }
+    const folder = await folderSpy.wait();
+    expect(folder.errors, 'GetServiceVersionFolder must succeed').toBeFalsy();
     await update.expectVersionsOpen();
 
-    expect(await update.commands.isAvailable('Add'), 'Add is offered for an operating system').toBe(true);
+    expect(await update.commands.isAvailable('SetServiceFolder'), 'Set service folder is offered for an operating system').toBe(true);
+    const folderSet = !!folder.data.GetServiceVersionFolder.path;
+    expect(await update.commands.isAvailable('Add'), 'Add is offered once the service folder is set').toBe(folderSet);
   });
 });

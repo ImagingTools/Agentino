@@ -6,6 +6,7 @@ import imtgui 1.0
 import imtguigql 1.0
 import imtcolgui 1.0
 import imtbaseImtCollectionSdl 1.0
+import agentinoUpdatesSdl 1.0
 
 // Versions page of a service type, opened in its own tab by a double click on the "Update" page
 // (document type "ServiceVersions" of the "Update" document service, see UpdatePage.qml).
@@ -14,9 +15,12 @@ import imtbaseImtCollectionSdl 1.0
 // version is installed on.
 // Versions differ by the operating system family selected on the "Update" page: the page lists the
 // versions of that family only (all of them for "All" / "Unknown", with "Add" unavailable).
-// "Add" chooses the folder of a version on the server (FileSystemBrowserDialog, the file system of the
-// server - no agent header): the name of the folder is the version; the operating system family, the
-// path and the upload date are stored with it (AddServiceVersion).
+// "Set service folder" chooses the folder on the server the versions of the service for the family are
+// chosen in; the server keeps it (GetServiceVersionFolder / SetServiceVersionFolder).
+// "Add" chooses the folder of a version inside it (FileSystemBrowserDialog, the file system of the
+// server - no agent header), so it is unavailable until the folder is set: the name of the folder is
+// the version; the operating system family, the path and the upload date are stored with it
+// (AddServiceVersion).
 ViewBase {
 	id: serviceVersionsView
 
@@ -29,9 +33,9 @@ ViewBase {
 	readonly property string operatingSystem: documentIdSeparatorIndex >= 0 ? documentId.substring(0, documentIdSeparatorIndex) : ""
 	readonly property string serviceTypeId: documentIdSeparatorIndex >= 0 ? documentId.substring(documentIdSeparatorIndex + 1) : documentId
 
-	// Folder on the server the choice of the folder of a new version starts in.
-	// TODO: take it from the settings; C:/Dogma until then.
-	property string versionsRootPath: "C:/Dogma"
+	// Folder on the server the versions of the service for the operating system family are chosen in
+	// ("Set service folder", kept by the server); forward slashes. Empty while it is not set.
+	property string serviceFolder: ""
 
 	function updateGui(){
 		versionsCollectionView.doUpdateGui()
@@ -39,6 +43,45 @@ ViewBase {
 
 	onDocumentIdChanged: {
 		versionsCollectionView.doUpdateGui()
+		serviceVersionsView.loadServiceFolder()
+	}
+
+	// The folder belongs to one operating system family: none for "All" / "Unknown".
+	function loadServiceFolder(){
+		serviceVersionsView.serviceFolder = ""
+		if (serviceVersionsView.operatingSystem === "" || serviceVersionsView.serviceTypeId === ""){
+			return
+		}
+
+		getServiceFolderRequestSender.inputParams = Gql.GqlObject("input")
+		getServiceFolderRequestSender.addInputParam("serviceTypeId", serviceVersionsView.serviceTypeId)
+		getServiceFolderRequestSender.addInputParam("operatingSystem", serviceVersionsView.operatingSystem)
+		getServiceFolderRequestSender.requestedDocumentId = serviceVersionsView.documentId
+		getServiceFolderRequestSender.send()
+	}
+
+	function openSetServiceFolderDialog(){
+		// The current folder (if any) is shown selected inside its parent; otherwise the dialog starts
+		// at the root of the file system of the server.
+		ModalDialogManager.openDialog(serviceFolderDialogComp, {
+			"startPath": serviceVersionsView.serviceFolder,
+			"pathKind": Enums.pathKindDir,
+			"showOnlyFolders": true,
+			"titleText": qsTr("Select the folder of the service versions")
+		})
+	}
+
+	function setServiceFolder(path){
+		let folderPath = serviceVersionsView.normalizeFolderPath(path)
+		if (folderPath === "" || serviceVersionsView.operatingSystem === ""){
+			return
+		}
+
+		setServiceFolderRequestSender.inputParams = Gql.GqlObject("input")
+		setServiceFolderRequestSender.addInputParam("serviceTypeId", serviceVersionsView.serviceTypeId)
+		setServiceFolderRequestSender.addInputParam("operatingSystem", serviceVersionsView.operatingSystem)
+		setServiceFolderRequestSender.addInputParam("path", folderPath)
+		setServiceFolderRequestSender.send()
 	}
 
 	function updateMetaInfo(){
@@ -85,12 +128,20 @@ ViewBase {
 	}
 
 	function openAddVersionDialog(){
+		// "Add" is disabled until the folder of the service versions is set.
+		if (serviceVersionsView.serviceFolder === ""){
+			return
+		}
+
 		// The trailing slash opens the dialog inside the folder: it browses the parent of the start path
 		// (the folder itself here) and pre-selects the start path (the folder, the selection of a plain
 		// navigation in a folder choice anyway).
 		ModalDialogManager.openDialog(versionFolderDialogComp, {
-			"startPath": serviceVersionsView.normalizeFolderPath(serviceVersionsView.versionsRootPath) + "/",
+			"startPath": serviceVersionsView.normalizeFolderPath(serviceVersionsView.serviceFolder) + "/",
 			"pathKind": Enums.pathKindDir,
+			// The versions are chosen inside the versions folder, among folders only.
+			"restrictToStartFolder": true,
+			"showOnlyFolders": true,
 			"titleText": qsTr("Select the folder of a service version")
 		})
 	}
@@ -129,6 +180,69 @@ ViewBase {
 		FileSystemBrowserDialog {
 			onPathSelected: {
 				serviceVersionsView.addVersion(selectedPath)
+			}
+		}
+	}
+
+	// The folder of the service versions on the server.
+	Component {
+		id: serviceFolderDialogComp
+
+		FileSystemBrowserDialog {
+			onPathSelected: {
+				serviceVersionsView.setServiceFolder(selectedPath)
+			}
+		}
+	}
+
+	GqlSdlRequestSender {
+		id: getServiceFolderRequestSender
+
+		// The document ID the request is sent for: a response for another one is dropped.
+		property string requestedDocumentId: ""
+
+		// Wire name (same as AgentinoUpdatesSdlCommandIds) - a string literal so JQML
+		// never starts a send with an unresolved singleton property.
+		gqlCommandId: "GetServiceVersionFolder"
+
+		function getRequestedFields(){
+			let payloadFields = Gql.GqlObject("payload")
+			payloadFields.InsertField("path")
+
+			return payloadFields
+		}
+
+		sdlObjectComp: Component {
+			ServiceVersionFolder {
+				onFinished: {
+					if (getServiceFolderRequestSender.requestedDocumentId === serviceVersionsView.documentId){
+						serviceVersionsView.serviceFolder = serviceVersionsView.normalizeFolderPath(m_path ? String(m_path) : "")
+					}
+				}
+			}
+		}
+	}
+
+	GqlSdlRequestSender {
+		id: setServiceFolderRequestSender
+
+		requestType: 1
+		// Wire name (same as AgentinoUpdatesSdlCommandIds) - a string literal so JQML
+		// never starts a send with an unresolved singleton property.
+		gqlCommandId: "SetServiceVersionFolder"
+
+		function getRequestedFields(){
+			let payloadFields = Gql.GqlObject("payload")
+			payloadFields.InsertField("path")
+
+			return payloadFields
+		}
+
+		sdlObjectComp: Component {
+			ServiceVersionFolder {
+				onFinished: {
+					serviceVersionsView.serviceFolder = serviceVersionsView.normalizeFolderPath(m_path ? String(m_path) : "")
+				}
 			}
 		}
 	}
@@ -176,6 +290,9 @@ ViewBase {
 
 		collectionId: "ServiceVersions"
 
+		// The path of the folder of a version is requested with the rows but has no column.
+		additionalFieldIds: ["id", "name", "path"]
+
 		// The panel of this view is used instead: the built-in one is hidden in a tab narrower than 5 panel widths.
 		visibleMetaInfo: false
 		// The server sends no change notifications for this collection.
@@ -192,10 +309,15 @@ ViewBase {
 		commandsDelegateComp: Component {
 			ServiceVersionsCommandsDelegate {
 				collectionView: versionsCollectionView
-				addEnabled: serviceVersionsView.operatingSystem !== ""
+				addEnabled: serviceVersionsView.operatingSystem !== "" && serviceVersionsView.serviceFolder !== ""
+				setServiceFolderEnabled: serviceVersionsView.operatingSystem !== ""
 
 				onAddRequested: {
 					serviceVersionsView.openAddVersionDialog()
+				}
+
+				onSetServiceFolderRequested: {
+					serviceVersionsView.openSetServiceFolderDialog()
 				}
 
 				onInstallRequested: {

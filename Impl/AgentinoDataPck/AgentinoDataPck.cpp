@@ -86,6 +86,11 @@ I_EXPORT_COMPONENT(
 			"Service Version Info");
 
 I_EXPORT_COMPONENT(
+			ServiceVersionFolders,
+			"Folders on the server the versions of the services are chosen in, per service type and operating system",
+			"Service Version Folders");
+
+I_EXPORT_COMPONENT(
 			ConnectionTokenStore,
 			"Tokens of the output connections of the services, kept protected",
 			"Connection Token Store");

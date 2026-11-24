@@ -11,6 +11,7 @@
 
 // Agentino includes
 #include <agentinodata/IServiceManager.h>
+#include <agentinodata/IServiceVersionFolders.h>
 #include <agentinogql/IEnrollmentController.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Updates_fwd.h>
 
@@ -22,7 +23,9 @@ namespace agentinogql
 /**
 	GraphQL surface of the "Update" page: the service types (software products) installed on the
 	agents, with the number of agents using each of them, and the operating system families of the
-	agents (Windows / Linux / macOS / Other) to filter them by.
+	agents (Windows / Linux / macOS / Other) to filter them by. It also keeps the folders the versions
+	of a service type for an operating system family are chosen in ("Set service folder" of the
+	versions page, ServiceVersionFolders).
 
 	The schema lives in Sdl/agentino/1.0/Updates.sdl.
 */
@@ -35,6 +38,7 @@ public:
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", true, "AgentCollection");
 		I_ASSIGN(m_serviceManagerCompPtr, "ServiceManager", "Per-agent service collections", true, "ServiceManager");
 		I_ASSIGN(m_enrollmentControllerCompPtr, "EnrollmentController", "Enrollment records holding the operating systems reported by the agents", false, "EnrollmentStore");
+		I_ASSIGN(m_serviceVersionFoldersCompPtr, "ServiceVersionFolders", "Folders the versions of the services are chosen in (GetServiceVersionFolder / SetServiceVersionFolder)", false, "ServiceVersionFolders");
 	I_END_COMPONENT;
 
 	/**
@@ -52,6 +56,14 @@ protected:
 				QString& errorMessage) const override;
 	virtual sdl::V1_0::agentino::CAgentOperatingSystemList OnAgentOperatingSystemsList(
 				const sdl::V1_0::agentino::CAgentOperatingSystemsListGqlRequest& agentOperatingSystemsListRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CServiceVersionFolder OnGetServiceVersionFolder(
+				const sdl::V1_0::agentino::CGetServiceVersionFolderGqlRequest& getServiceVersionFolderRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CServiceVersionFolder OnSetServiceVersionFolder(
+				const sdl::V1_0::agentino::CSetServiceVersionFolderGqlRequest& setServiceVersionFolderRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
 
@@ -80,6 +92,7 @@ protected:
 	I_REF(imtbase::IObjectCollection, m_agentCollectionCompPtr);
 	I_REF(agentinodata::IServiceManager, m_serviceManagerCompPtr);
 	I_REF(IEnrollmentController, m_enrollmentControllerCompPtr);
+	I_REF(agentinodata::IServiceVersionFolders, m_serviceVersionFoldersCompPtr);
 };
 
 

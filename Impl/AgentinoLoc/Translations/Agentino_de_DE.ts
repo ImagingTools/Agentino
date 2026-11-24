@@ -1194,10 +1194,6 @@
         <translation>Hochladedatum</translation>
     </message>
     <message>
-        <source>Path</source>
-        <translation>Pfad</translation>
-    </message>
-    <message>
         <source>Number of installations</source>
         <translation>Anzahl der Installationen</translation>
     </message>
@@ -1208,6 +1204,10 @@
     <message>
         <source>Install</source>
         <translation>Installieren</translation>
+    </message>
+    <message>
+        <source>Set service folder</source>
+        <translation>Dienstordner festlegen</translation>
     </message>
 </context>
 <context>
@@ -1483,6 +1483,10 @@
     <message>
         <source>Select the folder of a service version</source>
         <translation>Ordner einer Dienstversion auswählen</translation>
+    </message>
+    <message>
+        <source>Select the folder of the service versions</source>
+        <translation>Ordner der Dienstversionen auswählen</translation>
     </message>
     <message>
         <source>The folder of a service version must be selected</source>

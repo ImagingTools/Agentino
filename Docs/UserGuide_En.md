@@ -162,14 +162,19 @@ The main window consists of:
     with **All** or **Unknown** it shows the versions of every family and no
     version can be added. The page holds the table of the versions
     added to the server (**Version**, **Operating system**, **Upload date**,
-    **Path**, **Number of installations** — the agents of the version's
-    family having it installed) with the **Add**, **Remove** and **Install** commands
-    (**Remove** and **Install** need a selected version), and on the right the
-    agents the selected version is installed on. **Add** opens the choice of a
-    folder on the server (starting in `C:\Dogma`): the name of the chosen
-    folder becomes the version of the selected operating system family, its
-    path and the date it was added are stored with it; a version that already
-    exists for the family is not added again. **Remove** (after a
+    **Number of installations** — the agents of the version's
+    family having it installed) with the **Add**, **Remove**, **Install** and
+    **Set service folder** commands (**Remove** and **Install** need a
+    selected version), and on the right the agents the selected version is
+    installed on. **Set service folder** chooses the folder on the server the
+    versions of the service for the selected operating system family are
+    kept in; the server remembers it for the service and the family.
+    **Add** is available once that folder is set: it opens the choice of a
+    folder inside it (only folders are shown, going above the service folder
+    is not possible); the name of the chosen folder becomes the version of
+    the selected operating system family, its path and the date it was added
+    are stored with it; a version that already exists for the family is not
+    added again. **Remove** (after a
     confirmation) removes the selected versions from the list; their folders
     on the server are kept. **Install** opens a dialog
     with the approved agents to install the version on (check boxes and

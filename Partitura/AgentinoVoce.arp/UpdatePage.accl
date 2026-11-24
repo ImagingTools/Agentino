@@ -22,6 +22,7 @@
                 <Element ComponentName="CommandsController" X="575" Y="75" Note=""/>
                 <Element ComponentName="Add" X="200" Y="250" Note=""/>
                 <Element ComponentName="Install" X="950" Y="250" Note=""/>
+                <Element ComponentName="SetServiceFolder" X="1325" Y="250" Note=""/>
                 <Element ComponentName="Remove" X="575" Y="250" Note=""/>
             </PositionMap>
             <EmbeddedRegistries/>
