@@ -667,7 +667,9 @@ QByteArray CTerminalSessionManagerComp::OpenSessionOnOwnThread(ShellType shellTy
 	processPtr->setArguments(arguments);
 	processPtr->setWorkingDirectory(QCoreApplication::applicationDirPath());
 	QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
-	environment.insert(QStringLiteral("TERM"), QStringLiteral("xterm"));
+	// The terminal of the clients (TerminalEmulator.js) draws the 256 colors and the true color, so the programs may use them.
+	environment.insert(QStringLiteral("TERM"), QStringLiteral("xterm-256color"));
+	environment.insert(QStringLiteral("COLORTERM"), QStringLiteral("truecolor"));
 	processPtr->setProcessEnvironment(environment);
 
 	// Runs IN the forked child, after fork()/before exec() - async-signal-safe calls

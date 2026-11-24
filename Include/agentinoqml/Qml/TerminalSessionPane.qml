@@ -66,6 +66,16 @@ Item {
 	// Bumped once per processed chunk so the grid delegates' text bindings (which read this property) know to re-evaluate;
 	// the grid of the emulator is changed in place and does not fire property-change notifications on its own.
 	property int screenVersion: 0;
+	// The mouse: whether the program asked for it (?1000, ?1002, ?1003), and the selection of the grid view while it did not.
+	property bool mouseReporting: false;
+	property bool mouseTracking: false;
+	property var selection: null;
+	property bool selecting: false;
+	property int mouseButtonDown: -1;
+	property int lastMouseRow: 0;
+	property int lastMouseCol: 0;
+	// The modifiers of the last key event: the mouse events of the engine do not carry them (Shift lets the selection through while the program has the mouse).
+	property int keyModifiers: 0;
 
 	// ── Primary screen ──────────────────────────────────────────────────────
 	// The pty (ConPTY on Windows) addresses the visible screen with cursor moves and repaints all of it after a resize, so the
@@ -154,7 +164,7 @@ Item {
 
 	// The colors that the emulator uses for the default foreground and background and for the cursor cell.
 	function emulatorOptions(){
-		return {defaultFg: Style.textColor, defaultBg: Style.baseColor, cursorFg: "#ffffff", cursorBg: Style.textSelectedColor};
+		return {defaultFg: Style.textColor, defaultBg: Style.baseColor, cursorFg: "#ffffff", cursorBg: Style.textSelectedColor, selectionFg: "#ffffff", selectionBg: Style.textSelectedColor};
 	}
 
 	// Copies what the views bind to from the emulator and moves the focus when a program enters or leaves the alternate screen.
@@ -166,6 +176,8 @@ Item {
 		root.cursorRow = root.emu.cursorRow;
 		root.cursorCol = root.emu.cursorCol;
 		root.cursorVisible = root.emu.cursorVisible;
+		root.mouseReporting = root.emu.mouseMode > 0;
+		root.mouseTracking = root.emu.mouseMode === 1003;
 		root.screenVersion++;
 		if (root.altScreenActive && !wasAltScreen){
 			gridView.forceActiveFocus();
@@ -218,7 +230,15 @@ Item {
 			return "";
 		}
 		let cursorColumn = (root.cursorVisible && rowIndex === root.emu.cursorRow) ? root.emu.cursorCol : -1;
-		return "<span style=\"white-space:pre\">" + Emulator.rowHtml(root.emu, rowIndex, root.emulatorOptions(), cursorColumn, false) + "</span>";
+		let options = root.emulatorOptions();
+		if (root.selection !== null){
+			let range = Emulator.selectionColumns(root.selection, rowIndex, root.emu.cols);
+			if (range !== null){
+				options.selectedFrom = range[0];
+				options.selectedTo = range[1];
+			}
+		}
+		return "<span style=\"white-space:pre\">" + Emulator.rowHtml(root.emu, rowIndex, options, cursorColumn, false) + "</span>";
 	}
 
 	// The bytes that a key sends to the pty: the table of xterm in the emulator (modifiers of the cursor keys and F-keys, F11 and F12,
@@ -242,6 +262,133 @@ Item {
 		if (data.length > 0){
 			controller.sendRawInput(data);
 			event.accepted = true;
+		}
+	}
+
+	// The keys of the grid view: the copy of the selection and the paste are the terminal's, the rest goes to the program.
+	function handleGridKey(event){
+		root.keyModifiers = event.modifiers;
+		let ctrl = (event.modifiers & Qt.ControlModifier) !== 0;
+		let shift = (event.modifiers & Qt.ShiftModifier) !== 0;
+		if (ctrl && event.key === Qt.Key_C && (root.selection !== null || shift)){
+			root.copyGridSelection();
+			event.accepted = true;
+			return;
+		}
+		if ((ctrl && event.key === Qt.Key_V) || (shift && event.key === Qt.Key_Insert)){
+			root.pasteFromClipboard();
+			event.accepted = true;
+			return;
+		}
+		root.selection = null;
+		root.sendAltScreenKey(event);
+	}
+
+	function copyGridSelection(){
+		if (root.selection === null){
+			return;
+		}
+		let text = Emulator.selectionText(root.emu, root.selection);
+		if (text.length === 0){
+			return;
+		}
+		root.pasteArmed = false;
+		clipboardProxy.text = text;
+		clipboardProxy.selectAll();
+		clipboardProxy.copy();
+		clipboardProxy.select(0, 0);
+		root.showActionHint(qsTr("Selection copied"));
+	}
+
+	// The cell of the screen under a point of the output panel. The screen of a program that has the alternate screen is the grid view;
+	// the screen of a program that draws the main one (mc.exe) is the last lines of the scrollback view.
+	function terminalCell(x, y){
+		let col = Math.floor((x - Style.marginS) / root.charWidth);
+		let row = 0;
+		if (root.altScreenActive){
+			row = Math.floor((y - Style.marginS) / root.charHeight);
+		}
+		else{
+			let screenTop = outputText.contentHeight - (root.lastPrimaryRow() + 1) * root.charHeight;
+			row = Math.floor((y - Style.marginS + outputFlickable.contentY - screenTop) / root.charHeight);
+		}
+		return {row: Math.max(0, Math.min(root.gridRows - 1, row)), col: Math.max(0, Math.min(root.gridCols - 1, col))};
+	}
+
+	function sendMouse(action, button, row, col){
+		if (!controller.running || controller.connectionLost){
+			return;
+		}
+		let data = Emulator.encodeMouse(root.emu, {
+			action: action,
+			button: button,
+			row: row,
+			col: col,
+			shift: (root.keyModifiers & Qt.ShiftModifier) !== 0,
+			alt: (root.keyModifiers & Qt.AltModifier) !== 0,
+			ctrl: (root.keyModifiers & Qt.ControlModifier) !== 0
+		});
+		if (data.length > 0){
+			controller.sendRawInput(data);
+		}
+	}
+
+	function terminalMousePressed(mouse){
+		let cell = root.terminalCell(mouse.x, mouse.y);
+		let shift = (root.keyModifiers & Qt.ShiftModifier) !== 0;
+		root.lastMouseRow = cell.row;
+		root.lastMouseCol = cell.col;
+		if (root.mouseReporting && !shift){
+			root.selection = null;
+			root.mouseButtonDown = mouse.button === Qt.RightButton ? 2 : 0;
+			root.sendMouse("press", root.mouseButtonDown, cell.row, cell.col);
+		}
+		else if (root.altScreenActive){
+			// The program has no mouse: the pointer selects the cells.
+			root.selection = {r1: cell.row, c1: cell.col, r2: cell.row, c2: cell.col};
+			root.selecting = true;
+			root.screenVersion++;
+		}
+	}
+
+	function terminalMouseMoved(mouse){
+		let cell = root.terminalCell(mouse.x, mouse.y);
+		let moved = cell.row !== root.lastMouseRow || cell.col !== root.lastMouseCol;
+		root.lastMouseRow = cell.row;
+		root.lastMouseCol = cell.col;
+		if (!moved){
+			return;
+		}
+		if (root.selecting){
+			root.selection = {r1: root.selection.r1, c1: root.selection.c1, r2: cell.row, c2: cell.col};
+			root.screenVersion++;
+		}
+		else if (root.mouseReporting){
+			root.sendMouse("move", root.mouseButtonDown, cell.row, cell.col);
+		}
+	}
+
+	function terminalMouseReleased(mouse){
+		let cell = root.terminalCell(mouse.x, mouse.y);
+		if (root.selecting){
+			root.selecting = false;
+			return;
+		}
+		if (root.mouseButtonDown >= 0){
+			root.sendMouse("release", root.mouseButtonDown, cell.row, cell.col);
+			root.mouseButtonDown = -1;
+		}
+	}
+
+	function terminalWheel(direction){
+		root.sendMouse(direction < 0 ? "wheelUp" : "wheelDown", 0, root.lastMouseRow, root.lastMouseCol);
+	}
+
+	// The program that asked for the focus reports (?1004) is told when the view gets or loses it.
+	function sendFocusEvent(focused){
+		let data = Emulator.encodeFocus(root.emu, focused);
+		if (data.length > 0 && controller.running && !controller.connectionLost){
+			controller.sendRawInput(data);
 		}
 	}
 
@@ -466,7 +613,8 @@ Item {
 	function sendPastedText(text){
 		root.pasteArmed = false;
 		pasteArmTimer.stop();
-		let data = String(text).replace(/\r\n/g, "\r").replace(/\n/g, "\r");
+		// The new lines are Enter; between ESC [ 200 ~ and ESC [ 201 ~ when the program asked for the bracketed paste.
+		let data = Emulator.encodePaste(root.emu, String(text));
 		clipboardProxy.text = "";
 		if (data.length > 0 && controller.running && !controller.connectionLost){
 			root.startupOutputPhase = false;
@@ -1078,7 +1226,14 @@ Item {
 				// keyboard echo and in-place line editing show up as one continuous line.
 				text: root.richLog + root.currentLineHtml;
 
+				onActiveFocusChanged: root.sendFocusEvent(activeFocus);
+
+				Keys.onReleased: {
+					root.keyModifiers = event.modifiers;
+				}
+
 				Keys.onPressed: {
+					root.keyModifiers = event.modifiers;
 					// Ctrl+C copies the selection when there is one (otherwise it falls
 					// through to the shell below as a real interrupt).
 					if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_C
@@ -1138,8 +1293,14 @@ Item {
 			focus: root.altScreenActive;
 			clip: true;
 
+			onActiveFocusChanged: root.sendFocusEvent(activeFocus);
+
+			Keys.onReleased: {
+				root.keyModifiers = event.modifiers;
+			}
+
 			Keys.onPressed: {
-				root.sendAltScreenKey(event);
+				root.handleGridKey(event);
 			}
 
 			Repeater {
@@ -1155,6 +1316,36 @@ Item {
 					font.pixelSize: Style.fontSizeM;
 					text: root.gridRowHtml(index);
 				}
+			}
+		}
+
+		// The mouse over the screen: the program gets it when it asked for it (?1000/?1002/?1003), otherwise the grid view selects with it.
+		// The area is off while neither is true, so the scrollback view keeps its own selection and wheel.
+		MouseArea {
+			id: terminalMouse;
+
+			anchors.fill: parent;
+			z: 10;
+
+			enabled: root.altScreenActive || root.mouseReporting;
+			hoverEnabled: true;
+			acceptedButtons: Qt.LeftButton | Qt.RightButton;
+
+			onPressed: {
+				root.terminalMousePressed(mouse);
+			}
+
+			onPositionChanged: {
+				root.terminalMouseMoved(mouse);
+			}
+
+			onReleased: {
+				root.terminalMouseReleased(mouse);
+			}
+
+			TerminalWheelHandler {
+				enabled: root.mouseReporting;
+				onRolled: root.terminalWheel(direction);
 			}
 		}
 

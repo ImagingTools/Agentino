@@ -9,6 +9,8 @@
 //   rowHtml(t, row, options)         the rich text of a row; rowText(t, row) the plain text
 //   resize(t, cols, rows)            the grid changes its size and keeps what it can
 //   encodeKey(t, key)                the bytes that a key of the keyboard sends to the pty (see below)
+//   encodeMouse, encodePaste, encodeFocus   the bytes of a mouse event, of a paste and of the focus when the program asked for them
+//   selectionText, selectionColumns  the text of a rectangle-free (line by line) selection of the grid and its columns in a row
 //
 // A cell is {ch, fg, bg, fl}: ch is the character ("" after a wide one), fg and bg are -1 (the default), a palette index 0..255 or
 // 0x1000000 + 0xRRGGBB, fl is a mask of FL_* below. A cell is never changed once it is in the grid, a new one replaces it.
@@ -1199,14 +1201,18 @@ function hexColor(value, fallback){
 	return fallback;
 }
 
-// The style of one cell. options: defaultFg and defaultBg ("#rrggbb", the colors of the view), cursorFg and cursorBg (the cursor cell).
-function cellStyle(cell, options, isCursor){
+// The style of one cell. options: defaultFg and defaultBg ("#rrggbb", the colors of the view), cursorFg and cursorBg (the cursor cell), selectionFg and
+// selectionBg with selectedFrom and selectedTo (the columns of the selection in this row, both included).
+function cellStyle(cell, options, isCursor, isSelected){
 	var fg = colorString(cell.fg);
 	var bg = colorString(cell.bg);
 	var defaultFg = options.defaultFg;
 	var defaultBg = options.defaultBg;
 	if (isCursor){
 		return "color:" + options.cursorFg + ";background-color:" + options.cursorBg + (cell.fl & FL_BOLD ? ";font-weight:bold" : "");
+	}
+	if (isSelected){
+		return "color:" + options.selectionFg + ";background-color:" + options.selectionBg + (cell.fl & FL_BOLD ? ";font-weight:bold" : "");
 	}
 	if (cell.fl & FL_INVERSE){
 		var swap = fg !== null ? fg : defaultFg;
@@ -1249,7 +1255,11 @@ function rowHtml(t, row, options, cursorCol, trim){
 		defaultFg: hexColor(options.defaultFg, "#000000"),
 		defaultBg: hexColor(options.defaultBg, "#ffffff"),
 		cursorFg: hexColor(options.cursorFg, "#ffffff"),
-		cursorBg: hexColor(options.cursorBg, "#005fb8")
+		cursorBg: hexColor(options.cursorBg, "#005fb8"),
+		selectionFg: hexColor(options.selectionFg, "#ffffff"),
+		selectionBg: hexColor(options.selectionBg, "#005fb8"),
+		selectedFrom: options.selectedFrom === undefined ? -1 : options.selectedFrom,
+		selectedTo: options.selectedTo === undefined ? -1 : options.selectedTo
 	};
 	var end = trim ? Math.max(lastUsedColumn(cells), cursorCol) : cells.length - 1;
 	var html = "";
@@ -1263,7 +1273,7 @@ function rowHtml(t, row, options, cursorCol, trim){
 		if (cell.ch === ""){
 			continue; // the second half of a wide character
 		}
-		var style = cellStyle(cell, options, c === cursorCol);
+		var style = cellStyle(cell, options, c === cursorCol, c >= options.selectedFrom && c <= options.selectedTo);
 		if (!open || style !== current){
 			if (open){
 				html += "</span>";
@@ -1398,4 +1408,102 @@ function encodeKey(t, spec){
 		return prefix + " ";
 	}
 	return "";
+}
+
+// ── the mouse, the paste and the focus ──────────────────────────────────────
+
+// The bytes of a mouse event when the program asked for the mouse (`?1000`: the buttons, `?1002`: and the motion while a button is down,
+// `?1003`: all the motion), in the form that it chose (`?1006`: ESC [ < b ; x ; y M or m, otherwise ESC [ M and three characters).
+// ev: {action: "press" | "release" | "move" | "wheelUp" | "wheelDown", button: 0 left, 1 middle, 2 right, -1 none (a move), col, row (from 0),
+// shift, alt, ctrl}. "" when the event is not for the program (no mouse mode, a move that the mode does not report, a place the old form cannot say).
+function encodeMouse(t, ev){
+	if (t.mouseMode === 0){
+		return "";
+	}
+	var cb;
+	var release = false;
+	if (ev.action === "wheelUp"){
+		cb = 64;
+	}
+	else if (ev.action === "wheelDown"){
+		cb = 65;
+	}
+	else if (ev.action === "move"){
+		if (t.mouseMode === 1000 || (t.mouseMode === 1002 && ev.button < 0)){
+			return "";
+		}
+		cb = (ev.button < 0 ? 3 : ev.button) + 32;
+	}
+	else if (ev.action === "release"){
+		release = true;
+		cb = t.mouseSgr ? Math.max(0, ev.button) : 3;
+	}
+	else{
+		cb = Math.max(0, ev.button);
+	}
+	cb += (ev.shift ? 4 : 0) + (ev.alt ? 8 : 0) + (ev.ctrl ? 16 : 0);
+	var x = ev.col + 1;
+	var y = ev.row + 1;
+	if (t.mouseSgr){
+		return "\x1b[<" + cb + ";" + x + ";" + y + (release ? "m" : "M");
+	}
+	if (x > 223 || y > 223){
+		return "";
+	}
+	return "\x1b[M" + String.fromCharCode(32 + cb) + String.fromCharCode(32 + x) + String.fromCharCode(32 + y);
+}
+
+// What a paste sends: the new lines are the Enter key; when the program asked for the bracketed paste (`?2004`) the text goes between
+// ESC [ 200 ~ and ESC [ 201 ~ (the escape characters of the text are dropped, so it cannot end the paste itself).
+function encodePaste(t, text){
+	var data = String(text).replace(/\r\n/g, "\r").replace(/\n/g, "\r");
+	if (t.bracketedPaste){
+		return "\x1b[200~" + data.replace(/\x1b/g, "") + "\x1b[201~";
+	}
+	return data;
+}
+
+// The report of the focus (`?1004`): ESC [ I when the view got it, ESC [ O when it lost it.
+function encodeFocus(t, focused){
+	if (!t.focusEvents){
+		return "";
+	}
+	return focused ? "\x1b[I" : "\x1b[O";
+}
+
+// ── the selection of the grid ───────────────────────────────────────────────
+// A selection is {r1, c1, r2, c2}: where the button went down and where the pointer is (any order); it runs along the lines as text does.
+
+function orderedSelection(sel){
+	if (sel.r1 > sel.r2 || (sel.r1 === sel.r2 && sel.c1 > sel.c2)){
+		return {r1: sel.r2, c1: sel.c2, r2: sel.r1, c2: sel.c1};
+	}
+	return {r1: sel.r1, c1: sel.c1, r2: sel.r2, c2: sel.c2};
+}
+
+// The columns of a row that the selection covers, [from, to] with both included, or null.
+function selectionColumns(sel, row, cols){
+	var s = orderedSelection(sel);
+	if (row < s.r1 || row > s.r2){
+		return null;
+	}
+	return [row === s.r1 ? s.c1 : 0, row === s.r2 ? s.c2 : cols - 1];
+}
+
+// The text of the selection: the rows one under the other, the blanks at the end of each of them dropped.
+function selectionText(t, sel){
+	var lines = [];
+	for (var r = 0; r < t.rows; ++r){
+		var range = selectionColumns(sel, r, t.cols);
+		if (range === null){
+			continue;
+		}
+		var cells = t.grid[r];
+		var text = "";
+		for (var c = range[0]; c <= range[1] && c < cells.length; ++c){
+			text += cells[c].ch;
+		}
+		lines.push(text.replace(/ +$/, ""));
+	}
+	return lines.join("\n");
 }

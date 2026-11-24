@@ -196,6 +196,40 @@ Found while checking: the agent of this machine runs `mc.exe` as the service acc
 `assert` in `w32_slang.c` (`c < vio.cols`, the screen buffer of its Windows console layer) after the size of the pane had changed. These are not things of
 the terminal; for the checks of the next stages `mc` is better run as a normal user.
 
+## Stage 3: done
+
+- **The mouse**: `encodeMouse` in `TerminalEmulator.js` makes the bytes of a press, a release, a move and the wheel for the mode that the program asked
+  for (`?1000` buttons, `?1002` and the drag, `?1003` all the motion) in the form that it chose (`?1006`: `ESC [ < b ; x ; y M/m`; otherwise `ESC [ M` and
+  three characters, which has a limit of 223 columns). The modifiers add 4, 8 and 16, the wheel is 64 and 65, a move adds 32.
+- **The pane** has a `MouseArea` over the screen that is on only while a program owns the screen (the alternate screen) or asked for the mouse, so the
+  scrollback view keeps its own selection and wheel. It turns a point into a cell: the grid view for the alternate screen, the last lines of the
+  scrollback view for a program that draws the main screen (`terminalCell`). The wheel is `TerminalWheelHandler.qml` (a `WheelHandler`, which is a type
+  of QtQuick 2.14, so it has a file of its own and the pane keeps `import QtQuick 2.12`).
+- **What the engine does not give** to a `MouseArea`: the modifiers (always 0) and the wheel (the signal is declared and never emitted). So the pane keeps
+  the modifiers of the last key event (`keyModifiers`) for the mouse, and takes the wheel from a `WheelHandler`.
+- **Selection**: when the program did not ask for the mouse, or Shift is held, the pointer selects cells of the grid view along the lines (`selectionColumns`,
+  highlighted by `rowHtml`), Ctrl+C with a selection (and Ctrl+Shift+C) copies its text (`selectionText`, the blanks at the end of each row dropped), without a
+  selection Ctrl+C goes to the program as before. Ctrl+V and Shift+Insert paste in the grid view too.
+- **Paste**: `encodePaste` makes the new lines Enter and, when the program asked for the bracketed paste (`?2004`), wraps the text in `ESC [ 200 ~ ... ESC [ 201 ~`
+  (the escape characters of the text are dropped).
+- **Focus**: `encodeFocus` - `ESC [ I` and `ESC [ O` when the view gets or loses the focus and the program asked for it (`?1004`).
+- **The agent** (`CTerminalSessionManagerComp.cpp`, the Unix pty): `TERM=xterm-256color` and `COLORTERM=truecolor`, as the terminal draws both now. Not compiled in this work.
+- 12 more tests (43 in all): the SGR and the old form of the mouse, the motion by mode, the wheel, the modifiers, the paste, the focus, the selection (also reversed, with a
+  wide character, with the blanks at the end).
+- Checked in the web build with a small program on the pty (the alternate screen, the mouse, the focus and the paste on) and with the events of the page:
+  the focus reports `ESC[O` and `ESC[I` went out, a click at row 1, column 20 sent `ESC[<0;21;2M` and `ESC[<0;21;2m`, a drag sent the press, the motion
+  `ESC[<32;x;yM` and the release, the wheel `ESC[<64;..M` and `ESC[<65;..M`; with the mouse off a drag selected the cells (highlight, no report), Ctrl+C copied
+  ("Selection copied", nothing sent), a paste went out as `ESC[200~first<CR>secondESC[201~`, and with Shift held a drag selected while the mouse mode was on.
+
+**What ConPTY does**: on this Windows 10 (19045) the pseudoconsole passes `?2004h` and `?1004h` to the terminal but not `?1049h` and not the mouse modes
+(`?1000/1002/1006`): a program that asked for them through the console shows none of them in the output. So a console program on a Windows agent (mc.exe)
+cannot get the mouse through ConPTY, with any terminal; on a Linux agent the pty passes everything. For the check above the modes were given to the
+emulator by `feedTerminal`, as a Linux pty would give them. The cell of a click on the main screen (`terminalCell` for a program like mc.exe) is not checked with a
+program: it follows from the line height of the scrollback view.
+
+Not done: the cursor blink; the selection and copy of the scrollback view in the web build (the engine does not select in rich text); the whole pane for a
+program that draws the main screen; the keypad in the application mode.
+
 ## Open questions
 
 - The recording does not have the mouse, the viewer (F3), the editor (F4) and the dialogs of copy: they are to be recorded for the stages 2 and 3 (the script of keys is in `record.mjs`). `mc` of Linux (with `?1049`, `ESC ( 0` in some skins) is to be recorded on a Linux agent.

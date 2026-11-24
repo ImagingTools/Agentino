@@ -21,7 +21,7 @@ const assert = {
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const source = fs.readFileSync(path.join(here, '..', '..', 'Include', 'agentinoqml', 'Qml', 'TerminalEmulator.js'), 'utf8').replace(/^\.pragma library/m, '');
-const E = vm.runInNewContext(`${source}\n({ create, feed, resize, takeReplies, rowText, rowHtml, lastUsedColumn, clearScreen, encodeKey, FL_BOLD, FL_INVERSE, FL_UNDERLINE, FL_DIM, FL_ITALIC, FL_STRIKE, RGB_BASE })`);
+const E = vm.runInNewContext(`${source}\n({ create, feed, resize, takeReplies, rowText, rowHtml, lastUsedColumn, clearScreen, encodeKey, encodeMouse, encodePaste, encodeFocus, selectionText, selectionColumns, FL_BOLD, FL_INVERSE, FL_UNDERLINE, FL_DIM, FL_ITALIC, FL_STRIKE, RGB_BASE })`);
 
 // every recording of fixtures/ (made by tools/record.mjs) with the screens that the reference gave for it (tools/reference.mjs)
 const fixtureDir = path.join(here, 'fixtures');
@@ -392,4 +392,97 @@ test('keys: text, Alt in front of a character, and the keys that send nothing', 
 	assert.equal(keys({ key: K.Shift }), '');
 	assert.equal(keys({ key: K.Control, ctrl: true }), '');
 	assert.equal(keys({ key: K.Alt, alt: true }), '');
+});
+
+// ── the mouse, the paste, the focus and the selection ───────────────────────
+
+function mouse(t, spec) {
+	return E.encodeMouse(t, { button: 0, col: 0, row: 0, shift: false, alt: false, ctrl: false, ...spec });
+}
+
+test('mouse: nothing without a mouse mode', () => {
+	const t = screenOf('');
+	assert.equal(mouse(t, { action: 'press' }), '');
+	assert.equal(mouse(t, { action: 'wheelUp' }), '');
+});
+
+test('mouse: the SGR form (?1006) with the buttons, the wheel, the modifiers and the release', () => {
+	const t = screenOf('\x1b[?1000h\x1b[?1006h');
+	assert.equal(mouse(t, { action: 'press', col: 4, row: 2 }), '\x1b[<0;5;3M');
+	assert.equal(mouse(t, { action: 'release', col: 4, row: 2 }), '\x1b[<0;5;3m');
+	assert.equal(mouse(t, { action: 'press', button: 2 }), '\x1b[<2;1;1M');
+	assert.equal(mouse(t, { action: 'release', button: 2 }), '\x1b[<2;1;1m');
+	assert.equal(mouse(t, { action: 'press', button: 1 }), '\x1b[<1;1;1M');
+	assert.equal(mouse(t, { action: 'wheelUp', col: 1, row: 1 }), '\x1b[<64;2;2M');
+	assert.equal(mouse(t, { action: 'wheelDown' }), '\x1b[<65;1;1M');
+	assert.equal(mouse(t, { action: 'press', shift: true }), '\x1b[<4;1;1M');
+	assert.equal(mouse(t, { action: 'press', alt: true }), '\x1b[<8;1;1M');
+	assert.equal(mouse(t, { action: 'press', ctrl: true }), '\x1b[<16;1;1M');
+	assert.equal(mouse(t, { action: 'press', col: 119, row: 37, shift: true, ctrl: true }), '\x1b[<20;120;38M');
+});
+
+test('mouse: the motion is reported as the mode says', () => {
+	const buttons = screenOf('\x1b[?1000h\x1b[?1006h');
+	assert.equal(mouse(buttons, { action: 'move', button: 0 }), '', '?1000 has no motion');
+	const drag = screenOf('\x1b[?1002h\x1b[?1006h');
+	assert.equal(mouse(drag, { action: 'move', button: 0, col: 2, row: 1 }), '\x1b[<32;3;2M', 'a drag');
+	assert.equal(mouse(drag, { action: 'move', button: -1 }), '', '?1002: no motion without a button');
+	const any = screenOf('\x1b[?1003h\x1b[?1006h');
+	assert.equal(mouse(any, { action: 'move', button: -1, col: 5, row: 5 }), '\x1b[<35;6;6M');
+	assert.equal(mouse(any, { action: 'move', button: 2 }), '\x1b[<34;1;1M');
+	any.mouseMode = 0;
+	E.feed(any, '\x1b[?1003l');
+	assert.equal(mouse(any, { action: 'press' }), '');
+});
+
+test('mouse: the old form (no ?1006) is ESC [ M and three characters, and has a limit', () => {
+	const t = screenOf('\x1b[?1000h');
+	assert.equal(mouse(t, { action: 'press' }), '\x1b[M !!');
+	assert.equal(mouse(t, { action: 'release' }), '\x1b[M#!!');
+	assert.equal(mouse(t, { action: 'press', button: 2, col: 9, row: 4 }), '\x1b[M"*%');
+	assert.equal(mouse(t, { action: 'wheelUp' }), '\x1b[M`!!');
+	assert.equal(mouse(t, { action: 'press', col: 300 }), '', 'a column that cannot be said');
+});
+
+test('paste: new lines are Enter, and the bracketed form when the program asks for it', () => {
+	const t = screenOf('');
+	assert.equal(E.encodePaste(t, 'a\nb\r\nc'), 'a\rb\rc');
+	const b = screenOf('\x1b[?2004h');
+	assert.equal(E.encodePaste(b, 'a\nb'), '\x1b[200~a\rb\x1b[201~');
+	assert.equal(E.encodePaste(b, 'x\x1b[201~y'), '\x1b[200~x[201~y\x1b[201~', 'the end of the paste cannot be sent inside it');
+	E.feed(b, '\x1b[?2004l');
+	assert.equal(E.encodePaste(b, 'a'), 'a');
+});
+
+test('focus: reported only when the program asked for it', () => {
+	const t = screenOf('');
+	assert.equal(E.encodeFocus(t, true), '');
+	E.feed(t, '\x1b[?1004h');
+	assert.equal(E.encodeFocus(t, true), '\x1b[I');
+	assert.equal(E.encodeFocus(t, false), '\x1b[O');
+});
+
+test('selection: the columns of every row, in any direction, and the text', () => {
+	const t = screenOf('abcdef\r\nghijkl\r\nmnopqr', 6, 4);
+	const sel = { r1: 0, c1: 2, r2: 2, c2: 3 };
+	assert.deepEqual(E.selectionColumns(sel, 0, 6), [2, 5]);
+	assert.deepEqual(E.selectionColumns(sel, 1, 6), [0, 5]);
+	assert.deepEqual(E.selectionColumns(sel, 2, 6), [0, 3]);
+	assert.equal(E.selectionColumns(sel, 3, 6), null);
+	assert.equal(E.selectionText(t, sel), 'cdef\nghijkl\nmnop');
+	assert.equal(E.selectionText(t, { r1: 2, c1: 3, r2: 0, c2: 2 }), 'cdef\nghijkl\nmnop', 'the pointer went up');
+	assert.equal(E.selectionText(t, { r1: 1, c1: 1, r2: 1, c2: 3 }), 'hij');
+});
+
+test('selection: the blanks at the end of a row are dropped, a wide character is one', () => {
+	const t = screenOf('ab\r\n中x', 8, 3);
+	assert.equal(E.selectionText(t, { r1: 0, c1: 0, r2: 1, c2: 7 }), 'ab\n中x');
+	assert.equal(E.selectionText(t, { r1: 1, c1: 0, r2: 1, c2: 1 }), '中');
+});
+
+test('rowHtml: the selected columns have the selection colors, the cursor goes over them', () => {
+	const t = screenOf('abcd');
+	const options = { defaultFg: '#111111', defaultBg: '#ffffff', cursorFg: '#ffffff', cursorBg: '#005fb8', selectionFg: '#fefefe', selectionBg: '#336699', selectedFrom: 1, selectedTo: 2 };
+	assert.equal(E.rowHtml(t, 0, options, -1, true), '<span style="color:#111111">a</span><span style="color:#fefefe;background-color:#336699">bc</span><span style="color:#111111">d</span>');
+	assert.ok(E.rowHtml(t, 0, options, 2, true).includes('<span style="color:#ffffff;background-color:#005fb8">c</span>'));
 });
