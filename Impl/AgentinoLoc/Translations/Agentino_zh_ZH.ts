@@ -1349,10 +1349,6 @@
         <translation>上传日期</translation>
     </message>
     <message>
-        <source>Path</source>
-        <translation>路径</translation>
-    </message>
-    <message>
         <source>Number of installations</source>
         <translation>安装数量</translation>
     </message>
@@ -1363,6 +1359,10 @@
     <message>
         <source>Install</source>
         <translation>安装</translation>
+    </message>
+    <message>
+        <source>Set service folder</source>
+        <translation>设置服务文件夹</translation>
     </message>
 </context>
 <context>
@@ -3340,6 +3340,10 @@
     <message>
         <source>Select the folder of a service version</source>
         <translation>选择服务版本文件夹</translation>
+    </message>
+    <message>
+        <source>Select the folder of the service versions</source>
+        <translation>选择服务版本所在文件夹</translation>
     </message>
     <message>
         <source>The folder of a service version must be selected</source>

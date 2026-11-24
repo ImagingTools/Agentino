@@ -5,8 +5,9 @@
 // then the operating system families of the agents (Windows, Linux, macOS, Other), then "Unknown" for
 // agents that did not report one.
 // No commands of its own. A double click on a service opens its versions page (ServiceVersionsView.qml)
-// in a new tab: the versions table (Add / Remove / Install) and the agents panel on the right.
-// Versions differ by the operating system family selected in the panel: Add is offered for a family only.
+// in a new tab: the versions table (Add / Remove / Install / Set service folder) and the agents panel on the right.
+// Versions differ by the operating system family selected in the panel: Set service folder is offered for a family
+// only, Add once the folder of the service versions of that family is set.
 
 const gui = require('imtcore-gui-testkit/lib/gui');
 const { BasePage } = require('imtcore-gui-testkit/pages/BasePage');

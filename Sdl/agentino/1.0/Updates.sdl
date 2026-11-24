@@ -86,15 +86,41 @@ type ServiceVersionListPayload {
 	notification: NotificationItem
 }
 
+# The folder on the server the versions of a service type for an operating system family are chosen in
+# ("Set service folder" of the versions page). "Add" chooses the versions inside it.
+type ServiceVersionFolder {
+	serviceTypeId: ID
+	operatingSystem: String
+	# Empty if the folder is not set
+	path: String
+}
+
+input ServiceVersionFolderInput {
+	serviceTypeId: ID!
+	# Operating system family (one of AgentOperatingSystemList.names)
+	operatingSystem: String!
+}
+
+input SetServiceVersionFolderInput {
+	serviceTypeId: ID!
+	# Operating system family (one of AgentOperatingSystemList.names)
+	operatingSystem: String!
+	# An existing folder on the server
+	path: String!
+}
+
 type Query {
 	ServiceUpdatesList (input: ServiceUpdateListInput): ServiceUpdateListPayload!
 	AgentOperatingSystemsList: AgentOperatingSystemList!
 	ServiceVersionsList (input: ServiceVersionListInput): ServiceVersionListPayload!
+	GetServiceVersionFolder (input: ServiceVersionFolderInput): ServiceVersionFolder!
 }
 
 type Mutation {
 	# Add a version (a folder on the server) to the versions of a service type
 	AddServiceVersion (input: ServiceVersionDataInput): AddedNotificationPayload!
+	# Set the folder the versions of a service type for an operating system family are chosen in
+	SetServiceVersionFolder (input: SetServiceVersionFolderInput): ServiceVersionFolder!
 }
 
 collectionSchema {

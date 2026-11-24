@@ -22,6 +22,7 @@
 #include <agentinodata/CTopologyGroup.h>
 #include <agentinodata/CTopologyView.h>
 #include <agentinodata/CServiceVersionInfo.h>
+#include <agentinodata/CServiceVersionFolders.h>
 
 
 /**
@@ -73,6 +74,12 @@ typedef icomp::TMakeComponentWrap<
 					agentinodata::IServiceVersionInfo,
 					iser::ISerializable,
 					istd::IChangeable> ServiceVersionInfo;
+// A model: FileAutoPersistence stores it on every change.
+typedef icomp::TModelCompWrap<icomp::TMakeComponentWrap<
+					agentinodata::CServiceVersionFolders,
+					agentinodata::IServiceVersionFolders,
+					iser::ISerializable,
+					istd::IChangeable>> ServiceVersionFolders;
 typedef agentinodata::CConnectionTokenStoreComp ConnectionTokenStore;
 
 

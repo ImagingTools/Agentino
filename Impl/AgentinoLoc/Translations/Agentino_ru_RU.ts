@@ -1194,10 +1194,6 @@
         <translation>Дата загрузки</translation>
     </message>
     <message>
-        <source>Path</source>
-        <translation>Путь</translation>
-    </message>
-    <message>
         <source>Number of installations</source>
         <translation>Количество установок</translation>
     </message>
@@ -1208,6 +1204,10 @@
     <message>
         <source>Install</source>
         <translation>Установить</translation>
+    </message>
+    <message>
+        <source>Set service folder</source>
+        <translation>Задать папку сервиса</translation>
     </message>
 </context>
 <context>
@@ -1513,6 +1513,10 @@
     <message>
         <source>Select the folder of a service version</source>
         <translation>Выберите папку версии сервиса</translation>
+    </message>
+    <message>
+        <source>Select the folder of the service versions</source>
+        <translation>Выберите папку с версиями сервиса</translation>
     </message>
     <message>
         <source>The folder of a service version must be selected</source>

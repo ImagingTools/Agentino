@@ -4,6 +4,8 @@
 
 
 // Qt includes
+#include <QtCore/QDir>
+#include <QtCore/QFileInfo>
 #include <QtCore/QSet>
 
 // Agentino includes
@@ -89,6 +91,97 @@ sdl::V1_0::agentino::CAgentOperatingSystemList CServiceUpdateControllerComp::OnA
 	payload.names.Emplace();
 	payload.names->FromList(families);
 	payload.hasUnknown = hasUnknown;
+
+	return payload;
+}
+
+
+sdl::V1_0::agentino::CServiceVersionFolder CServiceUpdateControllerComp::OnGetServiceVersionFolder(
+			const sdl::V1_0::agentino::CGetServiceVersionFolderGqlRequest& getServiceVersionFolderRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::CServiceVersionFolder payload;
+
+	if (!m_serviceVersionFoldersCompPtr.IsValid()){
+		errorMessage = QStringLiteral("Unable to get the folder of the service versions. Error: Component reference 'ServiceVersionFolders' was not set");
+		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
+
+		return payload;
+	}
+
+	const sdl::V1_0::agentino::GetServiceVersionFolderRequestArguments arguments = getServiceVersionFolderRequest.GetRequestedArguments();
+
+	QByteArray serviceTypeId;
+	QString operatingSystem;
+	if (arguments.input.has_value()){
+		if (arguments.input->serviceTypeId.has_value()){
+			serviceTypeId = *arguments.input->serviceTypeId;
+		}
+		if (arguments.input->operatingSystem.has_value()){
+			operatingSystem = arguments.input->operatingSystem->trimmed();
+		}
+	}
+
+	payload.serviceTypeId = serviceTypeId;
+	payload.operatingSystem = operatingSystem;
+	payload.path = QDir::toNativeSeparators(m_serviceVersionFoldersCompPtr->GetServiceFolder(serviceTypeId, operatingSystem));
+
+	return payload;
+}
+
+
+sdl::V1_0::agentino::CServiceVersionFolder CServiceUpdateControllerComp::OnSetServiceVersionFolder(
+			const sdl::V1_0::agentino::CSetServiceVersionFolderGqlRequest& setServiceVersionFolderRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::CServiceVersionFolder payload;
+
+	if (!m_serviceVersionFoldersCompPtr.IsValid()){
+		errorMessage = QStringLiteral("Unable to set the folder of the service versions. Error: Component reference 'ServiceVersionFolders' was not set");
+		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
+
+		return payload;
+	}
+
+	const sdl::V1_0::agentino::SetServiceVersionFolderRequestArguments arguments = setServiceVersionFolderRequest.GetRequestedArguments();
+
+	QByteArray serviceTypeId;
+	QString operatingSystem;
+	QString path;
+	if (arguments.input.has_value()){
+		if (arguments.input->serviceTypeId.has_value()){
+			serviceTypeId = *arguments.input->serviceTypeId;
+		}
+		if (arguments.input->operatingSystem.has_value()){
+			operatingSystem = arguments.input->operatingSystem->trimmed();
+		}
+		if (arguments.input->path.has_value()){
+			path = QDir::cleanPath(QDir::fromNativeSeparators(arguments.input->path->trimmed()));
+		}
+	}
+
+	if (serviceTypeId.isEmpty() || operatingSystem.isEmpty()){
+		errorMessage = QStringLiteral("Unable to set the folder of the service versions. Error: The service type or the operating system is not set");
+		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
+
+		return payload;
+	}
+
+	if (path.isEmpty() || !QFileInfo(path).isDir()){
+		errorMessage = QStringLiteral("Unable to set the folder of the service versions. Error: The folder '%1' does not exist").arg(QDir::toNativeSeparators(path));
+		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
+
+		return payload;
+	}
+
+	// The model is stored by its auto persistence on the change.
+	m_serviceVersionFoldersCompPtr->SetServiceFolder(serviceTypeId, operatingSystem, path);
+
+	payload.serviceTypeId = serviceTypeId;
+	payload.operatingSystem = operatingSystem;
+	payload.path = QDir::toNativeSeparators(path);
 
 	return payload;
 }

@@ -206,6 +206,25 @@ istd::IChangeableUniquePtr CServiceVersionCollectionControllerComp::CreateObject
 		return nullptr;
 	}
 
+	// A version is chosen inside the folder of the versions of its service type and operating system.
+	if (m_serviceVersionFoldersCompPtr.IsValid()){
+		const QString serviceFolder = m_serviceVersionFoldersCompPtr->GetServiceFolder(serviceTypeId, operatingSystem);
+		if (serviceFolder.isEmpty()){
+			errorMessage = QStringLiteral("Unable to add a service version. Error: The folder of the versions of the service '%1' for %2 is not set").arg(QString::fromUtf8(serviceTypeId), operatingSystem);
+			SendErrorMessage(0, errorMessage, "CServiceVersionCollectionControllerComp");
+
+			return nullptr;
+		}
+
+		if (!IsPathInsideFolder(path, serviceFolder)){
+			errorMessage = QStringLiteral("Unable to add a service version. Error: The folder '%1' is not inside the folder of the service versions '%2'")
+						.arg(QDir::toNativeSeparators(path), QDir::toNativeSeparators(serviceFolder));
+			SendErrorMessage(0, errorMessage, "CServiceVersionCollectionControllerComp");
+
+			return nullptr;
+		}
+	}
+
 	// The name of the folder is the version.
 	QString version = serviceVersionDataRepresentation.version ? serviceVersionDataRepresentation.version->trimmed() : QString();
 	if (version.isEmpty()){
@@ -545,6 +564,27 @@ int CServiceVersionCollectionControllerComp::CompareVersions(const QString& vers
 	}
 
 	return 0;
+}
+
+
+bool CServiceVersionCollectionControllerComp::IsPathInsideFolder(const QString& path, const QString& folder)
+{
+#ifdef Q_OS_WIN
+	const Qt::CaseSensitivity caseSensitivity = Qt::CaseInsensitive;
+#else
+	const Qt::CaseSensitivity caseSensitivity = Qt::CaseSensitive;
+#endif
+
+	const QString cleanFolder = QDir::cleanPath(QDir::fromNativeSeparators(folder));
+	const QString cleanPath = QDir::cleanPath(QDir::fromNativeSeparators(path));
+	if (cleanFolder.isEmpty() || cleanPath.compare(cleanFolder, caseSensitivity) == 0){
+		return false;
+	}
+
+	// A root ("C:/", "/") already ends with the separator.
+	const QString prefix = cleanFolder.endsWith(QLatin1Char('/')) ? cleanFolder : cleanFolder + QLatin1Char('/');
+
+	return cleanPath.startsWith(prefix, caseSensitivity);
 }
 
 

@@ -1349,10 +1349,6 @@
         <translation>Data di caricamento</translation>
     </message>
     <message>
-        <source>Path</source>
-        <translation>Percorso</translation>
-    </message>
-    <message>
         <source>Number of installations</source>
         <translation>Numero di installazioni</translation>
     </message>
@@ -1363,6 +1359,10 @@
     <message>
         <source>Install</source>
         <translation>Installa</translation>
+    </message>
+    <message>
+        <source>Set service folder</source>
+        <translation>Imposta cartella del servizio</translation>
     </message>
 </context>
 <context>
@@ -3340,6 +3340,10 @@
     <message>
         <source>Select the folder of a service version</source>
         <translation>Seleziona la cartella di una versione del servizio</translation>
+    </message>
+    <message>
+        <source>Select the folder of the service versions</source>
+        <translation>Seleziona la cartella delle versioni del servizio</translation>
     </message>
     <message>
         <source>The folder of a service version must be selected</source>

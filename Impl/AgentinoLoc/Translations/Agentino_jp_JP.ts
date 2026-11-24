@@ -1349,10 +1349,6 @@
         <translation>アップロード日</translation>
     </message>
     <message>
-        <source>Path</source>
-        <translation>パス</translation>
-    </message>
-    <message>
         <source>Number of installations</source>
         <translation>インストール数</translation>
     </message>
@@ -1363,6 +1359,10 @@
     <message>
         <source>Install</source>
         <translation>インストール</translation>
+    </message>
+    <message>
+        <source>Set service folder</source>
+        <translation>サービスフォルダーを設定</translation>
     </message>
 </context>
 <context>
@@ -3340,6 +3340,10 @@
     <message>
         <source>Select the folder of a service version</source>
         <translation>サービスバージョンのフォルダーを選択</translation>
+    </message>
+    <message>
+        <source>Select the folder of the service versions</source>
+        <translation>サービスのバージョンフォルダーを選択</translation>
     </message>
     <message>
         <source>The folder of a service version must be selected</source>
