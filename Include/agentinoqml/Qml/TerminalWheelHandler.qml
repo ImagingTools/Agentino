@@ -10,7 +10,7 @@ WheelHandler {
 	// direction: -1 the wheel rolled up (away from the user), 1 down.
 	signal rolled(int direction);
 
-	onWheel: {
+	onWheel: function(event){
 		if (event.angleDelta.y > 0){
 			root.rolled(-1);
 		}

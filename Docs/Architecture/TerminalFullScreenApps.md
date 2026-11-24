@@ -267,6 +267,30 @@ cleared its screen (`CSI 2J` and the cursor addressing are what ConPTY writes fo
 is the last lines of the scrollback view, which draws it correctly and takes the keys; what it lacks is the mouse (ConPTY does not give it anyway) and the
 selection by the grid.
 
+## The desktop (Qt) client
+
+The terminal pane is the same QML in the desktop client and in the web build, so the emulator (`TerminalEmulator.js`) and the pane run in both. What was checked on the
+desktop side, with Qt 6.11.2 (MSVC, Debug):
+
+- **The module in the JavaScript engine of Qt**: `qml.exe` ran the recording of `mc.exe` through `TerminalEmulator.js` (`import "TerminalEmulator.js" as Emulator`) and the
+  result is the same as in node (V8): the text and the rich text of the screen (checksums), the number of cells with a color and with a background, the cursor, the codes of keys.
+  A QML `color` reaches the library as `#rrggbb`, which `hexColor` takes (`#aarrggbb` too).
+- **The rich text in the text engine of Qt**: the rows of the recorded screens (the panels, the dialog of mcedit, the help) were drawn as the pane draws them (a `Text` per row,
+  `textFormat: Text.RichText`, `<span style="white-space:pre">` and the spans of `rowHtml`, Consolas 14 px: a cell of 8 x 17 px) and saved as images. The colors of the skin of
+  `mc`, the backgrounds, the bold and the frames come out right, the rows touch without gaps, and the vertical lines of the frames and the columns line up.
+- **The client builds**: `AgentinoClient` (Ninja, MSVC 19.51) with the new `agentinoqml.qrc` (the module and `TerminalWheelHandler.qml` in the resources) and the pane compiled
+  from this worktree; `qmllint` finds no error in the pane and no warning in the wheel handler.
+- **Not done**: the client was not driven by hand or by a script: the terminal tab was not opened in the running desktop window, so the keys, the mouse, `WheelHandler`
+  and the timer of the blink are checked in the web build only. The client was not started because the platform plugin `offscreen` is not in its folder and a real
+  window would connect to the server with the saved settings.
+
+**Building the desktop client from a worktree** (it is what was done; the build goes to a folder of its own and touches neither `Bin` nor the build tree of the main checkout):
+configure `Build/CMake` of the worktree with `-G Ninja -DCMAKE_BUILD_TYPE=Debug -DAGENTINODIR=<worktree> -DAGENTINODIR_BUILD=<own folder> -DWEB_COMPILE=OFF -DBUILD_TESTING=OFF` in the
+environment of MSVC with `IACFDIR`, `ACFDIR`, `ACFSLNDIR`, `IMTCOREDIR` and `IMTCOREDIR_BUILD` set (paths with `/`, a `\` in `AGENTINODIR_BUILD` breaks the SDL generators), then build the
+target `AgentinoClient`. Three things of a worktree have to be given by hand: `Partitura/AgentinoVoce.arp/VersionInfo.acc` (generated, ignored by git: copy it from the main checkout),
+the folder `ImtCore` next to the worktree (the SDL schemas import `../../../../ImtCore/Sdl/...` relative to the checkout; a junction made for the build) and `AgentinoClient.res` (the
+resources of the exe: copy it from the main build). The first build needs minutes (the SDL code is generated again).
+
 ## Open questions
 
 - The recording does not have the mouse, the viewer (F3), the editor (F4) and the dialogs of copy: they are to be recorded for the stages 2 and 3 (the script of keys is in `record.mjs`). `mc` of Linux (with `?1049`, `ESC ( 0` in some skins) is to be recorded on a Linux agent.
