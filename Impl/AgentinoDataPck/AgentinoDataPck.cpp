@@ -81,6 +81,11 @@ I_EXPORT_COMPONENT(
 			"Topology View Grouping");
 
 I_EXPORT_COMPONENT(
+			ServiceVersionInfo,
+			"Version of a service type uploaded to the server",
+			"Service Version Info");
+
+I_EXPORT_COMPONENT(
 			ConnectionTokenStore,
 			"Tokens of the output connections of the services, kept protected",
 			"Connection Token Store");

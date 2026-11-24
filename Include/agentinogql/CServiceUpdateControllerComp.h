@@ -37,6 +37,13 @@ public:
 		I_ASSIGN(m_enrollmentControllerCompPtr, "EnrollmentController", "Enrollment records holding the operating systems reported by the agents", false, "EnrollmentStore");
 	I_END_COMPONENT;
 
+	/**
+		Get the family of the operating system (as reported by the agent): "Windows", "Linux", "macOS",
+		or "Other" for an unrecognized one. Empty if the operating system is not known.
+		The versions of the services (CServiceVersionCollectionControllerComp) are grouped by it as well.
+	*/
+	static QString GetOperatingSystemFamily(const QString& operatingSystem);
+
 protected:
 	// reimplemented (sdl::V1_0::agentino::CUpdatesGqlHandlerCompBase)
 	virtual sdl::V1_0::agentino::CServiceUpdateListPayload OnServiceUpdatesList(
@@ -49,12 +56,6 @@ protected:
 				QString& errorMessage) const override;
 
 private:
-	/**
-		Get the family of the operating system (as reported by the agent): "Windows", "Linux", "macOS",
-		or "Other" for an unrecognized one. Empty if the operating system is not known.
-	*/
-	static QString GetOperatingSystemFamily(const QString& operatingSystem);
-
 	/**
 		Get the family of the operating system reported by the agent. Empty if the agent did not report it.
 	*/

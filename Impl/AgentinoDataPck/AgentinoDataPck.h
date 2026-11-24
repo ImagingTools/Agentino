@@ -21,6 +21,7 @@
 #include <agentinodata/CServiceTypeCatalogComp.h>
 #include <agentinodata/CTopologyGroup.h>
 #include <agentinodata/CTopologyView.h>
+#include <agentinodata/CServiceVersionInfo.h>
 
 
 /**
@@ -67,6 +68,11 @@ typedef icomp::TMakeComponentWrap<
 					iser::IObject,
 					iser::ISerializable,
 					istd::IChangeable> TopologyView;
+typedef icomp::TMakeComponentWrap<
+					agentinodata::CServiceVersionInfo,
+					agentinodata::IServiceVersionInfo,
+					iser::ISerializable,
+					istd::IChangeable> ServiceVersionInfo;
 typedef agentinodata::CConnectionTokenStoreComp ConnectionTokenStore;
 
 

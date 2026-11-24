@@ -89,9 +89,36 @@ test.describe('Update', () => {
     expect(versions.errors, 'ServiceVersionsList must succeed').toBeFalsy();
     await update.expectVersionsOpen();
 
-    // Nothing is selected yet: only Load is offered.
-    expect(await update.commands.isAvailable('Load'), 'Load is always offered').toBe(true);
+    // "All" operating systems: the versions of every family are listed, none can be added; nothing is selected yet.
+    expect(await update.commands.isAvailable('Add'), 'Add needs an operating system').toBe(false);
     expect(await update.commands.isAvailable('Remove'), 'Remove needs a selected version').toBe(false);
     expect(await update.commands.isAvailable('Install'), 'Install needs a selected version').toBe(false);
+  });
+
+  test('the versions page of an operating system offers Add', async ({ page }) => {
+    const update = new UpdatePage(page);
+    if (!(await update.isAvailable())) refuse('the Update page is not in the menu');
+
+    const osSpy = gui.graphql.spyOn(page, 'AgentOperatingSystemsList');
+    await update.open();
+    const names = (await osSpy.wait()).data.AgentOperatingSystemsList.names || [];
+    test.skip(names.length === 0, 'no agent of this instance reported its operating system');
+
+    const servicesSpy = gui.graphql.spyOn(page, 'ServiceUpdatesList');
+    await update.selectFirstOperatingSystem();
+    const services = (await servicesSpy.wait()).data.ServiceUpdatesList.items;
+    test.skip(services.length === 0, `no agent of ${names[0]} has a service`);
+
+    // The versions of the selected family only: the request names it.
+    const versionsSpy = gui.graphql.spyOn(page, 'ServiceVersionsList');
+    await update.openFirstServiceVersions();
+    const versions = await versionsSpy.wait();
+    expect(versions.errors, 'ServiceVersionsList must succeed').toBeFalsy();
+    for (const item of versions.data.ServiceVersionsList.items) {
+      expect(item.operatingSystem, `"${item.version}" is a version of ${names[0]}`).toBe(names[0]);
+    }
+    await update.expectVersionsOpen();
+
+    expect(await update.commands.isAvailable('Add'), 'Add is offered for an operating system').toBe(true);
   });
 });

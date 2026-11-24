@@ -1341,16 +1341,24 @@
         <translation>Version</translation>
     </message>
     <message>
+        <source>Operating system</source>
+        <translation>Operating system</translation>
+    </message>
+    <message>
         <source>Upload date</source>
         <translation>Upload date</translation>
+    </message>
+    <message>
+        <source>Path</source>
+        <translation>Path</translation>
     </message>
     <message>
         <source>Number of installations</source>
         <translation>Number of installations</translation>
     </message>
     <message>
-        <source>Load</source>
-        <translation>Load</translation>
+        <source>Add</source>
+        <translation>Add</translation>
     </message>
     <message>
         <source>Install</source>
@@ -3366,8 +3374,12 @@
 <context>
     <name>ServiceVersionsView</name>
     <message>
-        <source>Loading of service versions is not available yet</source>
-        <translation>Loading of service versions is not available yet</translation>
+        <source>Select the folder of a service version</source>
+        <translation>Select the folder of a service version</translation>
+    </message>
+    <message>
+        <source>The folder of a service version must be selected</source>
+        <translation>The folder of a service version must be selected</translation>
     </message>
     <message>
         <source>Select a version to see the agents it is installed on</source>

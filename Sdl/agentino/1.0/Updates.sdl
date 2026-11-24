@@ -1,5 +1,6 @@
 schema {
 	query: Query
+	mutation: Mutation
 	namespace: agentino
 	version: 1.0
 }
@@ -41,15 +42,38 @@ type AgentOperatingSystemList {
 
 # A version of a service type uploaded to the server: a row of the versions page of a service
 # (opened by a double click on the "Update" page). The versions of one service type are requested
-# with the "serviceTypeId" request header (see CServiceVersionCollectionControllerComp).
+# with the "serviceTypeId" request header, the versions of one operating system family with the
+# "operatingSystem" header (absent or empty: all of them; see CServiceVersionCollectionControllerComp).
 type ServiceVersionItem {
 	id: ID!
 	typeId: ID!
 	name: String
+	# Operating system family the version is built for (one of AgentOperatingSystemList.names)
+	operatingSystem: String
 	version: String
 	uploadDate: String
+	# Path of the folder of the version on the server
+	path: String
 	# Number of agents having this version of the service type installed
 	installationCount: Int
+}
+
+# A version of a service type added to the server: the folder of the version, its name is the version.
+# The upload date is set by the server.
+type ServiceVersionData {
+	id: ID
+	serviceTypeId: ID!
+	# Operating system family the version is built for (one of AgentOperatingSystemList.names)
+	operatingSystem: String!
+	version: String!
+	path: String!
+}
+
+input ServiceVersionDataInput {
+	id: ID
+	# Name of the collection element: the version
+	name: String
+	item: ServiceVersionData!
 }
 
 input ServiceVersionListInput {
@@ -68,11 +92,22 @@ type Query {
 	ServiceVersionsList (input: ServiceVersionListInput): ServiceVersionListPayload!
 }
 
+type Mutation {
+	# Add a version (a folder on the server) to the versions of a service type
+	AddServiceVersion (input: ServiceVersionDataInput): AddedNotificationPayload!
+}
+
 collectionSchema {
 	type ServiceVersion {
 		ref: ServiceVersionItem
 		operations {
 			list: ServiceVersionsList
+		}
+		subtype ServiceVersion {
+			ref: ServiceVersionData
+			operations {
+				insert: AddServiceVersion
+			}
 		}
 	}
 }

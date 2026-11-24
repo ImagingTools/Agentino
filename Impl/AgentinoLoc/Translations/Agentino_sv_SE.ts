@@ -1341,16 +1341,24 @@
         <translation>Version</translation>
     </message>
     <message>
+        <source>Operating system</source>
+        <translation>Operativsystem</translation>
+    </message>
+    <message>
         <source>Upload date</source>
         <translation>Uppladdningsdatum</translation>
+    </message>
+    <message>
+        <source>Path</source>
+        <translation>Sökväg</translation>
     </message>
     <message>
         <source>Number of installations</source>
         <translation>Antal installationer</translation>
     </message>
     <message>
-        <source>Load</source>
-        <translation>Ladda</translation>
+        <source>Add</source>
+        <translation>Lägg till</translation>
     </message>
     <message>
         <source>Install</source>
@@ -3366,8 +3374,12 @@
 <context>
     <name>ServiceVersionsView</name>
     <message>
-        <source>Loading of service versions is not available yet</source>
-        <translation>Inläsning av tjänstversioner är inte tillgänglig ännu</translation>
+        <source>Select the folder of a service version</source>
+        <translation>Välj mappen för en tjänstversion</translation>
+    </message>
+    <message>
+        <source>The folder of a service version must be selected</source>
+        <translation>Mappen för en tjänstversion måste väljas</translation>
     </message>
     <message>
         <source>Select a version to see the agents it is installed on</source>

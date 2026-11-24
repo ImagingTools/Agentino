@@ -101,7 +101,10 @@ ViewBase {
 		}
 	}
 
-	// Opens the versions page of the service of the table row (the service type ID is the document ID).
+	// Opens the versions page of the service of the table row for the selected operating system family:
+	// versions differ by it. The document ID is "<family>/<service type ID>" (ServiceVersionsView parses it),
+	// so every family of a service has its own tab; the family is empty for "All" and "Unknown" -
+	// the page then lists the versions of every family.
 	function openServiceVersions(index){
 		if (!updatePage.documentManager || !servicesTable.elements || index < 0){
 			return
@@ -113,7 +116,13 @@ ViewBase {
 			return
 		}
 
-		updatePage.documentManager.openDocument(item.m_id, "ServiceVersions", item.m_name)
+		let operatingSystem = updatePage.selectedOsKey.indexOf("os:") === 0 ? updatePage.selectedOsKey.substring(3) : ""
+		let name = item.m_name
+		if (operatingSystem !== ""){
+			name += " (" + (operatingSystem === "Other" ? qsTr("Other") : operatingSystem) + ")"
+		}
+
+		updatePage.documentManager.openDocument(operatingSystem + "/" + item.m_id, "ServiceVersions", name)
 	}
 
 	Component.onCompleted: {

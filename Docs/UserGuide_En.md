@@ -156,13 +156,24 @@ The main window consists of:
     agents: **All**, **Windows** / **Linux** / **macOS** (only the families
     the agents run on), **Other** for an unrecognized operating system and
     **Unknown** for agents that did not report one. A double click on a
-    service opens its versions page in a new tab: the table of the versions
-    uploaded to the server (**Version**, **Upload date**, **Number of
-    installations**) with the **Load**, **Remove** and **Install** commands
+    service opens its versions page in a new tab. Versions differ by the
+    operating system family: with a family selected in the panel the page
+    (titled e.g. *Puma (Windows)*) shows the versions of that family only,
+    with **All** or **Unknown** it shows the versions of every family and no
+    version can be added. The page holds the table of the versions
+    added to the server (**Version**, **Operating system**, **Upload date**,
+    **Path**, **Number of installations** — the agents of the version's
+    family having it installed) with the **Add**, **Remove** and **Install** commands
     (**Remove** and **Install** need a selected version), and on the right the
-    agents the selected version is installed on. **Install** opens a dialog
+    agents the selected version is installed on. **Add** opens the choice of a
+    folder on the server (starting in `C:\Dogma`): the name of the chosen
+    folder becomes the version of the selected operating system family, its
+    path and the date it was added are stored with it; a version that already
+    exists for the family is not added again. **Remove** (after a
+    confirmation) removes the selected versions from the list; their folders
+    on the server are kept. **Install** opens a dialog
     with the approved agents to install the version on (check boxes and
-    **Select all**). Uploading and installing versions are not available yet:
+    **Select all**). Installing versions is not available yet:
     the **Install** button of the dialog only closes it. Requires the *View Services* right.
 * **The command panel** (toolbar) above the work area: New, Edit, Remove,
   Start, Stop, Approve, etc. The set of commands depends on the page, and
