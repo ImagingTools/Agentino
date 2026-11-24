@@ -221,45 +221,16 @@ Item {
 		return "<span style=\"white-space:pre\">" + Emulator.rowHtml(root.emu, rowIndex, root.emulatorOptions(), cursorColumn, false) + "</span>";
 	}
 
+	// The bytes that a key sends to the pty: the table of xterm in the emulator (modifiers of the cursor keys and F-keys, F11 and F12,
+	// Alt, the control characters, the application mode of the cursor keys that the program asks for).
 	function vtInputForKey(event){
-		if ((event.modifiers & Qt.ControlModifier)
-				&& event.key >= Qt.Key_A && event.key <= Qt.Key_Z){
-			return String.fromCharCode(event.key - Qt.Key_A + 1);
-		}
-
-		switch (event.key){
-		case Qt.Key_Up: return "\x1b[A";
-		case Qt.Key_Down: return "\x1b[B";
-		case Qt.Key_Right: return "\x1b[C";
-		case Qt.Key_Left: return "\x1b[D";
-		case Qt.Key_Home: return "\x1b[H";
-		case Qt.Key_End: return "\x1b[F";
-		case Qt.Key_PageUp: return "\x1b[5~";
-		case Qt.Key_PageDown: return "\x1b[6~";
-		case Qt.Key_Insert: return "\x1b[2~";
-		case Qt.Key_Delete: return "\x1b[3~";
-		case Qt.Key_F1: return "\x1bOP";
-		case Qt.Key_F2: return "\x1bOQ";
-		case Qt.Key_F3: return "\x1bOR";
-		case Qt.Key_F4: return "\x1bOS";
-		case Qt.Key_F5: return "\x1b[15~";
-		case Qt.Key_F6: return "\x1b[17~";
-		case Qt.Key_F7: return "\x1b[18~";
-		case Qt.Key_F8: return "\x1b[19~";
-		case Qt.Key_F9: return "\x1b[20~";
-		case Qt.Key_F10: return "\x1b[21~";
-		case Qt.Key_Backspace: return "\x7f";
-		case Qt.Key_Backtab: return "\x1b[Z";
-		case Qt.Key_Tab: return "\t";
-		case Qt.Key_Return:
-		case Qt.Key_Enter: return "\r";
-		case Qt.Key_Escape: return "\x1b";
-		}
-
-		if (event.text.length === 0){
-			return "";
-		}
-		return (event.modifiers & Qt.AltModifier) ? "\x1b" + event.text : event.text;
+		return Emulator.encodeKey(root.emu, {
+			key: event.key,
+			text: event.text,
+			ctrl: (event.modifiers & Qt.ControlModifier) !== 0,
+			alt: (event.modifiers & Qt.AltModifier) !== 0,
+			shift: (event.modifiers & Qt.ShiftModifier) !== 0
+		});
 	}
 
 	function sendAltScreenKey(event){

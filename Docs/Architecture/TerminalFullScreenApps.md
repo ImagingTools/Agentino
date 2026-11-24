@@ -167,6 +167,35 @@ for `C:/windows/TEMP/mc-<user>` and prints its messages with a wrong code page; 
 (`set TEMP=C:\Users\Public& set TMP=C:\Users\Public`). That is the environment of the agent, not the terminal. F9 shows no pull-down menu, with the
 reference emulator too: it is what `mc.exe` writes through ConPTY.
 
+## Stage 2: done
+
+- **The key table** is `encodeKey` in `TerminalEmulator.js`. It takes the Qt key code (the same numbers in desktop Qt and in the JQML engine), the text and
+  the modifiers, so the pane needs no mapping of its own (`vtInputForKey` is one call). It is the encoding of xterm:
+  - cursor keys: `ESC [ A`, `ESC O A` while the program asks for the application mode (`CSI ?1h`), and `ESC [ 1 ; m A` with a modifier (also in the
+    application mode); Home and End the same;
+  - F1..F4: `ESC O P..S`, `ESC [ 1 ; m P..S` with a modifier; F5..F20: `ESC [ n ~` (15, 17, 18, 19, 20, 21, 23, 24, 25, 26, 28, 29, 31, 32, 33, 34),
+    `ESC [ n ; m ~` with a modifier, so F11 and F12 now go to the program; Insert, Delete, PageUp, PageDown the same;
+  - the modifier is `m = 1 + shift + 2 alt + 4 ctrl`;
+  - Shift+Tab is `ESC [ Z`, Backspace `DEL` (Ctrl+Backspace `BS`), Alt in front of a key is `ESC`;
+  - Ctrl with the letters, Space, `@ [ \ ] ^ _ ? /` and the digits 2..8 gives the control characters, so Ctrl+O, Ctrl+\ and the like reach the program.
+- The browser: the engine calls `preventDefault` when the QML key handler accepts the event, so F1, F3, F5, F10 and the like stay with the terminal. The
+  keys that a page cannot take from a browser (Ctrl+W, Ctrl+T, Ctrl+N, F11 for the full screen) stay with it.
+- A second recording, `Tests/TerminalEmulator/fixtures/mc-dialogs.json`, with the screens of the reference: the viewer (F3), the editor `mcedit` with typing,
+  the "Save?" dialog, a search dialog, the help, the pull-down menus, Ctrl+arrows, Tab between the panels. 64 chunks, and the emulator gives the screens of
+  `@xterm/headless` after every one of them (text, colors, attributes, cursor). The test goes over every recording of `fixtures/`; a scenario is a
+  script of keys in `tools/record.mjs` (`node record.mjs dialogs mc-dialogs.json`), which works in a folder with files of its own.
+- 34 tests in `emulator.test.mjs` (6 for the keys, 3 for every recording), `node --test Tests/TerminalEmulator/emulator.test.mjs`.
+- Checked in the web build with real `KeyboardEvent`s (with the modifiers): the keys are accepted (`defaultPrevented`), the cursor keys, Esc, F1, F3 and
+  F10 reach `mc` and do what they do (F3 opens the file, so `mc` shows its dialog, F10 leaves).
+
+Not done in this stage: the keypad in its application mode (`ESC =`), which `mc` does not need; the mouse, bracketed paste and focus events (the modes are
+kept and not used yet); the whole pane for a full-screen program.
+
+Found while checking: the agent of this machine runs `mc.exe` as the service account, which makes it fragile: it needs `USERNAME`, `USER` and `TMPDIR` set
+(`set USERNAME=mcuser& set USER=mcuser& set TMPDIR=C:\Users\Public`), it cannot make its lock file `.#file` in a folder of another user and it stopped on its own
+`assert` in `w32_slang.c` (`c < vio.cols`, the screen buffer of its Windows console layer) after the size of the pane had changed. These are not things of
+the terminal; for the checks of the next stages `mc` is better run as a normal user.
+
 ## Open questions
 
 - The recording does not have the mouse, the viewer (F3), the editor (F4) and the dialogs of copy: they are to be recorded for the stages 2 and 3 (the script of keys is in `record.mjs`). `mc` of Linux (with `?1049`, `ESC ( 0` in some skins) is to be recorded on a Linux agent.

@@ -21,10 +21,13 @@ const assert = {
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const source = fs.readFileSync(path.join(here, '..', '..', 'Include', 'agentinoqml', 'Qml', 'TerminalEmulator.js'), 'utf8').replace(/^\.pragma library/m, '');
-const E = vm.runInNewContext(`${source}\n({ create, feed, resize, takeReplies, rowText, rowHtml, lastUsedColumn, clearScreen, FL_BOLD, FL_INVERSE, FL_UNDERLINE, FL_DIM, FL_ITALIC, FL_STRIKE, RGB_BASE })`);
+const E = vm.runInNewContext(`${source}\n({ create, feed, resize, takeReplies, rowText, rowHtml, lastUsedColumn, clearScreen, encodeKey, FL_BOLD, FL_INVERSE, FL_UNDERLINE, FL_DIM, FL_ITALIC, FL_STRIKE, RGB_BASE })`);
 
-const recording = JSON.parse(fs.readFileSync(path.join(here, 'fixtures', 'mc-basic.json'), 'utf8'));
-const expected = JSON.parse(fs.readFileSync(path.join(here, 'fixtures', 'mc-basic.expected.json'), 'utf8'));
+// every recording of fixtures/ (made by tools/record.mjs) with the screens that the reference gave for it (tools/reference.mjs)
+const fixtureDir = path.join(here, 'fixtures');
+const fixtures = fs.readdirSync(fixtureDir)
+	.filter((name) => name.endsWith('.json') && !name.endsWith('.expected.json'))
+	.map((name) => ({ name: name.replace(/\.json$/, ''), recording: JSON.parse(fs.readFileSync(path.join(fixtureDir, name), 'utf8')), expected: JSON.parse(fs.readFileSync(path.join(fixtureDir, name.replace(/\.json$/, '.expected.json')), 'utf8')) }));
 
 // the screen of the emulator in the form of the reference: for each row the runs [text, fg, bg, flags]
 function color(value) {
@@ -61,33 +64,35 @@ function expectedText(sample) {
 	return sample.rows.map((runs) => runs.map((run) => run[0]).join('').replace(/ +$/, ''));
 }
 
-test('the recorded mc.exe gives the screens of the reference after every chunk', () => {
-	const t = E.create(recording.cols, recording.rows);
-	recording.chunks.forEach((chunk, index) => {
-		E.feed(t, chunk.data);
-		const sample = expected.samples[index];
-		assert.deepEqual(screenText(t), expectedText(sample), `text after chunk ${index}`);
-		assert.deepEqual(runsOf(t), sample.rows, `attributes after chunk ${index}`);
-		assert.deepEqual([t.cursorRow, t.cursorCol], sample.cursor, `cursor after chunk ${index}`);
+for (const { name, recording, expected } of fixtures) {
+	test(`${name}: the recorded mc.exe gives the screens of the reference after every chunk`, () => {
+		const t = E.create(recording.cols, recording.rows);
+		recording.chunks.forEach((chunk, index) => {
+			E.feed(t, chunk.data);
+			const sample = expected.samples[index];
+			assert.deepEqual(screenText(t), expectedText(sample), `text after chunk ${index}`);
+			assert.deepEqual(runsOf(t), sample.rows, `attributes after chunk ${index}`);
+			assert.deepEqual([t.cursorRow, t.cursorCol], sample.cursor, `cursor after chunk ${index}`);
+		});
 	});
-});
 
-test('the same stream one character at a time gives the same screen', () => {
-	const t = E.create(recording.cols, recording.rows);
-	for (const chunk of recording.chunks) for (const ch of chunk.data) E.feed(t, ch);
-	const last = expected.samples[expected.samples.length - 1];
-	assert.deepEqual(runsOf(t), last.rows);
-	assert.deepEqual([t.cursorRow, t.cursorCol], last.cursor);
-});
+	test(`${name}: the same stream one character at a time gives the same screen`, () => {
+		const t = E.create(recording.cols, recording.rows);
+		for (const chunk of recording.chunks) for (const ch of chunk.data) E.feed(t, ch);
+		const last = expected.samples[expected.samples.length - 1];
+		assert.deepEqual(runsOf(t), last.rows);
+		assert.deepEqual([t.cursorRow, t.cursorCol], last.cursor);
+	});
 
-test('the stream of mc has no alternate screen and the screen does not scroll into the history', () => {
-	const t = E.create(recording.cols, recording.rows);
-	const out = [];
-	t.onScrollOut = (row) => out.push(E.rowText(t, row));
-	for (const chunk of recording.chunks) E.feed(t, chunk.data);
-	assert.equal(t.altActive, false);
-	assert.deepEqual(out.filter((line) => line.trim() !== ''), [], 'no rows left the screen');
-});
+	test(`${name}: mc has no alternate screen and its screen does not scroll into the history`, () => {
+		const t = E.create(recording.cols, recording.rows);
+		const out = [];
+		t.onScrollOut = (row) => out.push(E.rowText(t, row));
+		for (const chunk of recording.chunks) E.feed(t, chunk.data);
+		assert.equal(t.altActive, false);
+		assert.deepEqual(out.filter((line) => line.trim() !== ''), [], 'no rows left the screen');
+	});
+}
 
 function screenOf(text, cols = 20, rows = 5) {
 	const t = E.create(cols, rows);
@@ -288,4 +293,103 @@ test('rowHtml: spans by style, the background, inverse, bold, the cursor, escapi
 	assert.ok(contrastHtml.includes('<span style="color:#111111;background-color:#cccccc">b</span>'), 'the foreground of the view on light gray');
 	const wide = screenOf('中x');
 	assert.equal(E.rowHtml(wide, 0, options, -1, true), '<span style="color:#111111">中x</span>');
+});
+
+// ── the keyboard ────────────────────────────────────────────────────────────
+
+const K = {
+	Escape: 0x01000000, Tab: 0x01000001, Backtab: 0x01000002, Backspace: 0x01000003, Return: 0x01000004, Enter: 0x01000005,
+	Insert: 0x01000006, Delete: 0x01000007, Home: 0x01000010, End: 0x01000011, Left: 0x01000012, Up: 0x01000013, Right: 0x01000014,
+	Down: 0x01000015, PageUp: 0x01000016, PageDown: 0x01000017, Shift: 0x01000020, Control: 0x01000021, Alt: 0x01000023,
+	Space: 0x20,
+};
+for (let i = 1; i <= 20; i++) K['F' + i] = 0x0100002f + i;
+
+function keys(spec, t = E.create(10, 2)) {
+	return E.encodeKey(t, { text: '', ctrl: false, alt: false, shift: false, ...spec });
+}
+
+test('keys: the cursor keys, normal and application mode, with the modifiers', () => {
+	assert.equal(keys({ key: K.Up }), '\x1b[A');
+	assert.equal(keys({ key: K.Down }), '\x1b[B');
+	assert.equal(keys({ key: K.Right }), '\x1b[C');
+	assert.equal(keys({ key: K.Left }), '\x1b[D');
+	assert.equal(keys({ key: K.Home }), '\x1b[H');
+	assert.equal(keys({ key: K.End }), '\x1b[F');
+	const app = screenOf('\x1b[?1h');
+	assert.equal(keys({ key: K.Up }, app), '\x1bOA');
+	assert.equal(keys({ key: K.End }, app), '\x1bOF');
+	assert.equal(keys({ key: K.Up, ctrl: true }, app), '\x1b[1;5A', 'a modifier makes the CSI form even in the application mode');
+	assert.equal(keys({ key: K.Right, ctrl: true }), '\x1b[1;5C');
+	assert.equal(keys({ key: K.Left, shift: true }), '\x1b[1;2D');
+	assert.equal(keys({ key: K.Down, alt: true }), '\x1b[1;3B');
+	assert.equal(keys({ key: K.Home, ctrl: true, shift: true }), '\x1b[1;6H');
+	assert.equal(keys({ key: K.End, ctrl: true, alt: true, shift: true }), '\x1b[1;8F');
+});
+
+test('keys: F1..F12 and the modified ones', () => {
+	const plainKeys = ['\x1bOP', '\x1bOQ', '\x1bOR', '\x1bOS', '\x1b[15~', '\x1b[17~', '\x1b[18~', '\x1b[19~', '\x1b[20~', '\x1b[21~', '\x1b[23~', '\x1b[24~'];
+	plainKeys.forEach((sequence, index) => assert.equal(keys({ key: K['F' + (index + 1)] }), sequence, 'F' + (index + 1)));
+	assert.equal(keys({ key: K.F1, ctrl: true }), '\x1b[1;5P');
+	assert.equal(keys({ key: K.F4, shift: true }), '\x1b[1;2S');
+	assert.equal(keys({ key: K.F5, shift: true }), '\x1b[15;2~');
+	assert.equal(keys({ key: K.F10, alt: true }), '\x1b[21;3~');
+	assert.equal(keys({ key: K.F12, ctrl: true, shift: true }), '\x1b[24;6~');
+	assert.equal(keys({ key: K.F13 }), '\x1b[25~');
+	assert.equal(keys({ key: K.F20 }), '\x1b[34~');
+});
+
+test('keys: Insert, Delete, PageUp, PageDown with and without a modifier', () => {
+	assert.equal(keys({ key: K.Insert }), '\x1b[2~');
+	assert.equal(keys({ key: K.Delete }), '\x1b[3~');
+	assert.equal(keys({ key: K.PageUp }), '\x1b[5~');
+	assert.equal(keys({ key: K.PageDown }), '\x1b[6~');
+	assert.equal(keys({ key: K.Delete, ctrl: true }), '\x1b[3;5~');
+	assert.equal(keys({ key: K.PageUp, shift: true }), '\x1b[5;2~');
+	assert.equal(keys({ key: K.Insert, alt: true }), '\x1b[2;3~');
+});
+
+test('keys: Tab, Backtab, Backspace, Enter and Escape', () => {
+	assert.equal(keys({ key: K.Tab }), '\t');
+	assert.equal(keys({ key: K.Tab, shift: true }), '\x1b[Z');
+	assert.equal(keys({ key: K.Backtab }), '\x1b[Z');
+	assert.equal(keys({ key: K.Tab, alt: true }), '\x1b\t');
+	assert.equal(keys({ key: K.Backspace }), '\x7f');
+	assert.equal(keys({ key: K.Backspace, ctrl: true }), '\x08');
+	assert.equal(keys({ key: K.Backspace, alt: true }), '\x1b\x7f');
+	assert.equal(keys({ key: K.Return }), '\r');
+	assert.equal(keys({ key: K.Enter }), '\r');
+	assert.equal(keys({ key: K.Return, alt: true }), '\x1b\r');
+	assert.equal(keys({ key: K.Escape }), '\x1b');
+	assert.equal(keys({ key: K.Escape, alt: true }), '\x1b\x1b');
+});
+
+test('keys: Ctrl with the letters and with the keys that make the other control characters', () => {
+	for (let code = 0x41; code <= 0x5a; code++) assert.equal(keys({ key: code, ctrl: true }), String.fromCharCode(code - 0x40), String.fromCharCode(code));
+	assert.equal(keys({ key: 0x4f, ctrl: true, shift: true }), '\x0f', 'Ctrl+Shift+O is Ctrl+O');
+	assert.equal(keys({ key: 0x4f, ctrl: true, text: '\x0f' }), '\x0f', 'the text of Qt with Ctrl is not sent twice');
+	assert.equal(keys({ key: K.Space, ctrl: true }), '\x00');
+	assert.equal(keys({ key: 0x40, ctrl: true }), '\x00');
+	assert.equal(keys({ key: 0x5b, ctrl: true }), '\x1b');
+	assert.equal(keys({ key: 0x5c, ctrl: true }), '\x1c');
+	assert.equal(keys({ key: 0x5d, ctrl: true }), '\x1d');
+	assert.equal(keys({ key: 0x5e, ctrl: true }), '\x1e');
+	assert.equal(keys({ key: 0x5f, ctrl: true }), '\x1f');
+	assert.equal(keys({ key: 0x3f, ctrl: true }), '\x7f');
+	assert.equal(keys({ key: 0x37, ctrl: true }), '\x1f');
+	assert.equal(keys({ key: 0x31, ctrl: true }), '', 'Ctrl+1 has no character');
+	assert.equal(keys({ key: 0x58, ctrl: true, alt: true }), '\x1b\x18', 'Alt+Ctrl+X');
+});
+
+test('keys: text, Alt in front of a character, and the keys that send nothing', () => {
+	assert.equal(keys({ key: 0x41, text: 'a' }), 'a');
+	assert.equal(keys({ key: 0x41, text: 'A', shift: true }), 'A');
+	assert.equal(keys({ key: 0x416, text: 'ж' }), 'ж');
+	assert.equal(keys({ key: 0x46, text: 'f', alt: true }), '\x1bf');
+	assert.equal(keys({ key: K.Space, text: ' ' }), ' ');
+	assert.equal(keys({ key: K.Space }), ' ');
+	assert.equal(keys({ key: K.Space, alt: true, text: ' ' }), '\x1b ');
+	assert.equal(keys({ key: K.Shift }), '');
+	assert.equal(keys({ key: K.Control, ctrl: true }), '');
+	assert.equal(keys({ key: K.Alt, alt: true }), '');
 });

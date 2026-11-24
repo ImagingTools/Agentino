@@ -8,6 +8,7 @@
 //   takeReplies(t)                   what the terminal answers to the queries of the program (write it to the pty)
 //   rowHtml(t, row, options)         the rich text of a row; rowText(t, row) the plain text
 //   resize(t, cols, rows)            the grid changes its size and keeps what it can
+//   encodeKey(t, key)                the bytes that a key of the keyboard sends to the pty (see below)
 //
 // A cell is {ch, fg, bg, fl}: ch is the character ("" after a wide one), fg and bg are -1 (the default), a palette index 0..255 or
 // 0x1000000 + 0xRRGGBB, fl is a mask of FL_* below. A cell is never changed once it is in the grid, a new one replaces it.
@@ -1277,4 +1278,124 @@ function rowHtml(t, row, options, cursorCol, trim){
 		html += "</span>";
 	}
 	return html;
+}
+
+// ── the keyboard ────────────────────────────────────────────────────────────
+
+// The Qt key codes (the same numbers are in desktop Qt and in the JQML engine) of the keys that are not text.
+var KEY_ESCAPE = 0x01000000;
+var KEY_TAB = 0x01000001;
+var KEY_BACKTAB = 0x01000002;
+var KEY_BACKSPACE = 0x01000003;
+var KEY_RETURN = 0x01000004;
+var KEY_ENTER = 0x01000005;
+var KEY_INSERT = 0x01000006;
+var KEY_DELETE = 0x01000007;
+var KEY_HOME = 0x01000010;
+var KEY_END = 0x01000011;
+var KEY_LEFT = 0x01000012;
+var KEY_UP = 0x01000013;
+var KEY_RIGHT = 0x01000014;
+var KEY_DOWN = 0x01000015;
+var KEY_PAGEUP = 0x01000016;
+var KEY_PAGEDOWN = 0x01000017;
+var KEY_F1 = 0x01000030;
+var KEY_F20 = 0x01000043;
+var KEY_SPACE = 0x20;
+
+// the final of the cursor keys: ESC [ A, or ESC O A in the application mode (DECCKM)
+var CURSOR_FINALS = {};
+CURSOR_FINALS[KEY_UP] = "A";
+CURSOR_FINALS[KEY_DOWN] = "B";
+CURSOR_FINALS[KEY_RIGHT] = "C";
+CURSOR_FINALS[KEY_LEFT] = "D";
+CURSOR_FINALS[KEY_HOME] = "H";
+CURSOR_FINALS[KEY_END] = "F";
+
+// the number of the keys that go as ESC [ n ~
+var TILDE_KEYS = {};
+TILDE_KEYS[KEY_INSERT] = 2;
+TILDE_KEYS[KEY_DELETE] = 3;
+TILDE_KEYS[KEY_PAGEUP] = 5;
+TILDE_KEYS[KEY_PAGEDOWN] = 6;
+
+// F5..F20 as ESC [ n ~ (F1..F4 are ESC O P..S)
+var FUNCTION_NUMBERS = [15, 17, 18, 19, 20, 21, 23, 24, 25, 26, 28, 29, 31, 32, 33, 34];
+var FUNCTION_FINALS = ["P", "Q", "R", "S"];
+
+// The control character of a key with Ctrl (the letters, and the keys of xterm for @ [ \ ] ^ _ ? and the digits 2..8), or -1.
+function controlCode(key){
+	if (key >= 0x41 && key <= 0x5a){
+		return key - 0x40;
+	}
+	if (key >= 0x61 && key <= 0x7a){
+		return key - 0x60;
+	}
+	switch (key){
+	case 0x40: case 0x32: return 0;
+	case 0x5b: case 0x33: return 0x1b;
+	case 0x5c: case 0x34: return 0x1c;
+	case 0x5d: case 0x35: return 0x1d;
+	case 0x5e: case 0x36: return 0x1e;
+	case 0x5f: case 0x37: case 0x2f: case 0x2d: return 0x1f;
+	case 0x3f: case 0x38: return 0x7f;
+	case KEY_SPACE: return 0;
+	}
+	return -1;
+}
+
+// The bytes that a key sends. key: {key (the Qt key code), text, ctrl, alt, shift}; "" when the key sends nothing (a modifier alone, a
+// key that the terminal has no sequence for). The encoding is that of xterm: the modifier of a cursor key, an F-key, Insert, Delete,
+// PageUp and PageDown is the parameter 1 + shift + 2 * alt + 4 * ctrl (ESC [ 1 ; 5 A, ESC [ 15 ; 2 ~); the cursor keys go as ESC O A
+// while the application asks for it (DECCKM, `appCursorKeys`); Alt in front of a character is ESC.
+function encodeKey(t, spec){
+	var key = spec.key;
+	var modifier = 1 + (spec.shift ? 1 : 0) + (spec.alt ? 2 : 0) + (spec.ctrl ? 4 : 0);
+	var modified = modifier > 1;
+	var prefix = spec.alt ? "\x1b" : "";
+
+	if (CURSOR_FINALS[key] !== undefined){
+		var letter = CURSOR_FINALS[key];
+		if (modified){
+			return "\x1b[1;" + modifier + letter;
+		}
+		return (t.appCursorKeys ? "\x1bO" : "\x1b[") + letter;
+	}
+	if (TILDE_KEYS[key] !== undefined){
+		return "\x1b[" + TILDE_KEYS[key] + (modified ? ";" + modifier : "") + "~";
+	}
+	if (key >= KEY_F1 && key <= KEY_F20){
+		var number = key - KEY_F1;
+		if (number < 4){
+			return modified ? "\x1b[1;" + modifier + FUNCTION_FINALS[number] : "\x1bO" + FUNCTION_FINALS[number];
+		}
+		return "\x1b[" + FUNCTION_NUMBERS[number - 4] + (modified ? ";" + modifier : "") + "~";
+	}
+	switch (key){
+	case KEY_BACKTAB:
+		return "\x1b[Z";
+	case KEY_TAB:
+		return spec.shift ? "\x1b[Z" : prefix + "\t";
+	case KEY_BACKSPACE:
+		return spec.ctrl ? prefix + "\x08" : prefix + "\x7f";
+	case KEY_RETURN:
+	case KEY_ENTER:
+		return prefix + "\r";
+	case KEY_ESCAPE:
+		return prefix + "\x1b";
+	}
+
+	if (spec.ctrl){
+		var control = controlCode(key);
+		if (control >= 0){
+			return prefix + String.fromCharCode(control);
+		}
+	}
+	if (spec.text !== undefined && spec.text.length > 0 && !spec.ctrl){
+		return prefix + spec.text;
+	}
+	if (key === KEY_SPACE){
+		return prefix + " ";
+	}
+	return "";
 }
