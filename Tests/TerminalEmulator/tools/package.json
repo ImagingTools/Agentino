@@ -1,0 +1,10 @@
+{
+    "name": "terminal-emulator-tools",
+    "private": true,
+    "type": "module",
+    "description": "Dev-only scripts that record the raw output of a program in a pty and build the reference screens. They are not part of the build or of the tests that run in CI.",
+    "devDependencies": {
+        "@xterm/headless": "^6.0.0",
+        "node-pty": "^1.1.0"
+    }
+}
