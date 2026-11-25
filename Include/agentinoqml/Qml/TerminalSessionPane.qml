@@ -7,6 +7,8 @@ import imtguigql 1.0
 import Qt.labs.platform 1.1
 import Qt.labs.settings 1.0
 
+import "TerminalEmulator.js" as Emulator
+
 /**
 	One terminal session tab content (Windows Terminal-style multi-tab host lives in TerminalView).
 
@@ -49,41 +51,43 @@ Item {
 	readonly property int idleCloseExitCode: -2;
 	readonly property int manualCloseExitCode: -1;
 
-	// ── Full-screen (alternate screen buffer) emulation state ───────────────
-	// Curses-style apps (vim, mc, top) switch the pty into the "alternate screen"
-	// (CSI ?1049h/?47h) and address a real 2D cursor; the line-oriented scrollback
-	// above cannot render that, so those bytes are routed to a small character-grid
-	// emulator instead and the two views are swapped based on altScreenActive.
-	property bool altScreenActive: false;
-	property var screenGrid: [];
+	// ── Terminal emulator state ─────────────────────────────────────────────
+	// The VT emulation (the grid of cells with their colors and attributes, the cursor, the modes and the parser of the escape
+	// sequences) is TerminalEmulator.js; see Docs/Architecture/TerminalFullScreenApps.md. The pane keeps mirrors of a few values of
+	// the emulator that the views bind to; syncEmulatorState() refreshes them after every chunk of the output.
+	property var emu: Emulator.create(80, 24);
+	// A program that owns the screen owns the whole pane: it is drawn by the grid view, not by the scrollback. It is a program of the alternate screen
+	// (CSI ?1049h) or one that draws the main screen (mc.exe under ConPTY, which has no alternate screen); see updateOwnership of the emulator.
+	property bool gridOwnsPane: false;
+	// The emulator is on its alternate buffer (the pane gives the screen back at once when it leaves it, and after a delay in the other case).
+	property bool altBuffer: false;
 	property int gridCols: 80;
 	property int gridRows: 24;
 	property int cursorRow: 0;
 	property int cursorCol: 0;
-	property bool wrapPending: false;
 	property bool cursorVisible: true;
-	property int scrollTop: 0;
-	property int scrollBottom: 23;
-	property var altSgrState: ({color: null, bold: false});
-	property string altPendingPartial: "";
-	property var savedCursorForDECSC: null;
-	// Bumped once per processed chunk so the grid delegates' text bindings
-	// (which read this property) know to re-evaluate; screenGrid is mutated
-	// in place and does not fire property-change notifications on its own.
+	// The cursor of the grid view blinks while the view has the focus; any output or key shows it again (the scrollback view does not blink: its text is laid out as a whole).
+	property bool cursorBlinkOn: true;
+	// Bumped once per processed chunk so the grid delegates' text bindings (which read this property) know to re-evaluate;
+	// the grid of the emulator is changed in place and does not fire property-change notifications on its own.
 	property int screenVersion: 0;
-	// Held-back tail of a possibly-split alt-screen-transition sequence
-	// (\x1b[?1049h/l, \x1b[?47h/l) so it is not misread across two chunks.
-	property string routerPendingPartial: "";
+	// The mouse: whether the program asked for it (?1000, ?1002, ?1003), and the selection of the grid view while it did not.
+	property bool mouseReporting: false;
+	property bool mouseTracking: false;
+	property var selection: null;
+	property bool selecting: false;
+	property int mouseButtonDown: -1;
+	property int lastMouseRow: 0;
+	property int lastMouseCol: 0;
+	// The modifiers of the last key event: the mouse events of the engine do not carry them (Shift lets the selection through while the program has the mouse).
+	property int keyModifiers: 0;
 
 	// ── Primary screen ──────────────────────────────────────────────────────
-	// The pty (ConPTY on Windows) addresses the visible screen with cursor moves and
-	// repaints all of it after a resize, so the primary screen runs through the same grid
-	// emulator as the alternate one. Rows scrolled off its top are committed to the
-	// scrollback; the visible rows are rendered below it (currentLineHtml).
+	// The pty (ConPTY on Windows) addresses the visible screen with cursor moves and repaints all of it after a resize, so the
+	// primary screen is the same grid. Rows scrolled off its top are committed to the scrollback; the visible rows are rendered
+	// below it (currentLineHtml). A full-screen program that does not use the alternate screen (mc.exe) is drawn here.
 	property string currentLineHtml: "";
 	property string committedPlain: "";
-	// Primary grid state kept while a full-screen app owns the alternate screen.
-	property var savedPrimaryScreen: null;
 
 	// ── ANSI / HTML helpers ─────────────────────────────────────────────────
 
@@ -161,223 +165,135 @@ Item {
 		return result;
 	}
 
-	// Shared 16-colour SGR table, also used by the alt-screen grid emulator below
-	// (kept intentionally separate from ansiToHtml's own inline table: that function
-	// tracks the *effective* colour directly, this one tracks a null-able "no explicit
-	// colour set" state, so merging them would add a branch to already-working code
-	// for no real benefit).
-	function sgrColorForCode(code){
-		switch (code){
-		case 30: return "#000000";
-		case 31: return "#cc0000";
-		case 32: return "#00aa00";
-		case 33: return "#cccc00";
-		case 34: return "#0000cc";
-		case 35: return "#aa00aa";
-		case 36: return "#00aaaa";
-		case 37: return "#cccccc";
-		case 90: return "#666666";
-		case 91: return "#ff5555";
-		case 92: return "#55ff55";
-		case 93: return "#ffff55";
-		case 94: return "#5555ff";
-		case 95: return "#ff55ff";
-		case 96: return "#55ffff";
-		case 97: return "#ffffff";
-		}
-		return null;
+	// ── Terminal emulator glue ──────────────────────────────────────────────
+
+	// The colors that the emulator uses for the default foreground and background and for the cursor cell.
+	function emulatorOptions(){
+		return {defaultFg: Style.textColor, defaultBg: Style.baseColor, cursorFg: "#ffffff", cursorBg: Style.textSelectedColor, selectionFg: "#ffffff", selectionBg: Style.textSelectedColor};
 	}
 
-	// Mutates state {color, bold} from a list of already-split numeric SGR codes.
-	// state.color === null means "no explicit colour set, use the default".
-	function applySgrToState(codes, state){
-		for (let i = 0; i < codes.length; ++i){
-			let code = codes[i];
-			if (code === 0){
-				state.color = null;
-				state.bold = false;
-			}
-			else if (code === 1){
-				state.bold = true;
-			}
-			else if (code === 22){
-				state.bold = false;
-			}
-			else if (code === 39){
-				state.color = null;
-			}
-			else{
-				let mapped = root.sgrColorForCode(code);
-				if (mapped !== null){
-					state.color = mapped;
-				}
-			}
+	// The cursor is on and stays on for a whole interval after an output or a key, as in xterm.
+	function showCursorSolid(){
+		root.cursorBlinkOn = true;
+		if (cursorBlinkTimer.running){
+			cursorBlinkTimer.restart();
 		}
 	}
 
-	// ── Alt-screen character-grid emulator ───────────────────────────────────
-
-	function currentGridColor(){
-		return root.altSgrState.color !== null ? root.altSgrState.color : root.streamColor("STDOUT");
-	}
-
-	function makeBlankRow(cols, color){
-		let row = [];
-		for (let c = 0; c < cols; ++c){
-			row.push({ch: " ", color: color, bold: false});
-		}
-		return row;
-	}
-
-	function resetGrid(cols, rows){
-		root.gridCols = Math.max(1, cols);
-		root.gridRows = Math.max(1, rows);
-		root.scrollTop = 0;
-		root.scrollBottom = root.gridRows - 1;
-		root.cursorRow = 0;
-		root.cursorCol = 0;
-		root.wrapPending = false;
-		root.cursorVisible = true;
-		root.savedCursorForDECSC = null;
-		let grid = [];
-		for (let r = 0; r < root.gridRows; ++r){
-			grid.push(root.makeBlankRow(root.gridCols, root.currentGridColor()));
-		}
-		root.screenGrid = grid;
+	// Copies what the views bind to from the emulator and moves the focus when a program enters or leaves the alternate screen.
+	function syncEmulatorState(){
+		let wasOwned = root.gridOwnsPane;
+		let leftAltBuffer = root.altBuffer && !root.emu.altActive;
+		root.altBuffer = root.emu.altActive;
+		root.gridCols = root.emu.cols;
+		root.gridRows = root.emu.rows;
+		root.cursorRow = root.emu.cursorRow;
+		root.cursorCol = root.emu.cursorCol;
+		root.cursorVisible = root.emu.cursorVisible;
+		root.showCursorSolid();
+		root.mouseReporting = root.emu.mouseMode > 0;
+		root.mouseTracking = root.emu.mouseMode === 1003;
 		root.screenVersion++;
-	}
 
-	// Called whenever the panel's computed character size changes (see sendTerminalSize);
-	// curses apps redraw fully on SIGWINCH, so the grid is simply reset to the new size
-	// rather than trying to preserve/reflow stale content.
-	function applyLocalGridSize(columns, rows){
-		if (columns === root.gridCols && rows === root.gridRows){
-			return;
-		}
-		if (root.altScreenActive){
-			root.resetGrid(columns, rows);
-			return;
-		}
-		// The pty repaints the primary screen after the resize; keeping the old rows
-		// until then avoids a blank flash.
-		root.resizeGridKeepingContent(columns, rows);
-		root.updatePrimaryScreen();
-	}
-
-	function resizeGridKeepingContent(cols, rows){
-		let newCols = Math.max(1, cols);
-		let newRows = Math.max(1, rows);
-		let grid = [];
-		for (let r = 0; r < newRows; ++r){
-			let row = root.makeBlankRow(newCols, root.currentGridColor());
-			let old = root.screenGrid[r];
-			if (old){
-				for (let c = 0; c < newCols && c < old.length; ++c){
-					row[c] = old[c];
-				}
+		if (root.emu.altActive || root.emu.owned){
+			ownedOffTimer.stop();
+			root.gridOwnsPane = true;
+			if (!wasOwned){
+				gridView.forceActiveFocus();
 			}
-			grid.push(row);
 		}
-		root.screenGrid = grid;
-		root.gridCols = newCols;
-		root.gridRows = newRows;
-		root.scrollTop = 0;
-		root.scrollBottom = newRows - 1;
-		root.cursorRow = Math.min(root.cursorRow, newRows - 1);
-		root.cursorCol = Math.min(root.cursorCol, newCols - 1);
-		root.wrapPending = false;
-		root.screenVersion++;
+		else if (wasOwned){
+			if (leftAltBuffer){
+				root.releaseGrid();
+			}
+			else if (!ownedOffTimer.running){
+				// Not at once: a program may clear its screen and draw it again in the next chunk.
+				ownedOffTimer.start();
+			}
+		}
 	}
 
-	function enterAltScreen(){
-		if (root.altScreenActive){
+	// The pane goes back to the scrollback view when the program does not own the screen any more.
+	function releaseGrid(){
+		ownedOffTimer.stop();
+		if (root.emu.altActive || root.emu.owned || !root.gridOwnsPane){
 			return;
 		}
-		root.savedPrimaryScreen = {
-			grid: root.screenGrid,
-			cols: root.gridCols,
-			rows: root.gridRows,
-			cursorRow: root.cursorRow,
-			cursorCol: root.cursorCol,
-			sgr: root.altSgrState
-		};
-		root.altScreenActive = true;
-		root.altSgrState = {color: null, bold: false};
-		root.altPendingPartial = "";
-		root.resetGrid(root.gridCols, root.gridRows);
-		gridView.forceActiveFocus();
-	}
-
-	function exitAltScreen(){
-		if (!root.altScreenActive){
-			return;
-		}
-		root.altScreenActive = false;
-		let saved = root.savedPrimaryScreen;
-		root.savedPrimaryScreen = null;
-		if (saved !== null){
-			let cols = root.gridCols;
-			let rows = root.gridRows;
-			root.screenGrid = saved.grid;
-			root.gridCols = saved.cols;
-			root.gridRows = saved.rows;
-			root.cursorRow = saved.cursorRow;
-			root.cursorCol = saved.cursorCol;
-			root.altSgrState = saved.sgr;
-			root.resizeGridKeepingContent(cols, rows);
-		}
-		else{
-			root.resetGrid(root.gridCols, root.gridRows);
-		}
+		root.gridOwnsPane = false;
 		root.updatePrimaryScreen();
 		if (controller.running && !controller.connectionLost){
 			outputText.forceActiveFocus();
 		}
 	}
 
-	function vtInputForKey(event){
-		if ((event.modifiers & Qt.ControlModifier)
-				&& event.key >= Qt.Key_A && event.key <= Qt.Key_Z){
-			return String.fromCharCode(event.key - Qt.Key_A + 1);
-		}
+	// A new empty emulator of this size (the output is cleared).
+	function createEmulator(cols, rows){
+		root.emu = Emulator.create(cols, rows);
+		// The rows that scroll off the top of the primary screen go to the scrollback.
+		root.emu.onScrollOut = root.commitGridRow;
+		root.syncEmulatorState();
+	}
 
-		switch (event.key){
-		case Qt.Key_Up: return "\x1b[A";
-		case Qt.Key_Down: return "\x1b[B";
-		case Qt.Key_Right: return "\x1b[C";
-		case Qt.Key_Left: return "\x1b[D";
-		case Qt.Key_Home: return "\x1b[H";
-		case Qt.Key_End: return "\x1b[F";
-		case Qt.Key_PageUp: return "\x1b[5~";
-		case Qt.Key_PageDown: return "\x1b[6~";
-		case Qt.Key_Insert: return "\x1b[2~";
-		case Qt.Key_Delete: return "\x1b[3~";
-		case Qt.Key_F1: return "\x1bOP";
-		case Qt.Key_F2: return "\x1bOQ";
-		case Qt.Key_F3: return "\x1bOR";
-		case Qt.Key_F4: return "\x1bOS";
-		case Qt.Key_F5: return "\x1b[15~";
-		case Qt.Key_F6: return "\x1b[17~";
-		case Qt.Key_F7: return "\x1b[18~";
-		case Qt.Key_F8: return "\x1b[19~";
-		case Qt.Key_F9: return "\x1b[20~";
-		case Qt.Key_F10: return "\x1b[21~";
-		case Qt.Key_Backspace: return "\x7f";
-		case Qt.Key_Backtab: return "\x1b[Z";
-		case Qt.Key_Tab: return "\t";
-		case Qt.Key_Return:
-		case Qt.Key_Enter: return "\r";
-		case Qt.Key_Escape: return "\x1b";
+	// Called whenever the panel's computed character size changes (see sendTerminalSize). The pty repaints the screen after the
+	// resize; keeping the old rows until then avoids a blank flash.
+	function applyLocalGridSize(columns, rows){
+		if (columns === root.gridCols && rows === root.gridRows){
+			return;
 		}
+		Emulator.resize(root.emu, columns, rows);
+		root.syncEmulatorState();
+		if (!root.gridOwnsPane){
+			root.updatePrimaryScreen();
+		}
+	}
 
-		if (event.text.length === 0){
+	// Feeds one chunk of the raw output of the pty to the emulator and sends what the terminal answers to its queries
+	// (device attributes, the position of the cursor) back to the pty.
+	function feedTerminal(text){
+		Emulator.feed(root.emu, text);
+		let replies = Emulator.takeReplies(root.emu);
+		if (replies.length > 0 && controller.running && !controller.connectionLost){
+			controller.sendRawInput(replies);
+		}
+		root.syncEmulatorState();
+		if (!root.gridOwnsPane){
+			root.updatePrimaryScreen();
+		}
+	}
+
+	// Rich-text for one grid row of the full-screen view, including the cursor cell. Reads screenVersion purely so this binding
+	// re-evaluates after each processed chunk (the grid itself is changed in place, not reassigned).
+	function gridRowHtml(rowIndex){
+		let dependency = root.screenVersion;
+		if (rowIndex >= root.emu.rows){
 			return "";
 		}
-		return (event.modifiers & Qt.AltModifier) ? "\x1b" + event.text : event.text;
+		let cursorColumn = (root.cursorVisible && root.cursorBlinkOn && rowIndex === root.emu.cursorRow) ? root.emu.cursorCol : -1;
+		let options = root.emulatorOptions();
+		if (root.selection !== null){
+			let range = Emulator.selectionColumns(root.selection, rowIndex, root.emu.cols);
+			if (range !== null){
+				options.selectedFrom = range[0];
+				options.selectedTo = range[1];
+			}
+		}
+		return "<span style=\"white-space:pre\">" + Emulator.rowHtml(root.emu, rowIndex, options, cursorColumn, false) + "</span>";
+	}
+
+	// The bytes that a key sends to the pty: the table of xterm in the emulator (modifiers of the cursor keys and F-keys, F11 and F12,
+	// Alt, the control characters, the application mode of the cursor keys that the program asks for).
+	function vtInputForKey(event){
+		return Emulator.encodeKey(root.emu, {
+			key: event.key,
+			text: event.text,
+			ctrl: (event.modifiers & Qt.ControlModifier) !== 0,
+			alt: (event.modifiers & Qt.AltModifier) !== 0,
+			shift: (event.modifiers & Qt.ShiftModifier) !== 0
+		});
 	}
 
 	function sendAltScreenKey(event){
-		if (!root.altScreenActive || !controller.running || controller.connectionLost){
+		if (!root.gridOwnsPane || !controller.running || controller.connectionLost){
 			return;
 		}
 
@@ -388,475 +304,141 @@ Item {
 		}
 	}
 
-	function scrollGridUp(){
-		if (!root.altScreenActive && root.scrollTop === 0){
-			root.commitGridRow(root.screenGrid[0]);
+	// The keys of the grid view: the copy of the selection and the paste are the terminal's, the rest goes to the program.
+	function handleGridKey(event){
+		root.keyModifiers = event.modifiers;
+		root.showCursorSolid();
+		let ctrl = (event.modifiers & Qt.ControlModifier) !== 0;
+		let shift = (event.modifiers & Qt.ShiftModifier) !== 0;
+		if (ctrl && event.key === Qt.Key_C && (root.selection !== null || shift)){
+			root.copyGridSelection();
+			event.accepted = true;
+			return;
 		}
-		let blank = root.makeBlankRow(root.gridCols, root.currentGridColor());
-		root.screenGrid.splice(root.scrollTop, 1);
-		root.screenGrid.splice(root.scrollBottom, 0, blank);
+		if ((ctrl && event.key === Qt.Key_V) || (shift && event.key === Qt.Key_Insert)){
+			root.pasteFromClipboard();
+			event.accepted = true;
+			return;
+		}
+		root.selection = null;
+		root.sendAltScreenKey(event);
 	}
 
-	function scrollGridDown(){
-		let blank = root.makeBlankRow(root.gridCols, root.currentGridColor());
-		root.screenGrid.splice(root.scrollBottom, 1);
-		root.screenGrid.splice(root.scrollTop, 0, blank);
+	function copyGridSelection(){
+		if (root.selection === null){
+			return;
+		}
+		let text = Emulator.selectionText(root.emu, root.selection);
+		if (text.length === 0){
+			return;
+		}
+		root.pasteArmed = false;
+		clipboardProxy.text = text;
+		clipboardProxy.selectAll();
+		clipboardProxy.copy();
+		clipboardProxy.select(0, 0);
+		root.showActionHint(qsTr("Selection copied"));
 	}
 
-	function moveCursorDownWithScroll(){
-		if (root.cursorRow >= root.scrollBottom){
-			root.scrollGridUp();
-		}
-		else if (root.cursorRow < root.gridRows - 1){
-			root.cursorRow++;
-		}
-	}
-
-	// Deferred wrap as in VT100: a character written into the last column leaves the cursor
-	// there and the next printable character wraps; an exactly full line followed by CR LF
-	// must not produce an extra blank row.
-	function gridPutChar(ch){
-		if (root.wrapPending){
-			root.wrapPending = false;
-			root.cursorCol = 0;
-			root.moveCursorDownWithScroll();
-		}
-		if (root.cursorRow >= 0 && root.cursorRow < root.gridRows){
-			let row = root.screenGrid[root.cursorRow];
-			if (row && root.cursorCol >= 0 && root.cursorCol < root.gridCols){
-				row[root.cursorCol] = {ch: ch, color: root.currentGridColor(), bold: root.altSgrState.bold};
-			}
-		}
-		if (root.cursorCol >= root.gridCols - 1){
-			root.wrapPending = true;
+	// The cell of the screen under a point of the output panel. The screen of a program that has the alternate screen is the grid view;
+	// the screen of a program that draws the main one (mc.exe) is the last lines of the scrollback view.
+	function terminalCell(x, y){
+		let col = Math.floor((x - Style.marginS) / root.charWidth);
+		let row = 0;
+		if (root.gridOwnsPane){
+			row = Math.floor((y - Style.marginS) / root.charHeight);
 		}
 		else{
-			root.cursorCol++;
+			let screenTop = outputText.contentHeight - (root.lastPrimaryRow() + 1) * root.charHeight;
+			row = Math.floor((y - Style.marginS + outputFlickable.contentY - screenTop) / root.charHeight);
 		}
+		return {row: Math.max(0, Math.min(root.gridRows - 1, row)), col: Math.max(0, Math.min(root.gridCols - 1, col))};
 	}
 
-	function moveCursor(dRow, dCol){
-		root.cursorRow = Math.max(0, Math.min(root.gridRows - 1, root.cursorRow + dRow));
-		root.cursorCol = Math.max(0, Math.min(root.gridCols - 1, root.cursorCol + dCol));
-	}
-
-	function setCursorPosition(row1based, col1based){
-		root.cursorRow = Math.max(0, Math.min(root.gridRows - 1, row1based - 1));
-		root.cursorCol = Math.max(0, Math.min(root.gridCols - 1, col1based - 1));
-	}
-
-	function eraseInLine(mode){
-		let row = root.screenGrid[root.cursorRow];
-		if (!row){
+	function sendMouse(action, button, row, col){
+		if (!controller.running || controller.connectionLost){
 			return;
 		}
-		let from = 0;
-		let to = root.gridCols - 1;
-		if (mode === 0){
-			from = root.cursorCol;
-		}
-		else if (mode === 1){
-			to = root.cursorCol;
-		}
-		for (let c = from; c <= to; ++c){
-			row[c] = {ch: " ", color: root.currentGridColor(), bold: false};
+		let data = Emulator.encodeMouse(root.emu, {
+			action: action,
+			button: button,
+			row: row,
+			col: col,
+			shift: (root.keyModifiers & Qt.ShiftModifier) !== 0,
+			alt: (root.keyModifiers & Qt.AltModifier) !== 0,
+			ctrl: (root.keyModifiers & Qt.ControlModifier) !== 0
+		});
+		if (data.length > 0){
+			controller.sendRawInput(data);
 		}
 	}
 
-	function eraseInDisplay(mode){
-		if (mode === 2 || mode === 3){
-			for (let r = 0; r < root.gridRows; ++r){
-				root.screenGrid[r] = root.makeBlankRow(root.gridCols, root.currentGridColor());
-			}
+	function terminalMousePressed(mouse){
+		let cell = root.terminalCell(mouse.x, mouse.y);
+		let shift = (root.keyModifiers & Qt.ShiftModifier) !== 0;
+		root.lastMouseRow = cell.row;
+		root.lastMouseCol = cell.col;
+		if (root.mouseReporting && !shift){
+			root.selection = null;
+			root.mouseButtonDown = mouse.button === Qt.RightButton ? 2 : 0;
+			root.sendMouse("press", root.mouseButtonDown, cell.row, cell.col);
+		}
+		else if (root.gridOwnsPane){
+			// The program has no mouse: the pointer selects the cells.
+			root.selection = {r1: cell.row, c1: cell.col, r2: cell.row, c2: cell.col};
+			root.selecting = true;
+			root.screenVersion++;
+		}
+	}
+
+	function terminalMouseMoved(mouse){
+		let cell = root.terminalCell(mouse.x, mouse.y);
+		let moved = cell.row !== root.lastMouseRow || cell.col !== root.lastMouseCol;
+		root.lastMouseRow = cell.row;
+		root.lastMouseCol = cell.col;
+		if (!moved){
 			return;
 		}
-		if (mode === 0){
-			root.eraseInLine(0);
-			for (let r = root.cursorRow + 1; r < root.gridRows; ++r){
-				root.screenGrid[r] = root.makeBlankRow(root.gridCols, root.currentGridColor());
-			}
+		if (root.selecting){
+			root.selection = {r1: root.selection.r1, c1: root.selection.c1, r2: cell.row, c2: cell.col};
+			root.screenVersion++;
 		}
-		else if (mode === 1){
-			root.eraseInLine(1);
-			for (let r = 0; r < root.cursorRow; ++r){
-				root.screenGrid[r] = root.makeBlankRow(root.gridCols, root.currentGridColor());
-			}
+		else if (root.mouseReporting){
+			root.sendMouse("move", root.mouseButtonDown, cell.row, cell.col);
 		}
 	}
 
-	function insertLines(n){
-		for (let i = 0; i < n; ++i){
-			let blank = root.makeBlankRow(root.gridCols, root.currentGridColor());
-			root.screenGrid.splice(root.scrollBottom, 1);
-			root.screenGrid.splice(root.cursorRow, 0, blank);
-		}
-	}
-
-	function deleteLines(n){
-		for (let i = 0; i < n; ++i){
-			let blank = root.makeBlankRow(root.gridCols, root.currentGridColor());
-			root.screenGrid.splice(root.cursorRow, 1);
-			root.screenGrid.splice(root.scrollBottom, 0, blank);
-		}
-	}
-
-	function deleteChars(n){
-		let row = root.screenGrid[root.cursorRow];
-		if (!row){
+	function terminalMouseReleased(mouse){
+		let cell = root.terminalCell(mouse.x, mouse.y);
+		if (root.selecting){
+			root.selecting = false;
 			return;
 		}
-		for (let i = 0; i < n; ++i){
-			row.splice(root.cursorCol, 1);
-			row.push({ch: " ", color: root.currentGridColor(), bold: false});
+		if (root.mouseButtonDown >= 0){
+			root.sendMouse("release", root.mouseButtonDown, cell.row, cell.col);
+			root.mouseButtonDown = -1;
 		}
 	}
 
-	function insertChars(n){
-		let row = root.screenGrid[root.cursorRow];
-		if (!row){
+	// The wheel goes to the program as the mouse when it asked for the mouse. A program that owns the screen and did not (or cannot: ConPTY does not give
+	// the mouse to a console program) gets the arrow keys, three for a notch, as in the other terminals on the alternate screen.
+	function terminalWheel(direction){
+		if (root.mouseReporting){
+			root.sendMouse(direction < 0 ? "wheelUp" : "wheelDown", 0, root.lastMouseRow, root.lastMouseCol);
 			return;
 		}
-		for (let i = 0; i < n; ++i){
-			row.splice(root.cursorCol, 0, {ch: " ", color: root.currentGridColor(), bold: false});
-			row.pop();
-		}
-	}
-
-	// Applies one parsed CSI sequence (params before the final byte, and the final
-	// byte itself) to the grid/cursor state. Sequences with no handling below
-	// (mouse reporting, bracketed paste, etc.) are recognized-and-ignored, same
-	// policy as ansiToHtml uses for the scrollback log.
-	function handleCsiSequence(paramsStr, finalByte){
-		if (finalByte !== "m"){
-			root.wrapPending = false;
-		}
-		let isPrivate = paramsStr.indexOf("?") === 0;
-		let cleanParams = isPrivate ? paramsStr.substring(1) : paramsStr;
-		let parts = cleanParams.length > 0 ? cleanParams.split(";") : [];
-		let nums = parts.map(function(p){ let v = parseInt(p, 10); return isNaN(v) ? 0 : v; });
-
-		let p = function(idx, def){
-			return (nums.length > idx && nums[idx] > 0) ? nums[idx] : def;
-		}
-
-		if (isPrivate){
-			if (finalByte === "h" || finalByte === "l"){
-				let enable = finalByte === "h";
-				for (let k = 0; k < nums.length; ++k){
-					if (nums[k] === 1049 || nums[k] === 47){
-						if (enable){ root.enterAltScreen(); } else { root.exitAltScreen(); }
-					}
-					else if (nums[k] === 25){
-						root.cursorVisible = enable;
-					}
-				}
-			}
+		if (!controller.running || controller.connectionLost){
 			return;
 		}
-
-		switch (finalByte){
-		case "H":
-		case "f":
-			root.setCursorPosition(p(0, 1), p(1, 1));
-			break;
-		case "A":
-			root.moveCursor(-p(0, 1), 0);
-			break;
-		case "B":
-			root.moveCursor(p(0, 1), 0);
-			break;
-		case "C":
-			root.moveCursor(0, p(0, 1));
-			break;
-		case "D":
-			root.moveCursor(0, -p(0, 1));
-			break;
-		case "G":
-			root.cursorCol = Math.max(0, Math.min(root.gridCols - 1, p(0, 1) - 1));
-			break;
-		case "d":
-			root.cursorRow = Math.max(0, Math.min(root.gridRows - 1, p(0, 1) - 1));
-			break;
-		case "J":
-			root.eraseInDisplay(nums.length > 0 ? nums[0] : 0);
-			break;
-		case "K":
-			root.eraseInLine(nums.length > 0 ? nums[0] : 0);
-			break;
-		case "S":
-			for (let s1 = 0; s1 < p(0, 1); ++s1){ root.scrollGridUp(); }
-			break;
-		case "T":
-			for (let s2 = 0; s2 < p(0, 1); ++s2){ root.scrollGridDown(); }
-			break;
-		case "L":
-			root.insertLines(p(0, 1));
-			break;
-		case "M":
-			root.deleteLines(p(0, 1));
-			break;
-		case "P":
-			root.deleteChars(p(0, 1));
-			break;
-		case "@":
-			root.insertChars(p(0, 1));
-			break;
-		case "r":
-			root.scrollTop = Math.max(0, p(0, 1) - 1);
-			root.scrollBottom = Math.min(root.gridRows - 1, p(1, root.gridRows) - 1);
-			root.cursorRow = 0;
-			root.cursorCol = 0;
-			break;
-		case "m":
-			root.applySgrToState(nums, root.altSgrState);
-			break;
-		case "t":
-			// ConPTY announces the size its following repaint is drawn for; a newer local
-			// resize may still be in flight, so the grid follows the pty here.
-			if (nums.length >= 3 && nums[0] === 8 && nums[1] > 0 && nums[2] > 0){
-				root.resizeGridKeepingContent(nums[2], nums[1]);
-			}
-			break;
-		default:
-			break;
-		}
+		let arrow = Emulator.encodeKey(root.emu, {key: direction < 0 ? Qt.Key_Up : Qt.Key_Down, text: "", ctrl: false, alt: false, shift: false});
+		controller.sendRawInput(arrow + arrow + arrow);
 	}
 
-	// Feeds one chunk of raw pty bytes (already known to belong to the alternate
-	// screen) through a small VT state machine: cursor movement, erase, scroll
-	// region, insert/delete line/char and SGR are applied to screenGrid; anything
-	// else recognized (OSC, DECSC/DECRC, RIS, reverse line feed) is consumed
-	// without visible effect. An incomplete trailing escape is carried over to the
-	// next chunk via altPendingPartial, mirroring ansiToHtml's own carry-over.
-	function feedAltScreenData(text){
-		let src = root.altPendingPartial + text;
-		root.altPendingPartial = "";
-
-		let i = 0;
-		let n = src.length;
-		while (i < n){
-			let ch = src[i];
-
-			if (ch === "\x1b"){
-				if (i + 1 >= n){
-					root.altPendingPartial = src.substring(i);
-					break;
-				}
-				let next = src[i + 1];
-				if (next === "["){
-					let j = i + 2;
-					while (j < n && /[0-9;?]/.test(src[j])){
-						j++;
-					}
-					if (j >= n){
-						root.altPendingPartial = src.substring(i);
-						break;
-					}
-					root.handleCsiSequence(src.substring(i + 2, j), src[j]);
-					i = j + 1;
-					continue;
-				}
-				else if (next === "]"){
-					let bel = src.indexOf("\x07", i);
-					let st = src.indexOf("\x1b\\", i);
-					let endIdx = -1;
-					if (bel >= 0 && (st < 0 || bel < st)){
-						endIdx = bel + 1;
-					}
-					else if (st >= 0){
-						endIdx = st + 2;
-					}
-					if (endIdx < 0){
-						root.altPendingPartial = src.substring(i);
-						break;
-					}
-					i = endIdx;
-					continue;
-				}
-				else if (next === "7"){
-					root.savedCursorForDECSC = {row: root.cursorRow, col: root.cursorCol};
-					i += 2;
-					continue;
-				}
-				else if (next === "8"){
-					if (root.savedCursorForDECSC){
-						root.cursorRow = root.savedCursorForDECSC.row;
-						root.cursorCol = root.savedCursorForDECSC.col;
-					}
-					i += 2;
-					continue;
-				}
-				else if (next === "c"){
-					root.resetGrid(root.gridCols, root.gridRows);
-					i += 2;
-					continue;
-				}
-				else if (next === "M"){
-					if (root.cursorRow <= root.scrollTop){
-						root.scrollGridDown();
-					}
-					else{
-						root.cursorRow--;
-					}
-					i += 2;
-					continue;
-				}
-				else{
-					i += 2;
-					continue;
-				}
-			}
-			else if (ch === "\r"){
-				root.wrapPending = false;
-				root.cursorCol = 0;
-				i++;
-			}
-			else if (ch === "\n"){
-				root.wrapPending = false;
-				root.moveCursorDownWithScroll();
-				i++;
-			}
-			else if (ch === "\b"){
-				root.wrapPending = false;
-				if (root.cursorCol > 0){
-					root.cursorCol--;
-				}
-				i++;
-			}
-			else if (ch === "\t"){
-				root.wrapPending = false;
-				root.cursorCol = Math.min(root.gridCols - 1, (Math.floor(root.cursorCol / 8) + 1) * 8);
-				i++;
-			}
-			else{
-				let code = ch.charCodeAt(0);
-				if (code >= 32){
-					root.gridPutChar(ch);
-				}
-				i++;
-			}
-		}
-
-		root.screenVersion++;
-	}
-
-	// Rich-text for one grid row, including a highlighted cursor cell. Reads
-	// screenVersion purely so this binding re-evaluates after each processed chunk
-	// (screenGrid itself is mutated in place, not reassigned).
-	function gridRowHtml(rowIndex){
-		let dependency = root.screenVersion;
-		let row = root.screenGrid[rowIndex];
-		if (!row){
-			return "";
-		}
-
-		let inner = "";
-		let curColor = null;
-		let curBold = null;
-		let spanOpen = false;
-		for (let c = 0; c < row.length; ++c){
-			let cell = row[c];
-			let isCursorCell = root.cursorVisible && rowIndex === root.cursorRow && c === root.cursorCol;
-			if (cell.color !== curColor || cell.bold !== curBold || isCursorCell){
-				if (spanOpen){
-					inner += "</span>";
-				}
-				let style = "color:" + cell.color;
-				if (cell.bold){
-					style += ";font-weight:bold";
-				}
-				if (isCursorCell){
-					style += ";background-color:" + Style.textSelectedColor + ";color:#ffffff";
-				}
-				inner += "<span style=\"" + style + "\">";
-				spanOpen = true;
-				curColor = cell.color;
-				curBold = cell.bold;
-			}
-			inner += root.htmlEscape(cell.ch);
-		}
-		if (spanOpen){
-			inner += "</span>";
-		}
-		return "<span style=\"white-space:pre\">" + inner + "</span>";
-	}
-
-	// If the very end of text could be an in-progress prefix of one of the four
-	// alt-screen transition sequences (\x1b[?1049h/l, \x1b[?47h/l), returns the
-	// index where that possible prefix starts; otherwise -1. Used only for the
-	// "about to enter alt screen while still in scrollback mode" direction - once
-	// altScreenActive is true, feedAltScreenData's own altPendingPartial already
-	// carries over an incomplete exit sequence correctly.
-	function findAltTransitionPartialStart(text){
-		let idx = text.lastIndexOf("\x1b");
-		if (idx < 0){
-			return -1;
-		}
-		let candidate = text.substring(idx);
-		if (candidate.length >= 9){
-			return -1;
-		}
-		let targets = ["\x1b[?1049h", "\x1b[?1049l", "\x1b[?47h", "\x1b[?47l"];
-		for (let t = 0; t < targets.length; ++t){
-			if (targets[t].indexOf(candidate) === 0){
-				return idx;
-			}
-		}
-		return -1;
-	}
-
-	// Splits raw pty bytes at DEC alternate-screen-buffer transitions
-	// (\x1b[?1049h/l, \x1b[?47h/l) and routes each segment to the scrollback log
-	// (primary screen) or the character-grid emulator (alternate screen), toggling
-	// altScreenActive as each transition is seen. A transition sequence split
-	// across two chunks is held back in routerPendingPartial (see appendOutput)
-	// and completed once the rest arrives.
-	function routeTerminalBytes(text, streamId){
-		let re = /\x1b\[\??(1049|47)[hl]/g;
-		let last = 0;
-		let match = re.exec(text);
-		while (match){
-			let segment = text.substring(last, match.index);
-			if (segment.length > 0){
-				if (root.altScreenActive){
-					root.feedAltScreenData(segment);
-				}
-				else{
-					root.feedPrimary(segment, streamId);
-				}
-			}
-
-			if (match[0].charAt(match[0].length - 1) === "h"){
-				root.enterAltScreen();
-			}
-			else{
-				root.exitAltScreen();
-			}
-
-			last = match.index + match[0].length;
-			match = re.exec(text);
-		}
-
-		let tail = text.substring(last);
-		if (tail.length === 0){
-			return;
-		}
-
-		if (root.altScreenActive){
-			root.feedAltScreenData(tail);
-			return;
-		}
-
-		let partialIdx = root.findAltTransitionPartialStart(tail);
-		if (partialIdx >= 0){
-			let visible = tail.substring(0, partialIdx);
-			if (visible.length > 0){
-				root.feedPrimary(visible, streamId);
-			}
-			root.routerPendingPartial = tail.substring(partialIdx);
-		}
-		else{
-			root.feedPrimary(tail, streamId);
+	// The program that asked for the focus reports (?1004) is told when the view gets or loses it.
+	function sendFocusEvent(focused){
+		let data = Emulator.encodeFocus(root.emu, focused);
+		if (data.length > 0 && controller.running && !controller.connectionLost){
+			controller.sendRawInput(data);
 		}
 	}
 
@@ -882,12 +464,7 @@ Item {
 		root.committedPlain = "";
 		root.currentLineHtml = "";
 		root.startupOutputPhase = true;
-		root.altScreenActive = false;
-		root.savedPrimaryScreen = null;
-		root.routerPendingPartial = "";
-		root.altPendingPartial = "";
-		root.altSgrState = {color: null, bold: false};
-		root.resetGrid(root.gridCols, root.gridRows);
+		root.createEmulator(root.gridCols, root.gridRows);
 	}
 
 	// Entry point for every real process chunk: SYSTEM messages (our own synthetic
@@ -903,7 +480,7 @@ Item {
 
 		if (streamId === "SYSTEM"){
 			// Our own message goes below whatever the shell has drawn so far.
-			if (!root.altScreenActive){
+			if (!root.gridOwnsPane){
 				root.flushPrimaryScreen();
 			}
 			root.appendScrollbackText(text.endsWith("\n") ? text : text + "\n", streamId);
@@ -911,20 +488,14 @@ Item {
 			return;
 		}
 
-		root.routeTerminalBytes(root.routerPendingPartial + text, streamId);
-		root.routerPendingPartial = "";
-	}
-
-	function feedPrimary(text, streamId){
-		root.feedAltScreenData(text);
-		root.updatePrimaryScreen();
+		root.feedTerminal(text);
 	}
 
 	// Index of the last primary row worth showing: the cursor row or a later non-blank one.
 	function lastPrimaryRow(){
 		let last = root.cursorRow;
 		for (let r = root.gridRows - 1; r > last; --r){
-			if (root.lastUsedColumn(root.screenGrid[r]) >= 0){
+			if (root.lastUsedColumn(root.emu.grid[r]) >= 0){
 				return r;
 			}
 		}
@@ -932,58 +503,20 @@ Item {
 	}
 
 	function lastUsedColumn(row){
-		if (!row){
-			return -1;
-		}
-		for (let c = row.length - 1; c >= 0; --c){
-			if (row[c].ch !== " "){
-				return c;
-			}
-		}
-		return -1;
+		return Emulator.lastUsedColumn(row);
 	}
 
 	// One grid row as rich text without trailing blanks; cursorCol >= 0 draws the block cursor.
 	function primaryRowHtml(row, cursorCol){
-		let end = Math.max(root.lastUsedColumn(row), cursorCol);
-		let inner = "";
-		let curColor = null;
-		let curBold = null;
-		let spanOpen = false;
-		for (let c = 0; c <= end; ++c){
-			let cell = row[c] ? row[c] : {ch: " ", color: root.streamColor("STDOUT"), bold: false};
-			let isCursorCell = c === cursorCol;
-			if (cell.color !== curColor || cell.bold !== curBold || isCursorCell){
-				if (spanOpen){
-					inner += "</span>";
-				}
-				let style = "color:" + cell.color;
-				if (cell.bold){
-					style += ";font-weight:bold";
-				}
-				if (isCursorCell){
-					style += ";background-color:" + Style.textSelectedColor + ";color:#ffffff";
-				}
-				inner += "<span style=\"" + style + "\">";
-				spanOpen = true;
-				curColor = isCursorCell ? null : cell.color;
-				curBold = isCursorCell ? null : cell.bold;
-			}
-			inner += root.htmlEscape(cell.ch);
+		let inner = Emulator.rowHtml(root.emu, row, root.emulatorOptions(), cursorCol, true);
+		if (inner.length === 0){
+			return "";
 		}
-		if (spanOpen){
-			inner += "</span>";
-		}
-		return inner;
+		return "<span style=\"white-space:pre\">" + inner + "</span>";
 	}
 
 	function primaryRowText(row){
-		let end = root.lastUsedColumn(row);
-		let text = "";
-		for (let c = 0; c <= end; ++c){
-			text += row[c].ch;
-		}
-		return text;
+		return Emulator.rowText(root.emu, row);
 	}
 
 	function updatePrimaryScreen(){
@@ -992,7 +525,7 @@ Item {
 		let html = "";
 		let plain = "";
 		for (let r = 0; r <= last; ++r){
-			let row = root.screenGrid[r];
+			let row = root.emu.grid[r];
 			if (r > 0){
 				html += "<br/>";
 				plain += "\n";
@@ -1020,14 +553,15 @@ Item {
 	// Moves everything drawn on the primary screen into the scrollback and homes the cursor.
 	function flushPrimaryScreen(){
 		let last = root.lastPrimaryRow();
-		let hasContent = last > 0 || root.lastUsedColumn(root.screenGrid[0]) >= 0;
+		let hasContent = last > 0 || root.lastUsedColumn(root.emu.grid[0]) >= 0;
 		if (!hasContent){
 			return;
 		}
 		for (let r = 0; r <= last; ++r){
-			root.commitGridRow(root.screenGrid[r]);
+			root.commitGridRow(root.emu.grid[r]);
 		}
-		root.resetGrid(root.gridCols, root.gridRows);
+		Emulator.clearScreen(root.emu);
+		root.syncEmulatorState();
 	}
 
 	function appendScrollbackLine(html, plain){
@@ -1129,7 +663,8 @@ Item {
 	function sendPastedText(text){
 		root.pasteArmed = false;
 		pasteArmTimer.stop();
-		let data = String(text).replace(/\r\n/g, "\r").replace(/\n/g, "\r");
+		// The new lines are Enter; between ESC [ 200 ~ and ESC [ 201 ~ when the program asked for the bracketed paste.
+		let data = Emulator.encodePaste(root.emu, String(text));
 		clipboardProxy.text = "";
 		if (data.length > 0 && controller.running && !controller.connectionLost){
 			root.startupOutputPhase = false;
@@ -1290,6 +825,7 @@ Item {
 	}
 
 	Component.onCompleted: {
+		root.createEmulator(root.gridCols, root.gridRows);
 		controller.agentId = root.agentId;
 		if (root.shellTypeId.length > 0){
 			root.startSession();
@@ -1309,6 +845,9 @@ Item {
 	// identically there and in the native QML build. The output font is proportional:
 	// the probe holds typical shell text, since a too narrow grid breaks lines early
 	// while a too wide one only wraps them visually.
+	// The terminal needs a monospace font: the cells of a grid are columns, and a frame of a full-screen program (mc) lines up only when
+	// every character is as wide as the others. The generic family is what the web build draws with the font of the browser.
+	readonly property string terminalFontFamily: Qt.platform.os === "windows" ? "Consolas" : "monospace";
 	readonly property int sizeMetricsProbeLength: 20;
 	readonly property real charWidth: sizeMetricsProbe.contentWidth / root.sizeMetricsProbeLength;
 	readonly property real charHeight: sizeMetricsProbe.contentHeight;
@@ -1318,8 +857,26 @@ Item {
 		visible: false;
 		text: "D:/Work/dir_name.txt";
 		wrapMode: Text.NoWrap;
-		font.family: Style.fontFamily
+		font.family: root.terminalFontFamily;
 		font.pixelSize: Style.fontSizeM;
+	}
+
+	Timer {
+		id: ownedOffTimer;
+		interval: 400;
+		repeat: false;
+		onTriggered: root.releaseGrid();
+	}
+
+	Timer {
+		id: cursorBlinkTimer;
+		interval: 530;
+		repeat: true;
+		running: root.gridOwnsPane && root.cursorVisible && controller.running && gridView.activeFocus;
+		onTriggered: {
+			root.cursorBlinkOn = !root.cursorBlinkOn;
+			root.screenVersion++;
+		}
 	}
 
 	Timer {
@@ -1710,7 +1267,7 @@ Item {
 			anchors.margins: Style.marginS;
 			anchors.rightMargin: Style.marginS + Style.marginM;
 
-			visible: !root.altScreenActive;
+			visible: !root.gridOwnsPane;
 			clip: true;
 			boundsBehavior: Flickable.StopAtBounds;
 			contentWidth: width;
@@ -1728,7 +1285,7 @@ Item {
 				persistentSelection: true;
 				textFormat: TextEdit.RichText;
 				wrapMode: TextEdit.WrapAnywhere;
-				font.family: Style.fontFamily
+				font.family: root.terminalFontFamily;
 				font.pixelSize: Style.fontSizeM;
 				color: Style.textColor;
 				selectionColor: Style.textSelectedColor;
@@ -1737,7 +1294,14 @@ Item {
 				// keyboard echo and in-place line editing show up as one continuous line.
 				text: root.richLog + root.currentLineHtml;
 
+				onActiveFocusChanged: root.sendFocusEvent(activeFocus);
+
+				Keys.onReleased: {
+					root.keyModifiers = event.modifiers;
+				}
+
 				Keys.onPressed: {
+					root.keyModifiers = event.modifiers;
 					// Ctrl+C copies the selection when there is one (otherwise it falls
 					// through to the shell below as a real interrupt).
 					if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_C
@@ -1775,7 +1339,7 @@ Item {
 		}
 
 		CustomScrollbar {
-			visible: !root.altScreenActive;
+			visible: !root.gridOwnsPane;
 			z: outputFlickable.z + 1;
 			anchors.right: parent.right;
 			anchors.rightMargin: Style.marginXS;
@@ -1793,12 +1357,18 @@ Item {
 			anchors.fill: parent;
 			anchors.margins: Style.marginS;
 
-			visible: root.altScreenActive;
-			focus: root.altScreenActive;
+			visible: root.gridOwnsPane;
+			focus: root.gridOwnsPane;
 			clip: true;
 
+			onActiveFocusChanged: root.sendFocusEvent(activeFocus);
+
+			Keys.onReleased: {
+				root.keyModifiers = event.modifiers;
+			}
+
 			Keys.onPressed: {
-				root.sendAltScreenKey(event);
+				root.handleGridKey(event);
 			}
 
 			Repeater {
@@ -1810,10 +1380,40 @@ Item {
 					width: gridView.width;
 					height: root.charHeight;
 					textFormat: Text.RichText;
-					font.family: Style.fontFamily
+					font.family: root.terminalFontFamily;
 					font.pixelSize: Style.fontSizeM;
 					text: root.gridRowHtml(index);
 				}
+			}
+		}
+
+		// The mouse over the screen: the program gets it when it asked for it (?1000/?1002/?1003), otherwise the grid view selects with it.
+		// The area is off while neither is true, so the scrollback view keeps its own selection and wheel.
+		MouseArea {
+			id: terminalMouse;
+
+			anchors.fill: parent;
+			z: 10;
+
+			enabled: root.gridOwnsPane || root.mouseReporting;
+			hoverEnabled: true;
+			acceptedButtons: Qt.LeftButton | Qt.RightButton;
+
+			onPressed: {
+				root.terminalMousePressed(mouse);
+			}
+
+			onPositionChanged: {
+				root.terminalMouseMoved(mouse);
+			}
+
+			onReleased: {
+				root.terminalMouseReleased(mouse);
+			}
+
+			TerminalWheelHandler {
+				enabled: root.mouseReporting || root.gridOwnsPane;
+				onRolled: root.terminalWheel(direction);
 			}
 		}
 
