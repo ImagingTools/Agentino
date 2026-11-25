@@ -337,6 +337,12 @@ cell that the pointer enters), never the motion without a button. Checked in the
 click sent the press and the release (`ESC[<0;13;8M`, `ESC[<0;13;8m`), a drag sent the press, the motion with the button down (`ESC[<32;17;15M`, `ESC[<32;25;16M`) and the release.
 `encodeMouse` of the module still makes the reports of the modes `?1002` and `?1003` (the module is the protocol, the pane has the policy).
 
+**The terminal has its own scheme, not the theme of the application.** The screen is dark as the window of a console whatever the theme is, so the default colors are the ones of Campbell: the text
+`#cccccc` on `#0c0c0c`, the selection `#264f78`, the cursor a block of the text color, the errors of the shell `#e74856` and its system messages `#767676`. They are the properties `terminalFg`,
+`terminalBg`, `terminalSelection`, `terminalError` and `terminalSystem` of the pane, used by the grid view, the scrollback view, the translator of the colors of the plain shell (`ansiToHtml`, its
+16 colors are those of the emulator) and the overlays on the screen. The theme colors are left to the parts around the screen (the status bar, the popups). Before, the text of a plain shell was
+the color of the theme (dark gray for the light theme) on the black screen, which looked dim.
+
 ## The desktop (Qt) client
 
 The terminal pane is the same QML in the desktop client and in the web build, so the emulator (`TerminalEmulator.js`) and the pane run in both. What was checked on the
