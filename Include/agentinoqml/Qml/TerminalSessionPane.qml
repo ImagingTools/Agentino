@@ -213,6 +213,26 @@ Item {
 		}
 	}
 
+	// The focus goes to the view that takes the keys: the grid view of a program that owns the screen, the scrollback view otherwise.
+	function focusActiveView(){
+		if (!controller.running || controller.connectionLost){
+			return;
+		}
+		if (root.gridOwnsPane){
+			gridView.forceActiveFocus();
+		}
+		else{
+			outputText.forceActiveFocus();
+		}
+	}
+
+	// Another tab (of the terminal or of the page) took the focus away while this pane was hidden; it is not given back by itself.
+	onVisibleChanged: {
+		if (root.visible){
+			root.focusActiveView();
+		}
+	}
+
 	// The pane goes back to the scrollback view when the program does not own the screen any more.
 	function releaseGrid(){
 		ownedOffTimer.stop();
