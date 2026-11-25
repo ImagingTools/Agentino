@@ -512,8 +512,7 @@ are supported.
 
 * You can open several tabs, but the number of concurrent sessions per agent
   is limited.
-* An inactive session is closed automatically after about **15 minutes**; a
-  warning is shown about a minute before closing.
+* An inactive session is not closed automatically; close the tab to end it.
 * Sessions are bound to the agent editor tab and are closed together with it.
 * Commands are executed with the privileges of the agent service, without
   privilege elevation.
@@ -595,7 +594,6 @@ Pages of the local interface:
 | No **Terminal** page | No RemoteTerminal right or the agent is not approved |
 | *No shell available* | The agent found no supported shell |
 | *Output subscription lost* in the terminal | Click **Reconnect** or open a new session |
-| *[session closed: idle timeout]* | The session was closed due to inactivity — open a new tab |
 
 ## 16. Status reference
 

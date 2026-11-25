@@ -85,8 +85,8 @@ test.describe('Agents / editor', () => {
     // Terminal gets NO screenshot, and that is not an oversight.
     //
     // Once the agent is genuinely connected this page hosts a LIVE shell session: its output carries
-    // the agent machine's absolute paths and Windows build number, and the footer runs an idle timer
-    // ("Session active - idle warning ~1 min before 15 min close") plus a line counter. None of it is
+    // the agent machine's absolute paths and Windows build number, and the footer shows the session
+    // status ("Session active") plus a line counter. None of it is
     // maskable either, because the output area and that footer carry no objectName. A pixel baseline
     // of that cannot be stable, so this asserts the page's controls instead.
     //

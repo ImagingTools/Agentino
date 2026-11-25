@@ -758,7 +758,7 @@ Item {
 			return qsTr("Sending request…");
 		}
 		if (controller.running){
-			return qsTr("Session active · idle warning ~1 min before 15 min close · ↑/↓ history");
+			return qsTr("Session active · ↑/↓ history");
 		}
 		return qsTr("Session ended — close the tab or open a new one");
 	}
@@ -1467,7 +1467,7 @@ Item {
 			anchors.rightMargin: Style.marginM + Style.marginL;
 			z: 30;
 
-			visible: controller.requestInFlight;
+			visible: false//controller.requestInFlight;
 			height: Style.controlHeightM;
 			width: requestPopupRow.implicitWidth + 2 * Style.marginL;
 			radius: height / 2;
