@@ -99,7 +99,7 @@ private:
 	application thread) - see \ref RunOnComponentThread - while the session book keeping
 	is protected by \ref m_mutex so that read-only polling never has to leave the worker.
 
-	Security relevant bounds (concurrent sessions, buffer size, idle timeout) are enforced
+	Security relevant bounds (concurrent sessions, buffer size) are enforced
 	here, and all running shells are killed when the component is destroyed (orderly agent
 	shutdown).
 
@@ -138,9 +138,6 @@ public:
 	virtual void OnComponentCreated() override;
 	virtual void OnComponentDestroyed() override;
 
-protected Q_SLOTS:
-	void OnIdleTimeout();
-
 private:
 	struct Session
 	{
@@ -152,8 +149,6 @@ private:
 		bool finished = false;
 		int exitCode = -1;
 		QDateTime lastActivity;
-		// True after the ~60s idle warning was pushed; reset on real user/process activity.
-		bool idleWarningSent = false;
 		// A real pty merges stdout+stderr onto one stream (both are the same fd/pipe),
 		// so only one decoder is needed; kept on the session so a multi-byte character
 		// split across two reads still decodes correctly.
@@ -219,19 +214,10 @@ private:
 	static const qint64 MaxSessionBufferBytes = 1024 * 1024;
 	/** Maximum length of a single input request, in characters. */
 	static const int MaxInputLength = 16 * 1024;
-	/** Session is auto-closed after this period of inactivity, in seconds. */
-	static const int IdleTimeoutSeconds = 15 * 60;
-	/** Lead time before idle close when a SYSTEM warning is pushed, in seconds. */
-	static const int IdleWarningLeadSeconds = 60;
-	/** Interval at which idle sessions are checked, in milliseconds. */
-	static const int IdleCheckIntervalMs = 30000;
 	/** Window for combining adjacent native pty reads into one output notification. */
 	static const int OutputFlushIntervalMs = 10;
-	/** Exit code written when a session is closed by the idle timer (not a process exit). */
-	static const int IdleCloseExitCode = -2;
 
 	QMap<QByteArray, Session*> m_sessionMap;
-	QTimer m_idleTimer;
 	int m_sessionCounter = 0;
 	// Recursive: QProcess::waitForStarted() can deliver errorOccurred() synchronously
 	// into a slot that locks again while the opening call still holds the lock.

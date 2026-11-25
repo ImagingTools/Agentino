@@ -259,17 +259,11 @@ bool CTerminalSessionManagerComp::SessionExists(const QByteArray& sessionId) con
 void CTerminalSessionManagerComp::OnComponentCreated()
 {
 	BaseClass::OnComponentCreated();
-
-	m_idleTimer.setInterval(IdleCheckIntervalMs);
-	connect(&m_idleTimer, &QTimer::timeout, this, &CTerminalSessionManagerComp::OnIdleTimeout);
-	m_idleTimer.start();
 }
 
 
 void CTerminalSessionManagerComp::OnComponentDestroyed()
 {
-	m_idleTimer.stop();
-
 	QMutexLocker locker(&m_mutex);
 
 	const QList<QByteArray> sessionIds = m_sessionMap.keys();
@@ -280,64 +274,6 @@ void CTerminalSessionManagerComp::OnComponentDestroyed()
 	locker.unlock();
 
 	BaseClass::OnComponentDestroyed();
-}
-
-
-// protected slots
-
-void CTerminalSessionManagerComp::OnIdleTimeout()
-{
-	const QDateTime now = QDateTime::currentDateTimeUtc();
-
-	QMutexLocker locker(&m_mutex);
-
-	const QList<QByteArray> sessionIds = m_sessionMap.keys();
-	for (const QByteArray& sessionId: sessionIds){
-		Session* sessionPtr = m_sessionMap.value(sessionId, nullptr);
-		if (sessionPtr == nullptr || sessionPtr->finished){
-			continue;
-		}
-
-		const qint64 idleSeconds = sessionPtr->lastActivity.secsTo(now);
-		if (idleSeconds < 0){
-			continue;
-		}
-
-		// ~60s before close: push a SYSTEM warning (does not refresh lastActivity).
-		if (!sessionPtr->idleWarningSent
-					&& idleSeconds >= IdleTimeoutSeconds - IdleWarningLeadSeconds
-					&& idleSeconds < IdleTimeoutSeconds){
-			sessionPtr->idleWarningSent = true;
-			AppendChunk(
-						sessionId,
-						*sessionPtr,
-						STREAM_SYSTEM,
-						QString("Warning: session will close in about %1 seconds due to inactivity")
-									.arg(IdleWarningLeadSeconds),
-						false);
-
-			continue;
-		}
-
-		if (idleSeconds < IdleTimeoutSeconds){
-			continue;
-		}
-
-		// Mark finished and push a SYSTEM chunk so GraphQL subscribers learn the
-		// session is gone (RemoveSession alone would leave the GUI hanging on push).
-		// Exit code -2 distinguishes idle auto-close from a manual CloseSession (-1).
-		sessionPtr->finished = true;
-		sessionPtr->exitCode = IdleCloseExitCode;
-		AppendChunk(
-					sessionId,
-					*sessionPtr,
-					STREAM_SYSTEM,
-					QString("Session closed after %1 minutes of inactivity").arg(IdleTimeoutSeconds / 60),
-					false);
-
-		SendInfoMessage(0, QString("Terminal session '%1' closed after being idle").arg(QString(sessionId)), "CTerminalSessionManagerComp");
-		RemoveSession(sessionId);
-	}
 }
 
 
@@ -859,7 +795,6 @@ bool CTerminalSessionManagerComp::SendInputOnOwnThread(const QByteArray& session
 
 	const bool written = WriteRawOnOwnThread(*sessionPtr, payload.toUtf8());
 	sessionPtr->lastActivity = QDateTime::currentDateTimeUtc();
-	sessionPtr->idleWarningSent = false;
 
 	return written;
 }
@@ -877,7 +812,6 @@ bool CTerminalSessionManagerComp::SendRawInputOnOwnThread(const QByteArray& sess
 	const bool written = WriteRawOnOwnThread(*sessionPtr, data.toUtf8());
 	if (written){
 		sessionPtr->lastActivity = QDateTime::currentDateTimeUtc();
-		sessionPtr->idleWarningSent = false;
 	}
 
 	return written;
@@ -900,7 +834,6 @@ bool CTerminalSessionManagerComp::InterruptSessionOnOwnThread(const QByteArray& 
 	const bool written = WriteRawOnOwnThread(*sessionPtr, QByteArray(&ctrlC, 1));
 	if (written){
 		sessionPtr->lastActivity = QDateTime::currentDateTimeUtc();
-		sessionPtr->idleWarningSent = false;
 		AppendChunk(sessionId, *sessionPtr, STREAM_SYSTEM, QStringLiteral("^C"), false);
 	}
 
@@ -1008,7 +941,6 @@ void CTerminalSessionManagerComp::AppendChunk(
 	session.bufferedBytes += data.toUtf8().size();
 	if (updateActivity){
 		session.lastActivity = QDateTime::currentDateTimeUtc();
-		session.idleWarningSent = false;
 	}
 
 	// Enforce the per-session output buffer bound by discarding the oldest chunks.

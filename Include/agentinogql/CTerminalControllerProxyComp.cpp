@@ -48,7 +48,7 @@ sdl::V1_0::agentino::CTerminalOutputResponse CTerminalControllerProxyComp::OnGet
 				ForwardToAgent<sdl::V1_0::agentino::CTerminalOutputResponse>(gqlRequest, errorMessage);
 
 	// Opportunistic cleanup: the agent reports the session as gone (exited or evicted by
-	// its own idle timeout), so this ownership entry can be forgotten instead of sitting
+	// its own eviction), so this ownership entry can be forgotten instead of sitting
 	// around forever - the same sessionId will never legitimately reappear.
 	if (retVal.running.HasValue() && !retVal.running.GetValue()){
 		const QByteArray sessionId = ExtractSessionId(gqlRequest);
