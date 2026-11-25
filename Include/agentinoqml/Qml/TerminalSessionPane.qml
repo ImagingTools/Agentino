@@ -89,6 +89,15 @@ Item {
 	property string currentLineHtml: "";
 	property string committedPlain: "";
 
+	// ── The colors of the terminal ──────────────────────────────────────────
+	// The terminal has its own scheme, Campbell of the Windows console, whatever the theme of the application is: the screen is dark as the window of a console.
+	// The 16 colors of the programs are in TerminalEmulator.js (ANSI16); these are the rest.
+	readonly property string terminalFg: "#cccccc";
+	readonly property string terminalBg: "#0c0c0c";
+	readonly property string terminalSelection: "#264f78";
+	readonly property string terminalError: "#e74856";
+	readonly property string terminalSystem: "#767676";
+
 	// ── ANSI / HTML helpers ─────────────────────────────────────────────────
 
 	function htmlEscape(text){
@@ -133,23 +142,23 @@ Item {
 				else if (code === 22){
 					bold = false;
 				}
-				else if (code === 30){ color = "#000000"; }
-				else if (code === 31){ color = "#cc0000"; }
-				else if (code === 32){ color = "#00aa00"; }
-				else if (code === 33){ color = "#cccc00"; }
-				else if (code === 34){ color = "#0000cc"; }
-				else if (code === 35){ color = "#aa00aa"; }
-				else if (code === 36){ color = "#00aaaa"; }
+				else if (code === 30){ color = "#0c0c0c"; }
+				else if (code === 31){ color = "#c50f1f"; }
+				else if (code === 32){ color = "#13a10e"; }
+				else if (code === 33){ color = "#c19c00"; }
+				else if (code === 34){ color = "#0037da"; }
+				else if (code === 35){ color = "#881798"; }
+				else if (code === 36){ color = "#3a96dd"; }
 				else if (code === 37){ color = "#cccccc"; }
 				else if (code === 39){ color = defaultColor; }
-				else if (code === 90){ color = "#666666"; }
-				else if (code === 91){ color = "#ff5555"; }
-				else if (code === 92){ color = "#55ff55"; }
-				else if (code === 93){ color = "#ffff55"; }
-				else if (code === 94){ color = "#5555ff"; }
-				else if (code === 95){ color = "#ff55ff"; }
-				else if (code === 96){ color = "#55ffff"; }
-				else if (code === 97){ color = "#ffffff"; }
+				else if (code === 90){ color = "#767676"; }
+				else if (code === 91){ color = "#e74856"; }
+				else if (code === 92){ color = "#16c60c"; }
+				else if (code === 93){ color = "#f9f1a5"; }
+				else if (code === 94){ color = "#3b78ff"; }
+				else if (code === 95){ color = "#b4009e"; }
+				else if (code === 96){ color = "#61d6d6"; }
+				else if (code === 97){ color = "#f2f2f2"; }
 			}
 			last = match.index + match[0].length;
 			match = re.exec(src);
@@ -169,7 +178,7 @@ Item {
 
 	// The colors that the emulator uses for the default foreground and background and for the cursor cell.
 	function emulatorOptions(){
-		return {defaultFg: Style.textColor, defaultBg: Style.baseColor, cursorFg: "#ffffff", cursorBg: Style.textSelectedColor, selectionFg: "#ffffff", selectionBg: Style.textSelectedColor};
+		return {defaultFg: root.terminalFg, defaultBg: root.terminalBg, cursorFg: root.terminalBg, cursorBg: root.terminalFg, selectionFg: "#ffffff", selectionBg: root.terminalSelection};
 	}
 
 	// The cursor is on and stays on for a whole interval after an output or a key, as in xterm.
@@ -467,12 +476,12 @@ Item {
 
 	function streamColor(stream){
 		if (stream === "STDERR"){
-			return Style.errorColor;
+			return root.terminalError;
 		}
 		if (stream === "SYSTEM"){
-			return Style.subtitleColor;
+			return root.terminalSystem;
 		}
-		return Style.textColor;
+		return root.terminalFg;
 	}
 
 	function showActionHint(message){
@@ -1278,7 +1287,7 @@ Item {
 		anchors.bottomMargin: Style.marginM;
 
 		radius: Style.radiusM;
-		color: "black"
+		color: root.terminalBg;
 		border.color: Style.borderColor;
 		border.width: 1;
 		clip: true;
@@ -1310,8 +1319,8 @@ Item {
 				wrapMode: TextEdit.WrapAnywhere;
 				font.family: root.terminalFontFamily;
 				font.pixelSize: Style.fontSizeM;
-				color: Style.textColor;
-				selectionColor: Style.textSelectedColor;
+				color: root.terminalFg;
+				selectionColor: root.terminalSelection;
 				selectedTextColor: "#ffffff";
 				// The committed scrollback plus the live (still-being-typed) line, so raw
 				// keyboard echo and in-place line editing show up as one continuous line.
@@ -1451,7 +1460,7 @@ Item {
 				width: parent.width;
 				horizontalAlignment: Text.AlignHCenter;
 				text: qsTr("Starting %1…").arg(root.shellName);
-				color: Style.textColor;
+				color: root.terminalFg;
 				font.family: Style.fontFamily;
 				font.pixelSize: Style.fontSizeL;
 				opacity: 0.8;
@@ -1463,7 +1472,7 @@ Item {
 			id: busyOverlay;
 			anchors.fill: parent;
 			radius: Style.radiusM;
-			color: Style.baseColor;
+			color: root.terminalBg;
 			opacity: controller.busy ? 0.85 : 0;
 			visible: opacity > 0.01;
 			z: 10;
