@@ -1258,7 +1258,7 @@ Item {
 		anchors.bottomMargin: Style.marginM;
 
 		radius: Style.radiusM;
-		color: Style.baseColor;
+		color: "black"
 		border.color: Style.borderColor;
 		border.width: 1;
 		clip: true;
@@ -1566,7 +1566,7 @@ Item {
 			anchors.verticalCenter: parent.verticalCenter;
 			width: Style.iconSizeS;
 			height: Style.iconSizeS;
-			visible: controller.requestInFlight && !controller.busy;
+			visible: false//controller.requestInFlight && !controller.busy;
 		}
 
 		Text {
