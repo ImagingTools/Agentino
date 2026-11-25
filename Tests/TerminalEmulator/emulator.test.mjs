@@ -22,7 +22,7 @@ const assert = {
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const source = fs.readFileSync(path.join(here, '..', '..', 'Include', 'agentinoqml', 'Qml', 'TerminalEmulator.js'), 'utf8').replace(/^\.pragma library/m, '');
-const E = vm.runInNewContext(`${source}\n({ create, feed, resize, takeReplies, rowText, rowHtml, lastUsedColumn, clearScreen, encodeKey, encodeMouse, encodePaste, encodeFocus, selectionText, selectionColumns, buildRowHtml, FL_BOLD, FL_INVERSE, FL_UNDERLINE, FL_DIM, FL_ITALIC, FL_STRIKE, RGB_BASE })`);
+const E = vm.runInNewContext(`${source}\n({ create, feed, resize, takeReplies, rowText, rowHtml, lastUsedColumn, clearScreen, encodeKey, encodeMouse, encodePaste, encodeFocus, selectionText, selectionColumns, buildRowHtml, paletteColor, FL_BOLD, FL_INVERSE, FL_UNDERLINE, FL_DIM, FL_ITALIC, FL_STRIKE, RGB_BASE })`);
 
 // every recording of fixtures/ (made by tools/record.mjs) with the screens that the reference gave for it (tools/reference.mjs)
 const fixtureDir = path.join(here, 'fixtures');
@@ -280,17 +280,17 @@ test('rowHtml: spans by style, the background, inverse, bold, the cursor, escapi
 	const t = screenOf('\x1b[1;93;44mAB\x1b[0m <&>\x1b[7mi\x1b[0m   ');
 	const options = { defaultFg: '#111111', defaultBg: '#ffffff', cursorFg: '#ffffff', cursorBg: '#005fb8' };
 	const html = E.rowHtml(t, 0, options, -1, true);
-	assert.equal(html, '<span style="color:#ffff55;background-color:#0000cc;font-weight:bold">AB</span><span style="color:#111111"> &lt;&amp;&gt;</span><span style="color:#ffffff;background-color:#111111">i</span>');
+	assert.equal(html, '<span style="color:#f9f1a5;background-color:#0037da;font-weight:bold">AB</span><span style="color:#111111"> &lt;&amp;&gt;</span><span style="color:#ffffff;background-color:#111111">i</span>');
 	const withCursor = E.rowHtml(t, 0, options, 3, true);
 	assert.ok(withCursor.includes('<span style="color:#ffffff;background-color:#005fb8">&lt;</span>'));
 	const full = E.rowHtml(t, 0, options, -1, false);
 	assert.ok(full.endsWith('</span>') && full.length > html.length, 'a full row has its blanks');
 	const bgRow = screenOf('\x1b[44m\x1b[K');
-	assert.ok(E.rowHtml(bgRow, 0, options, -1, true).includes('background-color:#0000cc'), 'a row of background is not trimmed');
+	assert.ok(E.rowHtml(bgRow, 0, options, -1, true).includes('background-color:#0037da'), 'a row of background is not trimmed');
 	// the default foreground on a dark background of the program is light, on a light one it is the foreground of the view
 	const contrast = screenOf('[44ma[47mb[0m[7mc');
 	const contrastHtml = E.rowHtml(contrast, 0, options, -1, true);
-	assert.ok(contrastHtml.includes('<span style="color:#cccccc;background-color:#0000cc">a</span>'), 'light on blue');
+	assert.ok(contrastHtml.includes('<span style="color:#cccccc;background-color:#0037da">a</span>'), 'light on blue');
 	assert.ok(contrastHtml.includes('<span style="color:#111111;background-color:#cccccc">b</span>'), 'the foreground of the view on light gray');
 	const wide = screenOf('中x');
 	assert.equal(E.rowHtml(wide, 0, options, -1, true), '<span style="color:#111111">中x</span>');
@@ -682,4 +682,19 @@ test('ownership: the alternate screen is owned, and a resize keeps the state tha
 	assert.equal(t.owned, true, 'still more than a quarter of the rows are written');
 	E.resize(t, 80, 24);
 	assert.equal(t.owned, true);
+});
+
+// ── the colors ──────────────────────────────────────────────────────────────
+
+test('the 16 colors are the scheme Campbell of Windows Terminal, the 256 colors are those of xterm', () => {
+	const campbell = ['#0c0c0c', '#c50f1f', '#13a10e', '#c19c00', '#0037da', '#881798', '#3a96dd', '#cccccc', '#767676', '#e74856', '#16c60c', '#f9f1a5', '#3b78ff', '#b4009e', '#61d6d6', '#f2f2f2'];
+	campbell.forEach((hex, index) => assert.equal(E.paletteColor(index), hex, `color ${index}`));
+	assert.equal(E.paletteColor(16), '#000000');
+	assert.equal(E.paletteColor(196), '#ff0000');
+	assert.equal(E.paletteColor(231), '#ffffff');
+	assert.equal(E.paletteColor(232), '#080808');
+	assert.equal(E.paletteColor(255), '#eeeeee');
+	// SGR 30-37, 90-97, 40-47 and 100-107 reach them
+	const t = screenOf('\x1b[34;46mA\x1b[94;105mB');
+	assert.deepEqual([t.grid[0][0].fg, t.grid[0][0].bg, t.grid[0][1].fg, t.grid[0][1].bg], [4, 6, 12, 13]);
 });

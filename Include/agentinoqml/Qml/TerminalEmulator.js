@@ -27,9 +27,11 @@ var FL_STRIKE = 128;
 
 var RGB_BASE = 0x1000000;
 
-// The colors 0..15 (the ones that the pane has always used for 30-37 and 90-97).
-var ANSI16 = ["#000000", "#cc0000", "#00aa00", "#cccc00", "#0000cc", "#aa00aa", "#00aaaa", "#cccccc",
-	"#666666", "#ff5555", "#55ff55", "#ffff55", "#5555ff", "#ff55ff", "#55ffff", "#ffffff"];
+// The colors 0..15: the scheme "Campbell" of Windows Terminal and of the console of Windows 10/11, the one that a program of a Windows console is made to look
+// right in (the blue panels and the cyan menu of mc.exe come out as they do there: measured on a screenshot of mc.exe in Windows Terminal, blue #0036d9 and
+// cyan #378fdc against #0037da and #3a96dd of the scheme).
+var ANSI16 = ["#0c0c0c", "#c50f1f", "#13a10e", "#c19c00", "#0037da", "#881798", "#3a96dd", "#cccccc",
+	"#767676", "#e74856", "#16c60c", "#f9f1a5", "#3b78ff", "#b4009e", "#61d6d6", "#f2f2f2"];
 var CUBE_LEVELS = [0, 95, 135, 175, 215, 255];
 
 // The DEC special graphics set (ESC ( 0): the characters of the lines

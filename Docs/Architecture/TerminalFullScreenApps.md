@@ -276,7 +276,7 @@ sequences (`ESC [ < b ; x ; y M/m`):
 | a node program that asks for `?1000h ?1002h ?1006h` in its output and reads raw input | the mouse in the VT way | only the key that was typed afterwards: the SGR sequences were swallowed, and the modes it wrote were not passed to the terminal |
 
 So conhost of this Windows eats mouse input and passes no mouse mode, whatever the program does; the client cannot give a console program of a Windows agent the mouse (a newer
-conhost, Windows 11, passes it). Nothing was changed for it: the mouse is given to a program that asks for it with the modes of the terminal (a Linux agent, WSL, a newer ConPTY),
+conhost, Windows 11, passes it: checked afterwards on Windows 11 with `mc.exe`, the mouse works there). Nothing was changed for it: the mouse is given to a program that asks for it with the modes of the terminal (a Linux agent, WSL, a newer ConPTY),
 as in the stage 3. What was done for the program that does not get the mouse:
 
 - **The wheel is the arrow keys** for a program that owns the screen and has no mouse mode: three Up or Down for a notch (`ESC [ A`, or `ESC O A` in the application mode), as in the
@@ -314,6 +314,28 @@ point is plain arithmetic of the grid (so the mouse, when a program does have it
 prompt and the output that is being written, is not shown. Taking the limit away is not enough (it was tried: the page froze, because the engine lays out the whole rich text again for every
 chunk of the output). The history needs a window of its own (the last lines in the `TextEdit`, or a view of rows), which is a change of the pane and not of this stage; the check above was done
 with a history that fits.
+
+## Stage 6: the colors of the console, and the mouse only for clicks
+
+**The 16 colors are those of the console of Windows (the scheme Campbell).** The real `mc.exe` in Windows Terminal and the web terminal were put side by side (a screenshot of each) and the
+pixels were measured. The screens were the same in structure (the menu bar and the key bar are the color 6, the panels the color 4), and the colors were not: the real blue was `#0036d9`
+and the cyan `#378fdc`, ours `#001cc7` and `#12aaaa`. The real ones are the scheme Campbell (`#0037da` and `#3a96dd`), which is what a program of a Windows console is made to look right
+in, so `ANSI16` in `TerminalEmulator.js` is that scheme now:
+
+| | 0 black | 1 red | 2 green | 3 yellow | 4 blue | 5 magenta | 6 cyan | 7 white |
+|---|---|---|---|---|---|---|---|---|
+| normal | `#0c0c0c` | `#c50f1f` | `#13a10e` | `#c19c00` | `#0037da` | `#881798` | `#3a96dd` | `#cccccc` |
+| bright (8..15) | `#767676` | `#e74856` | `#16c60c` | `#f9f1a5` | `#3b78ff` | `#b4009e` | `#61d6d6` | `#f2f2f2` |
+
+The colors 16..255 are those of xterm as before. A test holds the values. Measured again in the web build after the change: the blue of the panels comes out at about `#0444d4` on a
+compressed screenshot (`#0036d9` in the real one, `#001cc7` before). The skin of `mc` and its menu are the same as in the real one; what the real screenshot shows in a different place (the
+dropdown of the menu) is `mc`'s own drawing, which the agent's `mc` does not make the same way (F9 draws no pull-down under ConPTY of Windows 10, see the stage 2).
+
+**The mouse is reported for clicks and drags, not for the pointer that only passes.** On Windows 11 the mouse reaches `mc.exe`, and `mc` asks for "any motion" (`?1003`), so the
+pane sent a report to the agent for every cell the pointer crossed, each of them a request. Now the pane sends the motion only while a button is down (a drag: one report for each
+cell that the pointer enters), never the motion without a button. Checked in the web build with the mode `?1003` on: three moves of the pointer over the screen sent nothing, a
+click sent the press and the release (`ESC[<0;13;8M`, `ESC[<0;13;8m`), a drag sent the press, the motion with the button down (`ESC[<32;17;15M`, `ESC[<32;25;16M`) and the release.
+`encodeMouse` of the module still makes the reports of the modes `?1002` and `?1003` (the module is the protocol, the pane has the policy).
 
 ## The desktop (Qt) client
 

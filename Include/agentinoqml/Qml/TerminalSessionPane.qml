@@ -403,7 +403,10 @@ Item {
 			root.selection = {r1: root.selection.r1, c1: root.selection.c1, r2: cell.row, c2: cell.col};
 			root.screenVersion++;
 		}
-		else if (root.mouseReporting){
+		else if (root.mouseReporting && root.mouseButtonDown >= 0){
+			// Only the motion with a button down (a drag, one report for each cell that the pointer enters) goes to the program. The motion without a button
+			// (?1003, "any motion") is not reported: every report is a request to the agent, a program has nothing to do with the pointer that only passes
+			// over it, and what a program does with a click (mc: the panels, the menu, the key bar) needs the click.
 			root.sendMouse("move", root.mouseButtonDown, cell.row, cell.col);
 		}
 	}
