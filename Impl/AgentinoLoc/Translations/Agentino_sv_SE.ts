@@ -3389,6 +3389,18 @@
         <source>Select a version to see the agents it is installed on</source>
         <translation>Välj en version för att se agenterna den är installerad på</translation>
     </message>
+    <message>
+        <source>The version %1 is not installed on %2: %3</source>
+        <translation>Version %1 installeras inte på %2: %3</translation>
+    </message>
+    <message>
+        <source>The installation of the version %1 has started on %2</source>
+        <translation>Installationen av version %1 har startat på %2</translation>
+    </message>
+    <message>
+        <source>The version %1 is not installed on any agent</source>
+        <translation>Version %1 installeras inte på någon agent</translation>
+    </message>
 </context>
 <context>
     <name>ServiceVersionsCommandsDelegate</name>

@@ -21,6 +21,11 @@ import agentinoUpdatesSdl 1.0
 // server - no agent header), so it is unavailable until the folder is set: the name of the folder is
 // the version; the operating system family, the path and the upload date are stored with it
 // (AddServiceVersion).
+// "Install" chooses the agents to install the selected version on (InstallServiceVersionDialog); the
+// server sends the path of the folder of the version to them (InstallServiceVersion) and each agent
+// updates its services of the type of the version: it downloads the archive of the version into the
+// folder of the executable of the service, stops the service, unpacks the archive, starts the service
+// and removes the archive.
 ViewBase {
 	id: serviceVersionsView
 
@@ -271,11 +276,74 @@ ViewBase {
 		}
 	}
 
-	// Installation is not implemented yet: the agents chosen in the dialog are not used.
+	// Install the version on the agents chosen in the dialog: the server asks every agent to update its
+	// services of the type of the version. A single version is installed at once ("Install" needs one).
+	function installVersion(versionIds, agentIds){
+		if (!versionIds || versionIds.length !== 1 || !agentIds || agentIds.length === 0){
+			return
+		}
+
+		installVersionInput.m_versionId = String(versionIds[0])
+		installVersionInput.m_agentIds = agentIds
+		installVersionRequestSender.send(installVersionInput)
+	}
+
+	// The services the installation was started on, and why it was not on the others.
+	function showInstallationResult(version, installations){
+		let started = []
+		let count = installations && installations.count !== undefined ? installations.count : 0
+		for (let i = 0; i < count; ++i){
+			let installation = installations.get(i).item
+			if (!installation){
+				continue
+			}
+
+			let agentName = installation.m_agentName ? String(installation.m_agentName) : String(installation.m_agentId)
+			if (installation.m_started === true){
+				started.push(installation.m_serviceName ? agentName + " (" + String(installation.m_serviceName) + ")" : agentName)
+			}
+			else{
+				PopupManager.addWarningMessage(qsTr("The version %1 is not installed on %2: %3")
+											   .arg(version).arg(agentName).arg(installation.m_message ? String(installation.m_message) : ""), true)
+			}
+		}
+
+		if (started.length > 0){
+			PopupManager.addSuccessMessage(qsTr("The installation of the version %1 has started on %2").arg(version).arg(started.join(", ")), true)
+		}
+		else if (count === 0){
+			PopupManager.addWarningMessage(qsTr("The version %1 is not installed on any agent").arg(version), true)
+		}
+	}
+
+	property InstallServiceVersionInput installVersionInput: InstallServiceVersionInput {}
+
 	Component {
 		id: installDialogComp
 
-		InstallServiceVersionDialog {}
+		InstallServiceVersionDialog {
+			onInstallConfirmed: {
+				serviceVersionsView.installVersion(versionIds, agentIds)
+			}
+		}
+	}
+
+	GqlSdlRequestSender {
+		id: installVersionRequestSender
+
+		requestType: 1
+		// Wire name (same as AgentinoUpdatesSdlCommandIds) - a string literal so JQML
+		// never starts a send with an unresolved singleton property.
+		gqlCommandId: "InstallServiceVersion"
+
+		sdlObjectComp: Component {
+			InstallServiceVersionPayload {
+				onFinished: {
+					serviceVersionsView.showInstallationResult(m_version ? String(m_version) : "",
+															   hasInstallations() ? m_installations : null)
+				}
+			}
+		}
 	}
 
 	RemoteCollectionView {

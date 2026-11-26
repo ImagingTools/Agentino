@@ -148,6 +148,12 @@ protected:
 		const sdl::V1_0::agentino::CAvailableConnectionsGqlRequest& availableConnectionsRequest,
 		const ::imtgql::CGqlRequest& gqlRequest,
 		QString& errorMessage) const override;
+	// Forwarded to the agent of the request header 'clientid' without waiting, as Start / Stop.
+	// "Install" of the versions page sends it to the agents itself (CServiceUpdateControllerComp).
+	virtual sdl::V1_0::agentino::CUpdateServiceVersionResponse OnUpdateServiceVersion(
+		const sdl::V1_0::agentino::CUpdateServiceVersionGqlRequest& updateServiceVersionRequest,
+		const ::imtgql::CGqlRequest& gqlRequest,
+		QString& errorMessage) const override;
 	// Handles the generic 'RemoveElements' command (imtbase collection schema) for the
 	// 'Services' collection - forwards it to the owning Agent, mirroring OnServicesRemove.
 	virtual sdl::V1_0::imtbase::CRemoveElementsPayload OnRemoveElements(

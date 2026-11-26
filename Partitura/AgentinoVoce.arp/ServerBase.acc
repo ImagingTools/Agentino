@@ -459,6 +459,7 @@
                                 <Value>AvailableConnections</Value>
                                 <Value>NotifyAgentServicesCollectionChanged</Value>
                                 <Value>SetOutputConnection</Value>
+                                <Value>UpdateServiceVersion</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>

@@ -870,6 +870,45 @@ sdl::V1_0::agentino::CServiceStatusResponse CServiceControllerProxyComp::OnStopS
 }
 
 
+sdl::V1_0::agentino::CUpdateServiceVersionResponse CServiceControllerProxyComp::OnUpdateServiceVersion(
+			const sdl::V1_0::agentino::CUpdateServiceVersionGqlRequest& updateServiceVersionRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::UpdateServiceVersionRequestArguments arguments = updateServiceVersionRequest.GetRequestedArguments();
+	if (!arguments.input.has_value()){
+		errorMessage = QStringLiteral("Service id, version and path are required to update the service version");
+
+		return sdl::V1_0::agentino::CUpdateServiceVersionResponse();
+	}
+
+	if (!HasAsyncApiClient()){
+		errorMessage = QStringLiteral("AsyncApiClient not configured; cannot dispatch UpdateServiceVersion");
+		SendErrorMessage(0, errorMessage, "CServiceControllerProxyComp");
+
+		return sdl::V1_0::agentino::CUpdateServiceVersionResponse();
+	}
+
+	// The update goes on in the owning Agent (download, stop, unpack, start), which reports the result
+	// to its log; the service status transitions arrive via the agent subscription as for Start / Stop.
+	// The returned value is a transient ack only.
+	sdl::V1_0::agentino::CUpdateServiceVersionResponse retVal;
+	retVal.started = true;
+
+	CServiceControllerProxyComp* self = const_cast<CServiceControllerProxyComp*>(this);
+	SendModelRequestAsync<sdl::V1_0::agentino::CUpdateServiceVersionResponse>(gqlRequest)
+				.then(self, [self](
+							const AsyncModelResult<sdl::V1_0::agentino::CUpdateServiceVersionResponse>& result) {
+					if (!result.errorMessage.isEmpty()){
+						self->SendErrorMessage(0, result.errorMessage, "CServiceControllerProxyComp");
+					}
+				});
+
+	errorMessage.clear();
+	return retVal;
+}
+
+
 sdl::V1_0::agentino::CClearServiceLogPayload CServiceControllerProxyComp::OnClearServiceLog(
 			const sdl::V1_0::agentino::CClearServiceLogGqlRequest& clearServiceLogRequest,
 			const ::imtgql::CGqlRequest& gqlRequest,
@@ -1321,6 +1360,16 @@ QJsonObject CServiceControllerProxyComp::CreateInternalResponse(
 			errorMessage,
 			[&](const auto& req, const auto& gqlReq, QString& err){
 				return OnSetOutputConnection(req, gqlReq, err);
+			});
+	}
+	if (sdl::V1_0::agentino::CUpdateServiceVersionGqlRequest::GetCommandId() == commandId){
+		return CreateResponse<
+			sdl::V1_0::agentino::CUpdateServiceVersionGqlRequest,
+			sdl::V1_0::agentino::CUpdateServiceVersionResponse>(
+			gqlRequest,
+			errorMessage,
+			[&](const auto& req, const auto& gqlReq, QString& err){
+				return OnUpdateServiceVersion(req, gqlReq, err);
 			});
 	}
 	if (commandId == QByteArrayLiteral("NotifyAgentServicesCollectionChanged")){

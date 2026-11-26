@@ -370,6 +370,7 @@
                                 <Value>LoadPlugin</Value>
                                 <Value>SetOutputConnection</Value>
                                 <Value>ClearServiceLog</Value>
+                                <Value>UpdateServiceVersion</Value>
                             </Values>
                         </Data>
                     </AttributeInfo>
@@ -383,6 +384,9 @@
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="ServiceController" Type="Reference" ExportId="ServiceController">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceVersionInstaller" Type="Reference" ExportId="ServiceVersionInstaller">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="TranslationManager">

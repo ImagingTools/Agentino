@@ -732,6 +732,47 @@ sdl::V1_0::agentino::CServiceSettingsPayload CServiceControllerComp::OnUpdateSer
 }
 
 
+sdl::V1_0::agentino::CUpdateServiceVersionResponse CServiceControllerComp::OnUpdateServiceVersion(
+			const sdl::V1_0::agentino::CUpdateServiceVersionGqlRequest& updateServiceVersionRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::CUpdateServiceVersionResponse response;
+	response.started = false;
+
+	if (!m_serviceVersionInstallerCompPtr.IsValid()){
+		errorMessage = QString("Unable to update the service version. Error: Attribute 'ServiceVersionInstaller' was not set");
+		SendErrorMessage(0, errorMessage, "CServiceControllerComp");
+
+		return response;
+	}
+
+	sdl::V1_0::agentino::UpdateServiceVersionRequestArguments arguments = updateServiceVersionRequest.GetRequestedArguments();
+	if (!arguments.input.has_value()){
+		Q_ASSERT_X(false, "Version 1.0 is invalid", "CServiceControllerComp");
+
+		return response;
+	}
+
+	const QByteArray serviceId = arguments.input->serviceId.has_value() ? *arguments.input->serviceId : QByteArray();
+	const QString version = arguments.input->version.has_value() ? *arguments.input->version : QString();
+	const QString path = arguments.input->path.has_value() ? *arguments.input->path : QString();
+
+	QString startError;
+	if (!m_serviceVersionInstallerCompPtr->StartServiceVersionUpdate(serviceId, version, path, startError)){
+		errorMessage = QString("Unable to update the service '%1' to the version '%2'. Error: %3")
+					.arg(QString::fromUtf8(serviceId), version, startError);
+		SendErrorMessage(0, errorMessage, "CServiceControllerComp");
+
+		return response;
+	}
+
+	response.started = true;
+
+	return response;
+}
+
+
 // private methods
 
 QString CServiceControllerComp::GetServiceSettingsFilePath(const QByteArray& serviceId, QString& errorMessage) const

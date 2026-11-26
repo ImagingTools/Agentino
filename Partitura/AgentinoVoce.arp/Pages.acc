@@ -509,6 +509,7 @@
                                             <Value>AvailableConnections</Value>
                                             <Value>NotifyAgentServicesCollectionChanged</Value>
                                             <Value>SetOutputConnection</Value>
+                                            <Value>UpdateServiceVersion</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -588,6 +589,9 @@
                                 <AttributeInfo Id="AgentCollection" Type="Reference" ExportId="AgentRepository">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
+                                <AttributeInfo Id="AsyncApiClient" Type="Reference" ExportId="AsyncApiClient">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
                                 <AttributeInfo Id="CommandIds" Type="Id[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
@@ -595,6 +599,9 @@
                                             <Value>AgentOperatingSystemsList</Value>
                                             <Value>GetServiceVersionFolder</Value>
                                             <Value>SetServiceVersionFolder</Value>
+                                            <Value>GetServiceVersionFiles</Value>
+                                            <Value>GetServiceVersionFileChunk</Value>
+                                            <Value>InstallServiceVersion</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
@@ -606,6 +613,9 @@
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="ServiceManager">
                                     <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ServiceVersionCollection" Type="Reference" ExportId="">
+                                    <Data IsEnabled="true" Value="UpdatePage/ServiceVersionCollection"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServiceVersionFolders" Type="Reference" ExportId="">
                                     <Data IsEnabled="true" Value="ServiceVersionFolders"/>

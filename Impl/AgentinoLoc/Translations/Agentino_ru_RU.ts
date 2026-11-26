@@ -1526,6 +1526,18 @@
         <source>Select a version to see the agents it is installed on</source>
         <translation>Выберите версию, чтобы увидеть агентов, на которых она установлена</translation>
     </message>
+    <message>
+        <source>The version %1 is not installed on %2: %3</source>
+        <translation>Версия %1 не установлена на %2: %3</translation>
+    </message>
+    <message>
+        <source>The installation of the version %1 has started on %2</source>
+        <translation>Установка версии %1 начата на %2</translation>
+    </message>
+    <message>
+        <source>The version %1 is not installed on any agent</source>
+        <translation>Версия %1 не установлена ни на одном агенте</translation>
+    </message>
 </context>
 <context>
     <name>ServiceVersionsCommandsDelegate</name>

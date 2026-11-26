@@ -109,11 +109,82 @@ input SetServiceVersionFolderInput {
 	path: String!
 }
 
+# "Install" of the versions page: the version is installed on the services of its type on the chosen agents.
+input InstallServiceVersionInput {
+	# ID of the version (an element of the "ServiceVersions" collection)
+	versionId: ID!
+	# The agents to install the version on
+	agentIds: [ID]
+}
+
+# The installation of a version on one service of an agent.
+type ServiceVersionInstallation {
+	agentId: ID
+	agentName: String
+	# Empty if the agent has no service of the type of the version
+	serviceId: ID
+	serviceName: String
+	# The agent was asked to install the version (UpdateServiceVersion of Services.sdl); the agent
+	# downloads, stops, unpacks and starts the service on its own and reports to its log
+	started: Boolean
+	# Why the installation was not started
+	message: String
+}
+
+type InstallServiceVersionPayload {
+	version: String
+	# Path of the folder of the version on the server, as sent to the agents
+	path: String
+	installations: [ServiceVersionInstallation]
+}
+
+# The files of the folder of a version, requested by an agent installing the version.
+# Only the folders of the versions added to the server (ServiceVersionItem.path) are given.
+input ServiceVersionFilesInput {
+	# Path of the folder of the version on the server
+	path: String!
+}
+
+type ServiceVersionFile {
+	# Name of a file inside the folder of the version (the folder itself, no subfolders)
+	name: String
+	size: LongLong
+}
+
+type ServiceVersionFileList {
+	path: String
+	files: [ServiceVersionFile]
+}
+
+# A part of a file of the folder of a version (see ServiceVersionFilesInput).
+input ServiceVersionFileChunkInput {
+	# Path of the folder of the version on the server
+	path: String!
+	# Name of the file inside the folder
+	fileName: String!
+	offset: LongLong!
+	# Number of bytes requested; the server gives at most 1 MB
+	size: Int!
+}
+
+type ServiceVersionFileChunk {
+	fileName: String
+	offset: LongLong
+	# The bytes of the part, Base64-encoded; empty at the end of the file
+	content: String
+	# Size of the whole file
+	fileSize: LongLong
+}
+
 type Query {
 	ServiceUpdatesList (input: ServiceUpdateListInput): ServiceUpdateListPayload!
 	AgentOperatingSystemsList: AgentOperatingSystemList!
 	ServiceVersionsList (input: ServiceVersionListInput): ServiceVersionListPayload!
 	GetServiceVersionFolder (input: ServiceVersionFolderInput): ServiceVersionFolder!
+	# Requested by an agent installing a version (header "clientid": an approved agent)
+	GetServiceVersionFiles (input: ServiceVersionFilesInput): ServiceVersionFileList!
+	# Requested by an agent installing a version (header "clientid": an approved agent)
+	GetServiceVersionFileChunk (input: ServiceVersionFileChunkInput): ServiceVersionFileChunk!
 }
 
 type Mutation {
@@ -121,6 +192,8 @@ type Mutation {
 	AddServiceVersion (input: ServiceVersionDataInput): AddedNotificationPayload!
 	# Set the folder the versions of a service type for an operating system family are chosen in
 	SetServiceVersionFolder (input: SetServiceVersionFolderInput): ServiceVersionFolder!
+	# Install a version on the agents: every service of the type of the version on each agent is updated
+	InstallServiceVersion (input: InstallServiceVersionInput): InstallServiceVersionPayload!
 }
 
 collectionSchema {

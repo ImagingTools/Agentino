@@ -10,6 +10,7 @@
 // Agentino includes
 #include <agentinodata/IServiceController.h>
 #include <agentgql/CServiceLog.h>
+#include <agentgql/IServiceVersionInstaller.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Services_fwd.h>
 
 
@@ -28,6 +29,7 @@ public:
 		I_ASSIGN(m_serviceControllerCompPtr, "ServiceController", "Service controller used to manage services", true, "ServiceController");
 		I_ASSIGN(m_connectionCollectionProviderCompPtr, "ConnectionCollectionProvider", "Connection collection provider", true, "ConnectionCollectionProvider");
 		I_ASSIGN(m_serviceCollectionCompPtr, "ServiceCollection", "Service collection used to resolve service settings", false, "ServiceCollection");
+		I_ASSIGN(m_serviceVersionInstallerCompPtr, "ServiceVersionInstaller", "Updates the services to the versions uploaded to the server (UpdateServiceVersion)", false, "ServiceVersionInstaller");
 	I_END_COMPONENT;
 
 protected:
@@ -80,6 +82,12 @@ protected:
 				const sdl::V1_0::agentino::CAvailableConnectionsGqlRequest& availableConnectionsRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
+	// Sent by the server for "Install" of the versions page: the update is started and goes on in the
+	// installer (ServiceVersionInstaller), the response does not wait for it.
+	virtual sdl::V1_0::agentino::CUpdateServiceVersionResponse OnUpdateServiceVersion(
+				const sdl::V1_0::agentino::CUpdateServiceVersionGqlRequest& updateServiceVersionRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
 
 private:
 	/**
@@ -92,6 +100,7 @@ protected:
 	I_REF(agentinodata::IServiceController, m_serviceControllerCompPtr);
 	I_REF(imtservice::IConnectionCollectionProvider, m_connectionCollectionProviderCompPtr);
 	I_REF(imtbase::IObjectCollection, m_serviceCollectionCompPtr);
+	I_REF(IServiceVersionInstaller, m_serviceVersionInstallerCompPtr);
 };
 
 
