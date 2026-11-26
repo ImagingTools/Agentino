@@ -3353,6 +3353,18 @@
         <source>Select a version to see the agents it is installed on</source>
         <translation>选择一个版本以查看安装了该版本的代理</translation>
     </message>
+    <message>
+        <source>The version %1 is not installed on %2: %3</source>
+        <translation>版本 %1 不会安装在 %2 上：%3</translation>
+    </message>
+    <message>
+        <source>The installation of the version %1 has started on %2</source>
+        <translation>版本 %1 已开始在 %2 上安装</translation>
+    </message>
+    <message>
+        <source>The version %1 is not installed on any agent</source>
+        <translation>版本 %1 不会安装在任何代理上</translation>
+    </message>
 </context>
 <context>
     <name>ServiceVersionsCommandsDelegate</name>

@@ -105,6 +105,11 @@ I_EXPORT_COMPONENT(
 			"Agent Service Collection Sync Client");
 
 I_EXPORT_COMPONENT(
+			ServiceVersionInstaller,
+			"Updates the services to the versions uploaded to the server: download, stop, unpack, start",
+			"Service Version Installer Update Install");
+
+I_EXPORT_COMPONENT(
 			TerminalOutputPublisher,
 			"Terminal output publisher",
 			"Terminal Output Publisher");

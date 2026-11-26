@@ -164,8 +164,8 @@ The main window consists of:
     added to the server (**Version**, **Operating system**, **Upload date**,
     **Number of installations** — the agents of the version's
     family having it installed) with the **Add**, **Remove**, **Install** and
-    **Set service folder** commands (**Remove** and **Install** need a
-    selected version), and on the right the agents the selected version is
+    **Set service folder** commands (**Remove** needs a selected version,
+    **Install** exactly one), and on the right the agents the selected version is
     installed on. **Set service folder** chooses the folder on the server the
     versions of the service for the selected operating system family are
     kept in; the server remembers it for the service and the family.
@@ -178,8 +178,21 @@ The main window consists of:
     confirmation) removes the selected versions from the list; their folders
     on the server are kept. **Install** opens a dialog
     with the approved agents to install the version on (check boxes and
-    **Select all**). Installing versions is not available yet:
-    the **Install** button of the dialog only closes it. Requires the *View Services* right.
+    **Select all**). The **Install** button of the dialog sends the path of
+    the version folder to the chosen agents; each agent updates every
+    service of the version's type it runs: it downloads the archive of the
+    version (the `*.zip` files of the version folder) from the server into
+    the folder of the service executable (**Path** on the *Information* tab
+    of the service), stops the service, unpacks the archive there (an
+    archive holding a single folder with the executable is unpacked from
+    inside that folder; a file in use, e.g. a plugin loaded by the agent,
+    is renamed to `<name>.old` first), starts the service, removes the
+    archive and sets the service version to the installed one. A
+    notification lists the services the installation started on and the
+    agents it did not (another operating system family, no service of the
+    type, agent not approved); the agent reports the result to its log. If
+    the update fails the downloaded archive is removed and a service stopped
+    for it is started again. Requires the *View Services* right.
 * **The command panel** (toolbar) above the work area: New, Edit, Remove,
   Start, Stop, Approve, etc. The set of commands depends on the page, and
   their availability depends on the selected item and its state.

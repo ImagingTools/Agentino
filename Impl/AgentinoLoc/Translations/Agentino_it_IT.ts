@@ -3353,6 +3353,18 @@
         <source>Select a version to see the agents it is installed on</source>
         <translation>Selezionare una versione per vedere gli agenti su cui è installata</translation>
     </message>
+    <message>
+        <source>The version %1 is not installed on %2: %3</source>
+        <translation>La versione %1 non viene installata su %2: %3</translation>
+    </message>
+    <message>
+        <source>The installation of the version %1 has started on %2</source>
+        <translation>L'installazione della versione %1 è iniziata su %2</translation>
+    </message>
+    <message>
+        <source>The version %1 is not installed on any agent</source>
+        <translation>La versione %1 non viene installata su nessun agente</translation>
+    </message>
 </context>
 <context>
     <name>ServiceVersionsCommandsDelegate</name>

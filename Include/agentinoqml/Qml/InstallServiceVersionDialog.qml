@@ -7,8 +7,8 @@ import agentinoAgentsSdl 1.0
 
 // "Install" command of the versions page of a service (ServiceVersionsView.qml): the approved agents
 // to install the selected version on, chosen with check boxes. "Select all" checks or unchecks every
-// agent and is partially checked while only some are. Installation is not implemented yet: the
-// "Install" button only closes the dialog and reports the choice through installConfirmed().
+// agent and is partially checked while only some are. The "Install" button closes the dialog and
+// reports the choice through installConfirmed(); the page sends it to the server (InstallServiceVersion).
 Dialog {
 	id: installDialog
 

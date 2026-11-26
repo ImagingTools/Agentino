@@ -64,6 +64,9 @@
                     <AttributeInfo Id="ServiceRepository" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ServiceVersionInstaller" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServiceVersionInstaller"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="SuperuserProvider" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="SuperuserProvider"/>
                     </AttributeInfo>
@@ -438,6 +441,38 @@
                 <AttributeInfoMap>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="ServiceVersionFileCompressor" PackageId="ImtZipPck" ComponentId="FileCompressor">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap/>
+            </Data>
+        </Element>
+        <Element Id="ServiceVersionInstaller" PackageId="AgentGqlPck" ComponentId="ServiceVersionInstaller">
+            <Data IsEnabled="true" Flags="1">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="ClientIdParam" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/ClientId"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="FileCompression" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServiceVersionFileCompressor"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="GqlClient" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="WebSocketClient"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceCollection" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="Repositories/ServiceCollection"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="ServiceController" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServiceController"/>
                     </AttributeInfo>
                     <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>

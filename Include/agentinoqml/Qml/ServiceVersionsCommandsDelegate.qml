@@ -8,7 +8,7 @@ import imtcolgui 1.0
 // Add opens the choice of the folder of a version inside the folder of the service versions (enabled
 // when the page shows the versions of one operating system family and that folder is set - addEnabled);
 // Remove is the standard collection command (enabled with a selection, removes the selected versions);
-// Install is enabled with a selection as well;
+// Install is enabled with one selected version: it opens the choice of the agents to install it on;
 // Set service folder opens the choice of the folder of the service versions for the operating system
 // family of the page (enabled when the page shows one family - setServiceFolderEnabled).
 CollectionViewCommandsDelegateBase {
@@ -36,7 +36,8 @@ CollectionViewCommandsDelegateBase {
 	function updateStateCustomCommands(selection, commandsController, elementsModel){
 		commandsController.setCommandIsEnabled("Add", container.addEnabled)
 		commandsController.setCommandIsEnabled("SetServiceFolder", container.setServiceFolderEnabled)
-		commandsController.setCommandIsEnabled("Install", selection.length > 0)
+		// One version of a service is installed at once.
+		commandsController.setCommandIsEnabled("Install", selection.length === 1)
 	}
 
 	onAddEnabledChanged: {
