@@ -186,15 +186,18 @@ type PluginInfo {
 
 # Update a service to a version of its service type uploaded to the server: sent by the server to the
 # agent for "Install" of the versions page (InstallServiceVersion of Updates.sdl). The agent downloads
-# the archive of the version from the server (GetServiceVersionFiles / GetServiceVersionFileChunk of
-# Updates.sdl) into the folder of the executable of the service, stops the service, unpacks the archive
-# there, starts the service and removes the archive.
+# the archives of the version (the *.zip files of the folder of the version) from the server over HTTP
+# by the URLs given here into the folder of the executable of the service, stops the service, unpacks
+# the archives there, starts the service and removes the archives.
 input UpdateServiceVersionInput {
 	serviceId: ID!
 	# The version, e.g. "1.0.0.513"
 	version: String!
-	# Path of the folder of the version on the server
-	path: String!
+	# URLs of the archives of the version on the HTTP server of the Agentino server
+	# (<server>/Agentino/ServiceVersions/<version ID>/<file name>, requested with the header "clientid").
+	# A URL without a host (path only) is resolved against the HTTP address of the server the agent is
+	# connected to, as well as a URL whose host is a loopback or unspecified address.
+	urls: [String]
 }
 
 type UpdateServiceVersionResponse {

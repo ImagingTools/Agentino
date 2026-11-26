@@ -10,6 +10,8 @@
 // ImtCore includes
 #include <imtbase/IObjectCollection.h>
 #include <imtclientgql/IAsyncGqlClient.h>
+#include <imtcom/IServerConnectionInterface.h>
+#include <imtrest/IHttpFileResolver.h>
 
 // Agentino includes
 #include <agentinodata/IServiceManager.h>
@@ -30,30 +32,39 @@ namespace agentinogql
 	of a service type for an operating system family are chosen in ("Set service folder" of the
 	versions page, ServiceVersionFolders).
 
-	"Install" of the versions page (InstallServiceVersion): the server sends the path of the folder of
-	the version to the chosen agents - an UpdateServiceVersion request (Services.sdl) for every service
-	of the type of the version on each agent. The agent downloads the archive of the version from the
-	server (GetServiceVersionFiles / GetServiceVersionFileChunk, answered here for the folders of the
-	versions added to the server only), then stops the service, unpacks the archive into the folder of
-	its executable, starts it and removes the archive (agentgql::CServiceVersionInstallerComp).
+	"Install" of the versions page (InstallServiceVersion): the server sends the URLs of the archives
+	of the version (the *.zip files of its folder) to the chosen agents - an UpdateServiceVersion request
+	(Services.sdl) for every service of the type of the version on each agent. The URL of an archive is
+	<HTTP address of the server>/<FileCommandId>/<version ID>/<file name>. The agent downloads the
+	archives over HTTP into the folder of the executable of the service, then stops the service, unpacks
+	the archives there, starts it and removes the archives (agentgql::CServiceVersionInstallerComp).
+
+	The archives are sent by a file servlet (imtrest::CHttpFileServletComp with the command
+	"<FileCommandId>/*") that asks this component for the file (imtrest::IHttpFileResolver): only the
+	archives of the versions added to the server are given, to the approved agents only (header
+	'clientid' of the request).
 
 	The schema lives in Sdl/agentino/1.0/Updates.sdl.
 */
 class CServiceUpdateControllerComp:
 			public QObject,
-			public sdl::V1_0::agentino::CUpdatesGqlHandlerCompBase
+			public sdl::V1_0::agentino::CUpdatesGqlHandlerCompBase,
+			virtual public imtrest::IHttpFileResolver
 {
 	Q_OBJECT
 public:
 	typedef sdl::V1_0::agentino::CUpdatesGqlHandlerCompBase BaseClass;
 
 	I_BEGIN_COMPONENT(CServiceUpdateControllerComp);
+		I_REGISTER_INTERFACE(imtrest::IHttpFileResolver);
 		I_ASSIGN(m_agentCollectionCompPtr, "AgentCollection", "Agent collection", true, "AgentCollection");
 		I_ASSIGN(m_serviceManagerCompPtr, "ServiceManager", "Per-agent service collections", true, "ServiceManager");
 		I_ASSIGN(m_enrollmentControllerCompPtr, "EnrollmentController", "Enrollment records holding the operating systems reported by the agents", false, "EnrollmentStore");
 		I_ASSIGN(m_serviceVersionFoldersCompPtr, "ServiceVersionFolders", "Folders the versions of the services are chosen in (GetServiceVersionFolder / SetServiceVersionFolder)", false, "ServiceVersionFolders");
-		I_ASSIGN(m_serviceVersionCollectionCompPtr, "ServiceVersionCollection", "Versions of the services uploaded to the server (InstallServiceVersion, GetServiceVersionFiles, GetServiceVersionFileChunk)", false, "ServiceVersionCollection");
+		I_ASSIGN(m_serviceVersionCollectionCompPtr, "ServiceVersionCollection", "Versions of the services uploaded to the server (InstallServiceVersion, the archives of the versions sent over HTTP)", false, "ServiceVersionCollection");
 		I_ASSIGN(m_asyncApiClientCompPtr, "AsyncApiClient", "Asynchronous API client the update requests are sent to the agents with (header 'clientid')", false, "AsyncApiClient");
+		I_ASSIGN(m_serverConnectionCompPtr, "ServerConnectionInterface", "Addresses of the server: the URLs of the archives of the versions are made of its HTTP address (without it the agents get the path of a URL only)", false, "ServerConnectionInterface");
+		I_ASSIGN(m_fileCommandIdAttrPtr, "FileCommandId", "HTTP path the archives of the versions are sent at: the command of the file servlet without '/*'", true, "Agentino/ServiceVersions");
 	I_END_COMPONENT;
 
 	/**
@@ -62,6 +73,9 @@ public:
 		The versions of the services (CServiceVersionCollectionControllerComp) are grouped by it as well.
 	*/
 	static QString GetOperatingSystemFamily(const QString& operatingSystem);
+
+	// reimplemented (imtrest::IHttpFileResolver)
+	virtual imtrest::IProtocolEngine::StatusCode ResolveFile(const imtrest::CHttpRequest& request, FileDescription& file) const override;
 
 protected:
 	// reimplemented (sdl::V1_0::agentino::CUpdatesGqlHandlerCompBase)
@@ -79,14 +93,6 @@ protected:
 				QString& errorMessage) const override;
 	virtual sdl::V1_0::agentino::CServiceVersionFolder OnSetServiceVersionFolder(
 				const sdl::V1_0::agentino::CSetServiceVersionFolderGqlRequest& setServiceVersionFolderRequest,
-				const ::imtgql::CGqlRequest& gqlRequest,
-				QString& errorMessage) const override;
-	virtual sdl::V1_0::agentino::CServiceVersionFileList OnGetServiceVersionFiles(
-				const sdl::V1_0::agentino::CGetServiceVersionFilesGqlRequest& getServiceVersionFilesRequest,
-				const ::imtgql::CGqlRequest& gqlRequest,
-				QString& errorMessage) const override;
-	virtual sdl::V1_0::agentino::CServiceVersionFileChunk OnGetServiceVersionFileChunk(
-				const sdl::V1_0::agentino::CGetServiceVersionFileChunkGqlRequest& getServiceVersionFileChunkRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
 	virtual sdl::V1_0::agentino::CInstallServiceVersionPayload OnInstallServiceVersion(
@@ -133,28 +139,31 @@ private:
 	/**
 		Send UpdateServiceVersion (Services.sdl) for the service to the agent. The request is not waited for:
 		the agent installs the version on its own; a refusal of the agent is reported to the log.
+		\param archiveUrls	URLs of the archives of the version the agent downloads.
 	*/
 	bool SendUpdateServiceVersionRequest(
 				const QByteArray& agentId,
 				const QByteArray& serviceId,
 				const QString& version,
-				const QString& path,
+				const QStringList& archiveUrls,
 				QString& errorMessage) const;
 
 	/**
-		Check that the request comes from an approved agent (header 'clientid') and that the path is the folder
-		of a version added to the server. The clean path of the folder is returned in \a folderPath.
+		Get the URLs of the archives (*.zip) of the folder of the version (see the class description).
+		\param versionId	ID of the version in the version collection.
+		\param folderPath	clean path of the folder of the version.
 	*/
-	bool CheckVersionFileRequest(
-				const ::imtgql::CGqlRequest& gqlRequest,
-				const QString& path,
-				QString& folderPath,
-				QString& errorMessage) const;
+	QStringList GetArchiveUrls(const QByteArray& versionId, const QString& folderPath) const;
 
 	/**
-		Get the agent the request comes from (header 'clientid'). Empty for a request of the web client.
+		Get the HTTP path the archives of the versions are sent at, without the slashes at the ends.
 	*/
-	static QByteArray GetRequestAgentId(const ::imtgql::CGqlRequest& gqlRequest);
+	QString GetFileCommandId() const;
+
+	/**
+		Whether the name is the name of an archive (*.zip) without a path.
+	*/
+	static bool IsArchiveFileName(const QString& fileName);
 
 	/**
 		Path with forward slashes, without "." / ".." parts and a trailing slash.
@@ -173,6 +182,8 @@ protected:
 	I_REF(agentinodata::IServiceVersionFolders, m_serviceVersionFoldersCompPtr);
 	I_REF(imtbase::IObjectCollection, m_serviceVersionCollectionCompPtr);
 	I_REF(imtclientgql::IAsyncGqlClient, m_asyncApiClientCompPtr);
+	I_REF(imtcom::IServerConnectionInterface, m_serverConnectionCompPtr);
+	I_ATTR(QByteArray, m_fileCommandIdAttrPtr);
 };
 
 

@@ -4,12 +4,15 @@
 
 // Qt includes
 #include <QtCore/QDeadlineTimer>
+#include <QtCore/QFile>
 #include <QtCore/QList>
-#include <QtCore/QMap>
 #include <QtCore/QMutex>
 #include <QtCore/QObject>
+#include <QtCore/QPointer>
 #include <QtCore/QSet>
 #include <QtCore/QStringList>
+#include <QtCore/QUrl>
+#include <QtNetwork/QNetworkReply>
 
 // ACF includes
 #include <ilog/TLoggerCompWrap.h>
@@ -17,13 +20,15 @@
 
 // ImtCore includes
 #include <imtbase/IObjectCollection.h>
-#include <imtclientgql/IGqlClient.h>
+#include <imtcom/IServerConnectionInterface.h>
 #include <imtfile/IFileCompression.h>
-#include <imtgql/CGqlRequest.h>
 
 // Agentino includes
 #include <agentinodata/IServiceController.h>
 #include <agentgql/IServiceVersionInstaller.h>
+
+
+class QNetworkAccessManager;
 
 
 namespace agentgql
@@ -34,10 +39,11 @@ namespace agentgql
 	Update of the services of the agent to the versions uploaded to the server ("Install" of the versions
 	page of the server, UpdateServiceVersion of Services.sdl, see CServiceControllerComp).
 
-	The server sends the path of the folder of the version on the server. The installer then:
-	1. asks the server for the files of the folder (GetServiceVersionFiles of Updates.sdl) and downloads the
-	   archives (*.zip) part by part (GetServiceVersionFileChunk) into the folder of the executable of the
-	   service (the path of the service, IServiceInfo::GetServicePath);
+	The server sends the URLs of the archives (*.zip) of the folder of the version. The installer then:
+	1. downloads the archives over HTTP (GET with the header "clientid" of the agent: the server gives
+	   them to the approved agents only) into the folder of the executable of the service (the path of
+	   the service, IServiceInfo::GetServicePath), one after another; an archive is written as
+	   "<name>.part" until it is complete;
 	2. stops the service and waits until its process has ended;
 	3. unpacks the archives there: into a temporary folder first, whose files then replace the files of the
 	   service (a file kept open, e.g. a plugin loaded by the agent, is renamed to "<name>.old" first);
@@ -48,8 +54,12 @@ namespace agentgql
 	The result is reported to the log of the agent. A failed update removes the downloaded files and starts
 	the service again if it was running.
 
-	The requests to the server are sent over the WebSocket client of the agent, which must be used on its
-	own thread: the updates run on the thread of this component (the main thread), one after another.
+	A URL without a host (path only) is resolved against the HTTP address of the server the agent is
+	connected to (ServerConnection); a URL whose host is a loopback or unspecified address (the server
+	knows itself as "localhost", for example) gets the host of that address as well.
+
+	The updates run on the thread of this component (the main thread), one after another; the downloads
+	are asynchronous.
 */
 class CServiceVersionInstallerComp:
 			public QObject,
@@ -62,23 +72,38 @@ public:
 
 	I_BEGIN_COMPONENT(CServiceVersionInstallerComp);
 		I_REGISTER_INTERFACE(IServiceVersionInstaller);
-		I_ASSIGN(m_gqlClientCompPtr, "GqlClient", "WebSocket client connected to the server: the files of the version are requested with it", true, "GqlClient");
-		I_ASSIGN(m_clientIdCompPtr, "ClientIdParam", "Agent client-ID (sent as header clientid)", true, "ClientIdParam");
+		I_ASSIGN(m_clientIdCompPtr, "ClientIdParam", "Agent client-ID (sent as header clientid of the downloads)", true, "ClientIdParam");
+		I_ASSIGN(m_serverConnectionCompPtr, "ServerConnection", "Addresses of the server: a URL of an archive without a host is resolved against its HTTP address", false, "ServerConnection");
 		I_ASSIGN(m_serviceCollectionCompPtr, "ServiceCollection", "Services of the agent", true, "ServiceCollection");
 		I_ASSIGN(m_serviceControllerCompPtr, "ServiceController", "Stops and starts the services", true, "ServiceController");
 		I_ASSIGN(m_fileCompressionCompPtr, "FileCompression", "Unpacks the archives of the versions (zip)", true, "FileCompression");
 		I_ASSIGN(m_stopTimeoutAttrPtr, "StopTimeout", "Time in seconds to wait for a service to stop", false, 60);
-		I_ASSIGN(m_chunkSizeAttrPtr, "ChunkSize", "Size in KB of a part of a file requested from the server at once (at most 1024)", false, 512);
+		I_ASSIGN(m_downloadTimeoutAttrPtr, "DownloadTimeout", "Time in seconds a download may receive no data before it fails", false, 60);
 	I_END_COMPONENT;
 
 	// reimplemented (IServiceVersionInstaller)
 	virtual bool StartServiceVersionUpdate(
 				const QByteArray& serviceId,
 				const QString& version,
-				const QString& versionPath,
+				const QStringList& archiveUrls,
 				QString& errorMessage) override;
 
+protected:
+	// reimplemented (icomp::CComponentBase)
+	virtual void OnComponentDestroyed() override;
+
 private:
+	/**
+		An archive of a version: where it is downloaded from and to.
+	*/
+	struct Archive
+	{
+		QUrl url;
+		QString fileName;
+		// The archive in the folder of the service
+		QString filePath;
+	};
+
 	/**
 		An update of a service.
 	*/
@@ -87,14 +112,15 @@ private:
 		QByteArray serviceId;
 		QString serviceName;
 		QString version;
-		// Path of the folder of the version on the server
-		QString versionPath;
+		QList<Archive> archives;
 		// Folder of the executable of the service
 		QString serviceFolder;
 		// File name of the executable of the service
 		QString executableName;
-		// The downloaded archives (in the folder of the service)
+		// The archives downloaded so far (in the folder of the service)
 		QStringList archivePaths;
+		// The archive being downloaded (index in archives)
+		int downloadIndex = 0;
 		// The service was running before the update
 		bool wasRunning = false;
 		// Time in seconds to wait for the service to stop
@@ -108,9 +134,24 @@ private:
 	void StartNextUpdate();
 
 	/**
-		Download the archives of the version and stop the service.
+		Download the next archive of the current update; when all of them are downloaded, stop the service.
 	*/
-	void ExecuteDownload();
+	void DownloadNextArchive();
+
+	/**
+		Write the received data of the download into the file.
+	*/
+	void OnDownloadDataReceived();
+
+	/**
+		End the download of the archive: check it, rename the file and download the next archive.
+	*/
+	void OnDownloadFinished();
+
+	/**
+		Stop the service, then wait for it to stop.
+	*/
+	void StopService();
 
 	/**
 		Wait for the service to stop, then unpack the archives and start the service.
@@ -134,14 +175,14 @@ private:
 	void FinishUpdate();
 
 	/**
-		Get the names of the files of the folder of the version on the server.
+		Get the URL of an archive sent by the server (see the class description) and the name of its file.
 	*/
-	bool GetVersionFiles(const QString& versionPath, QMap<QString, qint64>& files, QString& errorMessage) const;
+	bool ResolveArchiveUrl(const QString& urlText, QUrl& url, QString& fileName, QString& errorMessage) const;
 
 	/**
-		Download a file of the folder of the version on the server into the local file.
+		Stop the running download and remove its unfinished file.
 	*/
-	bool DownloadFile(const QString& versionPath, const QString& fileName, qint64 fileSize, const QString& filePath, QString& errorMessage) const;
+	void AbortDownload();
 
 	/**
 		Unpack the archive into the folder of the service.
@@ -166,30 +207,41 @@ private:
 	bool SetServiceVersion(const QByteArray& serviceId, const QString& version) const;
 
 	/**
-		Create a request to the server, addressed with the client-ID of the agent.
-	*/
-	imtclientgql::IGqlClient::GqlRequestPtr CreateServerRequest(imtgql::CGqlRequest* gqlRequestPtr) const;
-
-	/**
 		Remove the downloaded archives of the current update.
 	*/
 	void RemoveArchives();
 
 	bool IsServiceStopped(const QByteArray& serviceId) const;
 
+	/**
+		Whether the name is the name of an archive (*.zip) without a path.
+	*/
+	static bool IsArchiveFileName(const QString& fileName);
+
+	/**
+		Whether the host is a loopback or unspecified address ("localhost", "127.0.0.1", "0.0.0.0", "::" ...).
+	*/
+	static bool IsLocalHost(const QString& host);
+
 private:
-	I_REF(imtclientgql::IGqlClient, m_gqlClientCompPtr);
 	I_REF(iprm::ITextParam, m_clientIdCompPtr);
+	I_REF(imtcom::IServerConnectionInterface, m_serverConnectionCompPtr);
 	I_REF(imtbase::IObjectCollection, m_serviceCollectionCompPtr);
 	I_REF(agentinodata::IServiceController, m_serviceControllerCompPtr);
 	I_REF(imtfile::IFileCompression, m_fileCompressionCompPtr);
 	I_ATTR(int, m_stopTimeoutAttrPtr);
-	I_ATTR(int, m_chunkSizeAttrPtr);
+	I_ATTR(int, m_downloadTimeoutAttrPtr);
 
 	// The updates waiting for their turn and the running one (touched on the thread of the component only)
 	QList<Update> m_pendingUpdates;
 	Update m_currentUpdate;
 	bool m_isUpdateRunning = false;
+
+	// The running download (on the thread of the component)
+	QNetworkAccessManager* m_networkManagerPtr = nullptr;
+	QPointer<QNetworkReply> m_downloadReplyPtr;
+	QFile m_downloadFile;
+	QString m_downloadError;
 
 	// The services being updated or waiting for it (StartServiceVersionUpdate is called on the GQL worker threads)
 	mutable QMutex m_servicesMutex;
