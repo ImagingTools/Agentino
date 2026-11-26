@@ -77,19 +77,124 @@ ViewBase {
 			topologyPage.scheme.selectedIndex = -1
 			topologyPage.scheme.selectedNodeId = ""
 			topologyPage.scheme.selectedService = ""
+			topologyPage.scheme.setSelectedLink(null)
 		}
 		topologyPage.selectedAgentId = ""
 		metaInfo.contentVisible = false
 		topologyPage.updateCommandStates()
 	}
 
+	// Services linked through the clicked link of the shown level (see updateLinkInfo); null if no link is selected.
+	// {fromName, toName, pairs: [{source: {id, name, path, agentId}, target: {...}}]}
+	property var linkInfo: null
+
+	function updateLinkInfo(){
+		let currentScheme = topologyPage.scheme
+		let link = currentScheme ? currentScheme.selectedLink : null
+		if (!link){
+			topologyPage.linkInfo = null
+			return
+		}
+		let info = topologyPage.computeLinkInfo(link.fromId, link.toId, currentScheme.groupId)
+		topologyPage.linkInfo = info
+		// The link is no longer on the level (e.g. a service was moved by another client).
+		if (info === null){
+			currentScheme.setSelectedLink(null)
+		}
+	}
+
+	function makeServiceInfo(serviceId){
+		let node = topologyPage.topologyNodes[serviceId]
+		return {
+			"id": serviceId,
+			"name": node ? "" + node.name : "" + serviceId,
+			"path": node ? topologyPage.getNodePath(node.parentId) : "",
+			"agentId": node && node.agentId ? "" + node.agentId : ""
+		}
+	}
+
+	// Pairs of services (the service and the service it is linked with) whose link is drawn between the
+	// shown nodes firstId and secondId of the level groupId: the nodes themselves or groups / agents
+	// containing the services. null if there are none.
+	function computeLinkInfo(firstId, secondId, groupId){
+		let pairs = []
+		for (let sourceId in topologyPage.topologyNodes){
+			let linkIds = topologyPage.topologyNodes[sourceId].linkIds
+			if (!linkIds || linkIds.length === 0)
+				continue
+			let shownSourceId = topologyPage.findShownNode(sourceId, groupId)
+			if (shownSourceId !== firstId && shownSourceId !== secondId)
+				continue
+			for (let k = 0; k < linkIds.length; ++k){
+				let targetId = linkIds[k]
+				let shownTargetId = topologyPage.findShownNode(targetId, groupId)
+				if (shownTargetId === shownSourceId || (shownTargetId !== firstId && shownTargetId !== secondId))
+					continue
+				pairs.push({"source": topologyPage.makeServiceInfo(sourceId), "target": topologyPage.makeServiceInfo(targetId)})
+			}
+		}
+		if (pairs.length === 0)
+			return null
+
+		pairs.sort(function(left, right){
+			let result = left.source.name.localeCompare(right.source.name)
+			return result !== 0 ? result : left.target.name.localeCompare(right.target.name)
+		})
+		let firstNode = topologyPage.topologyNodes[firstId]
+		let secondNode = topologyPage.topologyNodes[secondId]
+		return {
+			"fromName": firstNode ? "" + firstNode.name : "",
+			"toName": secondNode ? "" + secondNode.name : "",
+			"pairs": pairs
+		}
+	}
+
+	// The selected node when exactly one node is selected, null otherwise (none or several).
 	function selectedNode(){
 		let currentScheme = topologyPage.scheme
 		if (!currentScheme || currentScheme.selectedIndex < 0 || !currentScheme.objectsModel
-				|| currentScheme.selectedIndex >= currentScheme.objectsModel.count)
+				|| currentScheme.selectedIndex >= currentScheme.objectsModel.count
+				|| currentScheme.selectedIds.length > 1)
 			return null
 		let item = currentScheme.objectsModel.get(currentScheme.selectedIndex).item
 		return item ? item : null
+	}
+
+	// All selected nodes of the shown level (Ctrl+click / selection rectangle select several).
+	function selectedNodes(){
+		let result = []
+		let currentScheme = topologyPage.scheme
+		if (!currentScheme || !currentScheme.objectsModel)
+			return result
+		let indexes = currentScheme.selectedObjectIndexes()
+		for (let i = 0; i < indexes.length; ++i){
+			let item = currentScheme.objectsModel.get(indexes[i]).item
+			if (item){
+				result.push(item)
+			}
+		}
+		return result
+	}
+
+	function selectedNodeIds(){
+		let items = topologyPage.selectedNodes()
+		let result = []
+		for (let i = 0; i < items.length; ++i){
+			result.push(items[i].m_id)
+		}
+		return result
+	}
+
+	// Ungroup is applied to user-defined groups only (not to agents).
+	function selectedGroupIds(){
+		let items = topologyPage.selectedNodes()
+		let result = []
+		for (let i = 0; i < items.length; ++i){
+			if (!topologyPage.isGroupNode(items[i].m_id))
+				return []
+			result.push(items[i].m_id)
+		}
+		return result
 	}
 
 	// Agents and groups are composite nodes; double click opens their content as the next level.
@@ -143,6 +248,22 @@ ViewBase {
 			result.push({"id": candidateId, "name": topologyPage.getNodePath(candidateId)})
 		}
 		result.sort(function(left, right){ return left.name.localeCompare(right.name) })
+		return result
+	}
+
+	// Groups all the nodes can be moved to (getTargetGroups of every node).
+	function getCommonTargetGroups(nodeIds){
+		if (nodeIds.length === 0)
+			return []
+		let result = topologyPage.getTargetGroups(nodeIds[0])
+		for (let i = 1; i < nodeIds.length && result.length > 0; ++i){
+			let allowed = {}
+			let groups = topologyPage.getTargetGroups(nodeIds[i])
+			for (let k = 0; k < groups.length; ++k){
+				allowed[groups[k].id] = true
+			}
+			result = result.filter(function(group){ return allowed[group.id] === true })
+		}
 		return result
 	}
 
@@ -366,8 +487,14 @@ ViewBase {
 				&& (topologyPage.groupId === "" || topologyPage.isGroupNode(topologyPage.groupId)))
 		// Groups live at the root level or inside other groups; an agent contains only its services.
 		topologyPage.setCommandState("NewGroup", topologyPage.groupId === "" || topologyPage.isGroupNode(topologyPage.groupId))
-		topologyPage.setCommandState("AddToGroup", item !== null && topologyPage.getTargetGroups(item.m_id).length > 0)
-		topologyPage.setCommandState("RemoveFromGroup", item !== null && topologyPage.isGroupNode(topologyPage.groupId))
+		// Group membership commands are applied to all selected nodes.
+		let selectedIds = topologyPage.selectedNodeIds()
+		// Without a group to add the nodes to, a new group is created for them.
+		topologyPage.setCommandState("AddToGroup", selectedIds.length > 0)
+		// "Move to parent": the nodes go one level up, into the group containing the current group.
+		topologyPage.setCommandState("RemoveFromGroup", selectedIds.length > 0 && topologyPage.isGroupNode(topologyPage.groupId))
+		// Ungroup: the selected groups are removed, their content goes to the level of the groups.
+		topologyPage.setCommandState("Ungroup", topologyPage.selectedGroupIds().length > 0)
 		// Changes are applied on the server at once; Undo/Redo revert or repeat them there.
 		// Both are shown while there is anything in the history (also while an undo/redo runs and its
 		// step is between the stacks), each is enabled on its own.
@@ -392,7 +519,8 @@ ViewBase {
 			{"id": "RemoveService", "name": qsTr("Remove service"), "icon": "Icons/Delete"},
 			{"id": "Rename", "name": qsTr("Rename"), "icon": "Icons/Edit"},
 			{"id": "AddToGroup", "name": qsTr("Add to group"), "icon": "Icons/Link"},
-			{"id": "RemoveFromGroup", "name": qsTr("Remove from group"), "icon": "Icons/Unlink"},
+			{"id": "RemoveFromGroup", "name": qsTr("Move to parent"), "icon": "Icons/Unlink"},
+			{"id": "Ungroup", "name": qsTr("Ungroup"), "icon": "Icons/FolderOpened"},
 			{"id": "Start", "name": qsTr("Start service"), "icon": "Icons/Play"},
 			{"id": "Stop", "name": qsTr("Stop service"), "icon": "Icons/Stop"}
 		]
@@ -440,6 +568,7 @@ ViewBase {
 
 		topologyPage.scheme = currentScheme
 		topologyPage.applySelection(currentScheme)
+		topologyPage.updateLinkInfo()
 		if (topologyPage.commandsController){
 			topologyPage.commandsController.setToggled("AutoFit", currentScheme.autoFit)
 		}
@@ -664,21 +793,60 @@ ViewBase {
 		return result
 	}
 
+	// Moves all selected nodes into a group chosen in the dialog. If there is no group they can be added
+	// to, the dialog of a new group is opened; the nodes are moved into the created group.
 	function requestAddToGroup(){
-		let item = topologyPage.selectedNode()
-		if (!item)
+		let nodeIds = topologyPage.selectedNodeIds()
+		if (nodeIds.length === 0)
 			return
-		ModalDialogManager.openDialog(addToGroupDialogComp, {"nodeId": item.m_id, "targetGroups": topologyPage.getTargetGroups(item.m_id)})
+		let targetGroups = topologyPage.getCommonTargetGroups(nodeIds)
+		if (targetGroups.length === 0){
+			ModalDialogManager.openDialog(newGroupDialogComp, {"nodeIds": nodeIds})
+			return
+		}
+		ModalDialogManager.openDialog(addToGroupDialogComp, {"nodeIds": nodeIds, "targetGroups": targetGroups})
 	}
 
-	// Moves the node one level up: into the group containing the current group, or back to its default place.
+	// Position of a new group created for the nodes of the shown level: the place of the top left node
+	// (the nodes leave the level); a free place if the nodes are not on the level.
+	function findGroupPosition(nodeIds){
+		let currentScheme = topologyPage.scheme
+		let position = null
+		for (let i = 0; currentScheme && i < nodeIds.length; ++i){
+			let index = currentScheme.findModelIndex(nodeIds[i])
+			if (index < 0)
+				continue
+			let item = currentScheme.objectsModel.get(index).item
+			if (!position || item.m_y < position.y || (item.m_y === position.y && item.m_x < position.x)){
+				position = Qt.point(item.m_x, item.m_y)
+			}
+		}
+		return position ? position : topologyPage.findFreePosition(currentScheme ? currentScheme.objectsModel : null)
+	}
+
+	// "Move to parent": moves the selected nodes one level up, into the group containing the current
+	// group, or back to their default place.
 	function requestRemoveFromGroup(){
-		let item = topologyPage.selectedNode()
-		if (!item || !topologyPage.isGroupNode(topologyPage.groupId))
+		let nodeIds = topologyPage.selectedNodeIds()
+		if (nodeIds.length === 0 || !topologyPage.isGroupNode(topologyPage.groupId))
 			return
 		let currentGroup = topologyPage.topologyNodes[topologyPage.groupId]
 		let targetGroupId = topologyPage.isGroupNode(currentGroup.parentId) ? currentGroup.parentId : ""
-		topologyPage.topologyViewModel.moveNodes([item.m_id], targetGroupId, topologyPage.getParentGroups([item.m_id]))
+		topologyPage.topologyViewModel.moveNodes(nodeIds, targetGroupId, topologyPage.getParentGroups(nodeIds))
+	}
+
+	// Ungroup: removes the selected groups; their content goes to the level of the groups (the server
+	// moves the members of a removed group one level up). One step of the history, undone at once.
+	function requestUngroup(){
+		let groupIds = topologyPage.selectedGroupIds()
+		if (groupIds.length === 0)
+			return
+		let infos = []
+		for (let i = 0; i < groupIds.length; ++i){
+			infos.push(topologyPage.getGroupInfo(groupIds[i]))
+		}
+		topologyPage.clearServiceSelection()
+		topologyPage.topologyViewModel.removeGroups(groupIds, infos)
 	}
 
 	// Group of the node (empty if the node is not in a group, e.g. a service directly inside its agent).
@@ -876,16 +1044,19 @@ ViewBase {
 			// The commands are updated once at the end: the temporary deselection must not hide and
 			// show them again (the command panel would jump).
 			let previousNodeId = currentScheme.selectedNodeId
+			let previousNodeIds = currentScheme.selectedIds.slice()
 			topologyPage.reselecting = true
 			currentScheme.selectedIndex = -1
 			currentScheme.objectsModel = topologyPage.applyTopologyNodes(nodesModel)
 			currentScheme.extraLinks = topologyPage.computeLevelLinks(currentScheme.groupId)
 			currentScheme.linkHints = topologyPage.computeLinkHints(currentScheme.groupId)
 			currentScheme.savedPositions = topologyPage.getPositions(currentScheme.objectsModel)
-			currentScheme.selectedIndex = currentScheme.findModelIndex(previousNodeId)
+			// Several selected tiles stay selected (those still on the level).
+			currentScheme.setSelection(previousNodeIds, currentScheme.findModelIndex(previousNodeId))
 			topologyPage.reselecting = false
 			topologyPage.updateLevelNames()
 			topologyPage.applySelection(currentScheme)
+			topologyPage.updateLinkInfo()
 			currentScheme.requestPaint()
 		}
 		function onServiceStatusMessage(data) {
@@ -1118,6 +1289,9 @@ ViewBase {
 					}
 					else if (commandId === "RemoveFromGroup"){
 						topologyPage.requestRemoveFromGroup()
+					}
+					else if (commandId === "Ungroup"){
+						topologyPage.requestUngroup()
 					}
 					else if (commandId === "Rename"){
 						topologyPage.requestRename()
@@ -1540,7 +1714,7 @@ ViewBase {
 		anchors.top: parent.top
 		anchors.left: viewsPanel.right
 		anchors.leftMargin: Style.marginM
-		anchors.right: metaInfo.left
+		anchors.right: linkInfoPanel.left
 		anchors.rightMargin: Style.marginM
 		height: visible ? Style.controlHeightL : 0
 		visible: schemeStack.count > 1
@@ -1563,7 +1737,7 @@ ViewBase {
 		id: schemeStack
 
 		anchors.left: viewsPanel.right;
-		anchors.right: metaInfo.left;
+		anchors.right: linkInfoPanel.left;
 		anchors.top: stackHeader.bottom;
 		anchors.bottom: parent.bottom;
 
@@ -1630,11 +1804,15 @@ ViewBase {
 				return topologyPage.canAddToGroup(objectId, targetId)
 			}
 
+			// All selected tiles are dragged together.
 			onObjectDropped: {
-				if (!topologyPage.canAddToGroup(objectId, targetId)){
-					return
+				let nodeIds = levelScheme.selectedIds.indexOf(objectId) >= 0 ? levelScheme.selectedIds.slice() : [objectId]
+				for (let i = 0; i < nodeIds.length; ++i){
+					if (!topologyPage.canAddToGroup(nodeIds[i], targetId)){
+						return
+					}
 				}
-				topologyPage.topologyViewModel.moveNodes([objectId], targetId, topologyPage.getParentGroups([objectId]))
+				topologyPage.topologyViewModel.moveNodes(nodeIds, targetId, topologyPage.getParentGroups(nodeIds))
 			}
 
 			onDeleteSignal: {
@@ -1653,16 +1831,26 @@ ViewBase {
 				topologyPage.openContextMenu(menuX, menuY)
 			}
 
-			onSelectedIndexChanged: {
+			// selectedNodeId is the current node (also of several selected ones); selectedService is set
+			// only when one service is selected (meta information, Start/Stop).
+			onSelectionChanged: {
 				let item = levelScheme.selectedIndex >= 0 && levelScheme.objectsModel
 						&& levelScheme.selectedIndex < levelScheme.objectsModel.count
 						? levelScheme.objectsModel.get(levelScheme.selectedIndex).item : null
 				let isComposite = topologyPage.isCompositeNode(item)
+				let single = levelScheme.selectedIds.length <= 1
 
 				levelScheme.selectedNodeId = item ? item.m_id : ""
-				levelScheme.selectedService = item && !isComposite ? item.m_id : ""
+				levelScheme.selectedService = item && !isComposite && single ? item.m_id : ""
 
 				topologyPage.applySelection(levelScheme)
+			}
+
+			// A click on a link shows the linked services in the panel on the right.
+			onSelectedLinkChanged: {
+				if (levelScheme === topologyPage.scheme){
+					topologyPage.updateLinkInfo()
+				}
 			}
 
 			// Double click / Return: goes inside a composite node, opens the editor of a service.
@@ -1702,12 +1890,12 @@ ViewBase {
 	Rectangle {
 		id: serviceOperationIndicator
 		property int spinnerSize: 18
-		property real maxPopupWidth: Math.max(0, metaInfo.x - viewsPanel.width - 2 * Style.marginXL)
+		property real maxPopupWidth: Math.max(0, linkInfoPanel.x - viewsPanel.width - 2 * Style.marginXL)
 		property real maxTextWidth: Math.max(0, maxPopupWidth - 2 * Style.marginL - spinnerSize - Style.spacingS)
 		property real textWidth: Math.min(serviceOperationTextItem.implicitWidth, maxTextWidth)
 
 		anchors.top: schemeStack.top
-		anchors.right: metaInfo.left
+		anchors.right: linkInfoPanel.left
 		anchors.topMargin: Style.marginXL
 		anchors.rightMargin: Style.marginXL
 		width: Math.min(
@@ -1743,6 +1931,166 @@ ViewBase {
 				font.pixelSize: Style.fontSizeM
 				elide: Text.ElideRight
 			}
+		}
+	}
+
+	// Information on the clicked link (in place of the meta information of a service): which service
+	// is linked with which one. A click on a service name opens the page of the service.
+	Rectangle {
+		id: linkInfoPanel
+
+		objectName: "TopologyLinkInfoPanel"
+
+		anchors.right: metaInfo.left
+		anchors.top: parent.top
+		anchors.bottom: parent.bottom
+
+		width: visible ? 250 : 0
+		visible: topologyPage.linkInfo !== null
+		clip: true
+		// The same background as the meta information panel
+		color: linkInfoDecorator.item && linkInfoDecorator.item.color !== undefined ? linkInfoDecorator.item.color : Style.baseColor
+
+		Loader {
+			id: linkInfoDecorator
+
+			anchors.fill: parent
+			sourceComponent: Style.metaInfoPanelDecorator
+		}
+
+		Flickable {
+			id: linkInfoFlickable
+
+			anchors.fill: parent
+
+			contentWidth: width
+			contentHeight: linkInfoColumn.height + 2 * Style.marginM
+			boundsBehavior: Flickable.StopAtBounds
+
+			Column {
+				id: linkInfoColumn
+
+				anchors.top: parent.top
+				anchors.topMargin: Style.marginM
+				anchors.left: parent.left
+				anchors.leftMargin: Style.marginM
+				anchors.right: parent.right
+				anchors.rightMargin: Style.marginM + linkInfoScrollbar.secondSize
+
+				spacing: Style.spacingL
+
+				Column {
+					width: linkInfoColumn.width
+					spacing: Style.spacingM
+
+					BaseText {
+						width: parent.width
+						text: qsTr("Link")
+						font.pixelSize: Style.fontSizeM
+						font.family: Style.fontFamilyBold
+						font.bold: true
+						elide: Text.ElideRight
+					}
+
+					BaseText {
+						width: parent.width
+						text: topologyPage.linkInfo ? topologyPage.linkInfo.fromName + " — " + topologyPage.linkInfo.toName : ""
+						color: Style.subtitleColor
+						font.pixelSize: Style.fontSizeS
+						wrapMode: Text.WordWrap
+					}
+				}
+
+				Repeater {
+					model: topologyPage.linkInfo ? topologyPage.linkInfo.pairs : []
+
+					delegate: Column {
+						id: linkPairColumn
+
+						width: linkInfoColumn.width
+						spacing: Style.spacingXS
+
+						property var pair: modelData
+
+						Repeater {
+							model: [
+								{"service": linkPairColumn.pair.source, "caption": ""},
+								{"service": linkPairColumn.pair.target, "caption": qsTr("is linked with")}
+							]
+
+							delegate: Column {
+								width: linkPairColumn.width
+								spacing: Style.spacingXS
+
+								BaseText {
+									width: parent.width
+									visible: modelData.caption !== ""
+									text: "↓ " + modelData.caption
+									color: Style.subtitleColor
+									font.pixelSize: Style.fontSizeS
+								}
+
+								Text {
+									id: serviceNameText
+
+									width: parent.width
+									text: modelData.service.name
+									color: Style.lightBlueColor
+									font.family: Style.fontFamily
+									font.pixelSize: Style.fontSizeM
+									font.underline: serviceNameMouseArea.containsMouse
+									wrapMode: Text.WrapAnywhere
+
+									MouseArea {
+										id: serviceNameMouseArea
+
+										anchors.fill: parent
+										hoverEnabled: true
+										cursorShape: Qt.PointingHandCursor
+										onClicked: {
+											topologyPage.openServiceDocument(modelData.service.id, modelData.service.name, modelData.service.agentId)
+										}
+									}
+								}
+
+								BaseText {
+									width: parent.width
+									visible: modelData.service.path !== ""
+									text: modelData.service.path
+									color: Style.subtitleColor
+									font.pixelSize: Style.fontSizeS
+									elide: Text.ElideRight
+								}
+							}
+						}
+
+						// Separator between the pairs
+						Item {
+							width: parent.width
+							height: Style.spacingM
+						}
+
+						Rectangle {
+							width: parent.width
+							height: 1
+							color: Style.borderColor
+							opacity: 0.5
+						}
+					}
+				}
+			}
+		}
+
+		CustomScrollbar {
+			id: linkInfoScrollbar
+
+			z: linkInfoFlickable.z + 1
+			anchors.right: parent.right
+			anchors.top: linkInfoFlickable.top
+			anchors.bottom: linkInfoFlickable.bottom
+			secondSize: Style.marginS
+			targetItem: linkInfoFlickable
+			alwaysVisible: false
 		}
 	}
 
@@ -2131,14 +2479,27 @@ ViewBase {
 		id: newGroupDialogComp
 
 		InputDialog {
+			// Nodes moved into the new group ("Add to group" without a group to add them to); empty for "New group".
+			property var nodeIds: []
+
 			title: qsTr("New group")
-			message: qsTr("Group name")
+			message: nodeIds.length > 0 ? qsTr("There is no group to add the selected items to. Name of the new group for them")
+										: qsTr("Group name")
 			placeHolderText: qsTr("Enter the group name")
 			onFinished: {
 				let name = inputValue ? inputValue.trim() : ""
-				if (buttonId == Enums.ok && name !== ""){
+				if (buttonId != Enums.ok || name === ""){
+					return
+				}
+				// Groups live at the root level or inside other groups (not inside an agent).
+				let parentId = topologyPage.isGroupNode(topologyPage.groupId) ? topologyPage.groupId : ""
+				if (nodeIds.length > 0){
+					let position = topologyPage.findGroupPosition(nodeIds)
+					topologyPage.topologyViewModel.createGroupWithNodes(name, parentId, position.x, position.y,
+							nodeIds, topologyPage.getParentGroups(nodeIds))
+				}
+				else{
 					let position = topologyPage.findFreePosition(topologyPage.scheme ? topologyPage.scheme.objectsModel : null)
-					let parentId = topologyPage.isGroupNode(topologyPage.groupId) ? topologyPage.groupId : ""
 					topologyPage.topologyViewModel.createGroup(name, parentId, position.x, position.y)
 				}
 			}
@@ -2369,7 +2730,8 @@ ViewBase {
 			width: Style.sizeHintM
 			title: qsTr("Add to group")
 
-			property string nodeId: ""
+			// Nodes moved into the chosen group.
+			property var nodeIds: []
 			property var targetGroups: []
 			property string chosenGroupId: ""
 
@@ -2379,8 +2741,8 @@ ViewBase {
 			}
 
 			onFinished: {
-				if (buttonId === Enums.apply && nodeId !== "" && chosenGroupId !== ""){
-					topologyPage.topologyViewModel.moveNodes([nodeId], chosenGroupId, topologyPage.getParentGroups([nodeId]))
+				if (buttonId === Enums.apply && nodeIds.length > 0 && chosenGroupId !== ""){
+					topologyPage.topologyViewModel.moveNodes(nodeIds, chosenGroupId, topologyPage.getParentGroups(nodeIds))
 				}
 			}
 

@@ -125,6 +125,23 @@ visualizes the overall topology of all agents.
   `objectDropped`; Escape/leaving cancel); `TopologyPage` accepts the groups allowed by
   `canAddToGroup` and calls `MoveTopologyNodes` (recorded for Undo); the drag position is not saved,
   inside the group the node keeps its last saved position.
+- Selection: `SchemeView.selectedIds` (ImtCore) holds all selected tiles, `selectedIndex` the current
+  one; Ctrl+click adds/removes a tile, Ctrl+drag draws a selection rectangle (the scheme is not
+  panned; Escape cancels it and restores the previous selection), `selectionChanged` is emitted once
+  per change. Selected tiles are dragged (and dropped into a group) together. A selected tile is framed
+  with the accent color and filled with it semi-transparently; groups have the same double frame
+  color as services. `AddToGroup`, `RemoveFromGroup` ("Move to parent": one level up) and `Ungroup`
+  apply to all selected tiles; Rename, Remove, Start/Stop and the meta information need exactly one.
+  `AddToGroup` without a group the tiles can be added to opens the "New group" dialog: the group is
+  created (at the place of the top left selected tile) and the tiles are moved into it as one history
+  step (`TopologyViewModel.createGroupWithNodes`).
+  `Ungroup` (toolbar and context menu, user groups only, not agents) removes the selected groups with
+  `RemoveTopologyGroup` — the server moves their members to the level of the group — as one history
+  step (`TopologyViewModel.removeGroups`).
+- Links: a click on a link selects it (`SchemeView.selectedLink`/`linkClicked`, drawn with the accent
+  color); `TopologyPage` lists the services linked through it (`computeLinkInfo`: for a link between
+  groups/agents every pair of services inside them) in a panel on the right, in place of the meta
+  information; a click on a service name opens its page.
 
 ## Layout coordinates
 
