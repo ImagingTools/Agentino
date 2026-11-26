@@ -22,10 +22,10 @@ import agentinoUpdatesSdl 1.0
 // the version; the operating system family, the path and the upload date are stored with it
 // (AddServiceVersion).
 // "Install" chooses the agents to install the selected version on (InstallServiceVersionDialog); the
-// server sends the path of the folder of the version to them (InstallServiceVersion) and each agent
-// updates its services of the type of the version: it downloads the archive of the version into the
-// folder of the executable of the service, stops the service, unpacks the archive, starts the service
-// and removes the archive.
+// server sends the URLs of the archives (*.zip) of the folder of the version to them
+// (InstallServiceVersion) and each agent updates its services of the type of the version: it downloads
+// the archives over HTTP into the folder of the executable of the service, stops the service, unpacks
+// the archives, starts the service and removes the archives.
 ViewBase {
 	id: serviceVersionsView
 

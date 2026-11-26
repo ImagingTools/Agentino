@@ -14,6 +14,7 @@
         <Element ComponentName="ApplicationController" X="525" Y="325" Note=""/>
         <Element ComponentName="EnrollmentGqlController" X="725" Y="600" Note=""/>
         <Element ComponentName="Pages" X="275" Y="600" Note=""/>
+        <Element ComponentName="ServiceVersionFileServlet" X="275" Y="100" Note=""/>
         <Element ComponentName="StandardGraphQlHandlers" X="550" Y="100" Note=""/>
     </PositionMap>
     <EmbeddedRegistries/>

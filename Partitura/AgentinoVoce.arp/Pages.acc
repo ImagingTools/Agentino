@@ -75,6 +75,9 @@
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="ServerConnectionInterface">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="ServiceCompositeInfo">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -599,8 +602,6 @@
                                             <Value>AgentOperatingSystemsList</Value>
                                             <Value>GetServiceVersionFolder</Value>
                                             <Value>SetServiceVersionFolder</Value>
-                                            <Value>GetServiceVersionFiles</Value>
-                                            <Value>GetServiceVersionFileChunk</Value>
                                             <Value>InstallServiceVersion</Value>
                                         </Values>
                                     </Data>
@@ -609,6 +610,9 @@
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="ServerConnectionInterface">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="ServiceManager" Type="Reference" ExportId="ServiceManager">
@@ -780,6 +784,7 @@
                     <Component ExportedId="AgentsPage" ComponentId="AgentsPage"/>
                     <Component ExportedId="GraphQLDemultiplexer" ComponentId="GraphQLDemultiplexer"/>
                     <Component ExportedId="ServiceControllerProxy" ComponentId="ServiceControllerProxy"/>
+                    <Component ExportedId="ServiceUpdateController" ComponentId="ServiceUpdateController"/>
                     <Component ExportedId="ServicesRemoteRepresentationController" ComponentId="ServicesRemoteRepresentationController"/>
                     <Component ExportedId="TopologyPage" ComponentId="TopologyPage"/>
                 </ExportedComponents>
@@ -876,5 +881,7 @@
         <Interface InterfaceId="imtgql::IGqlRequestHandler" ComponentId="PagesDemultiplexer"/>
         <Interface InterfaceId="istd::IPolymorphic" ComponentId="PagesDemultiplexer"/>
     </ExportedInterfaces>
-    <ExportedComponents/>
+    <ExportedComponents>
+        <Component ExportedId="ServiceUpdateController" ComponentId="PageData/ServiceUpdateController"/>
+    </ExportedComponents>
 </Acf>

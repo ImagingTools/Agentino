@@ -5,6 +5,7 @@
 // Qt includes
 #include <QtCore/QByteArray>
 #include <QtCore/QString>
+#include <QtCore/QStringList>
 
 // ACF includes
 #include <istd/IPolymorphic.h>
@@ -22,20 +23,21 @@ class IServiceVersionInstaller: virtual public istd::IPolymorphic
 {
 public:
 	/**
-		Start the update of the service: the archive of the version is downloaded from the server into
-		the folder of the executable of the service, the service is stopped, the archive is unpacked there,
-		the service is started and the archive is removed.
+		Start the update of the service: the archives of the version are downloaded from the server over
+		HTTP into the folder of the executable of the service, the service is stopped, the archives are
+		unpacked there, the service is started and the archives are removed.
 		The method returns at once; the update goes on in the installer, which reports its result to the log.
 		\param serviceId	ID of the service in the service collection of the agent.
 		\param version		the version, e.g. "1.0.0.513".
-		\param versionPath	path of the folder of the version on the server.
+		\param archiveUrls	URLs of the archives (*.zip) of the version on the server. A URL without a host
+							(path only) is resolved against the HTTP address of the server.
 		\param errorMessage	why the update cannot be started.
 		\return true if the update was started.
 	*/
 	virtual bool StartServiceVersionUpdate(
 				const QByteArray& serviceId,
 				const QString& version,
-				const QString& versionPath,
+				const QStringList& archiveUrls,
 				QString& errorMessage) = 0;
 };
 

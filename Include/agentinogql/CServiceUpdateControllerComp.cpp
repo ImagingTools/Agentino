@@ -6,13 +6,14 @@
 
 // Qt includes
 #include <QtCore/QDir>
-#include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QSet>
+#include <QtCore/QUrl>
 
 // ImtCore includes
 #include <imtgql/CGqlContext.h>
 #include <imtgql/CGqlRequest.h>
+#include <imtrest/CHttpRequest.h>
 
 // Agentino includes
 #include <agentinodata/IServiceInfo.h>
@@ -28,8 +29,91 @@ static const QString s_linuxFamily = QStringLiteral("Linux");
 static const QString s_macOsFamily = QStringLiteral("macOS");
 static const QString s_otherFamily = QStringLiteral("Other");
 
-// Largest part of a file of a version given at once (GetServiceVersionFileChunk).
-static const int s_maxFileChunkSize = 1024 * 1024;
+// Suffix of the archives of a version: the files of the folder of the version sent to the agents.
+static const QString s_archiveSuffix = QStringLiteral(".zip");
+
+
+// public methods
+
+// reimplemented (imtrest::IHttpFileResolver)
+
+imtrest::IProtocolEngine::StatusCode CServiceUpdateControllerComp::ResolveFile(const imtrest::CHttpRequest& request, FileDescription& file) const
+{
+	if (!m_serviceVersionCollectionCompPtr.IsValid()){
+		SendErrorMessage(0, QStringLiteral("Unable to send the archive of a service version. Error: Component reference 'ServiceVersionCollection' was not set"), "CServiceUpdateControllerComp");
+
+		return imtrest::IProtocolEngine::SC_INTERNAL_ERROR;
+	}
+
+	// The path of the request: <FileCommandId>/<version ID>/<file name> (decoded).
+	QString requestPath = QString::fromUtf8(request.GetCommandId());
+	while (requestPath.startsWith(QLatin1Char('/'))){
+		requestPath.remove(0, 1);
+	}
+
+	const QString commandPrefix = GetFileCommandId() + QLatin1Char('/');
+	if (!requestPath.startsWith(commandPrefix)){
+		return imtrest::IProtocolEngine::SC_NOT_FOUND;
+	}
+
+	const QStringList parts = requestPath.mid(commandPrefix.length()).split(QLatin1Char('/'));
+	if (parts.count() != 2 || parts[0].isEmpty() || !IsArchiveFileName(parts[1])){
+		return imtrest::IProtocolEngine::SC_NOT_FOUND;
+	}
+
+	const QByteArray versionId = parts[0].toUtf8();
+	const QString fileName = parts[1];
+
+	// The archives are given to the approved agents installing the versions (header 'clientid').
+	const QByteArray agentId = request.GetHeaderValue(QByteArrayLiteral("clientid"));
+	if (agentId.isEmpty()){
+		SendWarningMessage(
+					0,
+					QStringLiteral("The archive '%1' of the service version '%2' was refused to %3: the request is not sent by an agent (header 'clientid')")
+								.arg(fileName, QString::fromUtf8(versionId), request.GetRemoteAddress().toString()),
+					"CServiceUpdateControllerComp");
+
+		return imtrest::IProtocolEngine::SC_FORBIDDEN;
+	}
+
+	if (m_enrollmentControllerCompPtr.IsValid() && m_enrollmentControllerCompPtr->Get(agentId).status != EnrollmentStatus::Approved){
+		SendWarningMessage(
+					0,
+					QStringLiteral("The archive '%1' of the service version '%2' was refused to the agent '%3': the agent is not approved")
+								.arg(fileName, QString::fromUtf8(versionId), QString::fromUtf8(agentId)),
+					"CServiceUpdateControllerComp");
+
+		return imtrest::IProtocolEngine::SC_FORBIDDEN;
+	}
+
+	// Only the archives of the versions added to the server are given.
+	imtbase::IObjectCollection::DataPtr versionDataPtr;
+	const agentinodata::IServiceVersionInfo* versionInfoPtr = nullptr;
+	if (m_serviceVersionCollectionCompPtr->GetObjectData(versionId, versionDataPtr)){
+		versionInfoPtr = dynamic_cast<const agentinodata::IServiceVersionInfo*>(versionDataPtr.GetPtr());
+	}
+
+	if (versionInfoPtr == nullptr){
+		return imtrest::IProtocolEngine::SC_NOT_FOUND;
+	}
+
+	const QString folderPath = GetCleanPath(versionInfoPtr->GetPath());
+	if (folderPath.isEmpty()){
+		return imtrest::IProtocolEngine::SC_NOT_FOUND;
+	}
+
+	// A file of the folder itself: a link leading out of the folder is not followed.
+	const QFileInfo fileInfo(QDir(folderPath), fileName);
+	const QString canonicalFolderPath = QFileInfo(folderPath).canonicalFilePath();
+	if (!fileInfo.isFile() || canonicalFolderPath.isEmpty() || !IsSamePath(fileInfo.canonicalPath(), canonicalFolderPath)){
+		return imtrest::IProtocolEngine::SC_NOT_FOUND;
+	}
+
+	file.filePath = fileInfo.absoluteFilePath();
+	file.dataTypeId = QByteArrayLiteral("application/zip");
+
+	return imtrest::IProtocolEngine::SC_OK;
+}
 
 
 // protected methods
@@ -196,129 +280,6 @@ sdl::V1_0::agentino::CServiceVersionFolder CServiceUpdateControllerComp::OnSetSe
 }
 
 
-sdl::V1_0::agentino::CServiceVersionFileList CServiceUpdateControllerComp::OnGetServiceVersionFiles(
-			const sdl::V1_0::agentino::CGetServiceVersionFilesGqlRequest& getServiceVersionFilesRequest,
-			const ::imtgql::CGqlRequest& gqlRequest,
-			QString& errorMessage) const
-{
-	sdl::V1_0::agentino::CServiceVersionFileList payload;
-
-	const sdl::V1_0::agentino::GetServiceVersionFilesRequestArguments arguments = getServiceVersionFilesRequest.GetRequestedArguments();
-
-	QString path;
-	if (arguments.input.has_value() && arguments.input->path.has_value()){
-		path = *arguments.input->path;
-	}
-
-	QString folderPath;
-	if (!CheckVersionFileRequest(gqlRequest, path, folderPath, errorMessage)){
-		errorMessage = QStringLiteral("Unable to get the files of the service version. Error: %1").arg(errorMessage);
-		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
-
-		return payload;
-	}
-
-	QList<sdl::V1_0::agentino::CServiceVersionFile> files;
-
-	// The files of the folder itself: the archive of the version (the subfolders are not given).
-	const QFileInfoList entries = QDir(folderPath).entryInfoList(QDir::Files | QDir::Readable | QDir::NoDotAndDotDot, QDir::Name);
-	for (const QFileInfo& entry : entries){
-		sdl::V1_0::agentino::CServiceVersionFile file;
-		file.name = entry.fileName();
-		file.size = entry.size();
-
-		files << file;
-	}
-
-	payload.path = QDir::toNativeSeparators(folderPath);
-	payload.files.Emplace();
-	payload.files->FromList(files);
-
-	return payload;
-}
-
-
-sdl::V1_0::agentino::CServiceVersionFileChunk CServiceUpdateControllerComp::OnGetServiceVersionFileChunk(
-			const sdl::V1_0::agentino::CGetServiceVersionFileChunkGqlRequest& getServiceVersionFileChunkRequest,
-			const ::imtgql::CGqlRequest& gqlRequest,
-			QString& errorMessage) const
-{
-	sdl::V1_0::agentino::CServiceVersionFileChunk payload;
-
-	const sdl::V1_0::agentino::GetServiceVersionFileChunkRequestArguments arguments = getServiceVersionFileChunkRequest.GetRequestedArguments();
-
-	QString path;
-	QString fileName;
-	qlonglong offset = -1;
-	int size = 0;
-	if (arguments.input.has_value()){
-		if (arguments.input->path.has_value()){
-			path = *arguments.input->path;
-		}
-		if (arguments.input->fileName.has_value()){
-			fileName = *arguments.input->fileName;
-		}
-		if (arguments.input->offset.has_value()){
-			offset = *arguments.input->offset;
-		}
-		if (arguments.input->size.has_value()){
-			size = *arguments.input->size;
-		}
-	}
-
-	QString folderPath;
-	if (!CheckVersionFileRequest(gqlRequest, path, folderPath, errorMessage)){
-		errorMessage = QStringLiteral("Unable to get the file of the service version. Error: %1").arg(errorMessage);
-		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
-
-		return payload;
-	}
-
-	// A file of the folder itself only: no path to another folder.
-	if (fileName.isEmpty() || fileName.contains(QLatin1Char('/')) || fileName.contains(QLatin1Char('\\')) ||
-				fileName == QStringLiteral(".") || fileName == QStringLiteral("..")){
-		errorMessage = QStringLiteral("Unable to get the file of the service version. Error: The file name '%1' is invalid").arg(fileName);
-		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
-
-		return payload;
-	}
-
-	const QFileInfo fileInfo(QDir(folderPath), fileName);
-	if (!fileInfo.isFile()){
-		errorMessage = QStringLiteral("Unable to get the file of the service version. Error: The file '%1' does not exist").arg(QDir::toNativeSeparators(fileInfo.filePath()));
-		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
-
-		return payload;
-	}
-
-	if (offset < 0 || offset > fileInfo.size() || size <= 0){
-		errorMessage = QStringLiteral("Unable to get the file of the service version. Error: The part (offset %1, size %2) of the file '%3' is invalid")
-					.arg(offset).arg(size).arg(fileName);
-		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
-
-		return payload;
-	}
-
-	QFile file(fileInfo.filePath());
-	if (!file.open(QIODevice::ReadOnly) || !file.seek(offset)){
-		errorMessage = QStringLiteral("Unable to get the file of the service version. Error: The file '%1' cannot be read: %2")
-					.arg(QDir::toNativeSeparators(fileInfo.filePath()), file.errorString());
-		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
-
-		return payload;
-	}
-
-	const QByteArray data = file.read(qMin(size, s_maxFileChunkSize));
-
-	payload.fileName = fileName;
-	payload.offset = offset;
-	payload.fileSize = fileInfo.size();
-	payload.content = QString::fromLatin1(data.toBase64());
-
-	return payload;
-}
-
-
 sdl::V1_0::agentino::CInstallServiceVersionPayload CServiceUpdateControllerComp::OnInstallServiceVersion(
 			const sdl::V1_0::agentino::CInstallServiceVersionGqlRequest& installServiceVersionRequest,
 			const ::imtgql::CGqlRequest& /*gqlRequest*/,
@@ -366,6 +327,16 @@ sdl::V1_0::agentino::CInstallServiceVersionPayload CServiceUpdateControllerComp:
 
 	if (path.isEmpty() || !QFileInfo(path).isDir()){
 		errorMessage = QStringLiteral("Unable to install the service version '%1'. Error: The folder '%2' of the version does not exist")
+					.arg(version, QDir::toNativeSeparators(path));
+		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
+
+		return payload;
+	}
+
+	// The agents download the archives of the version over HTTP.
+	const QStringList archiveUrls = GetArchiveUrls(versionId, path);
+	if (archiveUrls.isEmpty()){
+		errorMessage = QStringLiteral("Unable to install the service version '%1'. Error: The folder '%2' of the version has no archive (*.zip)")
 					.arg(version, QDir::toNativeSeparators(path));
 		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
 
@@ -432,13 +403,13 @@ sdl::V1_0::agentino::CInstallServiceVersionPayload CServiceUpdateControllerComp:
 			installation.serviceName = service.name;
 
 			QString sendError;
-			if (SendUpdateServiceVersionRequest(agentId, service.id, version, path, sendError)){
+			if (SendUpdateServiceVersionRequest(agentId, service.id, version, archiveUrls, sendError)){
 				installation.started = true;
 
 				SendInfoMessage(
 							0,
-							QStringLiteral("Installation of the version '%1' (%2) of the service '%3' started on the agent '%4'")
-										.arg(version, QDir::toNativeSeparators(path), service.name, *agentInstallation.agentName),
+							QStringLiteral("Installation of the version '%1' of the service '%2' started on the agent '%3', archives: %4")
+										.arg(version, service.name, *agentInstallation.agentName, archiveUrls.join(QStringLiteral(", "))),
 							"CServiceUpdateControllerComp");
 			}
 			else{
@@ -457,6 +428,8 @@ sdl::V1_0::agentino::CInstallServiceVersionPayload CServiceUpdateControllerComp:
 
 	payload.version = version;
 	payload.path = QDir::toNativeSeparators(path);
+	payload.urls.Emplace();
+	payload.urls->FromList(archiveUrls);
 	payload.installations.Emplace();
 	payload.installations->FromList(installations);
 
@@ -643,7 +616,7 @@ bool CServiceUpdateControllerComp::SendUpdateServiceVersionRequest(
 			const QByteArray& agentId,
 			const QByteArray& serviceId,
 			const QString& version,
-			const QString& path,
+			const QStringList& archiveUrls,
 			QString& errorMessage) const
 {
 	if (!m_asyncApiClientCompPtr.IsValid()){
@@ -666,8 +639,9 @@ bool CServiceUpdateControllerComp::SendUpdateServiceVersionRequest(
 	arguments.input.emplace();
 	arguments.input->serviceId = serviceId;
 	arguments.input->version = version;
-	// The agent asks the server for the files of this folder (GetServiceVersionFiles).
-	arguments.input->path = QDir::toNativeSeparators(path);
+	// The agent downloads the archives by these URLs over HTTP (see ResolveFile).
+	arguments.input->urls.Emplace();
+	arguments.input->urls->FromList(archiveUrls);
 
 	if (!sdl::V1_0::agentino::CUpdateServiceVersionGqlRequest::SetupGqlRequest(gqlRequest, arguments)){
 		errorMessage = QStringLiteral("Unable to create the request 'UpdateServiceVersion'");
@@ -701,90 +675,66 @@ bool CServiceUpdateControllerComp::SendUpdateServiceVersionRequest(
 }
 
 
-bool CServiceUpdateControllerComp::CheckVersionFileRequest(
-			const ::imtgql::CGqlRequest& gqlRequest,
-			const QString& path,
-			QString& folderPath,
-			QString& errorMessage) const
+QStringList CServiceUpdateControllerComp::GetArchiveUrls(const QByteArray& versionId, const QString& folderPath) const
 {
-	folderPath.clear();
+	QStringList retVal;
 
-	if (!m_serviceVersionCollectionCompPtr.IsValid()){
-		errorMessage = QStringLiteral("Component reference 'ServiceVersionCollection' was not set");
-
-		return false;
-	}
-
-	// The files of the versions are given to the agents installing them.
-	const QByteArray agentId = GetRequestAgentId(gqlRequest);
-	if (agentId.isEmpty()){
-		errorMessage = QStringLiteral("The request is not sent by an agent (header 'clientid')");
-
-		return false;
-	}
-
-	if (m_enrollmentControllerCompPtr.IsValid() && m_enrollmentControllerCompPtr->Get(agentId).status != EnrollmentStatus::Approved){
-		errorMessage = QStringLiteral("The agent '%1' is not approved").arg(QString::fromUtf8(agentId));
-
-		return false;
-	}
-
-	// Only the folders of the versions added to the server are given.
-	const QString cleanPath = GetCleanPath(path);
-	if (!cleanPath.isEmpty()){
-		const imtbase::ICollectionInfo::Ids versionIds = m_serviceVersionCollectionCompPtr->GetElementIds();
-		for (const imtbase::ICollectionInfo::Id& versionId : versionIds){
-			imtbase::IObjectCollection::DataPtr versionDataPtr;
-			if (!m_serviceVersionCollectionCompPtr->GetObjectData(versionId, versionDataPtr)){
-				continue;
-			}
-
-			const agentinodata::IServiceVersionInfo* versionInfoPtr = dynamic_cast<const agentinodata::IServiceVersionInfo*>(versionDataPtr.GetPtr());
-			if (versionInfoPtr != nullptr && IsSamePath(GetCleanPath(versionInfoPtr->GetPath()), cleanPath)){
-				folderPath = cleanPath;
-
-				break;
-			}
+	// The HTTP address of the server. Without it (or without its host) the agent gets the path of a URL
+	// only and resolves it against the address of the server it is connected to.
+	QUrl serverUrl;
+	if (m_serverConnectionCompPtr.IsValid()){
+		if (!m_serverConnectionCompPtr->GetUrl(imtcom::IServerConnectionInterface::PT_HTTP, serverUrl) || serverUrl.host().isEmpty()){
+			serverUrl = QUrl();
 		}
 	}
 
-	if (folderPath.isEmpty()){
-		errorMessage = QStringLiteral("The folder '%1' is not the folder of a service version").arg(QDir::toNativeSeparators(path));
+	const QString commandId = GetFileCommandId();
 
-		return false;
+	// The archives of the folder itself (the subfolders are not given).
+	const QFileInfoList entries = QDir(folderPath).entryInfoList(QDir::Files | QDir::Readable | QDir::NoDotAndDotDot, QDir::Name);
+	for (const QFileInfo& entry : entries){
+		if (!IsArchiveFileName(entry.fileName())){
+			continue;
+		}
+
+		QUrl url = serverUrl;
+		url.setPath(QLatin1Char('/') + commandId + QLatin1Char('/') + QString::fromUtf8(versionId) + QLatin1Char('/') + entry.fileName());
+		url.setQuery(QString());
+		url.setFragment(QString());
+
+		// Percent-encoded: a name with spaces or other reserved characters stays one path segment.
+		retVal << QString::fromLatin1(url.toEncoded());
 	}
 
-	if (!QFileInfo(folderPath).isDir()){
-		errorMessage = QStringLiteral("The folder '%1' of the service version does not exist").arg(QDir::toNativeSeparators(folderPath));
+	return retVal;
+}
 
-		return false;
+
+QString CServiceUpdateControllerComp::GetFileCommandId() const
+{
+	QString commandId = m_fileCommandIdAttrPtr.IsValid() ? QString::fromUtf8(*m_fileCommandIdAttrPtr).trimmed() : QString();
+	while (commandId.startsWith(QLatin1Char('/'))){
+		commandId.remove(0, 1);
 	}
 
-	return true;
+	while (commandId.endsWith(QLatin1Char('/'))){
+		commandId.chop(1);
+	}
+
+	return commandId;
 }
 
 
 // private static methods
 
-QByteArray CServiceUpdateControllerComp::GetRequestAgentId(const ::imtgql::CGqlRequest& gqlRequest)
+bool CServiceUpdateControllerComp::IsArchiveFileName(const QString& fileName)
 {
-	// The agent puts its ID into the header 'clientid' of its requests (the HTTP layer lowercases the names).
-	QByteArray agentId = gqlRequest.GetHeader(QByteArrayLiteral("clientid"));
-	if (!agentId.isEmpty()){
-		return agentId;
+	if (fileName.length() <= s_archiveSuffix.length() || !fileName.endsWith(s_archiveSuffix, Qt::CaseInsensitive)){
+		return false;
 	}
 
-	const imtgql::IGqlContext* contextPtr = gqlRequest.GetRequestContext();
-	if (contextPtr != nullptr){
-		const imtgql::IGqlContext::Headers headers = contextPtr->GetHeaders();
-		for (auto iter = headers.constBegin(); iter != headers.constEnd(); ++iter){
-			if (QString::fromUtf8(iter.key()).compare(QStringLiteral("clientid"), Qt::CaseInsensitive) == 0){
-				return iter.value();
-			}
-		}
-	}
-
-	return QByteArray();
+	// A name of a file of the folder itself: no path, no drive.
+	return !fileName.contains(QLatin1Char('/')) && !fileName.contains(QLatin1Char('\\')) && !fileName.contains(QLatin1Char(':'));
 }
 
 

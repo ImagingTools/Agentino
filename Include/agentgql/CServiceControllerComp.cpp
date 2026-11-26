@@ -756,10 +756,10 @@ sdl::V1_0::agentino::CUpdateServiceVersionResponse CServiceControllerComp::OnUpd
 
 	const QByteArray serviceId = arguments.input->serviceId.has_value() ? *arguments.input->serviceId : QByteArray();
 	const QString version = arguments.input->version.has_value() ? *arguments.input->version : QString();
-	const QString path = arguments.input->path.has_value() ? *arguments.input->path : QString();
+	const QStringList archiveUrls = arguments.input->urls.has_value() ? arguments.input->urls->ToList() : QStringList();
 
 	QString startError;
-	if (!m_serviceVersionInstallerCompPtr->StartServiceVersionUpdate(serviceId, version, path, startError)){
+	if (!m_serviceVersionInstallerCompPtr->StartServiceVersionUpdate(serviceId, version, archiveUrls, startError)){
 		errorMessage = QString("Unable to update the service '%1' to the version '%2'. Error: %3")
 					.arg(QString::fromUtf8(serviceId), version, startError);
 		SendErrorMessage(0, errorMessage, "CServiceControllerComp");

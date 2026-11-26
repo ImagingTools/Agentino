@@ -178,12 +178,16 @@ The main window consists of:
     confirmation) removes the selected versions from the list; their folders
     on the server are kept. **Install** opens a dialog
     with the approved agents to install the version on (check boxes and
-    **Select all**). The **Install** button of the dialog sends the path of
-    the version folder to the chosen agents; each agent updates every
-    service of the version's type it runs: it downloads the archive of the
-    version (the `*.zip` files of the version folder) from the server into
-    the folder of the service executable (**Path** on the *Information* tab
-    of the service), stops the service, unpacks the archive there (an
+    **Select all**). The **Install** button of the dialog sends the chosen
+    agents the URLs of the version archives: the `*.zip` files of the
+    version folder, which the server serves over HTTP at
+    `http://<server>:<HTTP port>/Agentino/ServiceVersions/<version ID>/<file name>`
+    (to approved agents only); each agent updates every service of the
+    version's type it runs: it downloads the archives by these URLs over
+    HTTP into the folder of the service executable (**Path** on the
+    *Information* tab of the service; if the server knows itself as
+    `localhost`, the agent takes the server address from its own connection
+    settings), stops the service, unpacks the archive there (an
     archive holding a single folder with the executable is unpacked from
     inside that folder; a file in use, e.g. a plugin loaded by the agent,
     is renamed to `<name>.old` first), starts the service, removes the
