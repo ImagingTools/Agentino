@@ -376,26 +376,64 @@ QtObject {
 		let previousParents = oldParentIds ? oldParentIds : {}
 		root.performAction({
 			"run": function(done){ root.opMoveNodes(viewId, ids, targetId, done) },
-			"undo": function(done){
-				// Nodes are returned to their previous groups, one request per group.
-				let byParent = {}
-				for (let i = 0; i < ids.length; ++i){
-					let previousId = previousParents[ids[i]] ? "" + previousParents[ids[i]] : ""
-					if (!byParent[previousId]){
-						byParent[previousId] = []
-					}
-					byParent[previousId].push(ids[i])
-				}
-				let steps = []
-				for (let previousId in byParent){
-					let groupIds = byParent[previousId]
-					let groupId = previousId
-					steps.push(function(next){ root.opMoveNodes(viewId, groupIds, groupId, next) })
-				}
-				root.runSteps(steps, done)
-			},
+			"undo": function(done){ root.moveNodesBack(viewId, ids, previousParents, done) },
 			"redo": function(done){ root.opMoveNodes(viewId, ids, targetId, done) }
 		})
+	}
+
+	// Returns the nodes to their previous groups ({nodeId: group or ""}), one request per group.
+	function moveNodesBack(viewId, ids, previousParents, done) {
+		let byParent = {}
+		for (let i = 0; i < ids.length; ++i){
+			let previousId = previousParents[ids[i]] ? "" + previousParents[ids[i]] : ""
+			if (!byParent[previousId]){
+				byParent[previousId] = []
+			}
+			byParent[previousId].push(ids[i])
+		}
+		let steps = []
+		for (let previousId in byParent){
+			let groupIds = byParent[previousId]
+			let groupId = previousId
+			steps.push(function(next){ root.opMoveNodes(viewId, groupIds, groupId, next) })
+		}
+		root.runSteps(steps, done)
+	}
+
+	// Creates a group and moves the nodes into it ("Add to group" when there is no group to add them to);
+	// one step of the history. oldParentIds: {nodeId: previous group of the node or ""} to undo the move.
+	function createGroupWithNodes(name, parentId, x, y, nodeIds, oldParentIds) {
+		let viewId = root.viewId
+		let groupName = "" + name
+		let groupParentId = parentId ? "" + parentId : ""
+		let ids = nodeIds.slice()
+		let previousParents = oldParentIds ? oldParentIds : {}
+		let action = {"groupId": ""}
+		action.run = function(done){
+			root.opCreateGroup(viewId, "", groupName, groupParentId, x, y, function(ok, groupId){
+				if (!ok){
+					done(false)
+					return
+				}
+				action.groupId = "" + groupId
+				root.groupCreated(action.groupId)
+				root.opMoveNodes(viewId, ids, action.groupId, done)
+			})
+		}
+		// The nodes are returned first, then the empty group is removed.
+		action.undo = function(done){
+			root.runSteps([
+				function(next){ root.moveNodesBack(viewId, ids, previousParents, next) },
+				function(next){ root.opRemoveGroup(action.groupId, next) }
+			], done)
+		}
+		action.redo = function(done){
+			root.runSteps([
+				function(next){ root.opCreateGroup(viewId, action.groupId, groupName, groupParentId, x, y, next) },
+				function(next){ root.opMoveNodes(viewId, ids, action.groupId, next) }
+			], done)
+		}
+		root.performAction(action)
 	}
 
 	// info: {name, parentId, x, y, memberIds} of the group, used to recreate it on undo.
@@ -416,6 +454,45 @@ QtObject {
 				root.runSteps(steps, done)
 			},
 			"redo": function(done){ root.opRemoveGroup(id, done) }
+		})
+	}
+
+	// Ungroup: removes the groups (their members are moved one level up by the server) as one step of
+	// the history. infos: [{name, parentId, x, y, memberIds}] of the groups, used to recreate them on undo.
+	function removeGroups(groupIds, infos) {
+		let viewId = root.viewId
+		let ids = []
+		let groupInfos = []
+		for (let i = 0; i < groupIds.length; ++i){
+			ids.push("" + groupIds[i])
+			groupInfos.push(infos && infos[i] ? infos[i] : {"name": "", "parentId": "", "x": 0, "y": 0, "memberIds": []})
+		}
+		let removeAll = function(done){
+			let steps = []
+			for (let i = 0; i < ids.length; ++i){
+				let id = ids[i]
+				steps.push(function(next){ root.opRemoveGroup(id, next) })
+			}
+			root.runSteps(steps, done)
+		}
+		root.performAction({
+			"run": removeAll,
+			"undo": function(done){
+				// The groups are recreated with the same IDs, their content is moved back into them.
+				let steps = []
+				for (let i = ids.length - 1; i >= 0; --i){
+					let id = ids[i]
+					let groupInfo = groupInfos[i]
+					steps.push(function(next){
+						root.opCreateGroup(viewId, id, groupInfo.name, groupInfo.parentId, groupInfo.x, groupInfo.y, next)
+					})
+					if (groupInfo.memberIds.length > 0){
+						steps.push(function(next){ root.opMoveNodes(viewId, groupInfo.memberIds, id, next) })
+					}
+				}
+				root.runSteps(steps, done)
+			},
+			"redo": removeAll
 		})
 	}
 

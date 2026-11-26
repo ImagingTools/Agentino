@@ -20,6 +20,7 @@
                 <Element ComponentName="CommandsController" X="575" Y="75" Note=""/>
                 <Element ComponentName="NewGroup" X="200" Y="500" Note=""/>
                 <Element ComponentName="RemoveFromGroup" X="200" Y="750" Note=""/>
+                <Element ComponentName="Ungroup" X="200" Y="1000" Note=""/>
                 <Element ComponentName="Rename" X="200" Y="875" Note=""/>
                 <Element ComponentName="RemoveService" X="575" Y="500" Note=""/>
                 <Element ComponentName="AddToView" X="575" Y="625" Note=""/>
