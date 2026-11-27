@@ -20,6 +20,7 @@
 
 // ImtCore includes
 #include <imtbase/IObjectCollection.h>
+#include <imtclientgql/IGqlClient.h>
 #include <imtcom/IServerConnectionInterface.h>
 #include <imtfile/IFileCompression.h>
 
@@ -51,8 +52,10 @@ namespace agentgql
 	4. starts the service;
 	5. removes the archives and sets the version of the service (IServiceInfo::GetServiceVersion), so the
 	   server counts the installation of the version.
-	The result is reported to the log of the agent. A failed update removes the downloaded files and starts
-	the service again if it was running.
+	The result is reported to the log of the agent and to the server (ReportServiceVersionInstallation of
+	Updates.sdl, sent over the WebSocket client of the agent with the ID of the installation the server sent):
+	the page of the server shows the progress of the installation with it. A failed update removes the
+	downloaded files and starts the service again if it was running.
 
 	A URL without a host (path only) is resolved against the HTTP address of the server the agent is
 	connected to (ServerConnection); a URL whose host is a loopback or unspecified address (the server
@@ -72,7 +75,8 @@ public:
 
 	I_BEGIN_COMPONENT(CServiceVersionInstallerComp);
 		I_REGISTER_INTERFACE(IServiceVersionInstaller);
-		I_ASSIGN(m_clientIdCompPtr, "ClientIdParam", "Agent client-ID (sent as header clientid of the downloads)", true, "ClientIdParam");
+		I_ASSIGN(m_clientIdCompPtr, "ClientIdParam", "Agent client-ID (sent as header clientid of the downloads and of the reports)", true, "ClientIdParam");
+		I_ASSIGN(m_gqlClientCompPtr, "GqlClient", "WebSocket client connected to the server: the results of the updates are reported with it", false, "GqlClient");
 		I_ASSIGN(m_serverConnectionCompPtr, "ServerConnection", "Addresses of the server: a URL of an archive without a host is resolved against its HTTP address", false, "ServerConnection");
 		I_ASSIGN(m_serviceCollectionCompPtr, "ServiceCollection", "Services of the agent", true, "ServiceCollection");
 		I_ASSIGN(m_serviceControllerCompPtr, "ServiceController", "Stops and starts the services", true, "ServiceController");
@@ -86,6 +90,7 @@ public:
 				const QByteArray& serviceId,
 				const QString& version,
 				const QStringList& archiveUrls,
+				const QByteArray& installationId,
 				QString& errorMessage) override;
 
 protected:
@@ -112,6 +117,8 @@ private:
 		QByteArray serviceId;
 		QString serviceName;
 		QString version;
+		// ID of the installation on the server (the result is reported with it)
+		QByteArray installationId;
 		QList<Archive> archives;
 		// Folder of the executable of the service
 		QString serviceFolder;
@@ -175,6 +182,11 @@ private:
 	void FinishUpdate();
 
 	/**
+		Report the result of the current update to the server (ReportServiceVersionInstallation).
+	*/
+	void ReportResult(bool succeeded, const QString& message);
+
+	/**
 		Get the URL of an archive sent by the server (see the class description) and the name of its file.
 	*/
 	bool ResolveArchiveUrl(const QString& urlText, QUrl& url, QString& fileName, QString& errorMessage) const;
@@ -225,6 +237,7 @@ private:
 
 private:
 	I_REF(iprm::ITextParam, m_clientIdCompPtr);
+	I_REF(imtclientgql::IGqlClient, m_gqlClientCompPtr);
 	I_REF(imtcom::IServerConnectionInterface, m_serverConnectionCompPtr);
 	I_REF(imtbase::IObjectCollection, m_serviceCollectionCompPtr);
 	I_REF(agentinodata::IServiceController, m_serviceControllerCompPtr);

@@ -1531,8 +1531,20 @@
         <translation>Версия %1 не установлена на %2: %3</translation>
     </message>
     <message>
-        <source>The installation of the version %1 has started on %2</source>
-        <translation>Установка версии %1 начата на %2</translation>
+        <source>The installation of the version %1 has started</source>
+        <translation>Установка версии %1 начата</translation>
+    </message>
+    <message>
+        <source>All agents have been updated to the version %1</source>
+        <translation>Все агенты обновлены до версии %1</translation>
+    </message>
+    <message>
+        <source>The version %1 is installed on %2 of %3 agents</source>
+        <translation>Версия %1 установлена на %2 из %3 агентов</translation>
+    </message>
+    <message>
+        <source>The state of the installation is not known: %1</source>
+        <translation>Состояние установки неизвестно: %1</translation>
     </message>
     <message>
         <source>The version %1 is not installed on any agent</source>
@@ -1544,6 +1556,13 @@
     <message>
         <source>Deleting a service version</source>
         <translation>Удаление версии сервиса</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionInstallationPopup</name>
+    <message>
+        <source>Installation of the version %1</source>
+        <translation>Установка версии %1</translation>
     </message>
 </context>
 <context>

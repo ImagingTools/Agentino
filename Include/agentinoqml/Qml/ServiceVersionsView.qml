@@ -25,7 +25,9 @@ import agentinoUpdatesSdl 1.0
 // server sends the URLs of the archives (*.zip) of the folder of the version to them
 // (InstallServiceVersion) and each agent updates its services of the type of the version: it downloads
 // the archives over HTTP into the folder of the executable of the service, stops the service, unpacks
-// the archives, starts the service and removes the archives.
+// the archives, starts the service, removes the archives and reports the result to the server. The
+// popup of the installation (ServiceVersionInstallationPopup) follows it on the agents until it has
+// ended on all of them (GetServiceVersionInstallation).
 ViewBase {
 	id: serviceVersionsView
 
@@ -288,9 +290,10 @@ ViewBase {
 		installVersionRequestSender.send(installVersionInput)
 	}
 
-	// The services the installation was started on, and why it was not on the others.
-	function showInstallationResult(version, installations){
-		let started = []
+	// Why the installation was not started on some agents; the agents it was started on are followed in a
+	// popup until the installation has ended on all of them (installationProgressComp).
+	function showInstallationResult(installationId, version, installations){
+		let startedCount = 0
 		let count = installations && installations.count !== undefined ? installations.count : 0
 		for (let i = 0; i < count; ++i){
 			let installation = installations.get(i).item
@@ -298,22 +301,272 @@ ViewBase {
 				continue
 			}
 
-			let agentName = installation.m_agentName ? String(installation.m_agentName) : String(installation.m_agentId)
 			if (installation.m_started === true){
-				started.push(installation.m_serviceName ? agentName + " (" + String(installation.m_serviceName) + ")" : agentName)
+				startedCount++
 			}
 			else{
+				let agentName = installation.m_agentName ? String(installation.m_agentName) : String(installation.m_agentId)
 				PopupManager.addWarningMessage(qsTr("The version %1 is not installed on %2: %3")
 											   .arg(version).arg(agentName).arg(installation.m_message ? String(installation.m_message) : ""), true)
 			}
 		}
 
-		if (started.length > 0){
-			PopupManager.addSuccessMessage(qsTr("The installation of the version %1 has started on %2").arg(version).arg(started.join(", ")), true)
+		if (startedCount > 0 && installationId !== ""){
+			let progress = installationProgressComp.createObject(serviceVersionsView, {
+				"installationId": installationId,
+				"version": version
+			})
+			progress.update(installations)
+		}
+		else if (startedCount > 0){
+			// A server without the installation tracker: the progress is not known.
+			PopupManager.addSuccessMessage(qsTr("The installation of the version %1 has started").arg(version), true)
 		}
 		else if (count === 0){
 			PopupManager.addWarningMessage(qsTr("The version %1 is not installed on any agent").arg(version), true)
 		}
+	}
+
+	// An installation followed until it has ended on every agent: its popup (ServiceVersionInstallationPopup)
+	// lists the agents with their states; the state is requested from the server every few seconds
+	// (GetServiceVersionInstallation). When every agent has been updated, the popup says so and closes.
+	// Created with a parent (see the smart objects of JQML), destroyed when its popup is closed.
+	Component {
+		id: installationProgressComp
+
+		Item {
+			id: installationProgress
+
+			property string installationId: ""
+			property string version: ""
+			// Rows of the popup: {agentId, agentName, state, message} - an agent with several services of the
+			// type has the state of all of them (failed if one has failed, running while one runs)
+			property ListModel agents: ListModel {}
+			property bool finished: false
+			property string resultText: ""
+			property bool requestPending: false
+			// Failed requests in a row (the server is not reachable, the installation is unknown)
+			property int failedRequestCount: 0
+
+			readonly property string messageId: "ServiceVersionInstallation_" + installationProgress.installationId
+			readonly property int maxFailedRequestCount: 10
+
+			property ServiceVersionInstallationInput installationInput: ServiceVersionInstallationInput {}
+
+			function showPopup(){
+				PopupManager.addCustomMessage(installationProgress.messageId, installationPopupComp, {"progress": installationProgress})
+			}
+
+			// installations: the BaseModel of InstallServiceVersionPayload (m_installations)
+			function update(installations){
+				let states = {}
+				let order = []
+				let count = installations && installations.count !== undefined ? installations.count : 0
+				for (let i = 0; i < count; ++i){
+					let installation = installations.get(i).item
+					if (!installation || installation.m_started !== true){
+						continue
+					}
+
+					let agentId = String(installation.m_agentId)
+					if (!states.hasOwnProperty(agentId)){
+						states[agentId] = {
+							"agentId": agentId,
+							"agentName": installation.m_agentName ? String(installation.m_agentName) : agentId,
+							"state": "Succeeded",
+							"message": ""
+						}
+						order.push(agentId)
+					}
+
+					let agentState = states[agentId]
+					let state = installation.m_state ? String(installation.m_state) : "Running"
+					if (state === "Failed"){
+						let message = installation.m_message ? String(installation.m_message) : ""
+						if (count > 1 && installation.m_serviceName){
+							message = String(installation.m_serviceName) + ": " + message
+						}
+
+						agentState.message = agentState.message !== "" ? agentState.message + "\n" + message : message
+						agentState.state = "Failed"
+					}
+					else if (state === "Running" && agentState.state !== "Failed"){
+						agentState.state = "Running"
+					}
+				}
+
+				for (let j = 0; j < order.length; ++j){
+					let row = states[order[j]]
+					if (j < installationProgress.agents.count){
+						installationProgress.agents.setProperty(j, "agentId", row.agentId)
+						installationProgress.agents.setProperty(j, "agentName", row.agentName)
+						installationProgress.agents.setProperty(j, "state", row.state)
+						installationProgress.agents.setProperty(j, "message", row.message)
+					}
+					else{
+						installationProgress.agents.append(row)
+					}
+				}
+
+				let runningCount = 0
+				let failedCount = 0
+				for (let k = 0; k < order.length; ++k){
+					if (states[order[k]].state === "Running"){
+						runningCount++
+					}
+					else if (states[order[k]].state === "Failed"){
+						failedCount++
+					}
+				}
+
+				if (runningCount === 0){
+					installationProgress.finish(order.length, failedCount)
+				}
+				else if (!PopupManager.messageIsOpened(installationProgress.messageId)){
+					// Shown again if other messages have pushed it out of the popup container.
+					installationProgress.showPopup()
+				}
+			}
+
+			function finish(agentCount, failedCount){
+				if (installationProgress.finished){
+					return
+				}
+
+				if (failedCount === 0){
+					installationProgress.resultText = qsTr("All agents have been updated to the version %1").arg(installationProgress.version)
+				}
+				else{
+					installationProgress.resultText = qsTr("The version %1 is installed on %2 of %3 agents")
+							.arg(installationProgress.version).arg(agentCount - failedCount).arg(agentCount)
+				}
+
+				installationProgress.finished = true
+
+				if (!PopupManager.messageIsOpened(installationProgress.messageId)){
+					installationProgress.showPopup()
+				}
+
+				// Every agent has been updated: the popup closes after the result was shown; otherwise it is
+				// closed by its close button.
+				if (failedCount === 0){
+					closeTimer.start()
+				}
+				else{
+					closedCheckTimer.start()
+				}
+			}
+
+			// The state is not known any more: the popup can be closed.
+			function stopFollowing(message){
+				if (installationProgress.finished){
+					return
+				}
+
+				installationProgress.resultText = message
+				installationProgress.finished = true
+
+				if (!PopupManager.messageIsOpened(installationProgress.messageId)){
+					installationProgress.showPopup()
+				}
+
+				closedCheckTimer.start()
+			}
+
+			function requestState(){
+				if (installationProgress.requestPending || installationProgress.finished){
+					return
+				}
+
+				installationProgress.requestPending = true
+				installationProgress.installationInput.m_installationId = installationProgress.installationId
+				stateRequestSender.send(installationProgress.installationInput)
+			}
+
+			Component.onCompleted: {
+				installationProgress.showPopup()
+			}
+
+			// The popup shows this object: it goes with it (e.g. the tab of the versions is closed).
+			Component.onDestruction: {
+				PopupManager.closeMessage(installationProgress.messageId)
+			}
+
+			Timer {
+				id: pollTimer
+
+				interval: 2000
+				repeat: true
+				running: !installationProgress.finished
+
+				onTriggered: {
+					installationProgress.requestState()
+				}
+			}
+
+			Timer {
+				id: closeTimer
+
+				interval: 3000
+
+				onTriggered: {
+					PopupManager.closeMessage(installationProgress.messageId)
+					installationProgress.destroy()
+				}
+			}
+
+			// An ended installation is forgotten when its popup has been closed.
+			Timer {
+				id: closedCheckTimer
+
+				interval: 1000
+				repeat: true
+
+				onTriggered: {
+					if (!PopupManager.messageIsOpened(installationProgress.messageId)){
+						closedCheckTimer.stop()
+						installationProgress.destroy()
+					}
+				}
+			}
+
+			GqlSdlRequestSender {
+				id: stateRequestSender
+
+				// Wire name (same as AgentinoUpdatesSdlCommandIds) - a string literal so JQML
+				// never starts a send with an unresolved singleton property.
+				gqlCommandId: "GetServiceVersionInstallation"
+
+				sdlObjectComp: Component {
+					InstallServiceVersionPayload {
+						onFinished: {
+							installationProgress.failedRequestCount = 0
+							installationProgress.update(hasInstallations() ? m_installations : null)
+						}
+					}
+				}
+
+				// A failed request is repeated by the next poll, without a popup of its own.
+				function onError(message, type){
+					installationProgress.failedRequestCount++
+					if (installationProgress.failedRequestCount >= installationProgress.maxFailedRequestCount){
+						installationProgress.stopFollowing(qsTr("The state of the installation is not known: %1").arg(message))
+					}
+
+					stateRequestSender.finished(-1)
+				}
+
+				onFinished: {
+					installationProgress.requestPending = false
+				}
+			}
+		}
+	}
+
+	Component {
+		id: installationPopupComp
+
+		ServiceVersionInstallationPopup {}
 	}
 
 	property InstallServiceVersionInput installVersionInput: InstallServiceVersionInput {}
@@ -339,7 +592,8 @@ ViewBase {
 		sdlObjectComp: Component {
 			InstallServiceVersionPayload {
 				onFinished: {
-					serviceVersionsView.showInstallationResult(m_version ? String(m_version) : "",
+					serviceVersionsView.showInstallationResult(m_installationId ? String(m_installationId) : "",
+															   m_version ? String(m_version) : "",
 															   hasInstallations() ? m_installations : null)
 				}
 			}

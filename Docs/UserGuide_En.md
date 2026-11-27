@@ -192,10 +192,18 @@ The main window consists of:
     inside that folder; a file in use, e.g. a plugin loaded by the agent,
     is renamed to `<name>.old` first), starts the service, removes the
     archive and sets the service version to the installed one. A
-    notification lists the services the installation started on and the
-    agents it did not (another operating system family, no service of the
-    type, agent not approved); the agent reports the result to its log. If
-    the update fails the downloaded archive is removed and a service stopped
+    warning lists each agent the installation did not start on (another
+    operating system family, no service of the type, agent not approved).
+    The progress on the other agents is shown in a popup in the bottom
+    right corner: the list of the agents with a loading indicator next to
+    each while the agent installs the version, then a success icon (or an
+    error icon with the reason). The popup stays open until the
+    installation has ended on every agent; when all agents have been
+    updated it says so and closes by itself. If the installation failed on
+    some agents, the popup shows on how many agents the version is
+    installed and is closed with its button. The agent reports the result
+    to the server and to its log; an agent that has not reported within an
+    hour counts as not updated. If the update fails the downloaded archive is removed and a service stopped
     for it is started again. Requires the *View Services* right.
 * **The command panel** (toolbar) above the work area: New, Edit, Remove,
   Start, Stop, Approve, etc. The set of commands depends on the page, and

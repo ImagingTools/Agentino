@@ -78,6 +78,9 @@
                     <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="ServerConnectionInterface">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ServiceVersionInstallationTracker" Type="Reference" ExportId="ServiceVersionInstallationTracker">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="ServiceCompositeInfo">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
@@ -603,10 +606,15 @@
                                             <Value>GetServiceVersionFolder</Value>
                                             <Value>SetServiceVersionFolder</Value>
                                             <Value>InstallServiceVersion</Value>
+                                            <Value>GetServiceVersionInstallation</Value>
+                                            <Value>ReportServiceVersionInstallation</Value>
                                         </Values>
                                     </Data>
                                 </AttributeInfo>
                                 <AttributeInfo Id="EnrollmentController" Type="Reference" ExportId="EnrollmentController">
+                                    <Data IsEnabled="false"/>
+                                </AttributeInfo>
+                                <AttributeInfo Id="InstallationTracker" Type="Reference" ExportId="ServiceVersionInstallationTracker">
                                     <Data IsEnabled="false"/>
                                 </AttributeInfo>
                                 <AttributeInfo Id="Log" Type="Reference" ExportId="Log">

@@ -147,6 +147,9 @@
                     <AttributeInfo Id="ServiceSynchronizer" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServiceControllerProxy"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ServiceVersionInstallationTracker" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServiceVersionInstallationTracker"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="SuperuserProvider" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="SuperuserProvider"/>
                     </AttributeInfo>
@@ -480,6 +483,18 @@
                     </AttributeInfo>
                     <AttributeInfo Id="TranslationManager" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="AgentinoLocalization"/>
+                    </AttributeInfo>
+                </AttributeInfoMap>
+            </Data>
+        </Element>
+        <Element Id="ServiceVersionInstallationTracker" PackageId="AgentinoGqlPck" ComponentId="ServiceVersionInstallationTracker">
+            <Data IsEnabled="true" Flags="0">
+                <AttributeInfoMap>
+                    <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
+                    <AttributeInfo Id="TracingConfiguration" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="ServerSettings/TracingConfiguration"/>
                     </AttributeInfo>
                 </AttributeInfoMap>
             </Data>

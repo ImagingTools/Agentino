@@ -3394,8 +3394,20 @@
         <translation>Version %1 installeras inte på %2: %3</translation>
     </message>
     <message>
-        <source>The installation of the version %1 has started on %2</source>
-        <translation>Installationen av version %1 har startat på %2</translation>
+        <source>The installation of the version %1 has started</source>
+        <translation>Installationen av version %1 har startat</translation>
+    </message>
+    <message>
+        <source>All agents have been updated to the version %1</source>
+        <translation>Alla agenter har uppdaterats till version %1</translation>
+    </message>
+    <message>
+        <source>The version %1 is installed on %2 of %3 agents</source>
+        <translation>Version %1 är installerad på %2 av %3 agenter</translation>
+    </message>
+    <message>
+        <source>The state of the installation is not known: %1</source>
+        <translation>Installationens status är okänd: %1</translation>
     </message>
     <message>
         <source>The version %1 is not installed on any agent</source>
@@ -3407,6 +3419,13 @@
     <message>
         <source>Deleting a service version</source>
         <translation>Ta bort en tjänstversion</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionInstallationPopup</name>
+    <message>
+        <source>Installation of the version %1</source>
+        <translation>Installation av version %1</translation>
     </message>
 </context>
 <context>

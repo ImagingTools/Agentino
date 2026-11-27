@@ -3358,8 +3358,20 @@
         <translation>バージョン %1 は %2 にインストールされません: %3</translation>
     </message>
     <message>
-        <source>The installation of the version %1 has started on %2</source>
-        <translation>バージョン %1 のインストールを %2 で開始しました</translation>
+        <source>The installation of the version %1 has started</source>
+        <translation>バージョン %1 のインストールを開始しました</translation>
+    </message>
+    <message>
+        <source>All agents have been updated to the version %1</source>
+        <translation>すべてのエージェントがバージョン %1 に更新されました</translation>
+    </message>
+    <message>
+        <source>The version %1 is installed on %2 of %3 agents</source>
+        <translation>バージョン %1 は %3 台中 %2 台のエージェントにインストールされています</translation>
+    </message>
+    <message>
+        <source>The state of the installation is not known: %1</source>
+        <translation>インストールの状態が不明です: %1</translation>
     </message>
     <message>
         <source>The version %1 is not installed on any agent</source>
@@ -3371,6 +3383,13 @@
     <message>
         <source>Deleting a service version</source>
         <translation>サービスバージョンの削除</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionInstallationPopup</name>
+    <message>
+        <source>Installation of the version %1</source>
+        <translation>バージョン %1 のインストール</translation>
     </message>
 </context>
 <context>

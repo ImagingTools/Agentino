@@ -18,6 +18,7 @@
 #include <agentinogql/CAgentChangeObserverComp.h>
 #include <agentinogql/CTopologyControllerComp.h>
 #include <agentinogql/CServiceUpdateControllerComp.h>
+#include <agentinogql/CServiceVersionInstallationTrackerComp.h>
 #include <agentinogql/CServiceVersionCollectionControllerComp.h>
 #include <agentinogql/CServiceCollectionSubscriberControllerComp.h>
 #include <agentinogql/CMirroredServiceCollectionControllerComp.h>
@@ -46,6 +47,7 @@ typedef agentinogql::CAgentCollectionControllerComp AgentCollectionController;
 typedef icomp::TModelCompWrap<agentinogql::CAgentChangeObserverComp> AgentChangeObserver;
 typedef agentinogql::CTopologyControllerComp TopologyController;
 typedef agentinogql::CServiceUpdateControllerComp ServiceUpdateController;
+typedef agentinogql::CServiceVersionInstallationTrackerComp ServiceVersionInstallationTracker;
 typedef agentinogql::CServiceVersionCollectionControllerComp ServiceVersionCollectionController;
 typedef agentinogql::CServiceCollectionSubscriberControllerComp ServiceCollectionSubscriberController;
 typedef agentinogql::CMirroredServiceCollectionControllerComp MirroredServiceCollectionController;

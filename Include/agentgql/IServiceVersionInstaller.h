@@ -31,6 +31,8 @@ public:
 		\param version		the version, e.g. "1.0.0.513".
 		\param archiveUrls	URLs of the archives (*.zip) of the version on the server. A URL without a host
 							(path only) is resolved against the HTTP address of the server.
+		\param installationId	ID of the installation on the server: the result of the update is reported to the
+								server with it (ReportServiceVersionInstallation); empty: not reported.
 		\param errorMessage	why the update cannot be started.
 		\return true if the update was started.
 	*/
@@ -38,6 +40,7 @@ public:
 				const QByteArray& serviceId,
 				const QString& version,
 				const QStringList& archiveUrls,
+				const QByteArray& installationId,
 				QString& errorMessage) = 0;
 };
 
