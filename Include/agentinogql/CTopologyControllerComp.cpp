@@ -54,6 +54,7 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 	
 	QList<sdl::V1_0::agentino::CService> services;
 	QList<sdl::V1_0::agentino::CTopologyNodeInfo> availableServices;
+	QList<sdl::V1_0::agentino::CService> availableServiceNodes;
 
 	sdl::V1_0::agentino::GetTopologyRequestArguments arguments = getTopologyRequest.GetRequestedArguments();
 	const QByteArray viewId = (arguments.input.has_value() && arguments.input->viewId.has_value()) ? *arguments.input->viewId : QByteArray();
@@ -128,26 +129,32 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 						continue;
 					}
 
-					// A user-defined view shows only the services added to it.
-					if (!isAgentsView && !view.GetNodeIds().contains(serviceElementId)){
+					// A user-defined view shows only the services added to it. The other services are listed as
+					// available ones; their nodes are sent as well, so that the client can add them to its draft.
+					const bool isInView = isAgentsView || view.GetNodeIds().contains(serviceElementId);
+					if (!isInView){
 						sdl::V1_0::agentino::CTopologyNodeInfo availableService;
 						availableService.id = serviceElementId;
 						availableService.name = serviceInfoPtr->GetServiceName() + "@" + agentName;
 
 						availableServices << availableService;
-
-						continue;
 					}
-					
+
 					sdl::V1_0::agentino::CService service;
-					
+
 					service.id = serviceElementId;
 					service.agentId = elementId;
 					service.nodeType = sdl::V1_0::agentino::TopologyNodeType::SERVICE;
 					service.isComposite = false;
 
-					const QByteArray parentGroupId = FindParentGroupId(serviceElementId, groups);
-					service.parentId = (parentGroupId.isEmpty() && isAgentsView) ? elementId : parentGroupId;
+					if (isInView){
+						const QByteArray parentGroupId = FindParentGroupId(serviceElementId, groups);
+						service.parentId = (parentGroupId.isEmpty() && isAgentsView) ? elementId : parentGroupId;
+					}
+					else{
+						// Added to the view, the service is placed at the root level.
+						service.parentId = QByteArray();
+					}
 					
 					QPoint point;
 					if (isAgentsView){
@@ -235,8 +242,13 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 					
 					service.links.Emplace();
 					service.links->FromList(linkList);
-					
-					services << service;
+
+					if (isInView){
+						services << service;
+					}
+					else{
+						availableServiceNodes << service;
+					}
 				}
 			}
 		}
@@ -274,6 +286,9 @@ sdl::V1_0::agentino::CTopology CTopologyControllerComp::OnGetTopology(
 
 	response.availableServices.Emplace();
 	response.availableServices->FromList(availableServices);
+
+	response.availableServiceNodes.Emplace();
+	response.availableServiceNodes->FromList(availableServiceNodes);
 
 	return response;
 }
@@ -314,14 +329,61 @@ sdl::V1_0::agentino::CSaveTopologyResponse CTopologyControllerComp::OnSaveTopolo
 	// are stored in the view (the same service has different positions in different views).
 	const QByteArray viewId = arguments.input->viewId.has_value() ? *arguments.input->viewId : QByteArray();
 	agentinodata::CTopologyView view;
-	TopologyGroupMap viewGroups;
-	if (!viewId.isEmpty()){
-		if (!GetTopologyView(viewId, view)){
-			errorMessage = QString("Unable to save topology. Error: View '%1' does not exist").arg(QString::fromUtf8(viewId));
+	if (!viewId.isEmpty() && !GetTopologyView(viewId, view)){
+		errorMessage = QString("Unable to save topology. Error: View '%1' does not exist").arg(QString::fromUtf8(viewId));
+		SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+		return response;
+	}
+
+	// The client edits the view locally and saves its whole state at once: the groups (and the services
+	// of a user-defined view) are replaced first, then the positions of all nodes are stored.
+	if (arguments.input->groups.has_value()){
+		QList<TopologyGroupState> groupStates;
+
+		istd::TNullableValue<imtsdl::TElementList<sdl::V1_0::agentino::CTopologyGroupInput>> groupList = *arguments.input->groups;
+		for (const istd::TNullableValue<sdl::V1_0::agentino::CTopologyGroupInput>& groupInput : *groupList.GetPtr()){
+			if (!groupInput.has_value()
+						|| !groupInput->id.has_value() || groupInput->id->isEmpty()
+						|| !groupInput->name.has_value() || groupInput->name->trimmed().isEmpty()){
+				errorMessage = QString("Unable to save topology. Error: Group is missing required fields (id, name)");
+				SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+				return response;
+			}
+
+			TopologyGroupState groupState;
+			groupState.id = *groupInput->id;
+			groupState.name = groupInput->name->trimmed();
+			groupState.position.SetX(groupInput->x.has_value() ? qRound(*groupInput->x) : 0);
+			groupState.position.SetY(groupInput->y.has_value() ? qRound(*groupInput->y) : 0);
+			if (groupInput->memberIds.has_value()){
+				groupState.memberIds = (*groupInput->memberIds).ToList();
+			}
+
+			groupStates << groupState;
+		}
+
+		QByteArrayList viewNodeIds;
+		const bool hasViewNodeIds = !viewId.isEmpty() && arguments.input->nodeIds.has_value();
+		if (hasViewNodeIds){
+			viewNodeIds = (*arguments.input->nodeIds).ToList();
+		}
+
+		if (!SaveTopologyViewState(viewId, groupStates, hasViewNodeIds ? &viewNodeIds : nullptr, errorMessage)){
+			errorMessage = QString("Unable to save topology. Error: %1").arg(errorMessage);
 			SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
 			return response;
 		}
 
+		// The view was changed (groups, services).
+		if (!viewId.isEmpty() && !GetTopologyView(viewId, view)){
+			errorMessage = QString("Unable to save topology. Error: View '%1' does not exist").arg(QString::fromUtf8(viewId));
+			SendErrorMessage(0, errorMessage, "CTopologyControllerComp");
+			return response;
+		}
+	}
+
+	TopologyGroupMap viewGroups;
+	if (!viewId.isEmpty()){
 		viewGroups = GetTopologyGroups(viewId);
 	}
 
@@ -1063,6 +1125,161 @@ sdl::V1_0::agentino::CTopologyGroupResponse CTopologyControllerComp::OnRestoreTo
 	response.successful = true;
 
 	return response;
+}
+
+
+bool CTopologyControllerComp::SaveTopologyViewState(
+			const QByteArray& viewId,
+			const QList<TopologyGroupState>& groupStates,
+			const QByteArrayList* viewNodeIdsPtr,
+			QString& errorMessage) const
+{
+	agentinodata::CTopologyView view;
+	if (!viewId.isEmpty() && !GetTopologyView(viewId, view)){
+		errorMessage = QString("View '%1' does not exist").arg(QString::fromUtf8(viewId));
+		return false;
+	}
+
+	const TopologyGroupMap currentGroups = GetTopologyGroups(viewId);
+	const imtbase::ICollectionInfo::Ids elementIds = m_topologyCollectionCompPtr->GetElementIds();
+
+	// Members of the groups of a user-defined view are its services (and its groups).
+	QSet<QByteArray> viewServiceIds;
+	if (!viewId.isEmpty()){
+		const QByteArrayList serviceIds = (viewNodeIdsPtr != nullptr) ? *viewNodeIdsPtr : view.GetNodeIds();
+		for (const QByteArray& serviceId : serviceIds){
+			viewServiceIds.insert(serviceId);
+		}
+	}
+
+	QSet<QByteArray> groupIds;
+	for (const TopologyGroupState& groupState : groupStates){
+		if (groupIds.contains(groupState.id)){
+			errorMessage = QString("Group '%1' is listed twice").arg(groupState.name);
+			return false;
+		}
+
+		// A new group must not take the ID of another element (e.g. of a group of another view).
+		if (!currentGroups.contains(groupState.id) && elementIds.contains(groupState.id)){
+			errorMessage = QString("Element '%1' already exists").arg(QString::fromUtf8(groupState.id));
+			return false;
+		}
+
+		groupIds.insert(groupState.id);
+	}
+
+	// A node belongs to one group only.
+	QMap<QByteArray, QByteArray> parentGroupIds;
+	QList<QByteArrayList> groupMemberIds;
+	for (const TopologyGroupState& groupState : groupStates){
+		QByteArrayList memberIds;
+		for (const QByteArray& memberId : groupState.memberIds){
+			if (memberId.isEmpty() || memberId == groupState.id){
+				errorMessage = QString("Group '%1' has an invalid member").arg(groupState.name);
+				return false;
+			}
+
+			if (parentGroupIds.contains(memberId)){
+				errorMessage = QString("Node '%1' belongs to several groups").arg(QString::fromUtf8(memberId));
+				return false;
+			}
+
+			const bool isGroup = groupIds.contains(memberId);
+			if (!isGroup && m_topologyCollectionCompPtr->GetObjectTypeId(memberId) == s_topologyGroupTypeId){
+				errorMessage = QString("Group '%1' is not a group of the view").arg(QString::fromUtf8(memberId));
+				return false;
+			}
+
+			// A service that is not shown in the user-defined view cannot be a member of its groups.
+			if (!viewId.isEmpty() && !isGroup && !viewServiceIds.contains(memberId)){
+				continue;
+			}
+
+			parentGroupIds.insert(memberId, groupState.id);
+			memberIds.append(memberId);
+		}
+
+		groupMemberIds << memberIds;
+	}
+
+	// Groups cannot be nested into themselves.
+	for (const QByteArray& groupId : groupIds){
+		QSet<QByteArray> visitedGroupIds;
+		QByteArray currentGroupId = groupId;
+		while (parentGroupIds.contains(currentGroupId)){
+			currentGroupId = parentGroupIds.value(currentGroupId);
+			if (currentGroupId == groupId || visitedGroupIds.contains(currentGroupId)){
+				errorMessage = QString("Group '%1' cannot be nested into itself").arg(QString::fromUtf8(groupId));
+				return false;
+			}
+
+			visitedGroupIds.insert(currentGroupId);
+		}
+	}
+
+	// The groups that are not listed anymore are removed; their members are listed in other groups or
+	// are at their default place now.
+	imtbase::ICollectionInfo::Ids removedGroupIds;
+	for (TopologyGroupMap::const_iterator groupIter = currentGroups.constBegin(); groupIter != currentGroups.constEnd(); ++groupIter){
+		if (!groupIds.contains(groupIter.key())){
+			removedGroupIds << groupIter.key();
+		}
+	}
+
+	if (!removedGroupIds.isEmpty() && !m_topologyCollectionCompPtr->RemoveElements(removedGroupIds)){
+		errorMessage = QString("Failed to remove groups");
+		return false;
+	}
+
+	QByteArrayList viewGroupIds;
+	for (int groupIndex = 0; groupIndex < groupStates.count(); ++groupIndex){
+		const TopologyGroupState& groupState = groupStates[groupIndex];
+
+		agentinodata::CTopologyGroup group;
+		group.SetPosition(groupState.position);
+		group.SetMemberIds(groupMemberIds[groupIndex]);
+
+		if (currentGroups.contains(groupState.id)){
+			if (!m_topologyCollectionCompPtr->SetObjectData(groupState.id, group)){
+				errorMessage = QString("Failed to update group '%1'").arg(groupState.name);
+				return false;
+			}
+
+			// The group name is the element name in the topology collection.
+			if ((currentGroups.value(groupState.id).name != groupState.name)
+						&& !m_topologyCollectionCompPtr->SetElementName(groupState.id, groupState.name)){
+				errorMessage = QString("Failed to rename group '%1'").arg(groupState.name);
+				return false;
+			}
+		}
+		else{
+			const QByteArray insertedGroupId = m_topologyCollectionCompPtr->InsertNewObject(s_topologyGroupTypeId, groupState.name, "", &group, groupState.id);
+			if (insertedGroupId != groupState.id){
+				if (!insertedGroupId.isEmpty()){
+					m_topologyCollectionCompPtr->RemoveElements(imtbase::ICollectionInfo::Ids() << insertedGroupId);
+				}
+
+				errorMessage = QString("Failed to insert group '%1'").arg(groupState.name);
+				return false;
+			}
+		}
+
+		viewGroupIds << groupState.id;
+	}
+
+	if (!viewId.isEmpty()){
+		view.SetGroupIds(viewGroupIds);
+		if (viewNodeIdsPtr != nullptr){
+			view.SetNodeIds(*viewNodeIdsPtr);
+		}
+
+		if (!m_topologyCollectionCompPtr->SetObjectData(viewId, view)){
+			errorMessage = QString("Failed to update the view '%1'").arg(QString::fromUtf8(viewId));
+			return false;
+		}
+	}
+
+	return true;
 }
 
 

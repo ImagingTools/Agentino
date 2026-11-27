@@ -164,6 +164,7 @@
                                 <AttributeInfo Id="LeftAlignmentCommands" Type="Reference[]" ExportId="">
                                     <Data IsEnabled="true">
                                         <Values>
+                                            <Value>Save</Value>
                                             <Value>Undo</Value>
                                             <Value>Redo</Value>
                                             <Value>Rename</Value>

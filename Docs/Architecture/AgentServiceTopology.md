@@ -100,16 +100,30 @@ visualizes the overall topology of all agents.
   (`RemoveElements` through its agent) and is enabled only for a service of the default view
   (inside an agent or a group; in the agent app — for any service). `AddToView` ("Add services to
   view", toolbar only) opens a filterable check list of `availableServices` of the current user view.
-- Undo/Redo: every change is applied on the server at once. `TopologyViewModel` runs the changes
-  through one queue (one request at a time) and records an action per change with its redo/undo
-  operations: moves (`SaveTopology` of the previous/new positions of the moved tiles), groups
-  (`CreateTopologyGroup` with the optional `id` recreates a removed group with the same ID, then
-  `MoveTopologyNodes` returns its members), membership, `AddToTopologyView`/`RemoveFromTopologyView`,
-  group and service renaming, views (`RemoveTopologyView`/`RestoreTopologyView`). Undo/Redo are
-  disabled while a change runs; a failed undo/redo clears the history, a change without an answer is
-  abandoned after 60 s (error message, history cleared). Physical removal of services
-  and Start/Stop are not recorded. `Undo`/`Redo` commands (Ctrl+Z, Ctrl+Shift+Z/Ctrl+Y) of the
-  server `TopologyPage.acc`.
+- Draft, Undo/Redo, Save: the view is edited locally. `TopologyViewModel` keeps the state of the view
+  as loaded (`baseState`) and the draft (`currentState`): `{viewId, nodes: {id: {nodeType, parentId,
+  agentId, x, y, name}}}` with all nodes of the view (services, agents, groups; the members of a
+  group are the nodes with its ID as `parentId`). Moves, groups (new groups get IDs generated on the
+  client), membership, Ungroup, group renaming and `AddToView`/`Remove` of a user view change the
+  draft only; Undo/Redo switch between the states of the draft (snapshots, 50 steps). `Save` (toolbar,
+  Ctrl+S) sends the whole view with one `SaveTopology`: positions of all nodes, `groups` (all groups
+  of the view with `memberIds`) and, in a user view, `nodeIds` (its services). Given `groups`, the
+  server replaces the groups of the view (not listed are removed, new IDs are created, names/positions/
+  members updated; a node in several groups or nested cycles are rejected) and the services of a
+  user view; without `groups` only positions are stored (the agent ignores them). `GetTopology` of a
+  user view returns `availableServiceNodes` (full nodes of `availableServices`), so that services
+  added to the draft are drawn before the save. Reloads (subscriptions, navigation) are merged into
+  the draft (three-way: nodes added/removed on the server are added/removed, a property takes the
+  server value unless it was changed in the draft; the history snapshots are merged the same way).
+  Switching to another view with unsaved changes asks Save / Discard / Cancel; the draft steps of the
+  history are dropped then. Creating and removing views are not a part of a draft — they are applied
+  on the server at once — but are steps of the same Undo/Redo history (`{type: "view", action,
+  viewId}` besides the draft steps `{type: "state", state}`): undo of a creation and redo of a removal
+  call `RemoveTopologyView`, the others `RestoreTopologyView` (the restored view is shown); Undo/Redo
+  are disabled while such a step runs, a failed step stays in its stack. Not in the history (applied
+  at once): service renaming (owned by the agent), physical removal of services, Start/Stop. The agent app has no `Save` command: every change is saved at once
+  (`TopologyViewModel.autoSave`). `Save`/`Undo`/`Redo` commands (Ctrl+S, Ctrl+Z, Ctrl+Shift+Z/Ctrl+Y)
+  of the server `TopologyPage.acc`.
 - `CAgentTopologyControllerComp` does not support groups (the agent GUI shows its services flat).
 - UI: `TopologyPage` navigates inside composite nodes (double click / Enter) with an ImtCore
   `StackView` of scheme levels and a `StackViewHeader` navigation panel (shown below the root level).
@@ -123,8 +137,8 @@ visualizes the overall topology of all agents.
 - Drag and drop into a group: `SchemeView.dropTargetFilter` (ImtCore) enables dropping a dragged
   object onto an accepted object (the target blinks after `dropArmDelay`; a release over it emits
   `objectDropped`; Escape/leaving cancel); `TopologyPage` accepts the groups allowed by
-  `canAddToGroup` and calls `MoveTopologyNodes` (recorded for Undo); the drag position is not saved,
-  inside the group the node keeps its last saved position.
+  `canAddToGroup` and moves the nodes into the group in the draft (one history step); the drag
+  position is not taken, inside the group the node keeps its last position.
 - Selection: `SchemeView.selectedIds` (ImtCore) holds all selected tiles, `selectedIndex` the current
   one; Ctrl+click adds/removes a tile, Ctrl+drag draws a selection rectangle (the scheme is not
   panned; Escape cancels it and restores the previous selection), `selectionChanged` is emitted once
@@ -135,9 +149,9 @@ visualizes the overall topology of all agents.
   `AddToGroup` without a group the tiles can be added to opens the "New group" dialog: the group is
   created (at the place of the top left selected tile) and the tiles are moved into it as one history
   step (`TopologyViewModel.createGroupWithNodes`).
-  `Ungroup` (toolbar and context menu, user groups only, not agents) removes the selected groups with
-  `RemoveTopologyGroup` — the server moves their members to the level of the group — as one history
-  step (`TopologyViewModel.removeGroups`).
+  `Ungroup` (toolbar and context menu, user groups only, not agents) removes the selected groups from
+  the draft — their members move to the level of the group, as `RemoveTopologyGroup` of the server
+  does — as one history step (`TopologyViewModel.removeGroups`).
 - Links: a click on a link selects it (`SchemeView.selectedLink`/`linkClicked`, drawn with the accent
   color); `TopologyPage` lists the services linked through it (`computeLinkInfo`: for a link between
   groups/agents every pair of services inside them) in a panel on the right, in place of the meta

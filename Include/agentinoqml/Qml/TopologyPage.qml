@@ -185,16 +185,26 @@ ViewBase {
 		return result
 	}
 
-	// Ungroup is applied to user-defined groups only (not to agents).
+	// Ungroup is applied to user-defined groups only (not to agents) that contain anything: ungrouping
+	// an empty group would only remove it. Empty if any selected node is not such a group.
 	function selectedGroupIds(){
 		let items = topologyPage.selectedNodes()
 		let result = []
 		for (let i = 0; i < items.length; ++i){
-			if (!topologyPage.isGroupNode(items[i].m_id))
+			if (!topologyPage.isGroupNode(items[i].m_id) || !topologyPage.hasMembers(items[i].m_id))
 				return []
 			result.push(items[i].m_id)
 		}
 		return result
+	}
+
+	// True if the composite node (group or agent) contains any node in the draft.
+	function hasMembers(nodeId){
+		for (let id in topologyPage.topologyNodes){
+			if (topologyPage.topologyNodes[id].parentId === nodeId)
+				return true
+		}
+		return false
 	}
 
 	// Agents and groups are composite nodes; double click opens their content as the next level.
@@ -276,52 +286,69 @@ ViewBase {
 		return !topologyPage.isNodeInside(groupId, nodeId)
 	}
 
-	// A missing model is an incomplete response, not a proof that the node was removed.
-	function modelContainsNode(nodesModel, nodeId){
-		if (!nodesModel)
-			return true
-		for (let i = 0; i < nodesModel.count; ++i){
-			let item = nodesModel.get(i).item
-			if (item && item.m_id === nodeId)
-				return true
-		}
-		return false
-	}
-
-	// Remembers all nodes of the loaded topology and keeps on the scheme only the children of groupId.
-	function applyTopologyNodes(nodesModel){
+	// Remembers all nodes of the view as they are in the draft (TopologyViewModel.currentState).
+	function rebuildTopologyNodes(){
+		let viewModel = topologyPage.topologyViewModel
+		let state = viewModel.currentState
 		let nodes = {}
-		if (!nodesModel){
-			topologyPage.topologyNodes = nodes
-			return nodesModel
-		}
-
-		for (let i = 0; i < nodesModel.count; ++i){
-			let item = nodesModel.get(i).item
-			if (!item)
-				continue
-			nodes[item.m_id] = {
-				"id": item.m_id,
-				"parentId": item.m_parentId ? item.m_parentId : "",
-				"nodeType": item.m_nodeType ? item.m_nodeType : "SERVICE",
-				"name": item.m_mainText,
-				"agentId": item.m_agentId,
-				"x": item.m_x,
-				"y": item.m_y,
-				"linkIds": topologyPage.readLinkIds(item)
+		if (state){
+			for (let id in state.nodes){
+				let node = state.nodes[id]
+				nodes[id] = {
+					"id": id,
+					"parentId": node.parentId,
+					"nodeType": node.nodeType,
+					"name": node.name,
+					"agentId": node.agentId,
+					"x": node.x,
+					"y": node.y,
+					"linkIds": topologyPage.readLinkIds(viewModel.getNodeItem(id))
+				}
 			}
 		}
 		topologyPage.topologyNodes = nodes
+		topologyPage.availableServices = viewModel.availableServices
+	}
 
-		for (let i = nodesModel.count - 1; i >= 0; --i){
-			let item = nodesModel.get(i).item
-			let parentId = item && item.m_parentId ? item.m_parentId : ""
-			if (!item || parentId !== topologyPage.groupId){
-				nodesModel.removeElement(i)
+	// Shows the nodes of the draft on the level (the children of its node). The model of the level is
+	// replaced (two models are used in turn), so that the scheme resets its drag and drop state.
+	function renderLevel(levelScheme){
+		if (!levelScheme)
+			return
+
+		let viewModel = topologyPage.topologyViewModel
+		let state = viewModel.currentState
+
+		// The selected tiles stay selected (those still on the level); the commands are updated once at
+		// the end: the temporary deselection must not hide and show them again (the command panel would jump).
+		let previousNodeId = levelScheme.selectedNodeId
+		let previousNodeIds = levelScheme.selectedIds.slice()
+		let wasReselecting = topologyPage.reselecting
+		topologyPage.reselecting = true
+		levelScheme.selectedIndex = -1
+
+		let nodesModel = levelScheme.objectsModel === levelScheme.firstModel ? levelScheme.secondModel : levelScheme.firstModel
+		nodesModel.clear()
+		if (state){
+			for (let id in state.nodes){
+				let node = state.nodes[id]
+				if (node.parentId !== levelScheme.groupId)
+					continue
+				let item = viewModel.getNodeItem(id)
+				if (!item)
+					continue
+				item.m_x = node.x
+				item.m_y = node.y
+				item.m_parentId = node.parentId
+				if (node.nodeType === "GROUP"){
+					item.m_mainText = node.name
+				}
+				// insertElement(): in JQML3 "BaseModel" here is its built-in QtQml.BaseModel, which has no appendElement().
+				nodesModel.insertElement(nodesModel.count, item)
 			}
 		}
 
-		// E.g. agents shown as composite nodes for the first time; the position is stored with the next layout change.
+		// E.g. agents shown as composite nodes for the first time; the position is stored with the next save.
 		for (let i = 0; i < nodesModel.count; ++i){
 			let item = nodesModel.get(i).item
 			if (item.m_x === 0 && item.m_y === 0){
@@ -331,7 +358,34 @@ ViewBase {
 			}
 		}
 
-		return nodesModel
+		levelScheme.objectsModel = nodesModel
+		levelScheme.extraLinks = topologyPage.computeLevelLinks(levelScheme.groupId)
+		levelScheme.linkHints = topologyPage.computeLinkHints(levelScheme.groupId)
+		levelScheme.setSelection(previousNodeIds, levelScheme.findModelIndex(previousNodeId))
+		topologyPage.reselecting = wasReselecting
+		levelScheme.requestPaint()
+	}
+
+	// The draft was changed (an edit, Undo/Redo, a reload from the server): the shown level is drawn again.
+	function applyViewState(){
+		topologyPage.rebuildTopologyNodes()
+
+		// A shown composite node was removed (here or by another client): return to its parent level.
+		let removedLevel = topologyPage.findRemovedLevel()
+		if (removedLevel > 0){
+			topologyPage.navigateToLevel(removedLevel - 1)
+			return
+		}
+
+		let currentScheme = topologyPage.scheme
+		if (!currentScheme)
+			return
+
+		topologyPage.renderLevel(currentScheme)
+		topologyPage.updateLevelNames()
+		topologyPage.applySelection(currentScheme)
+		topologyPage.updateLinkInfo()
+		topologyPage.updateCommandStates()
 	}
 
 	// IDs of the services the node is linked with (its m_links).
@@ -495,15 +549,16 @@ ViewBase {
 		topologyPage.setCommandState("RemoveFromGroup", selectedIds.length > 0 && topologyPage.isGroupNode(topologyPage.groupId))
 		// Ungroup: the selected groups are removed, their content goes to the level of the groups.
 		topologyPage.setCommandState("Ungroup", topologyPage.selectedGroupIds().length > 0)
-		// Changes are applied on the server at once; Undo/Redo revert or repeat them there.
-		// Both are shown while there is anything in the history (also while an undo/redo runs and its
-		// step is between the stacks), each is enabled on its own.
+		// Changes are collected in the local draft of the view; Undo/Redo step through the draft, Save sends
+		// the whole view to the server. The three commands are always shown, only their enabled state changes:
+		// Undo/Redo while there is a step to undo/redo, Save while the draft has unsaved changes.
 		let viewModel = topologyPage.topologyViewModel
-		let historyVisible = viewModel.undoCount > 0 || viewModel.redoCount > 0 || viewModel.historyActionPending
-		topologyPage.commandsController.setCommandIsEnabled("Undo", topologyPage.topologyViewModel.canUndo)
-		topologyPage.commandsController.setCommandIsEnabled("Redo", topologyPage.topologyViewModel.canRedo)
-		topologyPage.commandsController.setCommandVisible("Undo", historyVisible)
-		topologyPage.commandsController.setCommandVisible("Redo", historyVisible)
+		topologyPage.commandsController.setCommandIsEnabled("Undo", viewModel.canUndo)
+		topologyPage.commandsController.setCommandIsEnabled("Redo", viewModel.canRedo)
+		topologyPage.commandsController.setCommandIsEnabled("Save", viewModel.canSave)
+		topologyPage.commandsController.setCommandVisible("Undo", true)
+		topologyPage.commandsController.setCommandVisible("Redo", true)
+		topologyPage.commandsController.setCommandVisible("Save", true)
 	}
 
 	property TreeItemModel contextMenuModel: TreeItemModel {}
@@ -567,6 +622,8 @@ ViewBase {
 			return
 
 		topologyPage.scheme = currentScheme
+		// The draft may have been changed while the level was hidden.
+		topologyPage.renderLevel(currentScheme)
 		topologyPage.applySelection(currentScheme)
 		topologyPage.updateLinkInfo()
 		if (topologyPage.commandsController){
@@ -605,10 +662,13 @@ ViewBase {
 		topologyPage.topologyViewModel.loadTopology()
 	}
 
-	// Index of the first level whose node no longer exists (removed by this or another client), -1 if all exist.
-	function findRemovedLevel(nodesModel){
+	// Index of the first level whose node no longer exists in the draft (removed, undone or removed by
+	// another client), -1 if all exist. Nothing is removed before the view is loaded.
+	function findRemovedLevel(){
+		if (!topologyPage.topologyViewModel.currentState)
+			return -1
 		for (let i = 1; i < topologyPage.levelNodeIds.length; ++i){
-			if (!topologyPage.modelContainsNode(nodesModel, topologyPage.levelNodeIds[i]))
+			if (!topologyPage.topologyNodes[topologyPage.levelNodeIds[i]])
 				return i
 		}
 		return -1
@@ -678,17 +738,34 @@ ViewBase {
 			}
 		}
 
-		// The current view was removed by another client.
+		// The current view was removed by another client: its draft is dropped.
 		if (!currentViewExists){
-			topologyPage.selectView("")
+			topologyPage.showView("")
 			return
 		}
 
 		stackHeader.setHeaderName("", topologyPage.getViewName(topologyPage.viewId))
 	}
 
-	// Shows the root level of the view; the levels opened in the previous view are closed.
+	// Shows another view. Unsaved changes of the current view are saved or discarded first (asked).
 	function selectView(viewId){
+		if (viewId === topologyPage.viewId){
+			return
+		}
+
+		if (topologyPage.topologyViewModel.dirty){
+			ModalDialogManager.openDialog(unsavedChangesDialogComp, {
+					"viewName": topologyPage.getViewName(topologyPage.viewId),
+					"continueAction": function(){ topologyPage.showView(viewId) }})
+			return
+		}
+
+		topologyPage.showView(viewId)
+	}
+
+	// Shows the root level of the view; the levels opened in the previous view are closed and the draft
+	// of the previous view is dropped.
+	function showView(viewId){
 		if (viewId === topologyPage.viewId){
 			return
 		}
@@ -705,10 +782,9 @@ ViewBase {
 		topologyPage.levelNodeIds = [""]
 		topologyPage.updateCurrentScheme()
 
-		topologyPage.topologyViewModel.viewId = viewId
 		stackHeader.setHeaderName("", topologyPage.getViewName(viewId))
 
-		topologyPage.topologyViewModel.loadTopology()
+		topologyPage.topologyViewModel.setView(viewId)
 	}
 
 	function requestAddView(){
@@ -777,22 +853,6 @@ ViewBase {
 		ModalDialogManager.openDialog(addToViewDialogComp, {"parentId": parentId, "services": topologyPage.availableServices.slice()})
 	}
 
-	// [{id, name}] sorted by name; a missing list (e.g. the agent app) is empty.
-	function readAvailableServices(topologySdlObject){
-		let result = []
-		let servicesModel = topologySdlObject ? topologySdlObject.m_availableServices : null
-		if (servicesModel){
-			for (let i = 0; i < servicesModel.count; ++i){
-				let item = servicesModel.get(i).item
-				if (item){
-					result.push({"id": item.m_id, "name": item.m_name ? "" + item.m_name : "" + item.m_id})
-				}
-			}
-		}
-		result.sort(function(left, right){ return left.name.localeCompare(right.name) })
-		return result
-	}
-
 	// Moves all selected nodes into a group chosen in the dialog. If there is no group they can be added
 	// to, the dialog of a new group is opened; the nodes are moved into the created group.
 	function requestAddToGroup(){
@@ -832,92 +892,35 @@ ViewBase {
 			return
 		let currentGroup = topologyPage.topologyNodes[topologyPage.groupId]
 		let targetGroupId = topologyPage.isGroupNode(currentGroup.parentId) ? currentGroup.parentId : ""
-		topologyPage.topologyViewModel.moveNodes(nodeIds, targetGroupId, topologyPage.getParentGroups(nodeIds))
+		topologyPage.topologyViewModel.moveNodes(nodeIds, targetGroupId)
 	}
 
-	// Ungroup: removes the selected groups; their content goes to the level of the groups (the server
-	// moves the members of a removed group one level up). One step of the history, undone at once.
+	// Ungroup: removes the selected groups; their content goes to the level of the groups. One step of
+	// the history, undone at once.
 	function requestUngroup(){
 		let groupIds = topologyPage.selectedGroupIds()
 		if (groupIds.length === 0)
 			return
-		let infos = []
-		for (let i = 0; i < groupIds.length; ++i){
-			infos.push(topologyPage.getGroupInfo(groupIds[i]))
-		}
 		topologyPage.clearServiceSelection()
-		topologyPage.topologyViewModel.removeGroups(groupIds, infos)
+		topologyPage.topologyViewModel.removeGroups(groupIds)
 	}
 
-	// Group of the node (empty if the node is not in a group, e.g. a service directly inside its agent).
-	function getParentGroupId(nodeId){
-		let node = topologyPage.topologyNodes[nodeId]
-		return node && topologyPage.isGroupNode(node.parentId) ? node.parentId : ""
-	}
-
-	// {nodeId: group of the node or ""} to undo a move of the nodes.
-	function getParentGroups(nodeIds){
-		let result = {}
-		for (let i = 0; i < nodeIds.length; ++i){
-			result[nodeIds[i]] = topologyPage.getParentGroupId(nodeIds[i])
-		}
-		return result
-	}
-
-	// Data to recreate the removed group on undo: {name, parentId, x, y, memberIds}.
-	function getGroupInfo(groupId){
-		let group = topologyPage.topologyNodes[groupId]
-		let memberIds = []
-		for (let nodeId in topologyPage.topologyNodes){
-			if (topologyPage.topologyNodes[nodeId].parentId === groupId){
-				memberIds.push(nodeId)
-			}
-		}
-		// The group may have been moved since the last load: its current position is on the shown level.
-		let position = topologyPage.scheme && topologyPage.scheme.savedPositions
-				? topologyPage.scheme.savedPositions[groupId] : undefined
-		if (!position){
-			position = {"x": group && group.x !== undefined ? group.x : 0, "y": group && group.y !== undefined ? group.y : 0}
-		}
-		return {
-			"name": group ? "" + group.name : "",
-			"parentId": topologyPage.getParentGroupId(groupId),
-			"x": position.x,
-			"y": position.y,
-			"memberIds": memberIds
-		}
-	}
-
-	// Positions {id: {x, y}} of the nodes of the scheme model.
-	function getPositions(nodesModel){
-		let positions = {}
-		if (!nodesModel)
-			return positions
+	// Takes the layout of the level into the draft after a move (one step of the history). Tiles placed
+	// on a free place when shown (no stored position) get this position as well.
+	function storeLevelLayout(levelScheme){
+		let state = topologyPage.topologyViewModel.currentState
+		let nodesModel = levelScheme.objectsModel
+		if (!state || !nodesModel)
+			return
+		let positions = []
 		for (let i = 0; i < nodesModel.count; ++i){
 			let item = nodesModel.get(i).item
-			if (item){
-				positions[item.m_id] = {"x": item.m_x, "y": item.m_y}
+			let node = item ? state.nodes[item.m_id] : null
+			if (node && (node.x !== item.m_x || node.y !== item.m_y)){
+				positions.push({"id": item.m_id, "x": item.m_x, "y": item.m_y})
 			}
 		}
-		return positions
-	}
-
-	// Saves the layout of the level after a move; the moved tiles are recorded for undo.
-	function saveLevelLayout(levelScheme){
-		let currentPositions = topologyPage.getPositions(levelScheme.objectsModel)
-		let previousPositions = levelScheme.savedPositions ? levelScheme.savedPositions : {}
-		let before = []
-		let after = []
-		for (let nodeId in currentPositions){
-			let previous = previousPositions[nodeId]
-			let current = currentPositions[nodeId]
-			if (previous && (previous.x !== current.x || previous.y !== current.y)){
-				before.push({"id": nodeId, "x": previous.x, "y": previous.y})
-				after.push({"id": nodeId, "x": current.x, "y": current.y})
-			}
-		}
-		levelScheme.savedPositions = currentPositions
-		topologyPage.topologyViewModel.saveTopology(levelScheme.objectsModel, before, after)
+		topologyPage.topologyViewModel.setPositions(positions)
 	}
 
 	// Renames the selected group or service (F2, toolbar or context menu).
@@ -1024,40 +1027,18 @@ ViewBase {
 		target: topologyPage.topologyViewModel
 		// Signal parameters must be listed in function onXxx(...) — without them
 		// the body reads outer/undefined names (data/topologySdlObject) and crashes.
-		function onTopologyLoaded(topologySdlObject) {
-			if (!topologySdlObject){
-				return
-			}
-			topologyPage.availableServices = topologyPage.readAvailableServices(topologySdlObject)
-			// A shown composite node was removed (here or by another client): return to its parent level.
-			let nodesModel = topologySdlObject.m_services
-			let removedLevel = topologyPage.findRemovedLevel(nodesModel)
-			if (removedLevel > 0){
-				topologyPage.navigateToLevel(removedLevel - 1)
-				return
-			}
-			let currentScheme = topologyPage.scheme
-			if (!currentScheme){
-				return
-			}
-			// Re-find selection after full reload (see prior comments on selectedAgentId).
-			// The commands are updated once at the end: the temporary deselection must not hide and
-			// show them again (the command panel would jump).
-			let previousNodeId = currentScheme.selectedNodeId
-			let previousNodeIds = currentScheme.selectedIds.slice()
-			topologyPage.reselecting = true
-			currentScheme.selectedIndex = -1
-			currentScheme.objectsModel = topologyPage.applyTopologyNodes(nodesModel)
-			currentScheme.extraLinks = topologyPage.computeLevelLinks(currentScheme.groupId)
-			currentScheme.linkHints = topologyPage.computeLinkHints(currentScheme.groupId)
-			currentScheme.savedPositions = topologyPage.getPositions(currentScheme.objectsModel)
-			// Several selected tiles stay selected (those still on the level).
-			currentScheme.setSelection(previousNodeIds, currentScheme.findModelIndex(previousNodeId))
-			topologyPage.reselecting = false
-			topologyPage.updateLevelNames()
-			topologyPage.applySelection(currentScheme)
-			topologyPage.updateLinkInfo()
-			currentScheme.requestPaint()
+		function onViewStateChanged() {
+			topologyPage.applyViewState()
+		}
+		function onSavingChanged() {
+			topologyPage.updateCommandStates()
+		}
+		// Steps of the views (create/remove) change the history without changing the draft.
+		function onCanUndoChanged() {
+			topologyPage.updateCommandStates()
+		}
+		function onCanRedoChanged() {
+			topologyPage.updateCommandStates()
 		}
 		function onServiceStatusMessage(data) {
 			topologyPage.applyLiveServiceStatus(data)
@@ -1068,29 +1049,23 @@ ViewBase {
 		function onViewsLoaded(views, agentsViewNodeNames) {
 			topologyPage.fillViews(views, agentsViewNodeNames)
 		}
-		function onCanUndoChanged() {
-			topologyPage.updateCommandStates()
-		}
-		function onCanRedoChanged() {
-			topologyPage.updateCommandStates()
-		}
-		function onUndoCountChanged() {
-			topologyPage.updateCommandStates()
-		}
-		function onRedoCountChanged() {
-			topologyPage.updateCommandStates()
-		}
 		function onViewCreated(viewId) {
 			topologyPage.selectView(viewId)
 		}
+		// Undo of a removal / Redo of a creation: the view is shown again.
+		function onViewRestored(viewId) {
+			topologyPage.selectView(viewId)
+		}
+		// The draft of a removed view is dropped.
 		function onViewRemoved(viewId) {
 			if (viewId === topologyPage.viewId){
-				topologyPage.selectView("")
+				topologyPage.showView("")
 			}
 		}
 	}
 
-	// Undo/Redo of the topology changes; disabled while a dialog is open.
+	// Undo/Redo of the draft of the view; disabled while a dialog is open. Ctrl+S (Save) is handled by
+	// the base commands delegate (commandHandle("Save")).
 	Shortcut {
 		sequence: "Ctrl+Z"
 		enabled: topologyPage.visible && ModalDialogManager.count === 0
@@ -1118,7 +1093,8 @@ ViewBase {
 			typeId: "Topology"
 			
 			onCommandsChanged: {
-				setCommandVisible("Save", false)
+				// Without a Save command (agent app) every change of the topology is saved at once.
+				topologyPage.topologyViewModel.autoSave = !commandExists("Save")
 				// "New service" is temporarily hidden; the command and its handler are kept.
 				setCommandIsEnabled("New", true)
 				setCommandVisible("New", false)
@@ -1141,7 +1117,7 @@ ViewBase {
 		target: topologyPage.topologyViewModel
 		function onViewsSupportedChanged() {
 			if (!topologyPage.topologyViewModel.viewsSupported){
-				topologyPage.selectView("")
+				topologyPage.showView("")
 			}
 		}
 	}
@@ -1271,6 +1247,9 @@ ViewBase {
 					}
 					else if (commandId === "RemoveService"){
 						topologyPage.requestRemoveService()
+					}
+					else if (commandId === "Save"){
+						topologyPage.topologyViewModel.save()
 					}
 					else if (commandId === "Undo"){
 						topologyPage.topologyViewModel.undo()
@@ -1714,7 +1693,7 @@ ViewBase {
 		anchors.top: parent.top
 		anchors.left: viewsPanel.right
 		anchors.leftMargin: Style.marginM
-		anchors.right: linkInfoPanel.left
+		anchors.right: metaInfo.left
 		anchors.rightMargin: Style.marginM
 		height: visible ? Style.controlHeightL : 0
 		visible: schemeStack.count > 1
@@ -1737,7 +1716,7 @@ ViewBase {
 		id: schemeStack
 
 		anchors.left: viewsPanel.right;
-		anchors.right: linkInfoPanel.left;
+		anchors.right: metaInfo.left;
 		anchors.top: stackHeader.bottom;
 		anchors.bottom: parent.bottom;
 
@@ -1784,8 +1763,9 @@ ViewBase {
 			// Selected node (service, agent or group); selectedService is set for services only.
 			property string selectedNodeId: ""
 			property string selectedService: ""
-			// Positions {id: {x, y}} of the nodes as stored on the server; a move is recorded against them.
-			property var savedPositions: ({})
+			// Models of the level, used in turn by renderLevel().
+			property BaseModel firstModel: BaseModel {}
+			property BaseModel secondModel: BaseModel {}
 
 			onAutoFitChanged: {
 				if (levelScheme === topologyPage.scheme && topologyPage.commandsController){
@@ -1793,13 +1773,13 @@ ViewBase {
 				}
 			}
 
+			// The new positions go to the draft (saved with Save).
 			onObjectMoveFinished: {
-				// saveTopology() sets saveInProgress so OnTopologyChanged does not reload mid-save.
-				topologyPage.saveLevelLayout(levelScheme)
+				topologyPage.storeLevelLayout(levelScheme)
 			}
 
 			// "Add to group" by drag and drop: a tile released over a blinking group is moved into it.
-			// Inside the group it keeps its last saved position (the drag position is not saved).
+			// Inside the group it keeps its last position (the drag position is not taken).
 			dropTargetFilter: function(objectId, targetId){
 				return topologyPage.canAddToGroup(objectId, targetId)
 			}
@@ -1812,7 +1792,7 @@ ViewBase {
 						return
 					}
 				}
-				topologyPage.topologyViewModel.moveNodes(nodeIds, targetId, topologyPage.getParentGroups(nodeIds))
+				topologyPage.topologyViewModel.moveNodes(nodeIds, targetId)
 			}
 
 			onDeleteSignal: {
@@ -1890,12 +1870,12 @@ ViewBase {
 	Rectangle {
 		id: serviceOperationIndicator
 		property int spinnerSize: 18
-		property real maxPopupWidth: Math.max(0, linkInfoPanel.x - viewsPanel.width - 2 * Style.marginXL)
+		property real maxPopupWidth: Math.max(0, metaInfo.x - viewsPanel.width - 2 * Style.marginXL)
 		property real maxTextWidth: Math.max(0, maxPopupWidth - 2 * Style.marginL - spinnerSize - Style.spacingS)
 		property real textWidth: Math.min(serviceOperationTextItem.implicitWidth, maxTextWidth)
 
 		anchors.top: schemeStack.top
-		anchors.right: linkInfoPanel.left
+		anchors.right: metaInfo.left
 		anchors.topMargin: Style.marginXL
 		anchors.rightMargin: Style.marginXL
 		width: Math.min(
@@ -1934,18 +1914,16 @@ ViewBase {
 		}
 	}
 
-	// Information on the clicked link (in place of the meta information of a service): which service
-	// is linked with which one. A click on a service name opens the page of the service.
+	// Information on the clicked link (in place of the meta information of a service, over it): which
+	// service is linked with which one. A click on a service name opens the page of the service.
 	Rectangle {
 		id: linkInfoPanel
 
 		objectName: "TopologyLinkInfoPanel"
 
-		anchors.right: metaInfo.left
-		anchors.top: parent.top
-		anchors.bottom: parent.bottom
+		anchors.fill: metaInfo
+		z: metaInfo.z + 1
 
-		width: visible ? 250 : 0
 		visible: topologyPage.linkInfo !== null
 		clip: true
 		// The same background as the meta information panel
@@ -2101,12 +2079,29 @@ ViewBase {
 		anchors.top: parent.top;
 		anchors.bottom: parent.bottom;
 
-		// Takes room only for a selected service, so the scheme gets the whole page otherwise
-		width: topologyPage.selectedService !== "" ? 250 : 0;
-		visible: topologyPage.selectedService !== "";
+		// Always shown with the same width, so that the size of the scheme does not change with the
+		// selection; its content is shown for a selected service only.
+		width: 250;
+		// Nothing is selected at first.
+		contentVisible: false;
 
 		Component.onCompleted: {
 			registerViewDelegate("ExternPaths", metaInfoViewExternPathsDelegateComp)
+		}
+
+		BaseText {
+			anchors.top: parent.top
+			anchors.topMargin: Style.marginM
+			anchors.left: parent.left
+			anchors.leftMargin: Style.marginM
+			anchors.right: parent.right
+			anchors.rightMargin: Style.marginM
+
+			visible: !metaInfo.contentVisible && topologyPage.linkInfo === null
+			text: qsTr("Select a service or a link to see its information")
+			color: Style.placeHolderTextColor
+			font.pixelSize: Style.fontSizeS
+			wrapMode: Text.WordWrap
 		}
 	}
 	
@@ -2248,6 +2243,57 @@ ViewBase {
 				let name = inputValue ? inputValue.trim() : ""
 				if (buttonId == Enums.ok && name !== ""){
 					topologyPage.topologyViewModel.createView(name)
+				}
+			}
+		}
+	}
+
+	// Asked before another view is shown while the current one has unsaved changes:
+	// Save (then continue), Discard (then continue) or Cancel.
+	Component {
+		id: unsavedChangesDialogComp
+
+		Dialog {
+			id: unsavedChangesDialog
+
+			width: Style.sizeHintM
+			title: qsTr("Unsaved changes")
+			canMove: true
+			forceFocus: true
+
+			property string viewName: ""
+			// Called after the changes were saved or discarded.
+			property var continueAction: null
+
+			Component.onCompleted: {
+				addButton(Enums.yes, qsTr("Save"), true, true)
+				addButton(Enums.no, qsTr("Discard"), true)
+				addButton(Enums.cancel, qsTr("Cancel"), true)
+			}
+
+			onFinished: {
+				let action = unsavedChangesDialog.continueAction
+				if (!action){
+					return
+				}
+				if (buttonId === Enums.yes){
+					// A failed save keeps the view and its draft (the error is shown).
+					topologyPage.topologyViewModel.save(function(ok){
+						if (ok){
+							action()
+						}
+					})
+				}
+				else if (buttonId === Enums.no){
+					topologyPage.topologyViewModel.discardChanges()
+					action()
+				}
+			}
+
+			contentComp: Component {
+				MessageDialogBody {
+					width: unsavedChangesDialog.width
+					message: qsTr("The view \"%1\" has unsaved changes. Save them?").arg(unsavedChangesDialog.viewName)
 				}
 			}
 		}
@@ -2423,7 +2469,7 @@ ViewBase {
 			message: qsTr("Delete the selected group? Its content will be moved one level up.")
 			onFinished: {
 				if (buttonId == Enums.yes && groupId !== ""){
-					topologyPage.topologyViewModel.removeGroup(groupId, topologyPage.getGroupInfo(groupId))
+					topologyPage.topologyViewModel.removeGroup(groupId)
 				}
 			}
 		}
@@ -2441,7 +2487,7 @@ ViewBase {
 						.arg(topologyPage.getViewName(topologyPage.viewId))
 			onFinished: {
 				if (buttonId == Enums.yes && nodeId !== ""){
-					topologyPage.topologyViewModel.removeFromView([nodeId], topologyPage.getParentGroupId(nodeId))
+					topologyPage.topologyViewModel.removeFromView([nodeId])
 				}
 			}
 		}
@@ -2465,11 +2511,13 @@ ViewBase {
 				if (buttonId != Enums.ok || name === "" || name === oldName || nodeId === ""){
 					return
 				}
+				// A group is renamed in the draft; a service is renamed on its agent at once (the name
+				// belongs to the service, not to the view).
 				if (isGroup){
-					topologyPage.topologyViewModel.renameGroup(nodeId, name, oldName)
+					topologyPage.topologyViewModel.renameGroup(nodeId, name)
 				}
 				else{
-					topologyPage.topologyViewModel.renameService(nodeId, agentId, name, oldName)
+					topologyPage.topologyViewModel.renameService(nodeId, agentId, name)
 				}
 			}
 		}
@@ -2495,8 +2543,7 @@ ViewBase {
 				let parentId = topologyPage.isGroupNode(topologyPage.groupId) ? topologyPage.groupId : ""
 				if (nodeIds.length > 0){
 					let position = topologyPage.findGroupPosition(nodeIds)
-					topologyPage.topologyViewModel.createGroupWithNodes(name, parentId, position.x, position.y,
-							nodeIds, topologyPage.getParentGroups(nodeIds))
+					topologyPage.topologyViewModel.createGroupWithNodes(name, parentId, position.x, position.y, nodeIds)
 				}
 				else{
 					let position = topologyPage.findFreePosition(topologyPage.scheme ? topologyPage.scheme.objectsModel : null)
@@ -2742,7 +2789,7 @@ ViewBase {
 
 			onFinished: {
 				if (buttonId === Enums.apply && nodeIds.length > 0 && chosenGroupId !== ""){
-					topologyPage.topologyViewModel.moveNodes(nodeIds, chosenGroupId, topologyPage.getParentGroups(nodeIds))
+					topologyPage.topologyViewModel.moveNodes(nodeIds, chosenGroupId)
 				}
 			}
 
