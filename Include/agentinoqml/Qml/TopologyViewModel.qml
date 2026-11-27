@@ -8,6 +8,10 @@ import agentinoServicesSdl 1.0
 /**
 	L2/L3 Topology port + GQL adapter (Architecture §6.4 / QG2).
 	View binds only to properties/signals — no gqlCommandId in the view file.
+
+	The view (way of grouping) is edited as a local draft: the changes (positions, groups, membership,
+	services of a user-defined view) are applied to currentState only; Undo/Redo switch between the
+	states of the draft; save() sends the whole state of the view to the server with one SaveTopology.
 */
 QtObject {
 	id: root
@@ -17,29 +21,30 @@ QtObject {
 	property var objectsModel: null
 	property bool loading: false
 	property string errorMessage: ""
-	// While SaveTopology is in flight, ignore OnTopologyChanged reloads — they race the
-	// server write and replace the canvas with stale GetTopology data (nodes snap back).
-	property bool saveInProgress: false
 	// Current view (way of grouping); empty for the default view grouping services by agents.
+	// Use setView() to change it.
 	property string viewId: ""
 	// False until GetTopologyViews succeeds (e.g. the agent app has no views).
 	property bool viewsSupported: false
 	// Set when the server answered that views are not supported; transport failures do not set it.
 	property bool viewsUnsupported: false
 
-	signal topologyLoaded(var topologySdlObject)
+	// Every change is saved at once (the agent app has no Save command).
+	property bool autoSave: false
+
+	signal viewStateChanged()
 	signal topologySaved()
-	signal reloadRequested()
 	signal serviceStatusMessage(var data)
 	signal collectionChanged()
 	signal agentStatusChanged()
-	signal groupCreated(string groupId)
 	signal groupOperationFailed(string message)
 	// views: [{id, name, nodeNames}] of the user-defined views (the default view is not listed);
 	// nodeNames: names of the services and groups of the view, agentsViewNodeNames - the same for the default view.
 	signal viewsLoaded(var views, var agentsViewNodeNames)
 	signal viewCreated(string viewId)
 	signal viewRemoved(string viewId)
+	// A removed view was restored (Undo of the removal, Redo of the creation).
+	signal viewRestored(string viewId)
 
 	function normalizeServiceStatus(status) {
 		if (serviceStatusModel !== null) {
@@ -54,10 +59,525 @@ QtObject {
 		return "UNDEFINED"
 	}
 
+	// --- State of the view ---
+	// A state is {viewId, nodes: {id: {id, nodeType, parentId, agentId, x, y, name}}} with all nodes shown
+	// in the view: services, agents (default view) and groups. parentId is the containing agent or group
+	// ("" for the root level); the members of a group are the nodes with its ID as parentId.
+
+	// The state as loaded from the server; null until the view is loaded.
+	property var baseState: null
+	// The draft: the state shown and edited on the client.
+	property var currentState: null
+	// The draft differs from the server state.
+	property bool dirty: false
+	property bool saving: false
+	readonly property bool canSave: root.dirty && !root.saving
+
+	// Nodes of the last loaded topology by ID (SDL Service objects shown on the scheme): the nodes of the
+	// view and the services that can be added to it (user-defined view), plus groups created in the draft.
+	property var nodeItems: ({})
+	// Names of all known services by ID ("service@agent").
+	property var serviceNames: ({})
+	// Services that are not in the draft of the user-defined view and can be added to it: [{id, name}].
+	property var availableServices: []
+
+	// History of Undo/Redo. A step is either
+	//   {type: "state", state} - a state of the draft of the current view (the steps of other views are
+	//                            dropped when another view is shown: their draft was saved or discarded), or
+	//   {type: "view", action: "create"/"remove", viewId} - a view was created / removed. Views are not a
+	//                            part of a draft: these steps are applied on the server at once
+	//                            (RemoveTopologyView / RestoreTopologyView).
+	readonly property int maxHistorySteps: 50
+	property var undoStack: []
+	property var redoStack: []
+	property int undoCount: 0
+	property int redoCount: 0
+	// A view step is applied on the server: it has left one stack and is not in the other one yet.
+	property bool viewOperationPending: false
+	readonly property bool canUndo: root.undoCount > 0 && !root.viewOperationPending
+	readonly property bool canRedo: root.redoCount > 0 && !root.viewOperationPending
+
+	function copyNode(node) {
+		return {
+			"id": node.id,
+			"nodeType": node.nodeType,
+			"parentId": node.parentId,
+			"agentId": node.agentId,
+			"x": node.x,
+			"y": node.y,
+			"name": node.name
+		}
+	}
+
+	function copyState(state) {
+		let nodes = {}
+		for (let id in state.nodes){
+			nodes[id] = root.copyNode(state.nodes[id])
+		}
+		return {"viewId": state.viewId, "nodes": nodes}
+	}
+
+	function nodesEqual(left, right) {
+		return left.parentId === right.parentId && left.x === right.x && left.y === right.y && left.name === right.name
+	}
+
+	function statesEqual(left, right) {
+		if (!left || !right){
+			return left === right
+		}
+		if (left.viewId !== right.viewId){
+			return false
+		}
+		let count = 0
+		for (let id in left.nodes){
+			let other = right.nodes[id]
+			if (!other || !root.nodesEqual(left.nodes[id], other)){
+				return false
+			}
+			++count
+		}
+		return count === Object.keys(right.nodes).length
+	}
+
+	// Place of a node outside of all groups: in the default view a service belongs to its agent,
+	// otherwise the node is at the root level.
+	function defaultParentId(state, node) {
+		if (state.viewId === "" && node.nodeType === "SERVICE" && node.agentId && state.nodes[node.agentId]){
+			return node.agentId
+		}
+		return ""
+	}
+
+	// Parents that are not in the state anymore are replaced by the default place; groups nested into
+	// themselves (e.g. after a merge with changes of another client) are moved out of the cycle.
+	function normalizeState(state) {
+		for (let id in state.nodes){
+			let node = state.nodes[id]
+			let parent = node.parentId !== "" ? state.nodes[node.parentId] : null
+			if (node.parentId !== "" && (!parent || (parent.nodeType !== "GROUP" && parent.nodeType !== "AGENT"))){
+				node.parentId = root.defaultParentId(state, node)
+			}
+		}
+		for (let id in state.nodes){
+			let visitedIds = {}
+			let currentId = state.nodes[id].parentId
+			while (currentId !== "" && state.nodes[currentId] && !visitedIds[currentId]){
+				if (currentId === id){
+					state.nodes[id].parentId = root.defaultParentId(state, state.nodes[id])
+					break
+				}
+				visitedIds[currentId] = true
+				currentId = state.nodes[currentId].parentId
+			}
+		}
+		return state
+	}
+
+	// Applies the changes of the server (base -> server, e.g. made by another client) to the draft: nodes
+	// added on the server are added, nodes removed there are removed; a property of a node takes the value
+	// of the server unless it was changed in the draft. The draft keeps its own changes.
+	function mergeState(base, server, draft) {
+		let result = {"viewId": draft.viewId, "nodes": {}}
+		for (let id in draft.nodes){
+			let draftNode = draft.nodes[id]
+			let baseNode = base.nodes[id]
+			let serverNode = server.nodes[id]
+			if (baseNode && !serverNode){
+				continue
+			}
+			if (!serverNode){
+				// Added in the draft: a new group, or a service added to the user-defined view that still exists.
+				if (draftNode.nodeType === "GROUP" || root.serviceNames[id] !== undefined){
+					result.nodes[id] = root.copyNode(draftNode)
+				}
+				continue
+			}
+			let node = root.copyNode(draftNode)
+			if (baseNode){
+				let keys = ["parentId", "x", "y", "name"]
+				for (let i = 0; i < keys.length; ++i){
+					if (draftNode[keys[i]] === baseNode[keys[i]]){
+						node[keys[i]] = serverNode[keys[i]]
+					}
+				}
+			}
+			node.agentId = serverNode.agentId
+			result.nodes[id] = node
+		}
+		for (let id in server.nodes){
+			if (!base.nodes[id] && !draft.nodes[id]){
+				result.nodes[id] = root.copyNode(server.nodes[id])
+			}
+		}
+		return root.normalizeState(result)
+	}
+
+	function updateHistoryCounts() {
+		root.undoCount = root.undoStack.length
+		root.redoCount = root.redoStack.length
+	}
+
+	function stateStep(state) {
+		return {"type": "state", "state": state}
+	}
+
+	// Records a new step: the undone steps cannot be redone anymore.
+	function pushHistoryStep(step) {
+		let stack = root.undoStack.slice()
+		stack.push(step)
+		while (stack.length > root.maxHistorySteps){
+			stack.shift()
+		}
+		root.undoStack = stack
+		root.redoStack = []
+		root.updateHistoryCounts()
+	}
+
+	// Drops the steps of the draft (it was saved or discarded, or another view is shown); the steps of
+	// the views stay.
+	function clearDraftHistory() {
+		let isViewStep = function(step){ return step.type === "view" }
+		root.undoStack = root.undoStack.filter(isViewStep)
+		root.redoStack = root.redoStack.filter(isViewStep)
+		root.updateHistoryCounts()
+	}
+
+	function updateAvailableServices() {
+		let result = []
+		if (root.currentState && root.currentState.viewId !== ""){
+			for (let id in root.serviceNames){
+				if (!root.currentState.nodes[id]){
+					result.push({"id": id, "name": root.serviceNames[id]})
+				}
+			}
+		}
+		result.sort(function(left, right){ return left.name.localeCompare(right.name) })
+		root.availableServices = result
+	}
+
+	function updateState() {
+		root.dirty = root.currentState !== null && !root.statesEqual(root.currentState, root.baseState)
+		root.updateHistoryCounts()
+		root.updateAvailableServices()
+		root.viewStateChanged()
+	}
+
+	// Makes newState the current state of the draft as one step of the history.
+	function commit(newState) {
+		if (!root.currentState){
+			return
+		}
+		root.normalizeState(newState)
+		if (root.statesEqual(newState, root.currentState)){
+			return
+		}
+		root.pushHistoryStep(root.stateStep(root.currentState))
+		root.currentState = newState
+		root.updateState()
+		root.saveIfAutoSave()
+	}
+
+	// change: function(state) changing a copy of the current state.
+	function edit(change) {
+		if (!root.currentState){
+			return
+		}
+		let state = root.copyState(root.currentState)
+		change(state)
+		root.commit(state)
+	}
+
+	function undo() {
+		root.stepHistory(true)
+	}
+
+	function redo() {
+		root.stepHistory(false)
+	}
+
+	// Undoes (isUndo) or redoes the last step.
+	function stepHistory(isUndo) {
+		if (isUndo ? !root.canUndo : !root.canRedo){
+			return
+		}
+		let fromStack = (isUndo ? root.undoStack : root.redoStack).slice()
+		let step = fromStack[fromStack.length - 1]
+
+		if (step.type === "view"){
+			fromStack.pop()
+			if (isUndo){
+				root.undoStack = fromStack
+			}
+			else{
+				root.redoStack = fromStack
+			}
+			root.updateHistoryCounts()
+			root.applyViewStep(step, isUndo)
+			return
+		}
+
+		if (!root.currentState){
+			return
+		}
+		fromStack.pop()
+		let toStack = (isUndo ? root.redoStack : root.undoStack).slice()
+		toStack.push(root.stateStep(root.currentState))
+		root.undoStack = isUndo ? fromStack : toStack
+		root.redoStack = isUndo ? toStack : fromStack
+		root.currentState = step.state
+		root.updateState()
+		root.saveIfAutoSave()
+	}
+
+	// Applies a view step on the server: undo of a creation and redo of a removal remove the view,
+	// the others restore it. The step goes to the other stack if it succeeded, otherwise it stays.
+	function applyViewStep(step, isUndo) {
+		let remove = (step.action === "create") === isUndo
+		root.viewOperationPending = true
+		let done = function(ok){
+			root.viewOperationPending = false
+			// The stacks may have been changed meanwhile (e.g. the steps of the draft dropped on a view change).
+			let stack = ((ok === isUndo) ? root.redoStack : root.undoStack).slice()
+			stack.push(step)
+			if (ok === isUndo){
+				root.redoStack = stack
+			}
+			else{
+				root.undoStack = stack
+			}
+			root.updateHistoryCounts()
+		}
+		if (remove){
+			root.opRemoveView(step.viewId, done)
+		}
+		else{
+			root.opRestoreView(step.viewId, done)
+		}
+	}
+
+	// Reverts the draft to the server state.
+	function discardChanges() {
+		if (!root.baseState){
+			return
+		}
+		root.currentState = root.copyState(root.baseState)
+		root.clearDraftHistory()
+		root.updateState()
+	}
+
+	// Shows another view; the draft of the current view is dropped (see TopologyPage.selectView).
+	function setView(viewId) {
+		root.viewId = viewId
+		root.baseState = null
+		root.currentState = null
+		root.clearDraftHistory()
+		root.updateState()
+		root.loadTopology()
+	}
+
+	// --- Changes of the draft (one step of the history each) ---
+
+	// positions: [{id, x, y}] of the moved nodes.
+	function setPositions(positions) {
+		root.edit(function(state){
+			for (let i = 0; i < positions.length; ++i){
+				let node = state.nodes[positions[i].id]
+				if (node){
+					node.x = positions[i].x
+					node.y = positions[i].y
+				}
+			}
+		})
+	}
+
+	// IDs of new groups are generated on the client; the server creates the groups with them on save.
+	function createGroupId() {
+		return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c){
+			let r = Math.floor(Math.random() * 16)
+			return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16)
+		})
+	}
+
+	function addGroup(state, name, parentId, x, y) {
+		let groupId = root.createGroupId()
+		while (state.nodes[groupId] || root.nodeItems[groupId]){
+			groupId = root.createGroupId()
+		}
+		state.nodes[groupId] = {
+			"id": groupId,
+			"nodeType": "GROUP",
+			"parentId": parentId ? "" + parentId : "",
+			"agentId": "",
+			"x": x,
+			"y": y,
+			"name": "" + name
+		}
+		return groupId
+	}
+
+	// parentId: group containing the new group, empty for the root level.
+	function createGroup(name, parentId, x, y) {
+		root.edit(function(state){
+			root.addGroup(state, name, parentId, x, y)
+		})
+	}
+
+	// parentId: target group; empty returns the nodes to their default place
+	// (in the default view a service to its agent, otherwise the root level).
+	function moveNodesInState(state, nodeIds, parentId) {
+		for (let i = 0; i < nodeIds.length; ++i){
+			let node = state.nodes[nodeIds[i]]
+			if (node){
+				node.parentId = parentId ? "" + parentId : root.defaultParentId(state, node)
+			}
+		}
+	}
+
+	function moveNodes(nodeIds, parentId) {
+		root.edit(function(state){
+			root.moveNodesInState(state, nodeIds, parentId)
+		})
+	}
+
+	// Creates a group and moves the nodes into it ("Add to group" when there is no group to add them to).
+	function createGroupWithNodes(name, parentId, x, y, nodeIds) {
+		root.edit(function(state){
+			let groupId = root.addGroup(state, name, parentId, x, y)
+			root.moveNodesInState(state, nodeIds, groupId)
+		})
+	}
+
+	// Removes the groups; their members are moved one level up (members of a root group go to their
+	// default place) - the same as RemoveTopologyGroup of the server. Used by Remove and Ungroup.
+	function removeGroups(groupIds) {
+		root.edit(function(state){
+			for (let i = 0; i < groupIds.length; ++i){
+				let group = state.nodes[groupIds[i]]
+				if (!group || group.nodeType !== "GROUP"){
+					continue
+				}
+				for (let id in state.nodes){
+					let node = state.nodes[id]
+					if (node.parentId === group.id){
+						node.parentId = group.parentId !== "" ? group.parentId : root.defaultParentId(state, node)
+					}
+				}
+				delete state.nodes[group.id]
+			}
+		})
+	}
+
+	function removeGroup(groupId) {
+		root.removeGroups([groupId])
+	}
+
+	function renameGroup(groupId, name) {
+		root.edit(function(state){
+			let group = state.nodes[groupId]
+			if (group && group.nodeType === "GROUP"){
+				group.name = "" + name
+			}
+		})
+	}
+
+	// Removes the services from the current user-defined view only; the services are not deleted.
+	function removeFromView(nodeIds) {
+		if (root.viewId === ""){
+			return
+		}
+		root.edit(function(state){
+			for (let i = 0; i < nodeIds.length; ++i){
+				let node = state.nodes[nodeIds[i]]
+				if (node && node.nodeType === "SERVICE"){
+					delete state.nodes[node.id]
+				}
+			}
+		})
+	}
+
+	// Adds services (not yet in the current user-defined view) to it.
+	// parentId: group of the view receiving the services; empty for the root level.
+	function addToView(nodeIds, parentId) {
+		if (root.viewId === ""){
+			return
+		}
+		root.edit(function(state){
+			for (let i = 0; i < nodeIds.length; ++i){
+				let id = "" + nodeIds[i]
+				if (state.nodes[id] || root.serviceNames[id] === undefined){
+					continue
+				}
+				let item = root.nodeItems[id]
+				state.nodes[id] = {
+					"id": id,
+					"nodeType": "SERVICE",
+					"parentId": parentId ? "" + parentId : "",
+					"agentId": item ? "" + item.m_agentId : "",
+					// The position the service had in the view, if any; otherwise a free place is found.
+					"x": item ? item.m_x : 0,
+					"y": item ? item.m_y : 0,
+					"name": root.serviceNames[id]
+				}
+			}
+		})
+	}
+
+	// --- Nodes shown on the scheme ---
+
+	property Component topologyComp: Component { Topology {} }
+	property var nodeFactory: null
+
+	// SDL object of the node shown on the scheme. Nodes created in the draft get an object of their own.
+	function getNodeItem(nodeId) {
+		let item = root.nodeItems[nodeId]
+		if (item){
+			return item
+		}
+		let node = root.currentState ? root.currentState.nodes[nodeId] : null
+		if (!node){
+			return null
+		}
+		if (!root.nodeFactory){
+			root.nodeFactory = root.topologyComp.createObject(root)
+		}
+		// With a parent: in JQML3 an object without a parent is destroyed once no model holds it, but the
+		// node is shown again after Undo or when its level is opened again.
+		item = root.nodeFactory.createElement('m_services').createObject(root.nodeFactory)
+		if (!item){
+			return null
+		}
+		let isGroup = node.nodeType === "GROUP"
+		item.m_id = node.id
+		item.m_agentId = node.agentId
+		item.m_nodeType = node.nodeType
+		item.m_isComposite = isGroup
+		item.m_mainText = node.name
+		item.m_thirdText = isGroup ? "Group" : ""
+		item.m_agentOnline = true
+		item.m_status = "UNDEFINED"
+		item.m_icon1 = isGroup ? "" : "Icons/Alert"
+		item.m_parentId = node.parentId
+		item.m_x = node.x
+		item.m_y = node.y
+		item.emplaceLinks()
+
+		let items = root.nodeItems
+		items[nodeId] = item
+		root.nodeItems = items
+		return item
+	}
+
+	// --- Loading ---
+
 	function loadTopology() {
 		if (!getTopologyRequestSender.gqlCommandId){
 			console.error("GetTopology: gqlCommandId is empty")
 			root.loading = false
+			return
+		}
+		// The server state is changing while the draft is saved: loaded after the save.
+		if (root.saving){
+			root.reloadPending = true
 			return
 		}
 		// One request at a time: responses are not tied to requests, so a response for a
@@ -76,618 +596,256 @@ QtObject {
 	property bool reloadPending: false
 	property GetTopologyInput getTopologyInput: GetTopologyInput {}
 
-	// SaveTopology only persists coordinates (see CTopologyControllerComp::OnSaveTopology,
-	// which reads id/x/y and nothing else) — the input is the minimal ServiceCoordinateInput,
-	// not the full Service type. SDL-generated "m_services" is a QVariant that only accepts
-	// a ServiceCoordinateInputObjectList* (built via emplaceServices()/
-	// createServicesArrayElement()/addElement()); plain JS values are silently rejected by
-	// the generated setter, so services would be sent as null on the wire.
-	// positions: [{id, x, y}]
-	function buildTopologyInput(viewId, positions) {
+	// Reads the loaded topology: the state of the server and the nodes shown on the scheme. The draft is
+	// merged with the changes of the server.
+	function applyServerTopology(topologySdlObject, viewId) {
+		let serverState = {"viewId": viewId, "nodes": {}}
+		let items = {}
+		let names = {}
+
+		let readNodes = function(nodesModel, isInView){
+			if (!nodesModel){
+				return
+			}
+			for (let i = 0; i < nodesModel.count; ++i){
+				let item = nodesModel.get(i).item
+				if (!item){
+					continue
+				}
+				let id = "" + item.m_id
+				let nodeType = item.m_nodeType ? "" + item.m_nodeType : "SERVICE"
+				items[id] = item
+				if (nodeType === "SERVICE"){
+					names[id] = "" + item.m_mainText
+				}
+				if (isInView){
+					serverState.nodes[id] = {
+						"id": id,
+						"nodeType": nodeType,
+						"parentId": item.m_parentId ? "" + item.m_parentId : "",
+						"agentId": item.m_agentId ? "" + item.m_agentId : "",
+						"x": item.m_x,
+						"y": item.m_y,
+						"name": "" + item.m_mainText
+					}
+				}
+			}
+		}
+		readNodes(topologySdlObject.m_services, true)
+		readNodes(topologySdlObject.m_availableServiceNodes, false)
+
+		// Services that can be added to the view (their names, also if the nodes are not sent).
+		let availableModel = topologySdlObject.m_availableServices
+		if (availableModel){
+			for (let i = 0; i < availableModel.count; ++i){
+				let info = availableModel.get(i).item
+				if (info && names["" + info.m_id] === undefined){
+					names["" + info.m_id] = info.m_name ? "" + info.m_name : "" + info.m_id
+				}
+			}
+		}
+
+		// Nodes created in the draft keep their objects.
+		if (root.currentState){
+			for (let id in root.nodeItems){
+				if (!items[id] && root.currentState.nodes[id] && root.currentState.nodes[id].nodeType === "GROUP"){
+					items[id] = root.nodeItems[id]
+				}
+			}
+		}
+
+		root.nodeItems = items
+		root.serviceNames = names
+		root.normalizeState(serverState)
+
+		if (!root.baseState || !root.currentState || root.baseState.viewId !== viewId){
+			root.baseState = serverState
+			root.currentState = root.copyState(serverState)
+			root.clearDraftHistory()
+		}
+		else if (!root.statesEqual(root.baseState, serverState)){
+			let base = root.baseState
+			let mergeStep = function(step){
+				return step.type === "state" ? root.stateStep(root.mergeState(base, serverState, step.state)) : step
+			}
+			root.currentState = root.mergeState(base, serverState, root.currentState)
+			root.undoStack = root.undoStack.map(mergeStep)
+			root.redoStack = root.redoStack.map(mergeStep)
+			root.baseState = serverState
+		}
+		root.updateState()
+	}
+
+	// --- Saving ---
+
+	// The whole state of the view: positions of all nodes, all groups with their members and, in a
+	// user-defined view, the services shown in it.
+	function buildTopologyInput(state) {
 		let topologyInput = topologyInputComp.createObject(root)
-		topologyInput.m_viewId = viewId
+		topologyInput.m_viewId = state.viewId
+
+		// SDL-generated lists are QVariants that only accept the generated list objects (built via
+		// emplace...()/create...ArrayElement()/addElement()); plain JS values are silently rejected.
 		topologyInput.emplaceServices()
-		for (let i = 0; i < positions.length; ++i){
+		topologyInput.emplaceGroups()
+		let serviceIds = []
+		for (let id in state.nodes){
+			let node = state.nodes[id]
 			let coordinate = topologyInput.createServicesArrayElement()
-			coordinate.m_id = positions[i].id
-			coordinate.m_x = positions[i].x
-			coordinate.m_y = positions[i].y
+			coordinate.m_id = node.id
+			coordinate.m_x = node.x
+			coordinate.m_y = node.y
 			topologyInput.m_services.addElement(coordinate)
+
+			if (node.nodeType === "GROUP"){
+				let memberIds = []
+				for (let memberId in state.nodes){
+					if (state.nodes[memberId].parentId === node.id){
+						memberIds.push(memberId)
+					}
+				}
+				let group = topologyInput.createGroupsArrayElement()
+				group.m_id = node.id
+				group.m_name = node.name
+				group.m_x = node.x
+				group.m_y = node.y
+				group.m_memberIds = memberIds
+				topologyInput.m_groups.addElement(group)
+			}
+			else if (node.nodeType === "SERVICE"){
+				serviceIds.push(node.id)
+			}
+		}
+		if (state.viewId !== ""){
+			topologyInput.m_nodeIds = serviceIds
 		}
 		return topologyInput
 	}
 
-	// [{id, x, y}] of all nodes of the scheme model.
-	function modelPositions(model) {
-		let positions = []
-		if (!model){
-			return positions
-		}
-		for (let i = 0; i < model.count; ++i){
-			let item = model.get(i).item
-			if (item){
-				positions.push({"id": item.m_id, "x": item.m_x, "y": item.m_y})
-			}
-		}
-		return positions
-	}
-
 	property Component topologyInputComp: Component { SaveTopologyInput {} }
 
-	// --- Undo / Redo ---
-	// Every change of the topology is applied on the server at once. An action of the history knows
-	// how to apply it again (redo) and how to revert it (undo) with the same server operations.
-	// The operations run one after another: the request senders and their inputs are shared, and
-	// an undo must not overtake the change it reverts. Physical removal of services and Start/Stop
-	// are not in the history.
-
-	readonly property int maxHistorySteps: 50
-	property var undoStack: []
-	property var redoStack: []
-	property int undoCount: 0
-	property int redoCount: 0
-	// An undo/redo step is running: it has left one stack and is not in the other one yet.
-	property bool historyActionPending: false
-	property var operationQueue: []
-	property bool operationInProgress: false
-	// Undo/Redo wait for the running changes, otherwise the history would not match the server.
-	readonly property bool canUndo: root.undoCount > 0 && !root.operationInProgress
-	readonly property bool canRedo: root.redoCount > 0 && !root.operationInProgress
-
-	function updateHistoryCounts() {
-		root.undoCount = root.undoStack.length
-		root.redoCount = root.redoStack.length
-	}
-
-	// The history no longer matches the server (e.g. the topology was changed by another client).
-	function clearHistory() {
-		root.historyActionPending = false
-		root.undoStack = []
-		root.redoStack = []
-		root.updateHistoryCounts()
-	}
-
-	// A change that got no answer (e.g. a request path without an error callback) must not block the
-	// queue for good: it is abandoned after this time and the history is cleared.
-	property int operationTimeout: 60000
-	property var currentOperation: null
-
-	property Timer operationTimer: Timer {
-		interval: root.operationTimeout
-		repeat: false
-		onTriggered: root.abandonCurrentOperation()
-	}
-
-	function abandonCurrentOperation() {
-		let operation = root.currentOperation
-		if (!operation || operation.isFinished){
-			return
-		}
-		operation.isAborted = true
-		root.saveInProgress = false
-		root.clearHistory()
-		root.groupOperationFailed(qsTr("The topology change has not been completed. Check the topology and repeat the change if necessary."))
-		operation.finish()
-		root.requestReload()
-	}
-
-	// run: function(finish, operation) calling finish() once the operation is completed;
-	// operation.isAborted is set if the operation was abandoned (its late result is ignored).
-	function enqueueOperation(run) {
-		let queue = root.operationQueue.slice()
-		queue.push(run)
-		root.operationQueue = queue
-		root.runNextOperation()
-	}
-
-	function runNextOperation() {
-		if (root.operationInProgress || root.operationQueue.length === 0){
-			return
-		}
-		let queue = root.operationQueue.slice()
-		let run = queue.shift()
-		root.operationQueue = queue
-		root.operationInProgress = true
-
-		let operation = {"isFinished": false, "isAborted": false}
-		operation.finish = function(){
-			if (operation.isFinished){
-				return
-			}
-			operation.isFinished = true
-			root.operationTimer.stop()
-			root.currentOperation = null
-			root.operationInProgress = false
-			Qt.callLater(root.runNextOperation)
-		}
-		root.currentOperation = operation
-		root.operationTimer.restart()
-		run(operation.finish, operation)
-	}
-
-	// Runs the steps (function(next) calling next(ok)) one after another; stops at the first failure.
-	function runSteps(steps, done) {
-		let index = 0
-		let next = function(ok){
-			if (ok === false){
+	// Sends the whole state of the view to the server. done(ok) is called once the save has finished
+	// (also with true if there was nothing to save).
+	function save(done) {
+		if (root.saving){
+			if (done){
 				done(false)
-				return
 			}
-			if (index >= steps.length){
+			return
+		}
+		if (!root.dirty || !root.currentState){
+			if (done){
 				done(true)
-				return
 			}
-			let step = steps[index]
-			++index
-			step(next)
-		}
-		next(true)
-	}
-
-	// action: {run(done), undo(done), redo(done), reloadOnRun, viewsChanged}; done(ok).
-	// recordable === false applies the change without a history step.
-	function performAction(action, recordable) {
-		root.enqueueOperation(function(finish, operation){
-			action.run(function(ok){
-				if (operation.isAborted){
-					return
-				}
-				if (ok && recordable !== false){
-					let stack = root.undoStack.slice()
-					stack.push(action)
-					while (stack.length > root.maxHistorySteps){
-						stack.shift()
-					}
-					root.undoStack = stack
-					root.redoStack = []
-					root.updateHistoryCounts()
-				}
-				root.finishAction(action, ok, action.reloadOnRun !== false || !ok)
-				finish()
-			})
-		})
-	}
-
-	function undo() {
-		if (!root.canUndo){
 			return
 		}
-		let stack = root.undoStack.slice()
-		let action = stack.pop()
-		root.historyActionPending = true
-		root.undoStack = stack
-		root.updateHistoryCounts()
-
-		root.enqueueOperation(function(finish, operation){
-			action.undo(function(ok){
-				if (operation.isAborted){
-					return
-				}
-				if (ok){
-					let redoStack = root.redoStack.slice()
-					redoStack.push(action)
-					root.redoStack = redoStack
-					root.updateHistoryCounts()
-				}
-				else{
-					root.clearHistory()
-				}
-				root.historyActionPending = false
-				root.finishAction(action, ok, true)
-				finish()
-			})
-		})
-	}
-
-	function redo() {
-		if (!root.canRedo){
-			return
-		}
-		let stack = root.redoStack.slice()
-		let action = stack.pop()
-		root.historyActionPending = true
-		root.redoStack = stack
-		root.updateHistoryCounts()
-
-		root.enqueueOperation(function(finish, operation){
-			action.redo(function(ok){
-				if (operation.isAborted){
-					return
-				}
-				if (ok){
-					let undoStack = root.undoStack.slice()
-					undoStack.push(action)
-					root.undoStack = undoStack
-					root.updateHistoryCounts()
-				}
-				else{
-					root.clearHistory()
-				}
-				root.historyActionPending = false
-				root.finishAction(action, ok, true)
-				finish()
-			})
-		})
-	}
-
-	function finishAction(action, ok, reload) {
-		if (action.viewsChanged === true){
-			root.loadViews()
-		}
-		if (reload){
-			root.requestReload()
-		}
-	}
-
-	// --- Topology changes (recorded in the history) ---
-
-	// Saves the layout after tiles were moved on the shown level. The whole level is saved (new tiles
-	// get positions on the client); before/after: [{id, x, y}] of the moved tiles for undo/redo.
-	function saveTopology(model, before, after) {
 		if (!saveModelRequestSender.gqlCommandId){
 			console.error("SaveTopology: gqlCommandId is empty")
-			return
-		}
-		if (!model){
-			return
-		}
-		let viewId = root.viewId
-		let positions = root.modelPositions(model)
-		let movedBefore = before ? before : []
-		let movedAfter = after ? after : []
-		let action = {
-			// The scheme already shows the new positions.
-			"reloadOnRun": false,
-			"run": function(done){ root.opSavePositions(viewId, positions, done) },
-			"undo": function(done){ root.opSavePositions(viewId, movedBefore, done) },
-			"redo": function(done){ root.opSavePositions(viewId, movedAfter, done) }
-		}
-		root.performAction(action, movedBefore.length > 0)
-	}
-
-	// parentId: group containing the new group, empty for the root level.
-	function createGroup(name, parentId, x, y) {
-		let viewId = root.viewId
-		let groupName = "" + name
-		let groupParentId = parentId ? "" + parentId : ""
-		let action = {"groupId": ""}
-		action.run = function(done){
-			root.opCreateGroup(viewId, "", groupName, groupParentId, x, y, function(ok, groupId){
-				if (ok){
-					action.groupId = "" + groupId
-					root.groupCreated(action.groupId)
-				}
-				done(ok)
-			})
-		}
-		// The group is empty again: the later changes are undone before.
-		action.undo = function(done){ root.opRemoveGroup(action.groupId, done) }
-		action.redo = function(done){ root.opCreateGroup(viewId, action.groupId, groupName, groupParentId, x, y, done) }
-		root.performAction(action)
-	}
-
-	// parentId: target group; empty returns the nodes to their default place
-	// (in the default view a service to its agent, otherwise the root level).
-	// oldParentIds: {nodeId: previous group of the node or ""} to undo the move.
-	function moveNodes(nodeIds, parentId, oldParentIds) {
-		let viewId = root.viewId
-		let ids = nodeIds.slice()
-		let targetId = parentId ? "" + parentId : ""
-		let previousParents = oldParentIds ? oldParentIds : {}
-		root.performAction({
-			"run": function(done){ root.opMoveNodes(viewId, ids, targetId, done) },
-			"undo": function(done){ root.moveNodesBack(viewId, ids, previousParents, done) },
-			"redo": function(done){ root.opMoveNodes(viewId, ids, targetId, done) }
-		})
-	}
-
-	// Returns the nodes to their previous groups ({nodeId: group or ""}), one request per group.
-	function moveNodesBack(viewId, ids, previousParents, done) {
-		let byParent = {}
-		for (let i = 0; i < ids.length; ++i){
-			let previousId = previousParents[ids[i]] ? "" + previousParents[ids[i]] : ""
-			if (!byParent[previousId]){
-				byParent[previousId] = []
+			if (done){
+				done(false)
 			}
-			byParent[previousId].push(ids[i])
-		}
-		let steps = []
-		for (let previousId in byParent){
-			let groupIds = byParent[previousId]
-			let groupId = previousId
-			steps.push(function(next){ root.opMoveNodes(viewId, groupIds, groupId, next) })
-		}
-		root.runSteps(steps, done)
-	}
-
-	// Creates a group and moves the nodes into it ("Add to group" when there is no group to add them to);
-	// one step of the history. oldParentIds: {nodeId: previous group of the node or ""} to undo the move.
-	function createGroupWithNodes(name, parentId, x, y, nodeIds, oldParentIds) {
-		let viewId = root.viewId
-		let groupName = "" + name
-		let groupParentId = parentId ? "" + parentId : ""
-		let ids = nodeIds.slice()
-		let previousParents = oldParentIds ? oldParentIds : {}
-		let action = {"groupId": ""}
-		action.run = function(done){
-			root.opCreateGroup(viewId, "", groupName, groupParentId, x, y, function(ok, groupId){
-				if (!ok){
-					done(false)
-					return
-				}
-				action.groupId = "" + groupId
-				root.groupCreated(action.groupId)
-				root.opMoveNodes(viewId, ids, action.groupId, done)
-			})
-		}
-		// The nodes are returned first, then the empty group is removed.
-		action.undo = function(done){
-			root.runSteps([
-				function(next){ root.moveNodesBack(viewId, ids, previousParents, next) },
-				function(next){ root.opRemoveGroup(action.groupId, next) }
-			], done)
-		}
-		action.redo = function(done){
-			root.runSteps([
-				function(next){ root.opCreateGroup(viewId, action.groupId, groupName, groupParentId, x, y, next) },
-				function(next){ root.opMoveNodes(viewId, ids, action.groupId, next) }
-			], done)
-		}
-		root.performAction(action)
-	}
-
-	// info: {name, parentId, x, y, memberIds} of the group, used to recreate it on undo.
-	function removeGroup(groupId, info) {
-		let viewId = root.viewId
-		let id = "" + groupId
-		let groupInfo = info ? info : {"name": "", "parentId": "", "x": 0, "y": 0, "memberIds": []}
-		root.performAction({
-			"run": function(done){ root.opRemoveGroup(id, done) },
-			"undo": function(done){
-				// The group is recreated with the same ID, its content is moved back into it.
-				let steps = [function(next){
-					root.opCreateGroup(viewId, id, groupInfo.name, groupInfo.parentId, groupInfo.x, groupInfo.y, next)
-				}]
-				if (groupInfo.memberIds.length > 0){
-					steps.push(function(next){ root.opMoveNodes(viewId, groupInfo.memberIds, id, next) })
-				}
-				root.runSteps(steps, done)
-			},
-			"redo": function(done){ root.opRemoveGroup(id, done) }
-		})
-	}
-
-	// Ungroup: removes the groups (their members are moved one level up by the server) as one step of
-	// the history. infos: [{name, parentId, x, y, memberIds}] of the groups, used to recreate them on undo.
-	function removeGroups(groupIds, infos) {
-		let viewId = root.viewId
-		let ids = []
-		let groupInfos = []
-		for (let i = 0; i < groupIds.length; ++i){
-			ids.push("" + groupIds[i])
-			groupInfos.push(infos && infos[i] ? infos[i] : {"name": "", "parentId": "", "x": 0, "y": 0, "memberIds": []})
-		}
-		let removeAll = function(done){
-			let steps = []
-			for (let i = 0; i < ids.length; ++i){
-				let id = ids[i]
-				steps.push(function(next){ root.opRemoveGroup(id, next) })
-			}
-			root.runSteps(steps, done)
-		}
-		root.performAction({
-			"run": removeAll,
-			"undo": function(done){
-				// The groups are recreated with the same IDs, their content is moved back into them.
-				let steps = []
-				for (let i = ids.length - 1; i >= 0; --i){
-					let id = ids[i]
-					let groupInfo = groupInfos[i]
-					steps.push(function(next){
-						root.opCreateGroup(viewId, id, groupInfo.name, groupInfo.parentId, groupInfo.x, groupInfo.y, next)
-					})
-					if (groupInfo.memberIds.length > 0){
-						steps.push(function(next){ root.opMoveNodes(viewId, groupInfo.memberIds, id, next) })
-					}
-				}
-				root.runSteps(steps, done)
-			},
-			"redo": removeAll
-		})
-	}
-
-	function renameGroup(groupId, name, oldName) {
-		let id = "" + groupId
-		let newName = "" + name
-		let previousName = "" + oldName
-		root.performAction({
-			"viewsChanged": true,
-			"run": function(done){ root.opRenameGroup(id, newName, done) },
-			"undo": function(done){ root.opRenameGroup(id, previousName, done) },
-			"redo": function(done){ root.opRenameGroup(id, newName, done) }
-		}, previousName !== "")
-	}
-
-	// Removes the services from the current user-defined view only; the services are not deleted.
-	// oldParentId: group of the view containing the services (empty for the root level), used on undo.
-	function removeFromView(nodeIds, oldParentId) {
-		if (root.viewId === ""){
 			return
 		}
-		let viewId = root.viewId
-		let ids = nodeIds.slice()
-		let previousParentId = oldParentId ? "" + oldParentId : ""
-		root.performAction({
-			"viewsChanged": true,
-			"run": function(done){ root.opRemoveFromView(viewId, ids, done) },
-			"undo": function(done){ root.opAddToView(viewId, ids, previousParentId, done) },
-			"redo": function(done){ root.opRemoveFromView(viewId, ids, done) }
-		})
-	}
 
-	// Adds services (not yet in the current user-defined view) to it.
-	// parentId: group of the view receiving the services; empty for the root level.
-	function addToView(nodeIds, parentId) {
-		if (root.viewId === ""){
-			return
-		}
-		let viewId = root.viewId
-		let ids = nodeIds.slice()
-		let targetId = parentId ? "" + parentId : ""
-		root.performAction({
-			"viewsChanged": true,
-			"run": function(done){ root.opAddToView(viewId, ids, targetId, done) },
-			"undo": function(done){ root.opRemoveFromView(viewId, ids, done) },
-			"redo": function(done){ root.opAddToView(viewId, ids, targetId, done) }
-		})
-	}
-
-	// The service name is owned by the agent (see opRenameService).
-	function renameService(serviceId, agentId, name, oldName) {
-		let id = "" + serviceId
-		let agent = agentId ? "" + agentId : ""
-		let newName = "" + name
-		let previousName = "" + oldName
-		root.performAction({
-			"viewsChanged": true,
-			"run": function(done){ root.opRenameService(id, agent, newName, done) },
-			"undo": function(done){ root.opRenameService(id, agent, previousName, done) },
-			"redo": function(done){ root.opRenameService(id, agent, newName, done) }
-		}, previousName !== "")
-	}
-
-	function createView(name) {
-		let viewName = "" + name
-		let action = {"viewsChanged": true, "createdViewId": ""}
-		action.run = function(done){
-			root.opCreateView(viewName, function(ok, viewId){
-				if (ok){
-					action.createdViewId = "" + viewId
-					root.viewCreated(action.createdViewId)
-				}
-				done(ok)
-			})
-		}
-		// A removed view is kept on the server and restored with its ID.
-		action.undo = function(done){ root.opRemoveView(action.createdViewId, done) }
-		action.redo = function(done){ root.opRestoreView(action.createdViewId, done) }
-		root.performAction(action)
-	}
-
-	function removeView(viewId) {
-		let id = "" + viewId
-		root.performAction({
-			"viewsChanged": true,
-			"run": function(done){ root.opRemoveView(id, done) },
-			"undo": function(done){ root.opRestoreView(id, done) },
-			"redo": function(done){ root.opRemoveView(id, done) }
-		})
-	}
-
-	// --- Server operations; done(ok, result) is called once ---
-
-	function completeOperation(sender, ok, result) {
-		let callback = sender.callback
-		sender.callback = null
-		if (callback){
-			callback(ok, result)
-		}
-	}
-
-	function opSavePositions(viewId, positions, done) {
-		if (positions.length === 0){
-			done(true)
-			return
-		}
-		root.saveInProgress = true
-		let topologyInput = buildTopologyInput(viewId, positions)
+		let sentState = root.copyState(root.currentState)
+		let topologyInput = root.buildTopologyInput(sentState)
+		root.saving = true
 		saveModelRequestSender.callback = function(ok){
-			root.saveInProgress = false
-			if (ok){
+			root.saving = false
+			// The saved state is the new server state of the view (the draft may have been changed meanwhile).
+			if (ok && root.baseState && root.baseState.viewId === sentState.viewId){
+				root.baseState = sentState
+				root.updateState()
 				root.topologySaved()
 			}
-			done(ok)
+			// Group names are shown in the views panel; a failed save may have changed a part of the view.
+			root.loadViews()
+			root.requestReload()
+			if (done){
+				done(ok)
+			}
+			// Changes made during the save (auto save).
+			root.saveIfAutoSave()
 		}
 		saveModelRequestSender.send(topologyInput)
 		topologyInput.destroy()
 	}
 
-	// groupId: ID of the new group; empty generates a new ID. done(ok, groupId).
-	function opCreateGroup(viewId, groupId, name, parentId, x, y, done) {
-		createGroupInput.m_viewId = viewId
-		createGroupInput.m_id = groupId ? "" + groupId : ""
-		createGroupInput.m_name = "" + name
-		createGroupInput.m_parentId = parentId ? "" + parentId : ""
-		createGroupInput.m_x = x
-		createGroupInput.m_y = y
-		createGroupRequestSender.callback = done
-		createGroupRequestSender.send(createGroupInput)
+	function saveIfAutoSave() {
+		if (root.autoSave && root.dirty && !root.saving){
+			root.save()
+		}
 	}
 
-	function opMoveNodes(viewId, nodeIds, parentId, done) {
-		moveNodesInput.m_viewId = viewId
-		moveNodesInput.m_nodeIds = nodeIds
-		moveNodesInput.m_parentId = parentId ? "" + parentId : ""
-		moveNodesRequestSender.callback = done
-		moveNodesRequestSender.send(moveNodesInput)
+	onAutoSaveChanged: root.saveIfAutoSave()
+
+	// --- Changes applied on the server at once (not a part of the view state) ---
+
+	// The service name is owned by the agent (see opRenameService).
+	function renameService(serviceId, agentId, name) {
+		root.opRenameService("" + serviceId, agentId ? "" + agentId : "", "" + name, function(ok){
+			root.loadViews()
+			root.requestReload()
+		})
 	}
 
-	function opRemoveGroup(groupId, done) {
-		removeGroupInput.m_id = "" + groupId
-		removeGroupRequestSender.callback = done
-		removeGroupRequestSender.send(removeGroupInput)
-	}
-
-	function opRenameGroup(groupId, name, done) {
-		renameGroupInput.m_id = "" + groupId
-		renameGroupInput.m_name = "" + name
-		renameGroupRequestSender.callback = done
-		renameGroupRequestSender.send(renameGroupInput)
-	}
-
-	function opRemoveFromView(viewId, nodeIds, done) {
-		removeFromViewInput.m_viewId = viewId
-		removeFromViewInput.m_nodeIds = nodeIds
-		removeFromViewRequestSender.callback = done
-		removeFromViewRequestSender.send(removeFromViewInput)
-	}
-
-	function opAddToView(viewId, nodeIds, parentId, done) {
-		addToViewInput.m_viewId = viewId
-		addToViewInput.m_nodeIds = nodeIds
-		addToViewInput.m_parentId = parentId ? "" + parentId : ""
-		addToViewRequestSender.callback = done
-		addToViewRequestSender.send(addToViewInput)
-	}
-
-	// done(ok, viewId)
-	function opCreateView(name, done) {
+	// Creates a view on the server at once; recorded in the history (undo removes it, redo restores it).
+	function createView(name) {
 		createViewInput.m_name = "" + name
-		createViewRequestSender.callback = done
+		createViewRequestSender.callback = function(ok, viewId){
+			if (ok){
+				root.pushHistoryStep({"type": "view", "action": "create", "viewId": viewId})
+				root.loadViews()
+				root.viewCreated(viewId)
+			}
+		}
 		createViewRequestSender.send(createViewInput)
 	}
 
-	// The view is kept on the server (marked as removed) and can be restored.
+	// Removes a view on the server at once (it is kept marked as removed); recorded in the history
+	// (undo restores it, redo removes it again).
+	function removeView(viewId) {
+		let id = "" + viewId
+		root.opRemoveView(id, function(ok){
+			if (ok){
+				root.pushHistoryStep({"type": "view", "action": "remove", "viewId": id})
+			}
+		})
+	}
+
+	// done(ok) is called once. A removed view is not shown anymore (viewRemoved).
 	function opRemoveView(viewId, done) {
 		removeViewInput.m_id = "" + viewId
 		removeViewRequestSender.callback = function(ok){
+			root.loadViews()
 			if (ok){
-				root.viewRemoved(viewId)
+				root.viewRemoved("" + viewId)
 			}
 			done(ok)
 		}
 		removeViewRequestSender.send(removeViewInput)
 	}
 
+	// done(ok) is called once. The restored view is shown (viewRestored).
 	function opRestoreView(viewId, done) {
 		restoreViewInput.m_id = "" + viewId
 		restoreViewRequestSender.callback = function(ok){
+			root.loadViews()
 			if (ok){
-				root.viewCreated(viewId)
+				root.viewRestored("" + viewId)
 			}
 			done(ok)
 		}
 		restoreViewRequestSender.send(restoreViewInput)
+	}
+
+	// Calls the callback of the request once.
+	function completeRequest(sender, ok, result) {
+		let callback = sender.callback
+		sender.callback = null
+		if (callback){
+			callback(ok, result)
+		}
 	}
 
 	// The service name is owned by the agent: the service is renamed the same way the service
@@ -782,7 +940,6 @@ QtObject {
 
 	property CreateTopologyViewInput createViewInput: CreateTopologyViewInput {}
 	property RemoveTopologyViewInput removeViewInput: RemoveTopologyViewInput {}
-	property RestoreTopologyViewInput restoreViewInput: RestoreTopologyViewInput {}
 
 	property GqlSdlRequestSender getViewsRequestSender: GqlSdlRequestSender {
 		gqlCommandId: "GetTopologyViews"
@@ -814,7 +971,9 @@ QtObject {
 		}
 	}
 
-	// The senders of the changes: the response completes the operation (callback), an error shows
+	property RestoreTopologyViewInput restoreViewInput: RestoreTopologyViewInput {}
+
+	// The senders of the view changes: the response completes the request (callback), an error shows
 	// a message and fails it; "finished(-1)" also covers transport errors.
 	property GqlSdlRequestSender createViewRequestSender: GqlSdlRequestSender {
 		property var callback: null
@@ -822,17 +981,16 @@ QtObject {
 		gqlCommandId: "CreateTopologyView"
 		sdlObjectComp: Component {
 			CreateTopologyViewResponse {
-				onFinished: root.completeOperation(root.createViewRequestSender, true, m_id)
+				onFinished: root.completeRequest(root.createViewRequestSender, true, "" + m_id)
 			}
 		}
 		onFinished: {
 			if (status < 0){
-				root.completeOperation(root.createViewRequestSender, false)
+				root.completeRequest(root.createViewRequestSender, false)
 			}
 		}
 		function onError(message, type) {
 			root.groupOperationFailed(message)
-			root.completeOperation(root.createViewRequestSender, false)
 			finished(-1)
 		}
 	}
@@ -843,17 +1001,16 @@ QtObject {
 		gqlCommandId: "RemoveTopologyView"
 		sdlObjectComp: Component {
 			TopologyGroupResponse {
-				onFinished: root.completeOperation(root.removeViewRequestSender, m_successful !== false)
+				onFinished: root.completeRequest(root.removeViewRequestSender, m_successful !== false)
 			}
 		}
 		onFinished: {
 			if (status < 0){
-				root.completeOperation(root.removeViewRequestSender, false)
+				root.completeRequest(root.removeViewRequestSender, false)
 			}
 		}
 		function onError(message, type) {
 			root.groupOperationFailed(message)
-			root.completeOperation(root.removeViewRequestSender, false)
 			finished(-1)
 		}
 	}
@@ -864,159 +1021,25 @@ QtObject {
 		gqlCommandId: "RestoreTopologyView"
 		sdlObjectComp: Component {
 			TopologyGroupResponse {
-				onFinished: root.completeOperation(root.restoreViewRequestSender, m_successful !== false)
+				onFinished: root.completeRequest(root.restoreViewRequestSender, m_successful !== false)
 			}
 		}
 		onFinished: {
 			if (status < 0){
-				root.completeOperation(root.restoreViewRequestSender, false)
+				root.completeRequest(root.restoreViewRequestSender, false)
 			}
 		}
 		function onError(message, type) {
 			root.groupOperationFailed(message)
-			root.completeOperation(root.restoreViewRequestSender, false)
-			finished(-1)
-		}
-	}
-
-	property CreateTopologyGroupInput createGroupInput: CreateTopologyGroupInput {}
-	property MoveTopologyNodesInput moveNodesInput: MoveTopologyNodesInput {}
-	property RemoveTopologyGroupInput removeGroupInput: RemoveTopologyGroupInput {}
-	property RenameTopologyGroupInput renameGroupInput: RenameTopologyGroupInput {}
-	property RemoveFromTopologyViewInput removeFromViewInput: RemoveFromTopologyViewInput {}
-	property AddToTopologyViewInput addToViewInput: AddToTopologyViewInput {}
-
-	property GqlSdlRequestSender addToViewRequestSender: GqlSdlRequestSender {
-		property var callback: null
-		requestType: 1
-		gqlCommandId: "AddToTopologyView"
-		sdlObjectComp: Component {
-			TopologyGroupResponse {
-				onFinished: root.completeOperation(root.addToViewRequestSender, m_successful !== false)
-			}
-		}
-		onFinished: {
-			if (status < 0){
-				root.completeOperation(root.addToViewRequestSender, false)
-			}
-		}
-		function onError(message, type) {
-			root.groupOperationFailed(message)
-			root.completeOperation(root.addToViewRequestSender, false)
-			finished(-1)
-		}
-	}
-
-	property GqlSdlRequestSender removeFromViewRequestSender: GqlSdlRequestSender {
-		property var callback: null
-		requestType: 1
-		gqlCommandId: "RemoveFromTopologyView"
-		sdlObjectComp: Component {
-			TopologyGroupResponse {
-				onFinished: root.completeOperation(root.removeFromViewRequestSender, m_successful !== false)
-			}
-		}
-		onFinished: {
-			if (status < 0){
-				root.completeOperation(root.removeFromViewRequestSender, false)
-			}
-		}
-		function onError(message, type) {
-			root.groupOperationFailed(message)
-			root.completeOperation(root.removeFromViewRequestSender, false)
-			finished(-1)
-		}
-	}
-
-	property GqlSdlRequestSender renameGroupRequestSender: GqlSdlRequestSender {
-		property var callback: null
-		requestType: 1
-		gqlCommandId: "RenameTopologyGroup"
-		sdlObjectComp: Component {
-			TopologyGroupResponse {
-				onFinished: root.completeOperation(root.renameGroupRequestSender, m_successful !== false)
-			}
-		}
-		onFinished: {
-			if (status < 0){
-				root.completeOperation(root.renameGroupRequestSender, false)
-			}
-		}
-		function onError(message, type) {
-			root.groupOperationFailed(message)
-			root.completeOperation(root.renameGroupRequestSender, false)
-			finished(-1)
-		}
-	}
-
-	property GqlSdlRequestSender createGroupRequestSender: GqlSdlRequestSender {
-		property var callback: null
-		requestType: 1
-		gqlCommandId: "CreateTopologyGroup"
-		sdlObjectComp: Component {
-			CreateTopologyGroupResponse {
-				onFinished: root.completeOperation(root.createGroupRequestSender, true, m_id)
-			}
-		}
-		onFinished: {
-			if (status < 0){
-				root.completeOperation(root.createGroupRequestSender, false)
-			}
-		}
-		function onError(message, type) {
-			root.groupOperationFailed(message)
-			root.completeOperation(root.createGroupRequestSender, false)
-			finished(-1)
-		}
-	}
-
-	property GqlSdlRequestSender moveNodesRequestSender: GqlSdlRequestSender {
-		property var callback: null
-		requestType: 1
-		gqlCommandId: "MoveTopologyNodes"
-		sdlObjectComp: Component {
-			TopologyGroupResponse {
-				onFinished: root.completeOperation(root.moveNodesRequestSender, m_successful !== false)
-			}
-		}
-		onFinished: {
-			if (status < 0){
-				root.completeOperation(root.moveNodesRequestSender, false)
-			}
-		}
-		function onError(message, type) {
-			root.groupOperationFailed(message)
-			root.completeOperation(root.moveNodesRequestSender, false)
-			finished(-1)
-		}
-	}
-
-	property GqlSdlRequestSender removeGroupRequestSender: GqlSdlRequestSender {
-		property var callback: null
-		requestType: 1
-		gqlCommandId: "RemoveTopologyGroup"
-		sdlObjectComp: Component {
-			TopologyGroupResponse {
-				onFinished: root.completeOperation(root.removeGroupRequestSender, m_successful !== false)
-			}
-		}
-		onFinished: {
-			if (status < 0){
-				root.completeOperation(root.removeGroupRequestSender, false)
-			}
-		}
-		function onError(message, type) {
-			root.groupOperationFailed(message)
-			root.completeOperation(root.removeGroupRequestSender, false)
 			finished(-1)
 		}
 	}
 
 	function requestReload() {
-		if (root.saveInProgress){
+		if (root.saving){
+			root.reloadPending = true
 			return
 		}
-		reloadRequested()
 		loadTopology()
 	}
 	// --- L3 transport (must stay out of L1 views) ---
@@ -1053,6 +1076,14 @@ QtObject {
 		onMessageReceived: root.serviceStatusMessage(data)
 	}
 
+	function completeSave(ok) {
+		let callback = saveModelRequestSender.callback
+		saveModelRequestSender.callback = null
+		if (callback){
+			callback(ok)
+		}
+	}
+
 	property GqlSdlRequestSender saveModelRequestSender: GqlSdlRequestSender {
 		property var callback: null
 		requestType: 1
@@ -1061,15 +1092,19 @@ QtObject {
 		gqlCommandId: "SaveTopology"
 		sdlObjectComp: Component {
 			SaveTopologyResponse {
-				onFinished: root.completeOperation(root.saveModelRequestSender, m_successful !== false)
+				onFinished: root.completeSave(m_successful !== false)
 			}
 		}
-		// status -1 = error; the callback clears the save gate so later OnTopologyChanged works.
+		// status -1 = error (also transport errors); the callback clears the save gate.
 		onFinished: {
 			if (status < 0){
 				console.error("SaveTopology failed")
-				root.completeOperation(root.saveModelRequestSender, false)
+				root.completeSave(false)
 			}
+		}
+		function onError(message, type) {
+			root.groupOperationFailed(message)
+			finished(-1)
 		}
 	}
 	property GqlSdlRequestSender getTopologyRequestSender: GqlSdlRequestSender {
@@ -1080,11 +1115,11 @@ QtObject {
 			Topology {
 				onFinished: {
 					root.loading = false
-					if (root.reloadPending || root.getTopologyRequestSender.requestedViewId !== root.viewId){
+					if (root.reloadPending || root.saving || root.getTopologyRequestSender.requestedViewId !== root.viewId){
 						root.loadTopology()
 						return
 					}
-					root.topologyLoaded(this)
+					root.applyServerTopology(this, root.getTopologyRequestSender.requestedViewId)
 				}
 			}
 		}

@@ -6,6 +6,9 @@
 #include <QtCore/QMap>
 #include <QtCore/QPoint>
 
+// ACF includes
+#include <i2d/CVector2d.h>
+
 // ImtCore includes
 #include <imtservergql/CGqlRequestHandlerCompBase.h>
 #include <imtbase/IObjectCollection.h>
@@ -92,6 +95,27 @@ private:
 	};
 
 	typedef QMap<QByteArray, TopologyGroupInfo> TopologyGroupMap;
+
+	// Group of a view as sent by the client with the whole state of the view (SaveTopology).
+	struct TopologyGroupState
+	{
+		QByteArray id;
+		QString name;
+		i2d::CVector2d position;
+		QByteArrayList memberIds;
+	};
+
+	/**
+		Replace the groups of the view by the given ones: groups not listed are removed, new IDs create
+		groups, the names, positions and members of the others are updated. In a user-defined view the
+		services shown in it are replaced as well (if given). Returns false (with the reason) if the
+		state is invalid (e.g. a node in several groups, nested groups forming a cycle).
+	*/
+	bool SaveTopologyViewState(
+				const QByteArray& viewId,
+				const QList<TopologyGroupState>& groupStates,
+				const QByteArrayList* viewNodeIdsPtr,
+				QString& errorMessage) const;
 
 	QPoint GetServiceCoordinate(const QByteArray& serviceId) const;
 	bool SetServiceCoordinate(const QByteArray& serviceId, const QPoint& point) const;
