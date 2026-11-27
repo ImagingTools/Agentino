@@ -3358,8 +3358,20 @@
         <translation>版本 %1 不会安装在 %2 上：%3</translation>
     </message>
     <message>
-        <source>The installation of the version %1 has started on %2</source>
-        <translation>版本 %1 已开始在 %2 上安装</translation>
+        <source>The installation of the version %1 has started</source>
+        <translation>版本 %1 的安装已开始</translation>
+    </message>
+    <message>
+        <source>All agents have been updated to the version %1</source>
+        <translation>所有代理均已更新到版本 %1</translation>
+    </message>
+    <message>
+        <source>The version %1 is installed on %2 of %3 agents</source>
+        <translation>版本 %1 已安装在 %3 个代理中的 %2 个上</translation>
+    </message>
+    <message>
+        <source>The state of the installation is not known: %1</source>
+        <translation>安装状态未知：%1</translation>
     </message>
     <message>
         <source>The version %1 is not installed on any agent</source>
@@ -3371,6 +3383,13 @@
     <message>
         <source>Deleting a service version</source>
         <translation>删除服务版本</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionInstallationPopup</name>
+    <message>
+        <source>Installation of the version %1</source>
+        <translation>版本 %1 的安装</translation>
     </message>
 </context>
 <context>

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: LicenseRef-Agentino-Commercial
 #include <agentgql/CServiceVersionInstallerComp.h>
+#include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Updates.h>
 
 
 // Qt includes
@@ -16,6 +17,11 @@
 #if QT_CONFIG(ssl)
 #include <QtNetwork/QSslError>
 #endif
+
+// ImtCore includes
+#include <imtclientgql/TClientRequestManagerCompWrap.h>
+#include <imtgql/CGqlContext.h>
+#include <imtgql/CGqlRequest.h>
 
 // Agentino includes
 #include <agentinodata/CServiceInfo.h>
@@ -51,6 +57,7 @@ bool CServiceVersionInstallerComp::StartServiceVersionUpdate(
 			const QByteArray& serviceId,
 			const QString& version,
 			const QStringList& archiveUrls,
+			const QByteArray& installationId,
 			QString& errorMessage)
 {
 	if (!m_serviceCollectionCompPtr.IsValid() || !m_serviceControllerCompPtr.IsValid() || !m_fileCompressionCompPtr.IsValid()){
@@ -103,6 +110,7 @@ bool CServiceVersionInstallerComp::StartServiceVersionUpdate(
 	update.serviceId = serviceId;
 	update.serviceName = serviceInfoPtr->GetServiceName().isEmpty() ? QString::fromUtf8(serviceId) : serviceInfoPtr->GetServiceName();
 	update.version = version.trimmed();
+	update.installationId = installationId;
 	update.serviceFolder = QDir::cleanPath(serviceFileInfo.absolutePath());
 	update.executableName = serviceFileInfo.fileName();
 
@@ -114,6 +122,10 @@ bool CServiceVersionInstallerComp::StartServiceVersionUpdate(
 		if (!ResolveArchiveUrl(urlText, archive.url, archive.fileName, errorMessage)){
 			return false;
 		}
+
+		// TEST: подмена URL архива
+		// archive.url = QUrl(QStringLiteral("http://217.160.251.80:7380/Dogma/share/dsl1_VouOJnDB5XAW_miDGbKRUfohrryg8DLUbXHVdHrp-Mk"));
+		// archive.fileName = QStringLiteral("test.zip");
 
 		// Two archives of the same name would be downloaded into the same file.
 		const QString fileNameKey = archive.fileName.toLower();
@@ -453,6 +465,8 @@ void CServiceVersionInstallerComp::ExecuteInstallation()
 					"CServiceVersionInstallerComp");
 	}
 
+	ReportResult(isStarted, isStarted ? QString() : QStringLiteral("The service was updated, but it cannot be started"));
+
 	FinishUpdate();
 }
 
@@ -478,7 +492,72 @@ void CServiceVersionInstallerComp::FailUpdate(const QString& errorMessage, bool 
 		}
 	}
 
+	ReportResult(false, errorMessage);
+
 	FinishUpdate();
+}
+
+
+void CServiceVersionInstallerComp::ReportResult(bool succeeded, const QString& message)
+{
+	if (m_currentUpdate.installationId.isEmpty()){
+		return;
+	}
+
+	if (!m_gqlClientCompPtr.IsValid()){
+		SendWarningMessage(0, QStringLiteral("The result of the update is not reported to the server: component reference 'GqlClient' was not set"), "CServiceVersionInstallerComp");
+
+		return;
+	}
+
+	const QByteArray installationId = m_currentUpdate.installationId;
+	const QByteArray serviceId = m_currentUpdate.serviceId;
+	const QString serviceName = m_currentUpdate.serviceName;
+	const QByteArray clientId = m_clientIdCompPtr.IsValid() ? m_clientIdCompPtr->GetText().toUtf8() : QByteArray();
+
+	// Sent after the current signal handler: SendRequest waits for the answer in a local event loop.
+	QTimer::singleShot(0, this, [this, installationId, serviceId, serviceName, clientId, succeeded, message](){
+		sdl::V1_0::agentino::ReportServiceVersionInstallationRequestArguments arguments;
+		arguments.input.emplace();
+		arguments.input->installationId = installationId;
+		arguments.input->serviceId = serviceId;
+		arguments.input->succeeded = succeeded;
+		if (!message.isEmpty()){
+			arguments.input->message = message;
+		}
+
+		imtgql::CGqlRequest* gqlRequestPtr = new imtgql::CGqlRequest(imtgql::IGqlRequest::RT_MUTATION);
+		imtclientgql::IGqlClient::GqlRequestPtr requestPtr(gqlRequestPtr);
+
+		// The server accepts the results of the installations on the services of the agent that reports them.
+		if (!clientId.isEmpty()){
+			imtgql::CGqlContext* gqlContextPtr = new imtgql::CGqlContext();
+			imtgql::IGqlContext::Headers headers;
+			headers.insert(QByteArrayLiteral("clientid"), clientId);
+			gqlContextPtr->SetHeaders(headers);
+			gqlRequestPtr->SetGqlContext(gqlContextPtr);
+		}
+
+		if (!sdl::V1_0::agentino::CReportServiceVersionInstallationGqlRequest::SetupGqlRequest(*gqlRequestPtr, arguments)){
+			SendErrorMessage(0, QStringLiteral("Unable to create the request 'ReportServiceVersionInstallation'"), "CServiceVersionInstallerComp");
+
+			return;
+		}
+
+		gqlRequestPtr->AddSimpleField(QByteArrayLiteral("accepted"));
+
+		const imtclientgql::IGqlClient::GqlModelResult<sdl::V1_0::agentino::CServiceVersionInstallationReportResponse> result =
+					imtclientgql::CClientRequestModelHelpers::ParseModelResult<sdl::V1_0::agentino::CServiceVersionInstallationReportResponse>(
+								m_gqlClientCompPtr->SendRequest(requestPtr),
+								sdl::V1_0::agentino::CReportServiceVersionInstallationGqlRequest::GetCommandId());
+		if (!result || !result.model.accepted.has_value() || !*result.model.accepted){
+			SendWarningMessage(
+						0,
+						QStringLiteral("The result of the update of the service '%1' was not accepted by the server: %2")
+									.arg(serviceName, result.errorMessage.isEmpty() ? QStringLiteral("unknown installation") : result.errorMessage),
+						"CServiceVersionInstallerComp");
+		}
+	});
 }
 
 

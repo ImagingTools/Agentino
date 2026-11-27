@@ -462,6 +462,9 @@
                     <AttributeInfo Id="FileCompression" Type="Reference" ExportId="">
                         <Data IsEnabled="true" Value="ServiceVersionFileCompressor"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="GqlClient" Type="Reference" ExportId="">
+                        <Data IsEnabled="true" Value="WebSocketClient"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="Log" Type="Reference" ExportId="Log">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>

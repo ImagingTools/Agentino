@@ -125,13 +125,19 @@ type ServiceVersionInstallation {
 	serviceId: ID
 	serviceName: String
 	# The agent was asked to install the version (UpdateServiceVersion of Services.sdl); the agent
-	# downloads the archives over HTTP, stops, unpacks and starts the service on its own and reports to its log
+	# downloads the archives over HTTP, stops, unpacks and starts the service on its own, reports the
+	# result to the server (ReportServiceVersionInstallation) and to its log
 	started: Boolean
-	# Why the installation was not started
+	# State of a started installation: "Running", "Succeeded" or "Failed"; empty if it was not started
+	state: String
+	# Why the installation was not started or failed
 	message: String
 }
 
 type InstallServiceVersionPayload {
+	# ID of the installation (its state is requested with GetServiceVersionInstallation); empty if it was
+	# started on no service
+	installationId: ID
 	version: String
 	# Path of the folder of the version on the server
 	path: String
@@ -142,11 +148,34 @@ type InstallServiceVersionPayload {
 	installations: [ServiceVersionInstallation]
 }
 
+# The state of an installation started by InstallServiceVersion.
+input ServiceVersionInstallationInput {
+	installationId: ID!
+}
+
+# The result of the installation of a version on a service, reported by the agent (header "clientid":
+# the agent the service belongs to).
+input ServiceVersionInstallationReportInput {
+	# ID of the installation, as sent to the agent (UpdateServiceVersionInput.installationId)
+	installationId: ID!
+	serviceId: ID!
+	succeeded: Boolean!
+	# Why the installation failed
+	message: String
+}
+
+type ServiceVersionInstallationReportResponse {
+	# The report belongs to a known installation of a service of the agent
+	accepted: Boolean!
+}
+
 type Query {
 	ServiceUpdatesList (input: ServiceUpdateListInput): ServiceUpdateListPayload!
 	AgentOperatingSystemsList: AgentOperatingSystemList!
 	ServiceVersionsList (input: ServiceVersionListInput): ServiceVersionListPayload!
 	GetServiceVersionFolder (input: ServiceVersionFolderInput): ServiceVersionFolder!
+	# The state of the installation on every service it was started on (installations: started ones only)
+	GetServiceVersionInstallation (input: ServiceVersionInstallationInput): InstallServiceVersionPayload!
 }
 
 type Mutation {
@@ -156,6 +185,8 @@ type Mutation {
 	SetServiceVersionFolder (input: SetServiceVersionFolderInput): ServiceVersionFolder!
 	# Install a version on the agents: every service of the type of the version on each agent is updated
 	InstallServiceVersion (input: InstallServiceVersionInput): InstallServiceVersionPayload!
+	# Sent by an agent when the installation of a version on its service has ended (header "clientid")
+	ReportServiceVersionInstallation (input: ServiceVersionInstallationReportInput): ServiceVersionInstallationReportResponse!
 }
 
 collectionSchema {

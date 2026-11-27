@@ -18,6 +18,7 @@
 #include <agentinodata/IServiceVersionFolders.h>
 #include <agentinodata/IServiceVersionInfo.h>
 #include <agentinogql/IEnrollmentController.h>
+#include <agentinogql/IServiceVersionInstallationTracker.h>
 #include <GeneratedFiles/agentinosdl/SDL/1.0/CPP/Updates_fwd.h>
 
 
@@ -44,6 +45,11 @@ namespace agentinogql
 	archives of the versions added to the server are given, to the approved agents only (header
 	'clientid' of the request).
 
+	The installation is kept by the installation tracker (IServiceVersionInstallationTracker, shared by the
+	handlers of all worker threads): its ID is sent to the agents with UpdateServiceVersion, the agent
+	reports the result of the update with it (ReportServiceVersionInstallation), the web client asks for the
+	state of the installation (GetServiceVersionInstallation) until it has ended on every service.
+
 	The schema lives in Sdl/agentino/1.0/Updates.sdl.
 */
 class CServiceUpdateControllerComp:
@@ -65,6 +71,7 @@ public:
 		I_ASSIGN(m_asyncApiClientCompPtr, "AsyncApiClient", "Asynchronous API client the update requests are sent to the agents with (header 'clientid')", false, "AsyncApiClient");
 		I_ASSIGN(m_serverConnectionCompPtr, "ServerConnectionInterface", "Addresses of the server: the URLs of the archives of the versions are made of its HTTP address (without it the agents get the path of a URL only)", false, "ServerConnectionInterface");
 		I_ASSIGN(m_fileCommandIdAttrPtr, "FileCommandId", "HTTP path the archives of the versions are sent at: the command of the file servlet without '/*'", true, "Agentino/ServiceVersions");
+		I_ASSIGN(m_installationTrackerCompPtr, "InstallationTracker", "States of the installations of the versions, shared by the handlers of all threads (GetServiceVersionInstallation, ReportServiceVersionInstallation)", false, "InstallationTracker");
 	I_END_COMPONENT;
 
 	/**
@@ -97,6 +104,14 @@ protected:
 				QString& errorMessage) const override;
 	virtual sdl::V1_0::agentino::CInstallServiceVersionPayload OnInstallServiceVersion(
 				const sdl::V1_0::agentino::CInstallServiceVersionGqlRequest& installServiceVersionRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CInstallServiceVersionPayload OnGetServiceVersionInstallation(
+				const sdl::V1_0::agentino::CGetServiceVersionInstallationGqlRequest& getServiceVersionInstallationRequest,
+				const ::imtgql::CGqlRequest& gqlRequest,
+				QString& errorMessage) const override;
+	virtual sdl::V1_0::agentino::CServiceVersionInstallationReportResponse OnReportServiceVersionInstallation(
+				const sdl::V1_0::agentino::CReportServiceVersionInstallationGqlRequest& reportServiceVersionInstallationRequest,
 				const ::imtgql::CGqlRequest& gqlRequest,
 				QString& errorMessage) const override;
 
@@ -139,14 +154,27 @@ private:
 	/**
 		Send UpdateServiceVersion (Services.sdl) for the service to the agent. The request is not waited for:
 		the agent installs the version on its own; a refusal of the agent is reported to the log.
-		\param archiveUrls	URLs of the archives of the version the agent downloads.
+		A failure of the request is reported to the installation tracker.
+		\param archiveUrls		URLs of the archives of the version the agent downloads.
+		\param installationId	ID of the installation in the installation tracker (empty: not tracked).
 	*/
 	bool SendUpdateServiceVersionRequest(
 				const QByteArray& agentId,
 				const QByteArray& serviceId,
 				const QString& version,
 				const QStringList& archiveUrls,
+				const QByteArray& installationId,
 				QString& errorMessage) const;
+
+	/**
+		Get the agent the request comes from (header 'clientid'). Empty for a request of the web client.
+	*/
+	static QByteArray GetRequestAgentId(const ::imtgql::CGqlRequest& gqlRequest);
+
+	/**
+		Get the name of the state of an installation as the schema has it ("Running", "Succeeded", "Failed").
+	*/
+	static QString GetInstallationStateName(IServiceVersionInstallationTracker::InstallationState state);
 
 	/**
 		Get the URLs of the archives (*.zip) of the folder of the version (see the class description).
@@ -184,6 +212,7 @@ protected:
 	I_REF(imtclientgql::IAsyncGqlClient, m_asyncApiClientCompPtr);
 	I_REF(imtcom::IServerConnectionInterface, m_serverConnectionCompPtr);
 	I_ATTR(QByteArray, m_fileCommandIdAttrPtr);
+	I_REF(IServiceVersionInstallationTracker, m_installationTrackerCompPtr);
 };
 
 

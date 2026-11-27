@@ -23,6 +23,7 @@
         <Element ComponentName="ServerSettings" X="125" Y="400" Note=""/>
         <Element ComponentName="ServiceControllerProxy" X="200" Y="800" Note=""/>
         <Element ComponentName="ServiceStatusSubscriberController" X="700" Y="800" Note=""/>
+        <Element ComponentName="ServiceVersionInstallationTracker" X="450" Y="800" Note=""/>
         <Element ComponentName="Subscribers" X="425" Y="350" Note=""/>
         <Element ComponentName="SuperuserProvider" X="1000" Y="725" Note=""/>
         <Element ComponentName="WebSocketServerFramework" X="200" Y="125" Note=""/>

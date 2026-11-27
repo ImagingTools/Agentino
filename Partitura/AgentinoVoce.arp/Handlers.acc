@@ -331,6 +331,9 @@
                     <AttributeInfo Id="ServerConnectionInterface" Type="Reference" ExportId="ServerConnectionInterface">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>
+                    <AttributeInfo Id="ServiceVersionInstallationTracker" Type="Reference" ExportId="ServiceVersionInstallationTracker">
+                        <Data IsEnabled="false"/>
+                    </AttributeInfo>
                     <AttributeInfo Id="ServiceCompositeInfo" Type="Reference" ExportId="ServiceCompositeInfo">
                         <Data IsEnabled="false"/>
                     </AttributeInfo>

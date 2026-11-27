@@ -3358,8 +3358,20 @@
         <translation>Wersja %1 nie zostanie zainstalowana na %2: %3</translation>
     </message>
     <message>
-        <source>The installation of the version %1 has started on %2</source>
-        <translation>Instalacja wersji %1 rozpoczęła się na %2</translation>
+        <source>The installation of the version %1 has started</source>
+        <translation>Rozpoczęto instalację wersji %1</translation>
+    </message>
+    <message>
+        <source>All agents have been updated to the version %1</source>
+        <translation>Wszystkie agenty zostały zaktualizowane do wersji %1</translation>
+    </message>
+    <message>
+        <source>The version %1 is installed on %2 of %3 agents</source>
+        <translation>Wersja %1 jest zainstalowana na %2 z %3 agentów</translation>
+    </message>
+    <message>
+        <source>The state of the installation is not known: %1</source>
+        <translation>Stan instalacji jest nieznany: %1</translation>
     </message>
     <message>
         <source>The version %1 is not installed on any agent</source>
@@ -3371,6 +3383,13 @@
     <message>
         <source>Deleting a service version</source>
         <translation>Usuwanie wersji usługi</translation>
+    </message>
+</context>
+<context>
+    <name>ServiceVersionInstallationPopup</name>
+    <message>
+        <source>Installation of the version %1</source>
+        <translation>Instalacja wersji %1</translation>
     </message>
 </context>
 <context>

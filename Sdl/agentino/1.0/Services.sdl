@@ -198,6 +198,9 @@ input UpdateServiceVersionInput {
 	# A URL without a host (path only) is resolved against the HTTP address of the server the agent is
 	# connected to, as well as a URL whose host is a loopback or unspecified address.
 	urls: [String]
+	# ID of the installation on the server: the agent reports the result of the update with it
+	# (ReportServiceVersionInstallation of Updates.sdl)
+	installationId: ID
 }
 
 type UpdateServiceVersionResponse {

@@ -109,6 +109,22 @@ imtrest::IProtocolEngine::StatusCode CServiceUpdateControllerComp::ResolveFile(c
 		return imtrest::IProtocolEngine::SC_NOT_FOUND;
 	}
 
+	// TEST: the archive is downloaded from another server - the agent is redirected to it (302, Location).
+	// The agent follows the redirect (QNetworkAccessManager). Remove after the test.
+	// static const QByteArray s_testArchiveUrl = QByteArrayLiteral("http://217.160.251.80:7380/Dogma/share/dsl1_VouOJnDB5XAW_miDGbKRUfohrryg8DLUbXHVdHrp-Mk");
+	// if (!s_testArchiveUrl.isEmpty()){
+	// 	SendInfoMessage(
+	// 				0,
+	// 				QStringLiteral("TEST: the archive '%1' of the service version '%2' is redirected to '%3' for the agent '%4'")
+	// 							.arg(fileName, QString::fromUtf8(versionId), QString::fromLatin1(s_testArchiveUrl), QString::fromUtf8(agentId)),
+	// 				"CServiceUpdateControllerComp");
+
+	// 	file.headers.insert(QByteArrayLiteral("Location"), s_testArchiveUrl);
+	// 	file.headers.insert(QByteArrayLiteral("Cache-Control"), QByteArrayLiteral("no-store"));
+
+	// 	return imtrest::IProtocolEngine::SC_MOVED_TEMPORARILY;
+	// }
+
 	file.filePath = fileInfo.absoluteFilePath();
 	file.dataTypeId = QByteArrayLiteral("application/zip");
 
@@ -353,6 +369,8 @@ sdl::V1_0::agentino::CInstallServiceVersionPayload CServiceUpdateControllerComp:
 	const imtbase::ICollectionInfo::Ids existingAgentIds = m_agentCollectionCompPtr->GetElementIds();
 
 	QList<sdl::V1_0::agentino::CServiceVersionInstallation> installations;
+	// The installations to start: indexes in installations
+	QList<int> targetIndexes;
 
 	for (const QByteArray& agentId : agentIds){
 		sdl::V1_0::agentino::CServiceVersionInstallation agentInstallation;
@@ -402,30 +420,64 @@ sdl::V1_0::agentino::CInstallServiceVersionPayload CServiceUpdateControllerComp:
 			installation.serviceId = service.id;
 			installation.serviceName = service.name;
 
-			QString sendError;
-			if (SendUpdateServiceVersionRequest(agentId, service.id, version, archiveUrls, sendError)){
-				installation.started = true;
-
-				SendInfoMessage(
-							0,
-							QStringLiteral("Installation of the version '%1' of the service '%2' started on the agent '%3', archives: %4")
-										.arg(version, service.name, *agentInstallation.agentName, archiveUrls.join(QStringLiteral(", "))),
-							"CServiceUpdateControllerComp");
-			}
-			else{
-				installation.message = sendError;
-
-				SendErrorMessage(
-							0,
-							QStringLiteral("Unable to install the version '%1' of the service '%2' on the agent '%3'. Error: %4")
-										.arg(version, service.name, *agentInstallation.agentName, sendError),
-							"CServiceUpdateControllerComp");
-			}
-
+			targetIndexes << installations.count();
 			installations << installation;
 		}
 	}
 
+	// The installation is tracked: the agents report its result with its ID, the web client asks for its state.
+	QByteArray installationId;
+	if (!targetIndexes.isEmpty() && m_installationTrackerCompPtr.IsValid()){
+		QList<IServiceVersionInstallationTracker::ServiceInstallation> trackedServices;
+		for (int index : std::as_const(targetIndexes)){
+			const sdl::V1_0::agentino::CServiceVersionInstallation& installation = installations[index];
+
+			IServiceVersionInstallationTracker::ServiceInstallation trackedService;
+			trackedService.agentId = *installation.agentId;
+			trackedService.agentName = *installation.agentName;
+			trackedService.serviceId = *installation.serviceId;
+			trackedService.serviceName = *installation.serviceName;
+
+			trackedServices << trackedService;
+		}
+
+		installationId = m_installationTrackerCompPtr->CreateInstallation(version, trackedServices);
+	}
+
+	for (int index : std::as_const(targetIndexes)){
+		sdl::V1_0::agentino::CServiceVersionInstallation& installation = installations[index];
+		const QByteArray agentId = *installation.agentId;
+		const QByteArray serviceId = *installation.serviceId;
+		const QString agentName = *installation.agentName;
+		const QString serviceName = *installation.serviceName;
+
+		QString sendError;
+		if (SendUpdateServiceVersionRequest(agentId, serviceId, version, archiveUrls, installationId, sendError)){
+			installation.started = true;
+			installation.state = GetInstallationStateName(IServiceVersionInstallationTracker::IS_RUNNING);
+
+			SendInfoMessage(
+						0,
+						QStringLiteral("Installation of the version '%1' of the service '%2' started on the agent '%3', archives: %4")
+									.arg(version, serviceName, agentName, archiveUrls.join(QStringLiteral(", "))),
+						"CServiceUpdateControllerComp");
+		}
+		else{
+			installation.message = sendError;
+
+			if (!installationId.isEmpty()){
+				m_installationTrackerCompPtr->FinishServiceInstallation(installationId, agentId, serviceId, false, sendError);
+			}
+
+			SendErrorMessage(
+						0,
+						QStringLiteral("Unable to install the version '%1' of the service '%2' on the agent '%3'. Error: %4")
+									.arg(version, serviceName, agentName, sendError),
+						"CServiceUpdateControllerComp");
+		}
+	}
+
+	payload.installationId = installationId;
 	payload.version = version;
 	payload.path = QDir::toNativeSeparators(path);
 	payload.urls.Emplace();
@@ -434,6 +486,139 @@ sdl::V1_0::agentino::CInstallServiceVersionPayload CServiceUpdateControllerComp:
 	payload.installations->FromList(installations);
 
 	return payload;
+}
+
+
+sdl::V1_0::agentino::CInstallServiceVersionPayload CServiceUpdateControllerComp::OnGetServiceVersionInstallation(
+			const sdl::V1_0::agentino::CGetServiceVersionInstallationGqlRequest& getServiceVersionInstallationRequest,
+			const ::imtgql::CGqlRequest& /*gqlRequest*/,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::CInstallServiceVersionPayload payload;
+
+	if (!m_installationTrackerCompPtr.IsValid()){
+		errorMessage = QStringLiteral("Unable to get the installation of the service version. Error: Component reference 'InstallationTracker' was not set");
+		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
+
+		return payload;
+	}
+
+	const sdl::V1_0::agentino::GetServiceVersionInstallationRequestArguments arguments = getServiceVersionInstallationRequest.GetRequestedArguments();
+
+	QByteArray installationId;
+	if (arguments.input.has_value() && arguments.input->installationId.has_value()){
+		installationId = *arguments.input->installationId;
+	}
+
+	IServiceVersionInstallationTracker::Installation installation;
+	if (installationId.isEmpty() || !m_installationTrackerCompPtr->GetInstallation(installationId, installation)){
+		errorMessage = QStringLiteral("Unable to get the installation of the service version. Error: The installation '%1' does not exist")
+					.arg(QString::fromUtf8(installationId));
+		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
+
+		return payload;
+	}
+
+	QList<sdl::V1_0::agentino::CServiceVersionInstallation> installations;
+	for (const IServiceVersionInstallationTracker::ServiceInstallation& service : std::as_const(installation.services)){
+		sdl::V1_0::agentino::CServiceVersionInstallation item;
+		item.agentId = service.agentId;
+		item.agentName = service.agentName;
+		item.serviceId = service.serviceId;
+		item.serviceName = service.serviceName;
+		item.started = true;
+		item.state = GetInstallationStateName(service.state);
+		item.message = service.message;
+
+		installations << item;
+	}
+
+	payload.installationId = installation.installationId;
+	payload.version = installation.version;
+	payload.installations.Emplace();
+	payload.installations->FromList(installations);
+
+	return payload;
+}
+
+
+sdl::V1_0::agentino::CServiceVersionInstallationReportResponse CServiceUpdateControllerComp::OnReportServiceVersionInstallation(
+			const sdl::V1_0::agentino::CReportServiceVersionInstallationGqlRequest& reportServiceVersionInstallationRequest,
+			const ::imtgql::CGqlRequest& gqlRequest,
+			QString& errorMessage) const
+{
+	sdl::V1_0::agentino::CServiceVersionInstallationReportResponse response;
+	response.accepted = false;
+
+	if (!m_installationTrackerCompPtr.IsValid()){
+		errorMessage = QStringLiteral("Unable to accept the result of the installation. Error: Component reference 'InstallationTracker' was not set");
+		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
+
+		return response;
+	}
+
+	// The result is reported by the agent the service belongs to.
+	const QByteArray agentId = GetRequestAgentId(gqlRequest);
+	if (agentId.isEmpty()){
+		errorMessage = QStringLiteral("Unable to accept the result of the installation. Error: The request is not sent by an agent (header 'clientid')");
+		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
+
+		return response;
+	}
+
+	if (m_enrollmentControllerCompPtr.IsValid() && m_enrollmentControllerCompPtr->Get(agentId).status != EnrollmentStatus::Approved){
+		errorMessage = QStringLiteral("Unable to accept the result of the installation. Error: The agent '%1' is not approved").arg(QString::fromUtf8(agentId));
+		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
+
+		return response;
+	}
+
+	const sdl::V1_0::agentino::ReportServiceVersionInstallationRequestArguments arguments = reportServiceVersionInstallationRequest.GetRequestedArguments();
+
+	QByteArray installationId;
+	QByteArray serviceId;
+	bool succeeded = false;
+	QString message;
+	if (arguments.input.has_value()){
+		if (arguments.input->installationId.has_value()){
+			installationId = *arguments.input->installationId;
+		}
+		if (arguments.input->serviceId.has_value()){
+			serviceId = *arguments.input->serviceId;
+		}
+		if (arguments.input->succeeded.has_value()){
+			succeeded = *arguments.input->succeeded;
+		}
+		if (arguments.input->message.has_value()){
+			message = *arguments.input->message;
+		}
+	}
+
+	if (!m_installationTrackerCompPtr->FinishServiceInstallation(installationId, agentId, serviceId, succeeded, message)){
+		errorMessage = QStringLiteral("Unable to accept the result of the installation. Error: The installation '%1' has no service '%2' of the agent '%3'")
+					.arg(QString::fromUtf8(installationId), QString::fromUtf8(serviceId), QString::fromUtf8(agentId));
+		SendErrorMessage(0, errorMessage, "CServiceUpdateControllerComp");
+
+		return response;
+	}
+
+	if (succeeded){
+		SendInfoMessage(
+					0,
+					QStringLiteral("The agent '%1' has installed the version on the service '%2'").arg(QString::fromUtf8(agentId), QString::fromUtf8(serviceId)),
+					"CServiceUpdateControllerComp");
+	}
+	else{
+		SendWarningMessage(
+					0,
+					QStringLiteral("The agent '%1' has not installed the version on the service '%2'. Error: %3")
+								.arg(QString::fromUtf8(agentId), QString::fromUtf8(serviceId), message),
+					"CServiceUpdateControllerComp");
+	}
+
+	response.accepted = true;
+
+	return response;
 }
 
 
@@ -617,6 +802,7 @@ bool CServiceUpdateControllerComp::SendUpdateServiceVersionRequest(
 			const QByteArray& serviceId,
 			const QString& version,
 			const QStringList& archiveUrls,
+			const QByteArray& installationId,
 			QString& errorMessage) const
 {
 	if (!m_asyncApiClientCompPtr.IsValid()){
@@ -642,6 +828,10 @@ bool CServiceUpdateControllerComp::SendUpdateServiceVersionRequest(
 	// The agent downloads the archives by these URLs over HTTP (see ResolveFile).
 	arguments.input->urls.Emplace();
 	arguments.input->urls->FromList(archiveUrls);
+	// The agent reports the result of the update with it (ReportServiceVersionInstallation).
+	if (!installationId.isEmpty()){
+		arguments.input->installationId = installationId;
+	}
 
 	if (!sdl::V1_0::agentino::CUpdateServiceVersionGqlRequest::SetupGqlRequest(gqlRequest, arguments)){
 		errorMessage = QStringLiteral("Unable to create the request 'UpdateServiceVersion'");
@@ -654,19 +844,30 @@ bool CServiceUpdateControllerComp::SendUpdateServiceVersionRequest(
 	const QString agentIdText = QString::fromUtf8(agentId);
 	const QString serviceIdText = QString::fromUtf8(serviceId);
 
-	// The agent answers at once: the update goes on in the agent, which reports its result to its log.
-	// The continuation runs on the thread of this component.
+	// The installation tracker is a component of the server: it outlives the handlers of this thread.
+	IServiceVersionInstallationTracker* trackerPtr = (!installationId.isEmpty() && m_installationTrackerCompPtr.IsValid())
+				? m_installationTrackerCompPtr.GetPtr()
+				: nullptr;
+
+	// The agent answers at once: the update goes on in the agent, which reports its result to the server
+	// (ReportServiceVersionInstallation) and to its log. The continuation runs on the thread of this component.
 	CServiceUpdateControllerComp* self = const_cast<CServiceUpdateControllerComp*>(this);
 	m_asyncApiClientCompPtr->SendModelRequest<sdl::V1_0::agentino::CUpdateServiceVersionResponse>(gqlRequest)
-				.then(self, [self, agentIdText, serviceIdText, version](
+				.then(self, [self, trackerPtr, installationId, agentId, serviceId, agentIdText, serviceIdText, version](
 							const imtclientgql::IAsyncGqlClient::GqlModelResult<sdl::V1_0::agentino::CUpdateServiceVersionResponse>& result){
 					const bool started = result && result.model.started.has_value() && *result.model.started;
 					if (!started){
+						const QString error = result.errorMessage.isEmpty() ? QStringLiteral("The update was refused") : result.errorMessage;
+
+						// The agent will not report: the installation on the service has ended.
+						if (trackerPtr != nullptr){
+							trackerPtr->FinishServiceInstallation(installationId, agentId, serviceId, false, error);
+						}
+
 						self->SendErrorMessage(
 									0,
 									QStringLiteral("The agent '%1' did not start the installation of the version '%2' of the service '%3'. Error: %4")
-												.arg(agentIdText, version, serviceIdText,
-													 result.errorMessage.isEmpty() ? QStringLiteral("The update was refused") : result.errorMessage),
+												.arg(agentIdText, version, serviceIdText, error),
 									"CServiceUpdateControllerComp");
 					}
 				});
@@ -726,6 +927,43 @@ QString CServiceUpdateControllerComp::GetFileCommandId() const
 
 
 // private static methods
+
+QByteArray CServiceUpdateControllerComp::GetRequestAgentId(const ::imtgql::CGqlRequest& gqlRequest)
+{
+	// The agent puts its ID into the header 'clientid' of its requests (the HTTP layer lowercases the names).
+	QByteArray agentId = gqlRequest.GetHeader(QByteArrayLiteral("clientid"));
+	if (!agentId.isEmpty()){
+		return agentId;
+	}
+
+	const imtgql::IGqlContext* contextPtr = gqlRequest.GetRequestContext();
+	if (contextPtr != nullptr){
+		const imtgql::IGqlContext::Headers headers = contextPtr->GetHeaders();
+		for (auto iter = headers.constBegin(); iter != headers.constEnd(); ++iter){
+			if (QString::fromUtf8(iter.key()).compare(QStringLiteral("clientid"), Qt::CaseInsensitive) == 0){
+				return iter.value();
+			}
+		}
+	}
+
+	return QByteArray();
+}
+
+
+QString CServiceUpdateControllerComp::GetInstallationStateName(IServiceVersionInstallationTracker::InstallationState state)
+{
+	switch (state){
+	case IServiceVersionInstallationTracker::IS_SUCCEEDED:
+		return QStringLiteral("Succeeded");
+
+	case IServiceVersionInstallationTracker::IS_FAILED:
+		return QStringLiteral("Failed");
+
+	default:
+		return QStringLiteral("Running");
+	}
+}
+
 
 bool CServiceUpdateControllerComp::IsArchiveFileName(const QString& fileName)
 {
